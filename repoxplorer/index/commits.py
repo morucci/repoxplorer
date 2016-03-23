@@ -55,11 +55,52 @@ class Commits(object):
         except Exception, e:
             logger.info('Unable to index commit (%s). %s' % (commit, e))
 
-    def get_commit(self, cid, source=True):
+    def get_commit(self, cid):
         try:
-            return self.es.get(index=self.index,
-                               doc_type=self.dbname,
-                               id=cid,
-                               _source=source)
+            res = self.es.get(index=self.index,
+                              doc_type=self.dbname,
+                              id=cid)
+            return res['_source']
         except Exception, e:
             logger.info('Unable to get commit (%s). %s' % (cid, e))
+
+    def get_commits(self, **kargs):
+        search_keys = ('author_email',
+                       'project_branch',
+                       'project_uri',
+                       'project_name')
+        search_options = ('fromdate',
+                          'todate',
+                          'start',
+                          'limit')
+        for key in kargs:
+            assert key in search_keys + search_options
+
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        body = {
+            "filter": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
+
+        for key, value in kargs.items():
+            if key not in search_keys:
+                continue
+            if value is None:
+                continue
+            body["filter"]["bool"]["must"].append(
+                {"term": {key: value}}
+            )
+
+        params['body'] = body
+        params['size'] = kargs.get('limit', 100)
+        params['from_'] = kargs.get('start', 0)
+        params['sort'] = "committer_date:asc,author_date:asc"
+        res = self.es.search(**params)
+        took = res['took']
+        hits = res['hits']['total']
+        commits = [r['_source'] for r in res['hits']['hits']]
+        return took, hits, commits
