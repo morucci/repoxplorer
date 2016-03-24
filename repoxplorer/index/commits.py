@@ -39,13 +39,15 @@ class Commits(object):
         self.ic.put_mapping(index=self.index, doc_type=self.dbname,
                             body=self.mapping)
 
-    def uuid(self, project_uri, project_branch):
-        return base64.b64encode('%s:%s' % (project_uri,
-                                           project_branch))
+    def uuid(self, project_uri, project_branch, sha):
+        return base64.b64encode('%s:%s:%s' % (project_uri,
+                                              project_branch,
+                                              sha))
 
     def add_commit(self, commit):
         cid = self.uuid(commit['project_uri'],
-                        commit['project_branch'])
+                        commit['project_branch'],
+                        commit['sha'])
         try:
             self.es.create(index=self.index,
                            doc_type=self.dbname,
@@ -95,10 +97,22 @@ class Commits(object):
                 {"term": {key: value}}
             )
 
+        if 'fromdate' in kargs and 'todate' in kargs:
+            body["filter"]["bool"]["must"].append(
+                {
+                    "range": {
+                        "author_date": {
+                            "gte": kargs['fromdate'],
+                            "lt": kargs['todate'],
+                        }
+                    }
+                }
+            )
+
         params['body'] = body
         params['size'] = kargs.get('limit', 100)
         params['from_'] = kargs.get('start', 0)
-        params['sort'] = "committer_date:asc,author_date:asc"
+        params['sort'] = "committer_date:desc,author_date:desc"
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
