@@ -14,10 +14,8 @@ class Commits(object):
             self.dbname: {
                 "properties": {
                     "sha": {"type": "string", "index": "not_analyzed"},
-                    "author_date": {"type": "integer",
-                                    "index": "not_analyzed"},
-                    "committer_date": {"type": "integer",
-                                       "index": "not_analyzed"},
+                    "author_date": {"type": "date"},
+                    "committer_date": {"type": "date"},
                     "author_name": {"type": "string"},
                     "committer_name": {"type": "string"},
                     "author_email": {"type": "string",
@@ -118,3 +116,62 @@ class Commits(object):
         hits = res['hits']['total']
         commits = [r['_source'] for r in res['hits']['hits']]
         return took, hits, commits
+
+    # TODO: mails should be able to be empty and then rename method !
+    def get_commits_amount_by_author(self, mails, projects=[]):
+        """ Return the amount of commits for a contributor
+        This allows to return the total amount of commits
+        inside the index or in a set of projects. A author can
+        be indentified by a set of mails
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        filter = {
+            "bool": {
+                "must": [],
+                "should": [],
+                }
+            }
+
+        must_mail_clause = {
+            "bool": {
+                "should": []
+            }
+        }
+        for mail in mails:
+            must_mail_clause["bool"]["should"].append(
+                    {"term": {"author_email": mail}}
+            )
+        filter["bool"]["must"].append(must_mail_clause)
+
+        for project in projects:
+            should_project_clause = {
+                "bool": {
+                    "must": []
+                }
+            }
+            for key, value in project.items():
+                should_project_clause["bool"]["must"].append(
+                    {"term": {key: value}}
+                )
+            filter["bool"]["should"].append(should_project_clause)
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": filter,
+                }
+            },
+            "aggs": {
+                "commits_count": {
+                    "cardinality": {
+                        "field": "sha"
+                     }
+                 }
+            }
+        }
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        return took, res["aggregations"]["commits_count"]["value"]

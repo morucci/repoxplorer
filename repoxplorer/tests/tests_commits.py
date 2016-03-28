@@ -65,6 +65,20 @@ class TestCommits(TestCase):
                 'project_name': 'monkey',
                 'lines_modified': 377,
                 'commit_msg': 'Add request customer feature 20',
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b188',
+                'author_date': 1410460005,
+                'committer_date': 1410460005,
+                'author_name': 'Jean Bon',
+                'committer_name': 'Jean Bon',
+                'author_email': 'jean.bon@joker.org',
+                'committer_email': 'jean.bon@joker.org',
+                'project_branch': 'master',
+                'project_uri': 'https://github.com/amura/kotatsu.git',
+                'project_name': 'kotatsu',
+                'lines_modified': 377,
+                'commit_msg': 'Add request customer feature 21',
             }
         ]
         for commit in self.commits:
@@ -86,16 +100,16 @@ class TestCommits(TestCase):
         self.assertEqual(ret[2][0]['commit_msg'], 'Add init method')
 
         ret = self.c.get_commits(author_email='jean.bon@joker.org')
-        self.assertEqual(ret[1], 2)
+        self.assertEqual(ret[1], 3)
         self.assertEqual(ret[2][0]['commit_msg'],
-                         'Add request customer feature 20')
+                         'Add request customer feature 21')
 
         ret = self.c.get_commits(
             project_uri='https://github.com/amura/kotatsu.git',
             project_name='kotatsu')
-        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret[1], 2)
         self.assertEqual(ret[2][0]['commit_msg'],
-                         'Fix sanity unittest')
+                         'Add request customer feature 21')
 
         ret = self.c.get_commits(
             project_uri='https://github.com/nakata/monkey.git',
@@ -118,3 +132,47 @@ class TestCommits(TestCase):
         self.assertEqual(ret[1], 2)
         self.assertEqual(ret[2][0]['commit_msg'],
                          'Add request customer feature 19')
+
+    def test_get_commits_amount_by_author(self):
+        ret = self.c.get_commits_amount_by_author(
+            ['n.suke@joker.org'])
+        self.assertEqual(ret[1], 1)
+
+        ret = self.c.get_commits_amount_by_author(
+            ['n.suke@joker.org',
+             'jean.bon@joker.org'])
+        self.assertEqual(ret[1], 4)
+
+        ret = self.c.get_commits_amount_by_author(
+            ['n.suke@joker.org'],
+            [{'project_uri': 'https://github.com/nakata/monkey.git',
+              'project_name': 'monkey',
+              'project_branch': 'master'}])
+        self.assertEqual(ret[1], 1)
+
+        ret = self.c.get_commits_amount_by_author(
+            ['jean.bon@joker.org'],
+            [{'project_uri': 'https://github.com/nakata/monkey.git',
+              'project_name': 'monkey',
+              'project_branch': 'master'}])
+        self.assertEqual(ret[1], 2)
+
+        ret = self.c.get_commits_amount_by_author(
+            ['jean.bon@joker.org'],
+            [{'project_uri': 'https://github.com/nakata/monkey.git',
+              'project_name': 'monkey',
+              'project_branch': 'master'},
+             {'project_uri': 'https://github.com/amura/kotatsu.git',
+              'project_name': 'kotatsu',
+              'project_branch': 'master'}])
+        self.assertEqual(ret[1], 3)
+
+        ret = self.c.get_commits_amount_by_author(
+            ['jean.bon@joker.org', 'keiko.a@joker.org'],
+            [{'project_uri': 'https://github.com/nakata/monkey.git',
+              'project_name': 'monkey',
+              'project_branch': 'master'},
+             {'project_uri': 'https://github.com/amura/kotatsu.git',
+              'project_name': 'kotatsu',
+              'project_branch': 'master'}])
+        self.assertEqual(ret[1], 4)
