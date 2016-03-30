@@ -64,68 +64,9 @@ class Commits(object):
         except Exception, e:
             logger.info('Unable to get commit (%s). %s' % (cid, e))
 
-    def get_commits(self, **kargs):
-        search_keys = ('author_email',
-                       'project_branch',
-                       'project_uri',
-                       'project_name')
-        search_options = ('fromdate',
-                          'todate',
-                          'start',
-                          'limit')
-        for key in kargs:
-            assert key in search_keys + search_options
-
-        params = {'index': self.index, 'doc_type': self.dbname}
-
-        body = {
-            "filter": {
-                "bool": {
-                    "must": []
-                }
-            }
-        }
-
-        for key, value in kargs.items():
-            if key not in search_keys:
-                continue
-            if value is None:
-                continue
-            body["filter"]["bool"]["must"].append(
-                {"term": {key: value}}
-            )
-
-        if 'fromdate' in kargs and 'todate' in kargs:
-            body["filter"]["bool"]["must"].append(
-                {
-                    "range": {
-                        "author_date": {
-                            "gte": kargs['fromdate'],
-                            "lt": kargs['todate'],
-                        }
-                    }
-                }
-            )
-
-        params['body'] = body
-        params['size'] = kargs.get('limit', 100)
-        params['from_'] = kargs.get('start', 0)
-        params['sort'] = "committer_date:desc,author_date:desc"
-        res = self.es.search(**params)
-        took = res['took']
-        hits = res['hits']['total']
-        commits = [r['_source'] for r in res['hits']['hits']]
-        return took, hits, commits
-
-    # TODO: mails should be able to be empty and then rename method !
-    def get_commits_amount_by_author(self, mails, projects=[]):
-        """ Return the amount of commits for a contributor
-        This allows to return the total amount of commits
-        inside the index or in a set of projects. A author can
-        be indentified by a set of mails
+    def get_filter(self, mails, projects):
+        """ Compute the search filter
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
-
         filter = {
             "bool": {
                 "must": [],
@@ -156,10 +97,56 @@ class Commits(object):
                 )
             filter["bool"]["should"].append(should_project_clause)
 
+        return filter
+
+    def get_commits(self, mails=[], projects=[],
+                    fromdate=None, todate=None, start=0, limit=100):
+        """ Return the list of commits for authors and/or projects.
+        """
+
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "filter": self.get_filter(mails, projects),
+        }
+
+        body["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = limit
+        params['from_'] = start
+        params['sort'] = "committer_date:desc,author_date:desc"
+        res = self.es.search(**params)
+        took = res['took']
+        hits = res['hits']['total']
+        commits = [r['_source'] for r in res['hits']['hits']]
+        return took, hits, commits
+
+    def get_commits_amount(self, mails=[], projects=[],
+                           fromdate=None, todate=None):
+        """ Return the amount of commits for authors and/or projects.
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
         body = {
             "query": {
                 "filtered": {
-                    "filter": filter,
+                    "filter": self.get_filter(mails, projects),
                 }
             },
             "aggs": {
@@ -170,6 +157,18 @@ class Commits(object):
                  }
             }
         }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
         params['body'] = body
         params['size'] = 0
         res = self.es.search(**params)
