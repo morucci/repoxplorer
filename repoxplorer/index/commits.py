@@ -151,6 +151,9 @@ class Commits(object):
             },
             "aggs": {
                 "commits_count": {
+                    # Make sure we count unique value of sha
+                    # The same sha can appears on mulitple branches
+                    # or project forks
                     "cardinality": {
                         "field": "sha"
                      }
@@ -174,3 +177,58 @@ class Commits(object):
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["commits_count"]["value"]
+
+    def get_lines_modified_stats(self, mails=[], projects=[],
+                                 fromdate=None, todate=None):
+        """ Return the stats about lines modified for authors and/or projects.
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            # Note this won't be unique between fork or branches
+            "aggs": {
+                "lines_modified_stats": {
+                   "stats": {
+                       "field": "lines_modified"
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        return took, res["aggregations"]["lines_modified_stats"]
+
+    def get_top_author(self, mails=[], projects=[],
+                       fromdate=None, todate=None):
+        """ Return the ranking of author emails
+        """
+        pass
+
+    def get_author_projects(self, mails=[], projects=[],
+                            fromdate=None, todate=None):
+        """ Return the list of projects for authors sort
+        by commit amount and lines modified amount
+        """
+        pass
