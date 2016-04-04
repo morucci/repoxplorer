@@ -163,16 +163,6 @@ class Commits(object):
                 "filtered": {
                     "filter": self.get_filter(mails, projects),
                 }
-            },
-            "aggs": {
-                "commits_count": {
-                    # Make sure we count unique value of sha
-                    # The same sha can appears on mulitple branches
-                    # or project forks
-                    "cardinality": {
-                        "field": "sha"
-                     }
-                 }
             }
         }
 
@@ -188,10 +178,8 @@ class Commits(object):
         )
 
         params['body'] = body
-        params['size'] = 0
-        res = self.es.search(**params)
-        took = res['took']
-        return took, res["aggregations"]["commits_count"]["value"]
+        res = self.es.count(**params)
+        return res['count']
 
     def get_lines_modified_stats(self, mails=[], projects=[],
                                  fromdate=None, todate=None):

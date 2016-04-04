@@ -156,45 +156,45 @@ class TestCommits(TestCase):
     def test_get_commits_amount(self):
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org'])
-        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org',
              'jean.bon@joker.org'])
-        self.assertEqual(ret[1], 5)
+        self.assertEqual(ret, 5)
 
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org',
              'jean.bon@joker.org'],
             fromdate=1410456000,
             todate=1410456010)
-        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
-        self.assertEqual(ret[1], 3)
+        self.assertEqual(ret, 3)
 
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
-        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
-        self.assertEqual(ret[1], 2)
+        self.assertEqual(ret, 2)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
-        self.assertEqual(ret[1], 3)
+        self.assertEqual(ret, 3)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org', 'keiko.a@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
-        self.assertEqual(ret[1], 4)
+        self.assertEqual(ret, 4)
 
     def test_get_lines_modified_amount(self):
         ret = self.c.get_lines_modified_stats(
