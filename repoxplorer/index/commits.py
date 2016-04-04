@@ -1,5 +1,5 @@
-import base64
 import logging
+from elasticsearch import TransportError
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +22,8 @@ class Commits(object):
                                      "index": "not_analyzed"},
                     "committer_email": {"type": "string",
                                         "index": "not_analyzed"},
-                    "project_branch": {"type": "string",
-                                       "index": "not_analyzed"},
-                    "project_uri": {"type": "string",
-                                    "index": "not_analyzed"},
-                    "project_name": {"type": "string",
-                                     "index": "not_analyzed"},
+                    "projects": {"type": "string",
+                                 "index": "not_analyzed"},
                     "lines_modified": {"type": "integer",
                                        "index": "not_analyzed"},
                     "commit_msg": {"type": "string"}
@@ -37,32 +33,52 @@ class Commits(object):
         self.ic.put_mapping(index=self.index, doc_type=self.dbname,
                             body=self.mapping)
 
-    def uuid(self, project_uri, project_branch, sha):
-        return base64.b64encode('%s:%s:%s' % (project_uri,
-                                              project_branch,
-                                              sha))
-
     def add_commit(self, commit):
-        cid = self.uuid(commit['project_uri'],
-                        commit['project_branch'],
-                        commit['sha'])
+        if 'projects' not in commit:
+            commit['projects'] = [commit['project'], ]
+        if 'project' in commit.keys():
+            del commit['project']
         try:
             self.es.create(index=self.index,
                            doc_type=self.dbname,
-                           id=cid,
+                           id=commit['sha'],
                            body=commit)
             self.es.indices.refresh(index=self.index)
+        except TransportError, e:
+            if e.status_code == 409:
+                self.update_commit(commit['sha'], commit)
         except Exception, e:
             logger.info('Unable to index commit (%s). %s' % (commit, e))
 
-    def get_commit(self, cid):
+    def update_commit(self, sha, commit):
+        """ This is used only when we need to tag a commit
+        in another project or branch.
+        """
+        try:
+            orig = self.get_commit(commit['sha'])
+            commit['projects'].extend(orig['projects'])
+            self.del_commit(sha)
+            self.add_commit(commit)
+        except Exception, e:
+            logger.info('Unable to update commit (%s). %s' % (commit, e))
+
+    def get_commit(self, sha):
         try:
             res = self.es.get(index=self.index,
                               doc_type=self.dbname,
-                              id=cid)
+                              id=sha)
             return res['_source']
         except Exception, e:
-            logger.info('Unable to get commit (%s). %s' % (cid, e))
+            logger.info('Unable to get commit (%s). %s' % (sha, e))
+
+    def del_commit(self, sha):
+        try:
+            self.es.delete(index=self.index,
+                           doc_type=self.dbname,
+                           id=sha)
+            self.es.indices.refresh(index=self.index)
+        except Exception, e:
+            logger.info('Unable to del commit (%s). %s' % (sha, e))
 
     def get_filter(self, mails, projects):
         """ Compute the search filter
@@ -91,10 +107,9 @@ class Commits(object):
                     "must": []
                 }
             }
-            for key, value in project.items():
-                should_project_clause["bool"]["must"].append(
-                    {"term": {key: value}}
-                )
+            should_project_clause["bool"]["must"].append(
+                {"term": {"projects": project}}
+            )
             filter["bool"]["should"].append(should_project_clause)
 
         return filter
@@ -193,7 +208,6 @@ class Commits(object):
                     "filter": self.get_filter(mails, projects),
                 }
             },
-            # Note this won't be unique between fork or branches
             "aggs": {
                 "lines_modified_stats": {
                    "stats": {
