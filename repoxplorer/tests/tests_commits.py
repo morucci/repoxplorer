@@ -210,3 +210,30 @@ class TestCommits(TestCase):
         self.assertDictEqual(ret[1], {u'avg': 300.0, u'min': 200.0,
                                       u'max': 400.0, u'count': 3,
                                       u'sum': 900.0})
+
+    def test_get_top_authors(self):
+        ret = self.c.get_top_authors(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+        self.assertDictEqual(ret[1], {u'jean.bon@joker.org': 2,
+                                      u'n.suke@joker.org': 1})
+
+        ret = self.c.get_top_authors(
+            projects=['https://github.com/nakata/monkey.git:monkey:master',
+                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
+        self.assertDictEqual(ret[1], {u'jean.bon@joker.org': 3,
+                                      u'keiko.a@joker.org': 1,
+                                      u'n.suke@joker.org': 1})
+
+    def test_get_top_projects(self):
+        ret = self.c.get_top_projects(
+            ['jean.bon@joker.org'])
+        self.assertDictEqual(ret[1], {
+            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 2,
+            u'https://github.com/amura/kotatsu.git:kotatsu:master': 1,
+            u'https://github.com/nakata/monkey.git:monkey:master': 2})
+
+    def test_get_commits_histo(self):
+        ret = self.c.get_commits_histo(
+            ['jean.bon@joker.org'])
+        print ret
+        # raise

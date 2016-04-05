@@ -222,15 +222,159 @@ class Commits(object):
         took = res['took']
         return took, res["aggregations"]["lines_modified_stats"]
 
-    def get_top_author(self, mails=[], projects=[],
-                       fromdate=None, todate=None):
+    def get_top_authors(self, mails=[], projects=[],
+                        fromdate=None, todate=None):
         """ Return the ranking of author emails
         """
-        pass
+        params = {'index': self.index, 'doc_type': self.dbname}
 
-    def get_author_projects(self, mails=[], projects=[],
-                            fromdate=None, todate=None):
-        """ Return the list of projects for authors sort
-        by commit amount and lines modified amount
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            "aggs": {
+                "top-author": {
+                    "terms": {
+                        "field": "author_email",
+                        "size": 50
+                    },
+                    "aggs": {
+                        "top-author-hits": {
+                            "top_hits": {
+                                "sort": [
+                                    {
+                                        "committer_date": {
+                                            "order": "desc"
+                                        }
+                                    }],
+                                "size": 1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        top = [(b['key'], b['doc_count'])
+               for b in res["aggregations"]["top-author"]["buckets"]]
+        return took, dict(top)
+
+    def get_top_projects(self, mails=[], projects=[],
+                         fromdate=None, todate=None):
+        """ Return the ranking of project contributed
         """
-        pass
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            "aggs": {
+                "top-project": {
+                    "terms": {
+                        "field": "projects",
+                        "size": 50
+                    },
+                    "aggs": {
+                        "top-projects-hits": {
+                            "top_hits": {
+                                "sort": [
+                                    {
+                                        "committer_date": {
+                                            "order": "desc"
+                                        }
+                                    }],
+                                "size": 1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        top = [(b['key'], b['doc_count'])
+               for b in res["aggregations"]["top-project"]["buckets"]]
+        return took, dict(top)
+
+    def get_commits_histo(self, mails=[], projects=[],
+                          fromdate=None, todate=None):
+        """ Return the histogram of contrib for authors and/or projects.
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            "aggs": {
+                "commits": {
+                    "date_histogram": {
+                        "field": "author_date",
+                        "interval": "day",
+                        "format": "yyyy-MM-dd",
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "author_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        return took, res["aggregations"]["commits"]
