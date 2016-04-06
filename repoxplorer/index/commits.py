@@ -14,8 +14,10 @@ class Commits(object):
             self.dbname: {
                 "properties": {
                     "sha": {"type": "string", "index": "not_analyzed"},
-                    "author_date": {"type": "date"},
-                    "committer_date": {"type": "date"},
+                    "author_date": {"type": "date",
+                                    "format": "epoch_second"},
+                    "committer_date": {"type": "date",
+                                       "format": "epoch_second"},
                     "author_name": {"type": "string"},
                     "committer_name": {"type": "string"},
                     "author_email": {"type": "string",
@@ -377,4 +379,4 @@ class Commits(object):
         params['size'] = 0
         res = self.es.search(**params)
         took = res['took']
-        return took, res["aggregations"]["commits"]
+        return took, res["aggregations"]["commits"]["buckets"]

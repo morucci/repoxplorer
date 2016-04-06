@@ -100,6 +100,19 @@ class TestCommits(TestCase):
                     'https://github.com/amura/kotatsu.git:kotatsu:devel',
                 'lines_modified': 400,
                 'commit_msg': 'Add request customer feature 22',
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b190',
+                'author_date': 1410491005,
+                'committer_date': 1410491005,
+                'author_name': 'Jean Bon',
+                'committer_name': 'Jean Bon',
+                'author_email': 'jean.bon@joker.org',
+                'committer_email': 'jean.bon@joker.org',
+                'project':
+                    'https://github.com/amura/kotatsu.git:kotatsu:devel',
+                'lines_modified': 400,
+                'commit_msg': 'Add request customer feature 23',
             }
         ]
         for commit in self.commits:
@@ -119,9 +132,9 @@ class TestCommits(TestCase):
         self.assertEqual(ret[2][0]['commit_msg'], 'Add init method')
 
         ret = self.c.get_commits(mails=['jean.bon@joker.org'])
-        self.assertEqual(ret[1], 4)
+        self.assertEqual(ret[1], 5)
         self.assertEqual(ret[2][0]['commit_msg'],
-                         'Add request customer feature 22')
+                         'Add request customer feature 23')
 
         ret = self.c.get_commits(
             projects=['https://github.com/amura/kotatsu.git:kotatsu:master'])
@@ -151,7 +164,7 @@ class TestCommits(TestCase):
         ret = self.c.get_commits(
             projects=['https://github.com/amura/kotatsu.git:kotatsu:devel',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
-        self.assertEqual(ret[1], 3)
+        self.assertEqual(ret[1], 4)
 
     def test_get_commits_amount(self):
         ret = self.c.get_commits_amount(
@@ -161,7 +174,7 @@ class TestCommits(TestCase):
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org',
              'jean.bon@joker.org'])
-        self.assertEqual(ret, 5)
+        self.assertEqual(ret, 6)
 
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org',
@@ -228,12 +241,25 @@ class TestCommits(TestCase):
         ret = self.c.get_top_projects(
             ['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
-            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 2,
+            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 3,
             u'https://github.com/amura/kotatsu.git:kotatsu:master': 1,
             u'https://github.com/nakata/monkey.git:monkey:master': 2})
 
     def test_get_commits_histo(self):
         ret = self.c.get_commits_histo(
             ['jean.bon@joker.org'])
-        print ret
-        # raise
+        self.assertDictEqual(ret[1][0], {u'key': 1410393600000,
+                                         u'doc_count': 4,
+                                         u'key_as_string': u'2014-09-11'})
+        self.assertDictEqual(ret[1][1], {u'key': 1410480000000,
+                                         u'doc_count': 1,
+                                         u'key_as_string': u'2014-09-12'})
+        ret = self.c.get_commits_histo(
+            ['jean.bon@joker.org'],
+            projects=['https://github.com/amura/kotatsu.git:kotatsu:devel'])
+        self.assertDictEqual(ret[1][0], {u'key': 1410393600000,
+                                         u'doc_count': 2,
+                                         u'key_as_string': u'2014-09-11'})
+        self.assertDictEqual(ret[1][1], {u'key': 1410480000000,
+                                         u'doc_count': 1,
+                                         u'key_as_string': u'2014-09-12'})
