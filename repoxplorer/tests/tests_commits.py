@@ -9,7 +9,7 @@ class TestCommits(TestCase):
     def setUp(self):
         self.con = index.Connector()
         self.c = Commits(self.con)
-        self. commits = [
+        self.commits = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'author_date': 1410456005,

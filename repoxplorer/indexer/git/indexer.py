@@ -49,6 +49,7 @@ class ProjectIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
+        self.project = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
     def git_init(self):
         with cdir(self.local):
@@ -106,7 +107,11 @@ class ProjectIndexer():
         """ Fetch from the index commits mentionned for this project
         and branch.
         """
-        self.already_indexed = []
+        self.already_indexed = [c['_id'] for c in
+                                self.c.get_commits(projects=[self.project],
+                                                   scan=True)]
+        print "Project history is composed of %s commits." % len(
+            self.already_indexed)
 
     def compute_to_index_to_delete(self):
         """ Compute the list of commits (sha) to index and the
@@ -114,12 +119,13 @@ class ProjectIndexer():
         """
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
+        print "Indexer will index %s commits." % len(self.to_index)
+        print "Indexer will delete %s commits." % len(self.to_delete)
 
     def delete_from_index(self, sha, name, uri, branch):
         print "Deleting %s from %s:%s" % (sha, uri, branch)
 
     def add_into_index(self, sha, name, uri, branch):
-        print "Add %s from %s:%s" % (sha, uri, branch)
         d = {}
         obj = self.repo.object_store[sha]
         d['author_date'] = obj.author_time
@@ -131,7 +137,7 @@ class ProjectIndexer():
         d['committer_name'] = obj.committer.split('<')[0].rstrip()
         d['commit_msg'] = obj.message.split('\n', 1)[0]
         d['line_modified'] = self.get_diff_stats(obj)
-        d['project'] = '%s:%s:%s' % (self.uri, self.name, self.branch)
+        d['project'] = self.project
         self.c.add_commit(d)
 
     def index(self):

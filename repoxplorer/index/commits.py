@@ -1,5 +1,6 @@
 import logging
 from elasticsearch import TransportError
+from elasticsearch.helpers import scan as scanner
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,8 @@ class Commits(object):
         return filter
 
     def get_commits(self, mails=[], projects=[],
-                    fromdate=None, todate=None, start=0, limit=100):
+                    fromdate=None, todate=None, start=0, limit=100,
+                    scan=False):
         """ Return the list of commits for authors and/or projects.
         """
 
@@ -130,6 +132,11 @@ class Commits(object):
         body = {
             "filter": self.get_filter(mails, projects),
         }
+
+        if scan:
+            return scanner(self.es, query=body,
+                           index=self.index,
+                           doc_type=self.dbname)
 
         body["filter"]["bool"]["must"].append(
             {
