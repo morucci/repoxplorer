@@ -123,7 +123,6 @@ class TestCommits(TestCase):
 
     def test_get_commit(self):
         ret = self.c.get_commit('3597334f2cb10772950c97ddf2f6cc17b188')
-        print ret
         self.assertEqual(ret['commit_msg'], 'Add request customer feature 21')
 
     def test_get_commits(self):

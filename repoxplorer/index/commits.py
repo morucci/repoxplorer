@@ -58,7 +58,8 @@ class Commits(object):
         """
         try:
             orig = self.get_commit(commit['sha'])
-            commit['projects'].extend(orig['projects'])
+            commit['projects'] = list(
+                set(commit['projects']).union(set(orig['projects'])))
             self.del_commit(sha)
             self.add_commit(commit)
         except Exception, e:
