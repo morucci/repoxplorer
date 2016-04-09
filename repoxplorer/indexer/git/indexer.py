@@ -147,12 +147,15 @@ class ProjectIndexer():
             self.add_into_index(to_index, self.name, self.uri, self.branch)
 
 if __name__ == "__main__":
-    p = ProjectIndexer("exzuul",
-                       "https://github.com/morucci/exzuul.git",
-                       "master")
-    p.git_init()
-    p.git_fetch_branch()
-    p.git_get_commit_obj()
-    p.get_current_commit_indexed()
-    p.compute_to_index_to_delete()
-    p.index()
+    from repoxplorer.index import projects
+    prjs = projects.Projects()
+    for prj in prjs.get_projects():
+        p = ProjectIndexer(prj['name'],
+                           prj['uri'],
+                           prj['branch'])
+        p.git_init()
+        p.git_fetch_branch()
+        p.git_get_commit_obj()
+        p.get_current_commit_indexed()
+        p.compute_to_index_to_delete()
+        p.index()

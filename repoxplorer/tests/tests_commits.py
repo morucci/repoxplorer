@@ -7,7 +7,7 @@ from repoxplorer.index.commits import Commits
 class TestCommits(TestCase):
 
     def setUp(self):
-        self.con = index.Connector()
+        self.con = index.Connector(index='repoxplorertest')
         self.c = Commits(self.con)
         self.commits = [
             {

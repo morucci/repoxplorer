@@ -4,10 +4,10 @@ from elasticsearch import client
 
 
 class Connector(object):
-    def __init__(self, host='localhost', port=9200):
+    def __init__(self, host='localhost', port=9200, index='repoxplorer'):
         self.host = host
         self.port = port
-        self.index = 'repoxplorer'
+        self.index = index
         self.es = client.Elasticsearch([{"host": self.host,
                                          "port": self.port}])
         self.ic = client.IndicesClient(self.es)
