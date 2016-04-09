@@ -77,6 +77,8 @@ class Commits(object):
 
     def del_commit(self, sha):
         try:
+            # TODO need to be smarter to delete only if projects
+            # become empty
             self.es.delete(index=self.index,
                            doc_type=self.dbname,
                            id=sha)

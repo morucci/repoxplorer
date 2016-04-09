@@ -123,7 +123,7 @@ class ProjectIndexer():
         print "Indexer will delete %s commits." % len(self.to_delete)
 
     def delete_from_index(self, sha, name, uri, branch):
-        print "Deleting %s from %s:%s" % (sha, uri, branch)
+        print "TODO: Deleting %s from %s:%s" % (sha, uri, branch)
 
     def add_into_index(self, sha, name, uri, branch):
         d = {}
