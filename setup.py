@@ -1,8 +1,22 @@
-from setuptools import setup, find_packages
+# -*- coding: utf-8 -*-
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from ez_setup import use_setuptools
+    use_setuptools()
+    from setuptools import setup, find_packages
 
-setup(name='repoxplorer',
-      version='1.0',
-      author='Fabien Boucher',
-      author_email='fabien.dot.boucher@gmail.com',
-      url='',
-      packages=find_packages())
+setup(
+    name='repoxplorer',
+    version='0.1',
+    description='',
+    author='',
+    author_email='',
+    install_requires=[
+        "pecan",
+    ],
+    test_suite='repoxplorer',
+    zip_safe=False,
+    include_package_data=True,
+    packages=find_packages(exclude=['ez_setup'])
+)
