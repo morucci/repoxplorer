@@ -1,7 +1,5 @@
 from pecan import expose
 
-from repoxplorer import index
-from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 
 

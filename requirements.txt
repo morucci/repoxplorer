@@ -1,3 +1,4 @@
 pecan
 dulwich
 elasticsearch
+PyYAML

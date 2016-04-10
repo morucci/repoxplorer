@@ -6,11 +6,17 @@
 
 <div id="content">
   <h1>Projects list</h1>
-  <table>
-     % for project in projects:
-     <tr>
-        <td>${project['name']}</td>
-     </tr>
+  <ul>
+     % for project, plist in projects.items():
+     <li><a href="projects/?id=${project}"><b>${project}</b></a>
+       <ul>
+         % for p in plist:
+         <li>
+           <span>${p['uri']}:${p['branch']}</span>
+         </li>
+         % endfor
+       </ul>
+     </li>
      % endfor
-   </table>
+  </ul>
 </div>

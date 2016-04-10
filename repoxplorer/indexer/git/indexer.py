@@ -52,6 +52,8 @@ class ProjectIndexer():
         self.project = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
     def git_init(self):
+        print "Fetched %s %s:%s" % (self.name, self.uri,
+                                    self.branch)
         with cdir(self.local):
             run("git init .")
             if "origin" not in run("git remote -v")[0]:
@@ -119,11 +121,11 @@ class ProjectIndexer():
         """
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
-        print "Indexer will index %s commits." % len(self.to_index)
-        print "Indexer will delete %s commits." % len(self.to_delete)
+        print "Indexer will reference %s commits." % len(self.to_index)
+        print "Indexer will dereference %s commits." % len(self.to_delete)
 
     def delete_from_index(self, sha, name, uri, branch):
-        print "TODO: Deleting %s from %s:%s" % (sha, uri, branch)
+        print "TODO dereference %s from %s:%s" % (sha, uri, branch)
 
     def add_into_index(self, sha, name, uri, branch):
         d = {}
@@ -148,14 +150,17 @@ class ProjectIndexer():
 
 if __name__ == "__main__":
     from repoxplorer.index import projects
-    prjs = projects.Projects()
-    for prj in prjs.get_projects():
-        p = ProjectIndexer(prj['name'],
-                           prj['uri'],
-                           prj['branch'])
-        p.git_init()
-        p.git_fetch_branch()
-        p.git_get_commit_obj()
-        p.get_current_commit_indexed()
-        p.compute_to_index_to_delete()
-        p.index()
+    prjs = projects.Projects().get_projects()
+    for pid, plist in prjs.items():
+        print
+        print "Index project id %s" % pid
+        for prj in plist:
+            p = ProjectIndexer(prj['name'],
+                               prj['uri'],
+                               prj['branch'])
+            p.git_init()
+            p.git_fetch_branch()
+            p.git_get_commit_obj()
+            p.get_current_commit_indexed()
+            p.compute_to_index_to_delete()
+            p.index()
