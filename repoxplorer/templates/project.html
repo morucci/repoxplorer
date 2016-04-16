@@ -6,5 +6,33 @@
 
 <div id="content">
   <h1>Project ${pid}</h1>
-  ${histo}
+   <div id="history">
+   <h2>Commits history</h2>
+   </div>
+  <div id="topauthors">
+  <h2>Top 10 authors</h2>
+  <table>
+   <tr>
+    <th>Amount</th>
+    <th>Email</th>
+   <tr>
+   % for i in top_authors:
+   <tr>
+    <td>${i['amount']}</td>
+    <td>${i['email']}</td>
+   <tr>
+   % endfor
+  </table>
+  </div>
 </div>
+
+<script type="text/javascript">
+  var data = ${histo};
+  var svg = dimple.newSvg("#history", 800, 350);
+  var chart = new dimple.chart(svg, data);
+  chart.addCategoryAxis("x", "date");
+  chart.addMeasureAxis("y", "value");
+  chart.setBounds(30, 30, 750, 250);
+  chart.addSeries(null, dimple.plot.bar);
+  chart.draw();
+</script>

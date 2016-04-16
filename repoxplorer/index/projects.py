@@ -9,7 +9,7 @@ class Projects(object):
             pid = elm.keys()[0]
             self.projects[pid] = []
             for prj in elm[pid]:
-                 self.projects[pid].append(prj)
+                self.projects[pid].append(prj)
 
     def get_projects(self):
         return self.projects

@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from elasticsearch import TransportError
 from elasticsearch.helpers import scan as scanner
 
@@ -122,7 +123,7 @@ class Commits(object):
 
     def get_commits(self, mails=[], projects=[],
                     fromdate=None, todate=None, start=0, limit=100,
-                    scan=False):
+                    sort='desc', scan=False):
         """ Return the list of commits for authors and/or projects.
         """
 
@@ -154,7 +155,7 @@ class Commits(object):
         params['body'] = body
         params['size'] = limit
         params['from_'] = start
-        params['sort'] = "committer_date:desc,author_date:desc"
+        params['sort'] = "committer_date:%s,author_date:%s" % (sort, sort)
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
@@ -357,17 +358,35 @@ class Commits(object):
         if not mails and not projects:
             raise Exception('At least a author email or project is required')
 
+        qfilter = self.get_filter(mails, projects)
+
+        first = self.get_commits(mails, projects, start=0, limit=1, sort='asc')
+        first = first[2][0]['committer_date']
+        last = self.get_commits(mails, projects, start=0, limit=1, sort='desc')
+        last = last[2][0]['committer_date']
+        duration = timedelta(seconds=last) - timedelta(seconds=first)
+        duration = duration.total_seconds()
+
+        # Set resolution by day if duration <= 2 months
+        if (duration / (24 * 3600 * 31)) <= 2:
+            res = 'day'
+        # Set resolution by month if duration <= 3 years
+        elif (duration / (24 * 3600 * 31 * 12)) <= 3:
+            res = 'month'
+        else:
+            res = 'year'
+
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": qfilter,
                 }
             },
             "aggs": {
                 "commits": {
                     "date_histogram": {
                         "field": "author_date",
-                        "interval": "day",
+                        "interval": res,
                         "format": "yyyy-MM-dd",
                     }
                 }
