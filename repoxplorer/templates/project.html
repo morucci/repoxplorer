@@ -5,10 +5,21 @@
 </%def>
 
 <div id="content">
-  <h1>Project ${pid}</h1>
-   <div id="history">
-   <h2>Commits history</h2>
-   </div>
+ <h1>Project ${pid}</h1>
+ <div id="filters">
+ <h2>Filters</h2>
+ </div>
+ <div id="infos">
+  <h2>Project infos</h2>
+  <div>Amount of sub-projects: ${subprojects}</div>
+  <div>Amount of commits: ${commits_amount}</div>
+  <div>Project has been active for: ${duration}</div>
+  <div>Date of first commits: ${first}</div>
+  <div>Date of last commits: ${last}</div>
+ </div>
+ <div id="history">
+  <h2>Commits history</h2>
+  </div>
   <div id="topauthors">
   <h2>Top 10 authors</h2>
   <table>
@@ -23,7 +34,7 @@
    <tr>
    % endfor
   </table>
-  </div>
+ </div>
 </div>
 
 <script type="text/javascript">

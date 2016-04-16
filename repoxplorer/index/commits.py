@@ -349,6 +349,15 @@ class Commits(object):
                for b in res["aggregations"]["top-project"]["buckets"]]
         return took, dict(top)
 
+    def get_commits_time_delta(self, mails=[], projects=[]):
+        first = self.get_commits(mails, projects, start=0, limit=1, sort='asc')
+        first = first[2][0]['committer_date']
+        last = self.get_commits(mails, projects, start=0, limit=1, sort='desc')
+        last = last[2][0]['committer_date']
+        duration = timedelta(seconds=last) - timedelta(seconds=first)
+        duration = duration.total_seconds()
+        return first, last, duration
+
     def get_commits_histo(self, mails=[], projects=[],
                           fromdate=None, todate=None):
         """ Return the histogram of contrib for authors and/or projects.
@@ -359,13 +368,7 @@ class Commits(object):
             raise Exception('At least a author email or project is required')
 
         qfilter = self.get_filter(mails, projects)
-
-        first = self.get_commits(mails, projects, start=0, limit=1, sort='asc')
-        first = first[2][0]['committer_date']
-        last = self.get_commits(mails, projects, start=0, limit=1, sort='desc')
-        last = last[2][0]['committer_date']
-        duration = timedelta(seconds=last) - timedelta(seconds=first)
-        duration = duration.total_seconds()
+        duration = self.get_commits_time_delta(mails, projects)[2]
 
         # Set resolution by day if duration <= 2 months
         if (duration / (24 * 3600 * 31)) <= 2:
