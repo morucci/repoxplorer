@@ -293,8 +293,9 @@ class Commits(object):
         params['size'] = 0
         res = self.es.search(**params)
         took = res['took']
-        print res
-        top = [(b['key'], (b['doc_count'], b['top-author-hits']['hits']['hits'][0]['_source']['author_name']))
+        top = [(b['key'], (b['doc_count'],
+                           b['top-author-hits']['hits']
+                           ['hits'][0]['_source']['author_name']))
                for b in res["aggregations"]["top-author"]["buckets"]]
         return took, dict(top)
 

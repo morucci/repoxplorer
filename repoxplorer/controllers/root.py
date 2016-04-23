@@ -32,8 +32,8 @@ class RootController(object):
         top_authors_s = []
         for k, v in sanitized.items():
             top_authors_s.append({'email': str(k),
-                                 'amount': v[0],
-                                 'name': str(v[1])})
+                                  'amount': v[0],
+                                  'name': str(v[1])})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
                                       reverse=True)
