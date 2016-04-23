@@ -24,7 +24,7 @@ class RootController(object):
                 amount = int(v[0])
             else:
                 main_email = str(k)
-                name = str(v[1])
+                name = v[1].encode('ascii', errors='ignore')
                 amount = int(v[0])
             if k in sanitized:
                 amount += sanitized[k][0]
