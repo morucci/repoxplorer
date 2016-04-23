@@ -254,7 +254,7 @@ class Commits(object):
                 "top-author": {
                     "terms": {
                         "field": "author_email",
-                        "size": 50
+                        "size": 0
                     },
                     "aggs": {
                         "top-author-hits": {
@@ -265,6 +265,11 @@ class Commits(object):
                                             "order": "desc"
                                         }
                                     }],
+                                "_source": {
+                                    "include": [
+                                        "author_name",
+                                    ]
+                                },
                                 "size": 1
                             }
                         }
@@ -288,7 +293,8 @@ class Commits(object):
         params['size'] = 0
         res = self.es.search(**params)
         took = res['took']
-        top = [(b['key'], b['doc_count'])
+        print res
+        top = [(b['key'], (b['doc_count'], b['top-author-hits']['hits']['hits'][0]['_source']['author_name']))
                for b in res["aggregations"]["top-author"]["buckets"]]
         return took, dict(top)
 
@@ -349,10 +355,13 @@ class Commits(object):
                for b in res["aggregations"]["top-project"]["buckets"]]
         return took, dict(top)
 
-    def get_commits_time_delta(self, mails=[], projects=[]):
-        first = self.get_commits(mails, projects, start=0, limit=1, sort='asc')
+    def get_commits_time_delta(self, mails=[], projects=[],
+                               fromdate=None, todate=None):
+        first = self.get_commits(mails, projects, start=0, limit=1, sort='asc',
+                                 fromdate=fromdate, todate=todate)
         first = first[2][0]['committer_date']
-        last = self.get_commits(mails, projects, start=0, limit=1, sort='desc')
+        last = self.get_commits(mails, projects, start=0, limit=1, sort='desc',
+                                fromdate=fromdate, todate=todate)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
         duration = duration.total_seconds()
@@ -368,7 +377,9 @@ class Commits(object):
             raise Exception('At least a author email or project is required')
 
         qfilter = self.get_filter(mails, projects)
-        duration = self.get_commits_time_delta(mails, projects)[2]
+        duration = self.get_commits_time_delta(mails, projects,
+                                               fromdate=fromdate,
+                                               todate=todate)[2]
 
         # Set resolution by day if duration <= 2 months
         if (duration / (24 * 3600 * 31)) <= 2:

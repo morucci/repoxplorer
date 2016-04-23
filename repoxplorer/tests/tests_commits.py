@@ -226,6 +226,8 @@ class TestCommits(TestCase):
     def test_get_top_authors(self):
         ret = self.c.get_top_authors(
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
+        print ret
+        raise
         self.assertDictEqual(ret[1], {u'jean.bon@joker.org': 2,
                                       u'n.suke@joker.org': 1})
 

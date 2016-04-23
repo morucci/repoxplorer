@@ -5,14 +5,21 @@
 </%def>
 
 <div id="content">
- <h1>Project ${pid}</h1>
+ <h1>Project ${pid} details</h1>
  <div id="filters">
  <h2>Filters</h2>
+ <span>From date: <input type="text" id="fromdatepicker"></span>
+ <span>To date: <input type="text" id="todatepicker"></span>
+ <input id="filter" type="button" value="Apply filter" />
+ % if period[0] and period[1]:
+  <p><b>The following project details are extracted from the period from ${period[0]} to ${period[1]}</b></p>
+ % endif
  </div>
  <div id="infos">
   <h2>Project infos</h2>
   <div>Amount of sub-projects: ${subprojects}</div>
   <div>Amount of commits: ${commits_amount}</div>
+  <div>Amount of authors: ${authors_amount}</div>
   <div>Project has been active for: ${duration}</div>
   <div>Date of first commits: ${first}</div>
   <div>Date of last commits: ${last}</div>
@@ -21,16 +28,18 @@
   <h2>Commits history</h2>
   </div>
   <div id="topauthors">
-  <h2>Top 10 authors</h2>
+  <h2>Top 25 authors by commit</h2>
   <table>
    <tr>
     <th>Amount</th>
     <th>Email</th>
+    <th>Name</th>
    <tr>
    % for i in top_authors:
    <tr>
     <td>${i['amount']}</td>
     <td>${i['email']}</td>
+    <td>${i['name']}</td>
    <tr>
    % endfor
   </table>
@@ -46,4 +55,22 @@
   chart.setBounds(30, 30, 750, 250);
   chart.addSeries(null, dimple.plot.bar);
   chart.draw();
+</script>
+<script type="text/javascript">
+  $(function() {
+    $( "#fromdatepicker" ).datepicker();
+    $( "#todatepicker" ).datepicker();
+  });
+</script>
+<script>
+ $("#filter").click(function(){
+  var newlocation = "project.html?pid=${pid}"
+  if ($('#fromdatepicker').val() != '') {
+    newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
+  }
+  if ($('#todatepicker').val() != '') {
+    newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
+  }
+  window.location = newlocation
+});
 </script>
