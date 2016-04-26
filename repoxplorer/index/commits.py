@@ -144,7 +144,7 @@ class Commits(object):
         body["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }
@@ -182,7 +182,7 @@ class Commits(object):
         body["query"]["filtered"]["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }
@@ -221,7 +221,7 @@ class Commits(object):
         body["query"]["filtered"]["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }
@@ -281,7 +281,7 @@ class Commits(object):
         body["query"]["filtered"]["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }
@@ -340,7 +340,7 @@ class Commits(object):
         body["query"]["filtered"]["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }
@@ -411,7 +411,7 @@ class Commits(object):
         body["query"]["filtered"]["filter"]["bool"]["must"].append(
             {
                 "range": {
-                    "author_date": {
+                    "committer_date": {
                         "gte": fromdate,
                         "lt": todate,
                     }

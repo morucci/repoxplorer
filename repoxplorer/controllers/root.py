@@ -26,9 +26,10 @@ class RootController(object):
                 main_email = str(k)
                 name = v[1].encode('ascii', errors='ignore')
                 amount = int(v[0])
-            if k in sanitized:
-                amount += sanitized[k][0]
-            sanitized[main_email] = [amount, name]
+            if main_email in sanitized:
+                sanitized[main_email][0] += amount
+            else:
+                sanitized[main_email] = [amount, name]
         top_authors_s = []
         for k, v in sanitized.items():
             top_authors_s.append({'email': str(k),
