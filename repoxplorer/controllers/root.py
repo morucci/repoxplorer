@@ -45,6 +45,7 @@ class RootController(object):
                                       commits):
         idents = Users().get_users()
         top_authors_modified_s = []
+        sanitized = {}
         for k, v in top_authors_modified[1].items():
             if k in idents:
                 main_email = idents[k][0]
@@ -53,9 +54,15 @@ class RootController(object):
                 main_email = str(k)
                 name = commits.get_commits(
                     [main_email], [], limit=1)[2][0]['author_name']
+            amount = int(v)
+            if main_email in sanitized:
+                sanitized[main_email][0] += amount
+            else:
+                sanitized[main_email] = [amount, name]
+        for k, v in sanitized.items():
             top_authors_modified_s.append({'email': k,
-                                           'amount': int(v),
-                                           'name': name})
+                                           'amount': v[0],
+                                           'name': v[1]})
         top_authors_modified_s_sorted = sorted(
             top_authors_modified_s,
             key=lambda k: k['amount'],
