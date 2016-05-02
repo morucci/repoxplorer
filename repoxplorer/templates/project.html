@@ -1,9 +1,5 @@
 <%inherit file="layout.html" />
 
-<%def name="title()">
-  Welcome to Repoxplorer !
-</%def>
-
 <div id="content">
  <h1>Project ${pid} details</h1>
  <div id="filters">
@@ -29,6 +25,8 @@
   </div>
   <div id="topauthors">
   <h2>Top 25 authors by commit</h2>
+  <div id="topauthors_pie">
+  </div>
   <table>
    <tr>
     <th>Amount</th>
@@ -44,17 +42,54 @@
    % endfor
   </table>
  </div>
+  <div id="topauthors_m">
+  <h2>Top 25 authors by lines modified</h2>
+  <div id="topauthors_m_pie">
+  </div>
+  <table>
+   <tr>
+    <th>Amount</th>
+    <th>Email</th>
+    <th>Name</th>
+   <tr>
+   % for i in top_authors_modified:
+   <tr>
+    <td>${i['amount']}</td>
+    <td>${i['email']}</td>
+    <td>${i['name']}</td>
+   <tr>
+   % endfor
+  </table>
+ </div>
 </div>
 
 <script type="text/javascript">
-  var data = ${histo};
-  var svg = dimple.newSvg("#history", 800, 350);
-  var chart = new dimple.chart(svg, data);
-  chart.addCategoryAxis("x", "date");
-  chart.addMeasureAxis("y", "value");
-  chart.setBounds(30, 30, 750, 250);
-  chart.addSeries(null, dimple.plot.bar);
-  chart.draw();
+  var histo = jQuery.parseJSON('${histo}');
+  var svg_histo = dimple.newSvg("#history", 800, 350);
+  var chart_histo = new dimple.chart(svg_histo, histo);
+  chart_histo.addCategoryAxis("x", "date");
+  chart_histo.addMeasureAxis("y", "value");
+  chart_histo.setBounds(30, 30, 750, 250);
+  chart_histo.addSeries(null, dimple.plot.bar);
+  chart_histo.draw();
+
+  var pie_top = jQuery.parseJSON('${top_authors_pie}');
+  var svg_pie_top = dimple.newSvg("#topauthors_pie", 590, 400);
+  var chart_pie_top = new dimple.chart(svg_pie_top, pie_top);
+  chart_pie_top.setBounds(20, 20, 460, 360)
+  chart_pie_top.addMeasureAxis("p", "amount");
+  chart_pie_top.addSeries("name", dimple.plot.pie);
+  chart_pie_top.addLegend(500, 20, 90, 300, "right");
+  chart_pie_top.draw();
+
+  var pie_top_m = jQuery.parseJSON('${top_authors_modified_pie}');
+  var svg_pie_top_m = dimple.newSvg("#topauthors_m_pie", 590, 400);
+  var chart_pie_top_m = new dimple.chart(svg_pie_top_m, pie_top_m);
+  chart_pie_top_m.setBounds(20, 20, 460, 360)
+  chart_pie_top_m.addMeasureAxis("p", "amount");
+  chart_pie_top_m.addSeries("name", dimple.plot.pie);
+  chart_pie_top_m.addLegend(500, 20, 90, 300, "right");
+  chart_pie_top_m.draw();
 </script>
 <script type="text/javascript">
   $(function() {

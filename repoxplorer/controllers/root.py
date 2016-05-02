@@ -1,3 +1,5 @@
+import json
+
 from pecan import expose
 from datetime import datetime
 
@@ -21,24 +23,44 @@ class RootController(object):
             if k in idents:
                 main_email = idents[k][0]
                 name = idents[k][1]
-                amount = int(v[0])
             else:
                 main_email = str(k)
                 name = v[1].encode('ascii', errors='ignore')
-                amount = int(v[0])
+            amount = int(v[0])
             if main_email in sanitized:
                 sanitized[main_email][0] += amount
             else:
                 sanitized[main_email] = [amount, name]
         top_authors_s = []
         for k, v in sanitized.items():
-            top_authors_s.append({'email': str(k),
+            top_authors_s.append({'email': k,
                                   'amount': v[0],
-                                  'name': str(v[1])})
+                                  'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
                                       reverse=True)
         return top_authors_s_sorted
+
+    def top_authors_modified_sanitize(self, top_authors_modified,
+                                      commits):
+        idents = Users().get_users()
+        top_authors_modified_s = []
+        for k, v in top_authors_modified[1].items():
+            if k in idents:
+                main_email = idents[k][0]
+                name = idents[k][1]
+            else:
+                main_email = str(k)
+                name = commits.get_commits(
+                    [main_email], [], limit=1)[2][0]['author_name']
+            top_authors_modified_s.append({'email': k,
+                                           'amount': int(v),
+                                           'name': name})
+        top_authors_modified_s_sorted = sorted(
+            top_authors_modified_s,
+            key=lambda k: k['amount'],
+            reverse=True)
+        return top_authors_modified_s_sorted
 
     @expose(template='project.html')
     def project(self, pid, dfrom=None, dto=None):
@@ -63,23 +85,38 @@ class RootController(object):
         histo = c.get_commits_histo(projects=p_filter,
                                     fromdate=dfrom,
                                     todate=dto)
-        histo = [{'date': str(d['key_as_string']),
-                  'value': str(d['doc_count'])} for d in histo[1]]
+        histo = [{'date': d['key_as_string'],
+                  'value': d['doc_count']} for d in histo[1]]
+
         top_authors = c.get_top_authors(projects=p_filter,
                                         fromdate=dfrom,
                                         todate=dto)
+        top_authors_modified = c.get_top_authors_by_lines(
+            projects=p_filter,
+            fromdate=dfrom,
+            todate=dto)
+
         top_authors = self.top_authors_sanitize(top_authors)
+        top_authors_modified = self.top_authors_modified_sanitize(
+            top_authors_modified, c)
+
         commits_amount = c.get_commits_amount(
             projects=p_filter,
             fromdate=dfrom,
             todate=dto)
+
         first, last, duration = c.get_commits_time_delta(
             projects=p_filter,
             fromdate=dfrom,
             todate=dto)
+
         return {'pid': pid,
-                'histo': histo,
+                'histo': json.dumps(histo),
                 'top_authors': top_authors[:25],
+                'top_authors_pie': json.dumps(top_authors[:25]),
+                'top_authors_modified': top_authors_modified[:25],
+                'top_authors_modified_pie': json.dumps(
+                    top_authors_modified[:25]),
                 'authors_amount': len(top_authors),
                 'commits_amount': commits_amount,
                 'first': datetime.fromtimestamp(first),

@@ -28,7 +28,7 @@ class Commits(object):
                                         "index": "not_analyzed"},
                     "projects": {"type": "string",
                                  "index": "not_analyzed"},
-                    "lines_modified": {"type": "integer",
+                    "line_modifieds": {"type": "integer",
                                        "index": "not_analyzed"},
                     "commit_msg": {"type": "string"}
                 }
@@ -194,9 +194,9 @@ class Commits(object):
         res = self.es.count(**params)
         return res['count']
 
-    def get_lines_modified_stats(self, mails=[], projects=[],
+    def get_line_modifieds_stats(self, mails=[], projects=[],
                                  fromdate=None, todate=None):
-        """ Return the stats about lines modified for authors and/or projects.
+        """ Return the stats about line modifieds for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
@@ -210,9 +210,9 @@ class Commits(object):
                 }
             },
             "aggs": {
-                "lines_modified_stats": {
+                "line_modifieds_stats": {
                    "stats": {
-                       "field": "lines_modified"
+                       "field": "line_modifieds"
                     }
                 }
             }
@@ -233,7 +233,7 @@ class Commits(object):
         params['size'] = 0
         res = self.es.search(**params)
         took = res['took']
-        return took, res["aggregations"]["lines_modified_stats"]
+        return took, res["aggregations"]["line_modifieds_stats"]
 
     def get_top_authors(self, mails=[], projects=[],
                         fromdate=None, todate=None):
@@ -259,12 +259,6 @@ class Commits(object):
                     "aggs": {
                         "top-author-hits": {
                             "top_hits": {
-                                "sort": [
-                                    {
-                                        "committer_date": {
-                                            "order": "desc"
-                                        }
-                                    }],
                                 "_source": {
                                     "include": [
                                         "author_name",
@@ -297,6 +291,59 @@ class Commits(object):
                            b['top-author-hits']['hits']
                            ['hits'][0]['_source']['author_name']))
                for b in res["aggregations"]["top-author"]["buckets"]]
+        return took, dict(top)
+
+    def get_top_authors_by_lines(self, mails=[], projects=[],
+                                 fromdate=None, todate=None):
+        """ Return the ranking of author emails by modidified lines
+        of codes
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not projects:
+            raise Exception('At least a author email or project is required')
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            "aggs": {
+                "top-author-by-modified": {
+                    "terms": {
+                        "field": "author_email",
+                        "size": 0,
+                    },
+                    "aggs": {
+                        "modified": {
+                            "sum": {
+                                "field": "line_modifieds",
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "committer_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        top = [(b['key'], b['modified']['value'])
+               for b in res["aggregations"]
+               ["top-author-by-modified"]["buckets"]]
         return took, dict(top)
 
     def get_top_projects(self, mails=[], projects=[],

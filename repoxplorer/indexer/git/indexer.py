@@ -138,7 +138,7 @@ class ProjectIndexer():
         d['committer_email'] = obj.committer.split('<')[1].rstrip('>')
         d['committer_name'] = obj.committer.split('<')[0].rstrip()
         d['commit_msg'] = obj.message.split('\n', 1)[0]
-        d['line_modified'] = self.get_diff_stats(obj)
+        d['line_modifieds'] = self.get_diff_stats(obj)
         d['project'] = self.project
         self.c.add_commit(d)
 

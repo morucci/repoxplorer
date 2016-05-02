@@ -20,7 +20,7 @@ class TestCommits(TestCase):
                 'committer_email': 'n.suke@joker.org',
                 'project':
                     'https://github.com/nakata/monkey.git:monkey:master',
-                'lines_modified': 10,
+                'line_modifieds': 10,
                 'commit_msg': 'Add init method',
             },
             {
@@ -33,7 +33,7 @@ class TestCommits(TestCase):
                 'committer_email': 'keiko.a@joker.org',
                 'project':
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
-                'lines_modified': 100,
+                'line_modifieds': 100,
                 'commit_msg': 'Fix sanity unittest',
             },
             {
@@ -46,7 +46,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/nakata/monkey.git:monkey:master',
-                'lines_modified': 200,
+                'line_modifieds': 200,
                 'commit_msg': 'Add request customer feature 19',
             },
             {
@@ -59,7 +59,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/nakata/monkey.git:monkey:master',
-                'lines_modified': 300,
+                'line_modifieds': 300,
                 'commit_msg': 'Add request customer feature 20',
             },
             {
@@ -72,7 +72,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
-                'lines_modified': 400,
+                'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 21',
             },
             {
@@ -85,7 +85,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/amura/kotatsu.git:kotatsu:devel',
-                'lines_modified': 400,
+                'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 21',
             },
             {
@@ -98,7 +98,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/amura/kotatsu.git:kotatsu:devel',
-                'lines_modified': 400,
+                'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 22',
             },
             {
@@ -111,7 +111,7 @@ class TestCommits(TestCase):
                 'committer_email': 'jean.bon@joker.org',
                 'project':
                     'https://github.com/amura/kotatsu.git:kotatsu:devel',
-                'lines_modified': 400,
+                'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 23',
             }
         ]
@@ -208,14 +208,14 @@ class TestCommits(TestCase):
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret, 4)
 
-    def test_get_lines_modified_amount(self):
-        ret = self.c.get_lines_modified_stats(
+    def test_get_line_modifieds_amount(self):
+        ret = self.c.get_line_modifieds_stats(
             ['n.suke@joker.org'])
         self.assertDictEqual(ret[1], {u'avg': 10.0, u'min': 10.0,
                                       u'count': 1, u'max': 10.0,
                                       u'sum': 10.0})
 
-        ret = self.c.get_lines_modified_stats(
+        ret = self.c.get_line_modifieds_stats(
             ['jean.bon@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
@@ -264,3 +264,9 @@ class TestCommits(TestCase):
         self.assertDictEqual(ret[1][1], {u'key': 1410480000000,
                                          u'doc_count': 1,
                                          u'key_as_string': u'2014-09-12'})
+
+    def test_get_top_authors_by_lines(self):
+        ret = self.c.get_top_authors_by_lines(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+        self.assertDictEqual(ret[1], {u'n.suke@joker.org': 10.0,
+                                      u'jean.bon@joker.org': 500.0})
