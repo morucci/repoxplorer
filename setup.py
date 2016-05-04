@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
 
-setup(
-    name='repoxplorer',
+import glob
+
+from distutils.core import setup
+
+setup(name='repoxplorer',
     version='0.1',
-    description='',
-    author='',
-    author_email='',
-    install_requires=[
-        "pecan",
-    ],
-    test_suite='repoxplorer',
-    zip_safe=False,
-    include_package_data=True,
-    packages=find_packages(exclude=['ez_setup'])
+    description='Git repositories statistics and charts. Cross projects and branches.',
+    author='Fabien Boucher',
+    author_email='fabien.dot.boucher@gmail.com',
+    packages=['repoxplorer', 'repoxplorer.index', 'repoxplorer.index',
+              'repoxplorer.indexer.git', 'repoxplorer.controllers'],
+    data_files=[('bin/', ['el-start.sh', 'el-stop.sh']),
+                ('local/share/repoxplorer/public/css/', glob.glob('public/css/*')),
+                ('local/share/repoxplorer/public/javascript/', glob.glob('public/javascripts/*')),
+                ('local/share/repoxplorer/public/images/', glob.glob('public/images/*')),
+                ('local/share/repoxplorer/templates/', glob.glob('templates/*')),
+                ('local/share/repoxplorer/', ['config.py'])],
 )
