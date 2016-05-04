@@ -27,39 +27,43 @@
   <h2>Top 25 authors by commit</h2>
   <div id="topauthors_pie">
   </div>
-  <table>
-   <tr>
-    <th>Amount</th>
-    <th>Email</th>
-    <th>Name</th>
-   <tr>
-   % for i in top_authors:
-   <tr>
-    <td>${i['amount']}</td>
-    <td>${i['email']}</td>
-    <td>${i['name']}</td>
-   <tr>
-   % endfor
-  </table>
+  <div id="topauthors_table">
+   <table>
+    <tr>
+     <th>Amount</th>
+     <th>Email</th>
+     <th>Name</th>
+    <tr>
+    % for i in top_authors:
+    <tr>
+     <td>${i['amount']}</td>
+     <td>${i['email']}</td>
+     <td>${i['name']}</td>
+    <tr>
+    % endfor
+   </table>
+  </div>
  </div>
   <div id="topauthors_m">
   <h2>Top 25 authors by lines modified</h2>
   <div id="topauthors_m_pie">
   </div>
-  <table>
-   <tr>
-    <th>Amount</th>
-    <th>Email</th>
-    <th>Name</th>
-   <tr>
-   % for i in top_authors_modified:
-   <tr>
-    <td>${i['amount']}</td>
-    <td>${i['email']}</td>
-    <td>${i['name']}</td>
-   <tr>
-   % endfor
-  </table>
+  <div id="topauthors_m_table">
+   <table>
+    <tr>
+     <th>Amount</th>
+     <th>Email</th>
+     <th>Name</th>
+    <tr>
+    % for i in top_authors_modified:
+    <tr>
+     <td>${i['amount']}</td>
+     <td>${i['email']}</td>
+     <td>${i['name']}</td>
+    <tr>
+    % endfor
+   </table>
+  </div>
  </div>
 </div>
 
