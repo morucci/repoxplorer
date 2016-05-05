@@ -462,7 +462,7 @@ class Commits(object):
             "aggs": {
                 "commits": {
                     "date_histogram": {
-                        "field": "author_date",
+                        "field": "committer_date",
                         "interval": res,
                         "format": "yyyy-MM-dd",
                     }
