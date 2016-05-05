@@ -1,18 +1,18 @@
 # RepoXplorer
 
-RepoXplorer is small stats and charts utility for GIT repositories.
+RepoXplorer is a small stats and charts utility for GIT repositories.
 Its aims purpose is to ease visualization of stats for one or
 more projects.
 
-RepoXplorer is based on ElasticSearch and Pecan. Once the service is
-started only a web browser is needed to access the user interface.
-
-As lot of projects are composed of multiple sub-projects RepoXplorer let's
-you define how a project is composed and then compute stats across multiple
-sub-projects.
+As lot of projects are composed of multiple sub-projects (server, client,
+libraries). RepoXplorer let's you define how a project is composed and
+then compute stats across multiple sub-projects.
 
 Furthermore it is possible to define author identities by listing
 author' emails and then avoid duplicated author in computed stats.
+
+RepoXplorer rely on ElasticSearch and Pecan. Once the service is
+started only a web browser is needed to access the user interface.
 
 ## How to install
 
@@ -38,7 +38,10 @@ Start the RepoXplorer web app.
 uwsgi --http-socket :8080 --pecan ~repoxplorer/local/share/repoxplorer/config.py
 ```
 
-## Index a GIT project
+## Index a project
+
+Note that Barbican project is composed of two sub-projects: the server
+and the client.
 
 Edit /usr/local/etc/projects.yaml
 
