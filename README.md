@@ -56,7 +56,7 @@ Edit /usr/local/etc/projects.yaml
 Start the GIT indexer
 
 ```Shell
-python ~repoxplorer/lib/python2.7/site-packages/repoxplorer/indexer/git/indexer.py
+python ~repoxplorer/bin/repoxplorer-indexer
 ```
 
 ## Sanitize author identities

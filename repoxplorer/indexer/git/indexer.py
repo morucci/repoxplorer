@@ -162,20 +162,3 @@ class ProjectIndexer():
             self.delete_from_index(to_delete, self.name, self.uri, self.branch)
         for to_index in self.to_index:
             self.add_into_index(to_index, self.name, self.uri, self.branch)
-
-if __name__ == "__main__":
-    from repoxplorer.index import projects
-    prjs = projects.Projects().get_projects()
-    for pid, plist in prjs.items():
-        print
-        print "Index project id %s" % pid
-        for prj in plist:
-            p = ProjectIndexer(prj['name'],
-                               prj['uri'],
-                               prj['branch'])
-            p.git_init()
-            p.git_fetch_branch()
-            p.git_get_commit_obj()
-            p.get_current_commit_indexed()
-            p.compute_to_index_to_delete()
-            p.index()
