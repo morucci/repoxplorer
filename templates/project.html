@@ -80,7 +80,7 @@
   var pie_top = jQuery.parseJSON('${top_authors_pie}');
   var svg_pie_top = dimple.newSvg("#topauthors_pie", 590, 400);
   var chart_pie_top = new dimple.chart(svg_pie_top, pie_top);
-  chart_pie_top.setBounds(20, 20, 460, 360)
+  chart_pie_top.setBounds(20, 20, 400, 340)
   chart_pie_top.addMeasureAxis("p", "amount");
   chart_pie_top.addSeries("name", dimple.plot.pie);
   chart_pie_top.addLegend(500, 20, 90, 300, "right");
@@ -89,7 +89,7 @@
   var pie_top_m = jQuery.parseJSON('${top_authors_modified_pie}');
   var svg_pie_top_m = dimple.newSvg("#topauthors_m_pie", 590, 400);
   var chart_pie_top_m = new dimple.chart(svg_pie_top_m, pie_top_m);
-  chart_pie_top_m.setBounds(20, 20, 460, 360)
+  chart_pie_top_m.setBounds(20, 20, 400, 340)
   chart_pie_top_m.addMeasureAxis("p", "amount");
   chart_pie_top_m.addSeries("name", dimple.plot.pie);
   chart_pie_top_m.addLegend(500, 20, 90, 300, "right");
