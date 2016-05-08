@@ -14,11 +14,22 @@
 
 
 import yaml
+import logging
+
+from pecan import conf
+
+logger = logging.getLogger(__name__)
 
 
 class Users(object):
-    def __init__(self, path="/usr/local/etc/idents.yaml"):
-        self.users = yaml.load(file(path))
+    def __init__(self):
+        path = conf.idents_file_path
+        try:
+            self.users = yaml.load(file(path))
+        except Exception, e:
+            logger.info(
+                'Unable to read idents.yaml (%s). Default is empty.' % e)
+            self.users = {}
         self.idents = {}
 
     def get_users(self):

@@ -1,3 +1,5 @@
+import sys
+
 # Server Specific Configurations
 server = {
     'port': '8080',
@@ -17,6 +19,7 @@ app = {
     }
 }
 
+# Logging configuration
 logging = {
     'root': {'level': 'INFO', 'handlers': ['console']},
     'loggers': {
@@ -47,3 +50,7 @@ logging = {
         }
     }
 }
+
+# RepoXplorer configuration
+projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
+idents_file_path = '%s/local/share/repoxplorer/idents.yaml' % sys.prefix

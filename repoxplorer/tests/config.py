@@ -17,9 +17,5 @@ app = {
     }
 }
 
-# Custom Configurations must be in Python dictionary format::
-#
-# foo = {'bar':'baz'}
-#
-# All configurations are accessible at::
-# pecan.conf
+projects_file_path = None
+idents_file_path = None

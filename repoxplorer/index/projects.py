@@ -14,11 +14,22 @@
 
 
 import yaml
+import logging
+
+from pecan import conf
+
+logger = logging.getLogger(__name__)
 
 
 class Projects(object):
-    def __init__(self, path="/usr/local/etc/projects.yaml"):
-        self.data = yaml.load(file(path))
+    def __init__(self):
+        path = conf.projects_file_path
+        try:
+            self.data = yaml.load(file(path))
+        except Exception, e:
+            logger.info(
+                'Unable to read projects.yaml (%s). Default is empty.' % e)
+            self.data = {}
         self.projects = {}
         for elm in self.data:
             pid = elm.keys()[0]

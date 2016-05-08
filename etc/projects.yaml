@@ -1,0 +1,8 @@
+---
+- Barbican:
+   - name: barbican
+     uri: https://github.com/openstack/barbican
+     branch: master
+   - name: python-barbicanclient
+     uri: https://github.com/openstack/python-barbicanclient
+     branch: master

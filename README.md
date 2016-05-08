@@ -1,7 +1,7 @@
 # RepoXplorer
 
 RepoXplorer is a small stats and charts utility for GIT repositories.
-Its aims purpose is to ease visualization of stats for one or
+Its main purpose is to ease the visualization of stats for one or
 more projects.
 
 As lot of projects are composed of multiple sub-projects (server, client,
@@ -40,10 +40,14 @@ uwsgi --http-socket :8080 --pecan ~repoxplorer/local/share/repoxplorer/config.py
 
 ## Index a project
 
-Note that Barbican project is composed of two sub-projects: the server
-and the client.
+A yaml file should be provisioned with the projects you want to index. The
+file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
 
-Edit /usr/local/etc/projects.yaml
+Below is the default projects.yaml files provided. Note that Barbican project
+is composed of two sub-projects: the server and the client.
+
+Edit this file to add projects you want to index.
+~repoxplorer/local/share/repoxplorer/projects.yaml.
 
 ```YAML
 ---
@@ -56,7 +60,9 @@ Edit /usr/local/etc/projects.yaml
      branch: master
 ```
 
-Start the GIT indexer
+Then start the GIT indexer manually or configure CRON job. The indexer
+will read the projects.yaml file and will index project' commits in the
+ElasticSearch DB.
 
 ```Shell
 python ~repoxplorer/bin/repoxplorer-indexer
@@ -68,7 +74,7 @@ In the example below all contributions for John Doe will be stacked if
 the author email field of the GIT commit object is one of the defined
 emails.
 
-Edit /usr/local/etc/idents.yaml
+Edit ~repoxplorer/local/share/repoxplorer/idents.yaml
 
 ```YAML
 ---
@@ -76,4 +82,15 @@ Edit /usr/local/etc/idents.yaml
   emails:
     - john.doe@server
     - jdoe@server
+
+
+## Run tests
+
+```Shell
+tox
 ```
+
+## Contribute
+
+RepoXplorer is new and should be considered Alpha ! Feel free to help !
+Look at the feature requests list on the Github issue tracker.
