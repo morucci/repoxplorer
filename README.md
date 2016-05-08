@@ -82,7 +82,7 @@ Edit ~repoxplorer/local/share/repoxplorer/idents.yaml
   emails:
     - john.doe@server
     - jdoe@server
-
+```
 
 ## Run tests
 
