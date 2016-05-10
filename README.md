@@ -14,6 +14,8 @@ author' emails and then avoid duplicated author in computed stats.
 RepoXplorer relies on ElasticSearch and Pecan. Once the service is
 started only a web browser is needed to access the user interface.
 
+## A visual overview of the user interface
+
 ![capture 1](https://github.com/morucci/repoxplorer/blob/master/imgs/repoxplorer_capt1.png)
 ![capture 2](https://github.com/morucci/repoxplorer/blob/master/imgs/repoxplorer_capt2.png)
 
