@@ -11,8 +11,11 @@ then compute stats across multiple sub-projects.
 Furthermore it is possible to define author identities by listing
 author' emails and then avoid duplicated author in computed stats.
 
-RepoXplorer rely on ElasticSearch and Pecan. Once the service is
+RepoXplorer relies on ElasticSearch and Pecan. Once the service is
 started only a web browser is needed to access the user interface.
+
+![capture 1](https://github.com/morucci/repoxplorer/imgs/repoxplorer_capt1.png)
+![capture 2](https://github.com/morucci/repoxplorer/imgs/repoxplorer_capt2.png)
 
 ## How to install
 
