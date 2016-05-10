@@ -5,6 +5,8 @@ setup.py
 bin/el-start.sh
 bin/el-stop.sh
 bin/repoxplorer-indexer
+etc/idents.yaml
+etc/projects.yaml
 public/__init__.py
 public/__init__.pyc
 public/css/jquery-ui.css
