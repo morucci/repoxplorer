@@ -16,8 +16,8 @@ started only a web browser is needed to access the user interface.
 
 ## A visual overview of the user interface
 
-![capture 1](https://github.com/morucci/repoxplorer/blob/master/imgs/repoxplorer_capt1.png)
-![capture 2](https://github.com/morucci/repoxplorer/blob/master/imgs/repoxplorer_capt2.png)
+![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer_capt1.png)
+![capture 2](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer_capt1.png)
 
 ## How to install
 
