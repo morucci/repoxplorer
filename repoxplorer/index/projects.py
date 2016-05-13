@@ -22,8 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 class Projects(object):
-    def __init__(self):
-        path = conf.projects_file_path
+    def __init__(self, projects_file_path=None):
+        if projects_file_path:
+            path = projects_file_path
+        else:
+            path = conf.projects_file_path
         try:
             self.data = yaml.load(file(path))
         except Exception, e:

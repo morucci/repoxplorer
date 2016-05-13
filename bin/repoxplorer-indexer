@@ -14,11 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 from repoxplorer.indexer.git import indexer
 from repoxplorer.index import projects
 
+# Should be read from the config file
+# TODO: Utility like this one should take a "-c" option to the config file
+projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
+
 if __name__ == "__main__":
-    prjs = projects.Projects().get_projects()
+    prjs = projects.Projects(projects_file_path).get_projects()
     for pid, plist in prjs.items():
         print
         print "Index project id %s" % pid
