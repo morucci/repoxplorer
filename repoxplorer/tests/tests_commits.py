@@ -6,10 +6,11 @@ from repoxplorer.index.commits import Commits
 
 class TestCommits(TestCase):
 
-    def setUp(self):
-        self.con = index.Connector(index='repoxplorertest')
-        self.c = Commits(self.con)
-        self.commits = [
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.c = Commits(cls.con)
+        cls.commits = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'author_date': 1410456005,
@@ -115,11 +116,12 @@ class TestCommits(TestCase):
                 'commit_msg': 'Add request customer feature 23',
             }
         ]
-        for commit in self.commits:
-            self.c.add_commit(commit)
+        for commit in cls.commits:
+            cls.c.add_commit(commit)
 
-    def tearDown(self):
-        self.con.ic.delete(index=self.con.index)
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
 
     def test_get_commit(self):
         ret = self.c.get_commit('3597334f2cb10772950c97ddf2f6cc17b188')

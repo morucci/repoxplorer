@@ -16,12 +16,17 @@
 import json
 
 from pecan import expose
+from pecan import request
+
 from datetime import datetime
 
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.users import Users
+
+
+indexname = 'repoxplorer'
 
 
 class RootController(object):
@@ -96,7 +101,7 @@ class RootController(object):
             odto = dto
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
-        c = Commits(index.Connector())
+        c = Commits(index.Connector(index=indexname))
         projects = Projects().get_projects()
         project = projects[pid]
         p_filter = []
@@ -147,3 +152,9 @@ class RootController(object):
                              datetime.fromtimestamp(0)),
                 'subprojects': len(project),
                 'period': (odfrom, odto)}
+
+    @expose('json')
+    def commits(self):
+        infos = request.json if request.content_length else {}
+        c = Commits(index.Connector(index=indexname))
+        return c.get_commits(**infos)
