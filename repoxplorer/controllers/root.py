@@ -16,7 +16,6 @@
 import json
 
 from pecan import expose
-from pecan import request
 
 from datetime import datetime
 
@@ -154,7 +153,26 @@ class RootController(object):
                 'period': (odfrom, odto)}
 
     @expose('json')
-    def commits(self):
-        infos = request.json if request.content_length else {}
+    def commits(self, pid, mails=None, start=0, limit=10,
+                dfrom=None, dto=None):
         c = Commits(index.Connector(index=indexname))
-        return c.get_commits(**infos)
+        projects = Projects().get_projects()
+        project = projects[pid]
+        p_filter = []
+        for p in project:
+            p_filter.append("%s:%s:%s" % (p['uri'],
+                                          p['name'],
+                                          p['branch']))
+        if mails:
+            mails = mails.split('+')
+        else:
+            mails = []
+        if dfrom:
+            dfrom = datetime.strptime(
+                    dfrom, "%m/%d/%Y").strftime('%s')
+        if dto:
+            dto = datetime.strptime(
+                    dto, "%m/%d/%Y").strftime('%s')
+        return c.get_commits(projects=p_filter, mails=mails,
+                             fromdate=dfrom, todate=dto,
+                             start=start, limit=limit)

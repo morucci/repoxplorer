@@ -65,6 +65,9 @@
    </table>
   </div>
  </div>
+ <div id="commits">
+  <h2>Project commits</h2>
+ </div>
 </div>
 
 <script type="text/javascript">
@@ -75,4 +78,5 @@
  gen_top_author_pie(pie_top);
  gen_top_author_modified_pie(pie_top_m);
  install_date_pickers('${pid}');
+ get_commits('${pid}');
 </script>

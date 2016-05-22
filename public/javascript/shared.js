@@ -28,10 +28,29 @@ function gen_top_author_modified_pie(pie_top_m) {
   chart_pie_top_m.draw();
 }
 
+function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+
 function install_date_pickers(projectid) {
  $(function() {
+   var dfrom = getUrlParameter('dfrom')
+   var dto = getUrlParameter('dto')
    $( "#fromdatepicker" ).datepicker();
+   $( "#fromdatepicker" ).datepicker('setDate', dfrom);
    $( "#todatepicker" ).datepicker();
+   $( "#todatepicker" ).datepicker('setDate', dto);
  });
 
  $("#filter").click(function(){
@@ -44,4 +63,33 @@ function install_date_pickers(projectid) {
   }
   window.location = newlocation
   });
+}
+
+function get_commits(pid) {
+ $.getJSON(
+   "/commits.json", {pid : pid,
+                     dfrom: getUrlParameter('dfrom'),
+                     dto: getUrlParameter('dto')}
+ ).done(function(data) {
+   $("#commits").append("<table border='1'>");
+   var theader = "<tr>"
+   theader += "<th>Date of commit</th>"
+   theader += "<th>Author</th>"
+   theader += "<th>Committer</th>"
+   theader += "<th>Message</th>"
+   theader += "</tr>"
+   $("#commits table").append(theader);
+   $.each( data[2], function(k, v) {
+    console.log(v);
+    var elm = "<tr>"
+    elm += "<td>" + v['committer_date'] + "</td>"
+    elm += "<td>" + v['author_name'] + "</td>"
+    elm += "<td>" + v['committer_name'] + "</td>"
+    elm += "<td>" + v['commit_msg'] + "</td>"
+    elm += "</tr>"
+    $("#commits table").append(elm);
+   })
+   $("#commits").append("</table>");
+  })
+  .fail(function(err) {console.log(err)})
 }

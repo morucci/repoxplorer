@@ -50,15 +50,10 @@ class TestRootController(FunctionalTest):
         assert response.status_int == 200
 
     def test_get_commits(self):
-        root.indexname = 'repoxplorertest'
-        req = {'mails': [],
-               'projects': [
-                   'https://github.com/nakata/monkey.git:monkey:master'],
-               'fromdate': None,
-               'todate': None,
-               'start': 0,
-               'limit': 15}
-        response = self.app.post_json('/commits.json', req)
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/commits.json?pid=test')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_email'],
                          'n.suke@joker.org')
