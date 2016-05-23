@@ -74,15 +74,22 @@ function get_commits(pid) {
    $("#commits").append("<table border='1'>");
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
+   theader += "<th>Project</th>"
    theader += "<th>Author</th>"
    theader += "<th>Committer</th>"
    theader += "<th>Message</th>"
    theader += "</tr>"
    $("#commits table").append(theader);
    $.each( data[2], function(k, v) {
-    console.log(v);
+    var cmt_date = new Date(1000 * v['committer_date']);
     var elm = "<tr>"
-    elm += "<td>" + v['committer_date'] + "</td>"
+    var projects = ""
+    $.each(v['projects'], function(i, p) {
+      if (i > 0) {projects += "<br>"}
+      projects += p
+    })
+    elm += "<td>" + cmt_date.toUTCString() + "</td>"
+    elm += "<td>" + projects + "</td>"
     elm += "<td>" + v['author_name'] + "</td>"
     elm += "<td>" + v['committer_name'] + "</td>"
     elm += "<td>" + v['commit_msg'] + "</td>"

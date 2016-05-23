@@ -173,6 +173,13 @@ class RootController(object):
         if dto:
             dto = datetime.strptime(
                     dto, "%m/%d/%Y").strftime('%s')
-        return c.get_commits(projects=p_filter, mails=mails,
+        resp = c.get_commits(projects=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit)
+        for cmt in resp[2]:
+            # Remove to verbose details mentionning this commit belong
+            # to projects not included in the search
+            # Also remove the URI part
+            cmt['projects'] = [":".join(p.split(':')[-2:]) for
+                               p in cmt['projects'] if p in p_filter]
+        return resp
