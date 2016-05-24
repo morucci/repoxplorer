@@ -65,13 +65,18 @@ function install_date_pickers(projectid) {
   });
 }
 
-function get_commits(pid) {
+function get_commits(pid, page) {
+ if (page === undefined) {
+   page = 0;
+ }
  $.getJSON(
    "/commits.json", {pid : pid,
+                     start : page,
                      dfrom: getUrlParameter('dfrom'),
                      dto: getUrlParameter('dto')}
  ).done(function(data) {
-   $("#commits").append("<table border='1'>");
+   $("#commits-table").empty()
+   $("#commits-table").append("<table border='1'>");
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
    theader += "<th>Project</th>"
@@ -79,7 +84,7 @@ function get_commits(pid) {
    theader += "<th>Committer</th>"
    theader += "<th>Message</th>"
    theader += "</tr>"
-   $("#commits table").append(theader);
+   $("#commits-table table").append(theader);
    $.each( data[2], function(k, v) {
     var cmt_date = new Date(1000 * v['committer_date']);
     var elm = "<tr>"
@@ -94,9 +99,22 @@ function get_commits(pid) {
     elm += "<td>" + v['committer_name'] + "</td>"
     elm += "<td>" + v['commit_msg'] + "</td>"
     elm += "</tr>"
-    $("#commits table").append(elm);
+    $("#commits-table table").append(elm);
    })
-   $("#commits").append("</table>");
+   $("#commits-table").append("</table>");
   })
   .fail(function(err) {console.log(err)})
+}
+
+function install_paginator(pid, items_amount) {
+ $(function() {
+     $('#paginator').pagination({
+         items: items_amount,
+         itemsOnPage: 10,
+         cssStyle: 'light-theme',
+         onPageClick: function(pageNumber) {
+             get_commits(pid, (pageNumber - 1) * 10)
+         }
+     });
+ });
 }
