@@ -67,7 +67,7 @@ function install_date_pickers(projectid) {
 
 function get_commits(pid, page) {
  if (page === undefined) {
-   page = 0;
+       page = 0;
  }
  $.getJSON(
    "/commits.json", {pid : pid,
@@ -106,9 +106,18 @@ function get_commits(pid, page) {
   .fail(function(err) {console.log(err)})
 }
 
+function check_fragment() {
+    var hash = window.location.hash || "#page-1";
+    hash = hash.match(/^#page-(\d+)$/);
+    if(hash)
+        page = parseInt(hash[1])
+        $("#pagination").pagination('selectPage', page);
+};
+
 function install_paginator(pid, items_amount) {
+ $(window).bind("popstate", check_fragment);
  $(function() {
-     $('#paginator').pagination({
+     $('#pagination').pagination({
          items: items_amount,
          itemsOnPage: 10,
          cssStyle: 'light-theme',
@@ -116,5 +125,6 @@ function install_paginator(pid, items_amount) {
              get_commits(pid, (pageNumber - 1) * 10)
          }
      });
+     check_fragment();
  });
 }
