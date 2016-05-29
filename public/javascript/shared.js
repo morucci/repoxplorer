@@ -3,28 +3,28 @@ function gen_histo(histo) {
   var chart_histo = new dimple.chart(svg_histo, histo);
   chart_histo.addCategoryAxis("x", "date");
   chart_histo.addMeasureAxis("y", "value");
-  chart_histo.setBounds(30, 30, 1200, 200);
+  chart_histo.setBounds(30, 30, 1200, 150);
   chart_histo.addSeries(null, dimple.plot.bar);
   chart_histo.draw();
 }
 
 function gen_top_author_pie(pie_top) {
-  var svg_pie_top = dimple.newSvg("#topauthors_pie", 590, 400);
+  var svg_pie_top = dimple.newSvg("#topauthors_pie", 700, 400);
   var chart_pie_top = new dimple.chart(svg_pie_top, pie_top);
   chart_pie_top.setBounds(20, 20, 400, 340)
   chart_pie_top.addMeasureAxis("p", "amount");
-  chart_pie_top.addSeries("name", dimple.plot.pie);
-  chart_pie_top.addLegend(500, 20, 90, 300, "right");
+  chart_pie_top.addSeries("email", dimple.plot.pie);
+  chart_pie_top.addLegend(500, 20, 200, 390, "right");
   chart_pie_top.draw();
 }
 
 function gen_top_author_modified_pie(pie_top_m) {
-  var svg_pie_top_m = dimple.newSvg("#topauthors_m_pie", 590, 400);
+  var svg_pie_top_m = dimple.newSvg("#topauthors_m_pie", 700, 400);
   var chart_pie_top_m = new dimple.chart(svg_pie_top_m, pie_top_m);
   chart_pie_top_m.setBounds(20, 20, 400, 340)
   chart_pie_top_m.addMeasureAxis("p", "amount");
-  chart_pie_top_m.addSeries("name", dimple.plot.pie);
-  chart_pie_top_m.addLegend(500, 20, 90, 300, "right");
+  chart_pie_top_m.addSeries("email", dimple.plot.pie);
+  chart_pie_top_m.addLegend(500, 20, 200, 300, "right");
   chart_pie_top_m.draw();
 }
 
