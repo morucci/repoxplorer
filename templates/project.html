@@ -1,77 +1,142 @@
 <%inherit file="layout.html" />
 
-<div id="content">
- <h1>Project ${pid} details</h1>
- <div id="filters">
- <h2>Filters</h2>
- <span>From date: <input type="text" id="fromdatepicker"></span>
- <span>To date: <input type="text" id="todatepicker"></span>
- <input id="filter" type="button" value="Apply filter" />
- % if period[0] and period[1]:
-  <p><b>The following project details are extracted from the period between ${period[0]} to ${period[1]}</b></p>
- % endif
- </div>
- <div id="infos">
-  <h2>Project infos</h2>
-  <div>Amount of sub-projects: ${subprojects}</div>
-  <div>Amount of commits: ${commits_amount}</div>
-  <div>Amount of authors: ${authors_amount}</div>
-  <div>Project has been active for: ${duration}</div>
-  <div>Date of first commits: ${first}</div>
-  <div>Date of last commits: ${last}</div>
- </div>
- <div id="history">
-  <h2>Commits history</h2>
-  </div>
-  <div id="topauthors">
-  <h2>Top 25 authors by commit</h2>
-  <div id="topauthors_pie">
-  </div>
-  <div id="topauthors_table">
-   <table>
-    <tr>
-     <th>Amount</th>
-     <th>Email</th>
-     <th>Name</th>
-    <tr>
-    % for i in top_authors:
-    <tr>
-     <td>${i['amount']}</td>
-     <td>${i['email']}</td>
-     <td>${i['name']}</td>
-    <tr>
-    % endfor
-   </table>
+<div class="row-fluid">
+
+ <div class="col-md-12">
+  <div class="jumbotron">
+   <h1>${pid} project details</h1>
+   <p>This page displays some details about the project. You'll find a commit histogram,
+   some pie charts, and commit explorator. Use the filtering box to limit details to a specific
+   time slot.</p>
   </div>
  </div>
-  <div id="topauthors_m">
-  <h2>Top 25 authors by lines modified</h2>
-  <div id="topauthors_m_pie">
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-12">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Filters</b></div>
+   <div class="panel-body">
+    <div id="filters">
+     <span>From date: <input type="text" id="fromdatepicker"></span>
+     <span>To date: <input type="text" id="todatepicker"></span>
+     <input id="filter" type="button" value="Apply filter" />
+     % if period[0] and period[1]:
+     <p><b>The following project details are extracted from the period between ${period[0]} to ${period[1]}</b></p>
+     % endif
+    </div>
+   </div>
   </div>
-  <div id="topauthors_m_table">
-   <table>
-    <tr>
-     <th>Amount</th>
-     <th>Email</th>
-     <th>Name</th>
-    <tr>
-    % for i in top_authors_modified:
-    <tr>
-     <td>${i['amount']}</td>
-     <td>${i['email']}</td>
-     <td>${i['name']}</td>
-    <tr>
-    % endfor
-   </table>
+ </div>
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-3">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Project infos</b></div>
+   <div class="panel-body">
+    <div id="infos">
+     <div><b>Amount of sub-projects:</b> ${subprojects}</div>
+     <div><b>Amount of commits:</b> ${commits_amount}</div>
+     <div><b>Amount of authors:</b> ${authors_amount}</div>
+     <div><b>Project has been active for:</b> ${duration}</div>
+     <div><b>Date of first commits:</b> ${first}</div>
+     <div><b>Date of last commits:</b> ${last}</div>
+    </div>
+   </div>
   </div>
  </div>
- <div id="commits">
-  <h2>Project commits (${commits_amount})</h2>
+
+ <div class="col-md-9">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Commits history</b></div>
+   <div class="panel-body">
+    <div id="history">
+    </div>
+   </div>
+  </div>
  </div>
- <div id="commits-table">
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-6">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Top 25 authors by commit amount</b></div>
+   <div class="panel-body">
+    <div id="topauthors">
+     <div id="topauthors_pie">
+     </div>
+     <div id="topauthors_table">
+      <table class="table table-striped">
+       <tr>
+        <th>Amount</th>
+        <th>Email</th>
+        <th>Name</th>
+       <tr>
+       % for i in top_authors:
+       <tr>
+        <td>${i['amount']}</td>
+        <td>${i['email']}</td>
+        <td>${i['name']}</td>
+       <tr>
+       % endfor
+      </table>
+     </div>
+    </div>
+   </div>
+  </div>
  </div>
- <div id="pagination">
+
+ <div class="col-md-6">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Top 25 authors by amount of line modified</b></div>
+   <div class="panel-body">
+    <div id="topauthors_m">
+     <div id="topauthors_m_pie">
+     </div>
+     <div id="topauthors_m_table">
+      <table class="table table-striped">
+       <tr>
+        <th>Amount</th>
+        <th>Email</th>
+        <th>Name</th>
+       <tr>
+       % for i in top_authors_modified:
+       <tr>
+        <td>${i['amount']}</td>
+        <td>${i['email']}</td>
+        <td>${i['name']}</td>
+       <tr>
+       % endfor
+      </table>
+     </div>
+    </div>
+   </div>
+  </div>
  </div>
+
+<div class="row-fluid">
+ <div class="col-md-12">
+  <div class="panel panel-default">
+   <div class="panel-heading"><b>Project commits (${commits_amount})</b></div>
+   <div id="commits-table">
+   </div>
+   <div class="panel-footer">
+    <div class="block-center">
+     <div id="pagination">
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<div class="row-fluid">
 </div>
 
 <script type="text/javascript">

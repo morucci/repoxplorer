@@ -1,9 +1,9 @@
 function gen_histo(histo) {
-  var svg_histo = dimple.newSvg("#history", 800, 350);
+  var svg_histo = dimple.newSvg("#history", 1240, 250);
   var chart_histo = new dimple.chart(svg_histo, histo);
   chart_histo.addCategoryAxis("x", "date");
   chart_histo.addMeasureAxis("y", "value");
-  chart_histo.setBounds(30, 30, 750, 250);
+  chart_histo.setBounds(30, 30, 1200, 200);
   chart_histo.addSeries(null, dimple.plot.bar);
   chart_histo.draw();
 }
@@ -76,7 +76,7 @@ function get_commits(pid, page) {
                      dto: getUrlParameter('dto')}
  ).done(function(data) {
    $("#commits-table").empty()
-   $("#commits-table").append("<table border='1'>");
+   $("#commits-table").append("<table class=\"table table-striped\">");
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
    theader += "<th>Project</th>"
