@@ -83,6 +83,7 @@ function get_commits(pid, page) {
    theader += "<th>Author</th>"
    theader += "<th>Committer</th>"
    theader += "<th>Message</th>"
+   theader += "<th>Modified lines</th>"
    theader += "</tr>"
    $("#commits-table table").append(theader);
    $.each( data[2], function(k, v) {
@@ -103,6 +104,7 @@ function get_commits(pid, page) {
     } else {
      elm += "<td>" + v['commit_msg'] + "</td>"
     }
+    elm += "<td>" + v['line_modifieds'] + "</td>"
     elm += "</tr>"
     $("#commits-table table").append(elm);
    })
