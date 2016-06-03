@@ -3,6 +3,8 @@
    - name: barbican
      uri: https://github.com/openstack/barbican
      branch: master
+     gitweb: https://github.com/openstack/barbican/commit/%(sha)s
    - name: python-barbicanclient
      uri: https://github.com/openstack/python-barbicanclient
      branch: master
+     gitweb: https://github.com/openstack/python-barbicanclient/commit/%(sha)s

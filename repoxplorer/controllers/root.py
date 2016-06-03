@@ -156,8 +156,8 @@ class RootController(object):
     def commits(self, pid, mails=None, start=0, limit=10,
                 dfrom=None, dto=None):
         c = Commits(index.Connector(index=indexname))
-        projects = Projects().get_projects()
-        project = projects[pid]
+        projects_index = Projects()
+        project = projects_index.get_projects()[pid]
         p_filter = []
         for p in project:
             p_filter.append("%s:%s:%s" % (p['uri'],
@@ -177,6 +177,12 @@ class RootController(object):
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit)
         for cmt in resp[2]:
+            # Compute link to access commit diff based on the
+            # URL template provided in projects.yaml
+            cmt['gitwebs'] = [projects_index.get_gitweb_link(
+                              ":".join(p.split(':')[0:-1])) %
+                              {'sha': cmt['sha']} for
+                              p in cmt['projects'] if p in p_filter]
             # Remove to verbose details mentionning this commit belong
             # to projects not included in the search
             # Also remove the URI part

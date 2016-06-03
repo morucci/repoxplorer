@@ -34,11 +34,18 @@ class Projects(object):
                 'Unable to read projects.yaml (%s). Default is empty.' % e)
             self.data = {}
         self.projects = {}
+        self.gitweb_lookup = {}
         for elm in self.data:
             pid = elm.keys()[0]
             self.projects[pid] = []
             for prj in elm[pid]:
                 self.projects[pid].append(prj)
+                if 'gitweb' in prj:
+                    simple_uri = '%s:%s' % (prj['uri'], prj['name'])
+                    self.gitweb_lookup[simple_uri] = prj['gitweb']
 
     def get_projects(self):
         return self.projects
+
+    def get_gitweb_link(self, simple_uri):
+        return self.gitweb_lookup.get(simple_uri, "")

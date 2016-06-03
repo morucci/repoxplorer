@@ -97,7 +97,12 @@ function get_commits(pid, page) {
     elm += "<td>" + projects + "</td>"
     elm += "<td>" + v['author_name'] + "</td>"
     elm += "<td>" + v['committer_name'] + "</td>"
-    elm += "<td>" + v['commit_msg'] + "</td>"
+    // Just use the first gitweb link atm
+    if (v['gitwebs'][0].length > 0) {
+     elm += "<td><a href=" + v['gitwebs'][0] + ">" + v['commit_msg'] + "</a></td>"
+    } else {
+     elm += "<td>" + v['commit_msg'] + "</td>"
+    }
     elm += "</tr>"
     $("#commits-table table").append(elm);
    })
