@@ -8,26 +8,6 @@ function gen_histo(histo) {
   chart_histo.draw();
 }
 
-function gen_top_author_pie(pie_top) {
-  var svg_pie_top = dimple.newSvg("#topauthors_pie", 700, 400);
-  var chart_pie_top = new dimple.chart(svg_pie_top, pie_top);
-  chart_pie_top.setBounds(20, 20, 400, 340)
-  chart_pie_top.addMeasureAxis("p", "amount");
-  chart_pie_top.addSeries("email", dimple.plot.pie);
-  chart_pie_top.addLegend(500, 20, 200, 390, "right");
-  chart_pie_top.draw();
-}
-
-function gen_top_author_modified_pie(pie_top_m) {
-  var svg_pie_top_m = dimple.newSvg("#topauthors_m_pie", 700, 400);
-  var chart_pie_top_m = new dimple.chart(svg_pie_top_m, pie_top_m);
-  chart_pie_top_m.setBounds(20, 20, 400, 340)
-  chart_pie_top_m.addMeasureAxis("p", "amount");
-  chart_pie_top_m.addSeries("email", dimple.plot.pie);
-  chart_pie_top_m.addLegend(500, 20, 200, 300, "right");
-  chart_pie_top_m.draw();
-}
-
 function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
         sURLVariables = sPageURL.split('&'),

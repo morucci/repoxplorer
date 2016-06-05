@@ -69,21 +69,34 @@
   <div class="panel panel-default">
    <div class="panel-heading"><b>Top 25 authors by commit amount</b></div>
    <div class="panel-body">
-    <div id="topauthors">
-     <div id="topauthors_pie">
+    <div id="topauthors_gravatar">
+     <div class="row-fluid">
+      % for n, i in enumerate(top_authors[0:3], start=1):
+      <div class="col-md-4">
+       <div align="center"><p><b><h3>Rank ${n}</h3></b></p></div>
+       <div align="center"><p><b><h4>${i['amount']} commits</h4></b></p></div>
+       <div align="center">
+        <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+       </div>
+       <div align="center"><p><b><h3>${i['name']}</h3></b></p></div>
+      </div>
+      % endfor
      </div>
+    </div>
+    <hr />
+    <div id="topauthors">
      <div id="topauthors_table">
       <table class="table table-striped">
        <tr>
-        <th>Amount</th>
-        <th>Email</th>
+        <th>Rank</th>
         <th>Name</th>
+        <th>Amount</th>
        <tr>
-       % for i in top_authors:
+       % for n, i in enumerate(top_authors[3:], start=3):
        <tr>
-        <td>${i['amount']}</td>
-        <td>${i['email']}</td>
+        <td>${n}</td>
         <td>${i['name']}</td>
+        <td>${i['amount']}</td>
        <tr>
        % endfor
       </table>
@@ -97,21 +110,34 @@
   <div class="panel panel-default">
    <div class="panel-heading"><b>Top 25 authors by amount of line modified</b></div>
    <div class="panel-body">
-    <div id="topauthors_m">
-     <div id="topauthors_m_pie">
+    <div id="topauthors_m_gravatar">
+     <div class="row-fluid">
+      % for n, i in enumerate(top_authors_modified[0:3], start=1):
+      <div class="col-md-4">
+       <div align="center"><p><b><h3>Rank ${n}</h3></b></p></div>
+       <div align="center"><p><b><h4>${i['amount']} line modifieds</h4></b></p></div>
+       <div align="center">
+        <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+       </div>
+       <div align="center"><p><b><h3>${i['name']}</h3></b></p></div>
+      </div>
+      % endfor
      </div>
+    </div>
+    <hr />
+    <div id="topauthors_m">
      <div id="topauthors_m_table">
       <table class="table table-striped">
        <tr>
-        <th>Amount</th>
-        <th>Email</th>
+        <th>Rank</th>
         <th>Name</th>
+        <th>Amount</th>
        <tr>
-       % for i in top_authors_modified:
+       % for n, i in enumerate(top_authors_modified[3:], start=3):
        <tr>
-        <td>${i['amount']}</td>
-        <td>${i['email']}</td>
+        <td>${n}</td>
         <td>${i['name']}</td>
+        <td>${i['amount']}</td>
        <tr>
        % endfor
       </table>
@@ -141,11 +167,7 @@
 
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
- var pie_top = jQuery.parseJSON('${top_authors_pie}');
- var pie_top_m = jQuery.parseJSON('${top_authors_modified_pie}');
  gen_histo(histo);
- gen_top_author_pie(pie_top);
- gen_top_author_modified_pie(pie_top_m);
  install_date_pickers('${pid}');
  install_paginator('${pid}', '${commits_amount}');
  get_commits('${pid}');

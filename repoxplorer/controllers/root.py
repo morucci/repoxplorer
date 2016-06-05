@@ -14,6 +14,7 @@
 
 
 import json
+import hashlib
 
 from pecan import expose
 
@@ -52,9 +53,11 @@ class RootController(object):
                 sanitized[main_email] = [amount, name]
         top_authors_s = []
         for k, v in sanitized.items():
-            top_authors_s.append({'email': k,
-                                  'amount': v[0],
-                                  'name': v[1]})
+            top_authors_s.append(
+                {'email': k,
+                 'gravatar': hashlib.md5(k).hexdigest(),
+                 'amount': v[0],
+                 'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
                                       reverse=True)
@@ -79,9 +82,11 @@ class RootController(object):
             else:
                 sanitized[main_email] = [amount, name]
         for k, v in sanitized.items():
-            top_authors_modified_s.append({'email': k,
-                                           'amount': v[0],
-                                           'name': v[1]})
+            top_authors_modified_s.append(
+                {'email': k,
+                 'gravatar': hashlib.md5(k).hexdigest(),
+                 'amount': v[0],
+                 'name': v[1]})
         top_authors_modified_s_sorted = sorted(
             top_authors_modified_s,
             key=lambda k: k['amount'],
@@ -139,10 +144,7 @@ class RootController(object):
         return {'pid': pid,
                 'histo': json.dumps(histo),
                 'top_authors': top_authors[:25],
-                'top_authors_pie': json.dumps(top_authors[:25]),
                 'top_authors_modified': top_authors_modified[:25],
-                'top_authors_modified_pie': json.dumps(
-                    top_authors_modified[:25]),
                 'authors_amount': len(top_authors),
                 'commits_amount': commits_amount,
                 'first': datetime.fromtimestamp(first),
