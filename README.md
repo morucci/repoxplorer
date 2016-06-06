@@ -39,7 +39,7 @@ container.
 Start the RepoXplorer web app.
 
 ```Shell
-uwsgi --http-socket :8080 --pecan ~repoxplorer/local/share/repoxplorer/config.py
+uwsgi --http-socket :8080 --pecan ~/repoxplorer/local/share/repoxplorer/config.py
 ```
 
 ## Index a project
@@ -51,7 +51,7 @@ Below is the default projects.yaml files provided. Note that Barbican project
 is composed of two sub-projects: the server and the client.
 
 Edit this file to add projects you want to index.
-~repoxplorer/local/share/repoxplorer/projects.yaml.
+~/repoxplorer/local/share/repoxplorer/projects.yaml.
 
 ```YAML
 ---
@@ -71,7 +71,7 @@ will read the projects.yaml file and will index project' commits in the
 ElasticSearch DB.
 
 ```Shell
-python ~repoxplorer/bin/repoxplorer-indexer
+python ~/repoxplorer/bin/repoxplorer-indexer
 ```
 
 ## Sanitize author identities
@@ -80,7 +80,7 @@ In the example below all contributions for John Doe will be stacked if
 the author email field of the GIT commit object is one of the defined
 emails.
 
-Edit ~repoxplorer/local/share/repoxplorer/idents.yaml
+Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
 
 ```YAML
 ---
