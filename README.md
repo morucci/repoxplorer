@@ -16,8 +16,7 @@ started only a web browser is needed to access the user interface.
 
 ## A visual overview of the user interface
 
-![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer_capt1.png)
-![capture 2](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer_capt2.png)
+![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer.jpg)
 
 ## How to install
 
@@ -60,9 +59,11 @@ Edit this file to add projects you want to index.
    - name: barbican
      uri: https://github.com/openstack/barbican
      branch: master
+     gitweb: https://github.com/openstack/barbican/commit/%(sha)s
    - name: python-barbicanclient
      uri: https://github.com/openstack/python-barbicanclient
      branch: master
+     gitweb: https://github.com/openstack/python-barbicanclient/commit/%(sha)s
 ```
 
 Then start the GIT indexer manually or configure CRON job. The indexer
@@ -98,4 +99,10 @@ tox
 ## Contribute
 
 RepoXplorer is new and should be considered Alpha ! Feel free to help !
-Look at the feature requests list on the Github issue tracker.
+Look at the feature requests list on the Github issue tracker:
+
+- [Feature requests](https://github.com/morucci/repoxplorer/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement)
+
+If you find an issue please fill a bug report here:
+
+- [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
