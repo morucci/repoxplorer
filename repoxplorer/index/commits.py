@@ -17,6 +17,7 @@ import logging
 from datetime import timedelta
 from elasticsearch import TransportError
 from elasticsearch.helpers import scan as scanner
+from elasticsearch.helpers import bulk
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ class Commits(object):
             logger.info('Unable to index commit (%s). %s' % (commit, e))
 
     def update_commit(self, sha, commit):
-        """ This is used only when we need to tag a commit
+        """ This is used only when we need to tag the same commit
         in another project or branch.
         """
         try:
@@ -81,6 +82,9 @@ class Commits(object):
             self.add_commit(commit)
         except Exception, e:
             logger.info('Unable to update commit (%s). %s' % (commit, e))
+
+    def add_commits_bulk(self, commits):
+        return bulk(self.es, commits, raise_on_error=False)
 
     def get_commit(self, sha):
         try:

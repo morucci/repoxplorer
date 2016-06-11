@@ -142,7 +142,7 @@ class ProjectIndexer():
     def delete_from_index(self, sha, name, uri, branch):
         print "TODO dereference %s from %s:%s" % (sha, uri, branch)
 
-    def add_into_index(self, sha, name, uri, branch):
+    def add_into_index(self, sha):
         d = {}
         obj = self.repo.object_store[sha]
         d['author_date'] = obj.author_time
@@ -157,8 +157,42 @@ class ProjectIndexer():
         d['project'] = self.project
         self.c.add_commit(d)
 
+    def bulk_index_generator(self, sha_list, index_name):
+        for sha in sha_list:
+            d = {}
+            d['_index'] = index_name
+            d['_op_type'] = 'create'
+            d['_type'] = 'commits'
+            d['_id'] = sha
+            obj = self.repo.object_store[sha]
+            source = {}
+            source['author_date'] = obj.author_time
+            source['committer_date'] = obj.commit_time
+            source['sha'] = obj.id
+            source['author_email'] = obj.author.split('<')[1].rstrip('>')
+            source['author_name'] = obj.author.split('<')[0].rstrip()
+            source['committer_email'] = obj.committer.split('<')[1].rstrip('>')
+            source['committer_name'] = obj.committer.split('<')[0].rstrip()
+            source['commit_msg'] = obj.message.split('\n', 1)[0]
+            source['line_modifieds'] = self.get_diff_stats(obj)
+            source['projects'] = [self.project, ]
+            d['_source'] = source
+            yield d
+
     def index(self):
         for to_delete in self.to_delete:
             self.delete_from_index(to_delete, self.name, self.uri, self.branch)
-        for to_index in self.to_index:
-            self.add_into_index(to_index, self.name, self.uri, self.branch)
+        stats = self.c.add_commits_bulk(
+            self.bulk_index_generator(self.to_index, self.c.index))
+        print "%s commits created" % stats[0]
+        if stats[1]:
+            # Expected errors and we want to update docs
+            # This actual code is slow and need to be managed by
+            # bulk (eg. fetch all existing commits, update them client side
+            # then update by bulk.
+            print "%s commits will be updated (slow)" % len(stats[1])
+            for i in stats[1]:
+                # Conflict SHA already indexed on another project or branch
+                if i['create']['status'] == 409:
+                    cid = i['create']['_id']
+                    self.add_into_index(cid)
