@@ -159,6 +159,7 @@ class RootController(object):
                 dfrom=None, dto=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
+        idents = Users().get_users()
         project = projects_index.get_projects()[pid]
         p_filter = []
         for p in project:
@@ -190,4 +191,8 @@ class RootController(object):
             # Also remove the URI part
             cmt['projects'] = [":".join(p.split(':')[-2:]) for
                                p in cmt['projects'] if p in p_filter]
+            # Request the ident index to fetch author/committer name
+            for elm in ('author', 'committer'):
+                if idents.get(cmt['%s_email' % elm]):
+                    cmt['%s_name' % elm] = idents.get(cmt['%s_email' % elm])[1]
         return resp
