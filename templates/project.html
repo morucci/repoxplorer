@@ -73,7 +73,15 @@
      <div class="row-fluid">
       % for n, i in enumerate(top_authors[0:3], start=1):
       <div class="col-md-4">
-       <div align="center"><p><b><h3>Rank ${n}</h3></b></p></div>
+       <%
+        if n == 1:
+         n = "1 st"
+        elif n == 2:
+         n = "2 nd"
+        elif n == 3:
+         n = "3 rd"
+       %>
+       <div align="center"><p><b><h3>${n}</h3></b></p></div>
        <div align="center"><p><b><h4>${i['amount']} commits</h4></b></p></div>
        <div align="center">
         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
@@ -92,7 +100,7 @@
         <th>Name</th>
         <th>Amount</th>
        <tr>
-       % for n, i in enumerate(top_authors[3:], start=3):
+       % for n, i in enumerate(top_authors[3:], start=4):
        <tr>
         <td>${n}</td>
         <td>${i['name']}</td>
@@ -114,7 +122,15 @@
      <div class="row-fluid">
       % for n, i in enumerate(top_authors_modified[0:3], start=1):
       <div class="col-md-4">
-       <div align="center"><p><b><h3>Rank ${n}</h3></b></p></div>
+       <%
+        if n == 1:
+         n = "1 st"
+        elif n == 2:
+         n = "2 nd"
+        elif n == 3:
+         n = "3 rd"
+       %>
+       <div align="center"><p><b><h3>${n}</h3></b></p></div>
        <div align="center"><p><b><h4>${i['amount']} line modifieds</h4></b></p></div>
        <div align="center">
         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
@@ -133,7 +149,7 @@
         <th>Name</th>
         <th>Amount</th>
        <tr>
-       % for n, i in enumerate(top_authors_modified[3:], start=3):
+       % for n, i in enumerate(top_authors_modified[3:], start=4):
        <tr>
         <td>${n}</td>
         <td>${i['name']}</td>
