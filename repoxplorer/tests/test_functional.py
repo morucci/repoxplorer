@@ -22,13 +22,12 @@ class TestRootController(FunctionalTest):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'project':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                'projects': [
+                    'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
             }]
-        for commit in cls.commits:
-            cls.c.add_commit(commit)
+        cls.c.add_commits(cls.commits)
         cls.projects = {'test': [
             {'uri': 'https://github.com/nakata/monkey.git',
              'name': 'monkey',

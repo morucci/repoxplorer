@@ -64,7 +64,7 @@ class RootController(object):
         return top_authors_s_sorted
 
     def top_authors_modified_sanitize(self, top_authors_modified,
-                                      commits):
+                                      commits, top_amount=25):
         idents = Users().get_users()
         top_authors_modified_s = []
         sanitized = {}
@@ -74,8 +74,7 @@ class RootController(object):
                 name = idents[k][1]
             else:
                 main_email = str(k)
-                name = commits.get_commits(
-                    [main_email], [], limit=1)[2][0]['author_name']
+                name = None
             amount = int(v)
             if main_email in sanitized:
                 sanitized[main_email][0] += amount
@@ -90,7 +89,14 @@ class RootController(object):
         top_authors_modified_s_sorted = sorted(
             top_authors_modified_s,
             key=lambda k: k['amount'],
-            reverse=True)
+            reverse=True)[:top_amount]
+        top_authors_modified_s_sorted = top_authors_modified_s_sorted
+        for author in top_authors_modified_s_sorted:
+            # Get author name if not known in ident
+            if author['name']:
+                continue
+            author['name'] = commits.get_commits(
+                [author['email']], [], limit=1)[2][0]['author_name']
         return top_authors_modified_s_sorted
 
     @expose(template='project.html')
@@ -129,7 +135,7 @@ class RootController(object):
 
         top_authors = self.top_authors_sanitize(top_authors)
         top_authors_modified = self.top_authors_modified_sanitize(
-            top_authors_modified, c)
+            top_authors_modified, c, top_amount=25)
 
         commits_amount = c.get_commits_amount(
             projects=p_filter,
@@ -144,7 +150,7 @@ class RootController(object):
         return {'pid': pid,
                 'histo': json.dumps(histo),
                 'top_authors': top_authors[:25],
-                'top_authors_modified': top_authors_modified[:25],
+                'top_authors_modified': top_authors_modified,
                 'authors_amount': len(top_authors),
                 'commits_amount': commits_amount,
                 'first': datetime.fromtimestamp(first),
@@ -172,10 +178,10 @@ class RootController(object):
             mails = []
         if dfrom:
             dfrom = datetime.strptime(
-                    dfrom, "%m/%d/%Y").strftime('%s')
+                dfrom, "%m/%d/%Y").strftime('%s')
         if dto:
             dto = datetime.strptime(
-                    dto, "%m/%d/%Y").strftime('%s')
+                dto, "%m/%d/%Y").strftime('%s')
         resp = c.get_commits(projects=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit)

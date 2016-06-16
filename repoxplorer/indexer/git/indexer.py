@@ -139,60 +139,70 @@ class ProjectIndexer():
         print "Indexer will reference %s commits." % len(self.to_index)
         print "Indexer will dereference %s commits." % len(self.to_delete)
 
-    def delete_from_index(self, sha, name, uri, branch):
-        print "TODO dereference %s from %s:%s" % (sha, uri, branch)
-
-    def add_into_index(self, sha):
-        d = {}
-        obj = self.repo.object_store[sha]
-        d['author_date'] = obj.author_time
-        d['committer_date'] = obj.commit_time
-        d['sha'] = obj.id
-        d['author_email'] = obj.author.split('<')[1].rstrip('>')
-        d['author_name'] = obj.author.split('<')[0].rstrip()
-        d['committer_email'] = obj.committer.split('<')[1].rstrip('>')
-        d['committer_name'] = obj.committer.split('<')[0].rstrip()
-        d['commit_msg'] = obj.message.split('\n', 1)[0]
-        d['line_modifieds'] = self.get_diff_stats(obj)
-        d['project'] = self.project
-        self.c.add_commit(d)
-
-    def bulk_index_generator(self, sha_list, index_name):
+    def cmt_list_generator(self, sha_list):
+        # TODO: use multiprocessing here
+        total = len(sha_list)
+        consumed = 0
         for sha in sha_list:
-            d = {}
-            d['_index'] = index_name
-            d['_op_type'] = 'create'
-            d['_type'] = 'commits'
-            d['_id'] = sha
+            consumed += 1
+            if consumed % 500 == 0:
+                print "indexing %s/%s ..." % (consumed, total)
             obj = self.repo.object_store[sha]
             source = {}
-            source['author_date'] = obj.author_time
-            source['committer_date'] = obj.commit_time
-            source['sha'] = obj.id
-            source['author_email'] = obj.author.split('<')[1].rstrip('>')
-            source['author_name'] = obj.author.split('<')[0].rstrip()
-            source['committer_email'] = obj.committer.split('<')[1].rstrip('>')
-            source['committer_name'] = obj.committer.split('<')[0].rstrip()
-            source['commit_msg'] = obj.message.split('\n', 1)[0]
-            source['line_modifieds'] = self.get_diff_stats(obj)
-            source['projects'] = [self.project, ]
-            d['_source'] = source
-            yield d
+            source[u'author_date'] = obj.author_time
+            source[u'committer_date'] = obj.commit_time
+            source[u'sha'] = obj.id
+            source[u'author_email'] = obj.author.split(
+                '<')[1].rstrip('>')
+            source[u'author_name'] = obj.author.split(
+                '<')[0].rstrip().decode('utf-8')
+            source[u'committer_email'] = obj.committer.split(
+                '<')[1].rstrip('>')
+            source[u'committer_name'] = obj.committer.split(
+                '<')[0].rstrip().decode('utf-8')
+            source[u'commit_msg'] = obj.message.split('\n', 1)[0]
+            source[u'line_modifieds'] = self.get_diff_stats(obj)
+            source[u'projects'] = [self.project, ]
+            yield source
 
     def index(self):
-        for to_delete in self.to_delete:
-            self.delete_from_index(to_delete, self.name, self.uri, self.branch)
-        stats = self.c.add_commits_bulk(
-            self.bulk_index_generator(self.to_index, self.c.index))
-        print "%s commits created" % stats[0]
-        if stats[1]:
-            # Expected errors and we want to update docs
-            # This actual code is slow and need to be managed by
-            # bulk (eg. fetch all existing commits, update them client side
-            # then update by bulk.
-            print "%s commits will be updated (slow)" % len(stats[1])
-            for i in stats[1]:
-                # Conflict SHA already indexed on another project or branch
-                if i['create']['status'] == 409:
-                    cid = i['create']['_id']
-                    self.add_into_index(cid)
+        # check whether a commit should be completly delete or
+        # updated by removing the project from the projects field
+        if self.to_delete:
+            res = self.c.get_commits_by_id(list(self.to_delete))
+            docs = [c['_source'] for
+                    c in res['docs'] if c['found'] is True]
+            to_delete = [c['sha'] for
+                         c in docs if len(c['projects']) == 1]
+            to_delete_update = [c['sha'] for
+                                c in docs if len(c['projects']) > 1]
+
+            print "%s commits will be delete ..." % len(to_delete)
+            self.c.del_commits(to_delete)
+
+            print "%s commits belonging to other projects " \
+                  "will be updated ..." % len(to_delete_update)
+            res = self.c.get_commits_by_id(to_delete_update)
+            if res:
+                original_commits = [c['_source'] for
+                                    c in res['docs']]
+                for c in original_commits:
+                    c['projects'].remove(self.project)
+                self.c.update_commits(original_commits)
+
+        # check whether a commit should be created or
+        # updated by adding the project into the projects field
+        if self.to_index:
+            res = self.c.get_commits_by_id(list(self.to_index))
+            to_update = [c['_source'] for
+                         c in res['docs'] if c['found'] is True]
+            to_create = [c['_id'] for
+                         c in res['docs'] if c['found'] is False]
+            print "%s commits will be created ..." % len(to_create)
+            self.c.add_commits(self.cmt_list_generator(to_create))
+
+            print "%s commits already indexed and need to be updated" % len(
+                to_update)
+            for c in to_update:
+                c['projects'].append(self.project)
+                self.c.update_commits(to_update)

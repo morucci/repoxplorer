@@ -28,4 +28,5 @@ class Connector(object):
         self.ic = client.IndicesClient(self.es)
         if not self.ic.exists(index=self.index):
             self.ic.create(index=self.index)
-            time.sleep(0.1)
+            # Give some time to have the index fully created
+            time.sleep(1)

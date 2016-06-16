@@ -19,8 +19,8 @@ class TestCommits(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'project':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                'projects': [
+                    'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
             },
@@ -32,8 +32,8 @@ class TestCommits(TestCase):
                 'committer_name': 'Keiko Amura',
                 'author_email': 'keiko.a@joker.org',
                 'committer_email': 'keiko.a@joker.org',
-                'project':
-                    'https://github.com/amura/kotatsu.git:kotatsu:master',
+                'projects': [
+                    'https://github.com/amura/kotatsu.git:kotatsu:master', ],
                 'line_modifieds': 100,
                 'commit_msg': 'Fix sanity unittest',
             },
@@ -45,8 +45,8 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'project':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                'projects': [
+                    'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 200,
                 'commit_msg': 'Add request customer feature 19',
             },
@@ -58,8 +58,8 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'project':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                'projects': [
+                    'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 300,
                 'commit_msg': 'Add request customer feature 20',
             },
@@ -71,21 +71,9 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'project':
+                'projects': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
-                'line_modifieds': 400,
-                'commit_msg': 'Add request customer feature 21',
-            },
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b188',
-                'author_date': 1410460005,
-                'committer_date': 1410460005,
-                'author_name': 'Jean Bon',
-                'committer_name': 'Jean Bon',
-                'author_email': 'jean.bon@joker.org',
-                'committer_email': 'jean.bon@joker.org',
-                'project':
-                    'https://github.com/amura/kotatsu.git:kotatsu:devel',
+                    'https://github.com/amura/kotatsu.git:kotatsu:devel'],
                 'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 21',
             },
@@ -97,8 +85,8 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'project':
-                    'https://github.com/amura/kotatsu.git:kotatsu:devel',
+                'projects': [
+                    'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 22',
             },
@@ -110,14 +98,13 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'project':
-                    'https://github.com/amura/kotatsu.git:kotatsu:devel',
+                'projects': [
+                    'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
                 'commit_msg': 'Add request customer feature 23',
             }
         ]
-        for commit in cls.commits:
-            cls.c.add_commit(commit)
+        cls.c.add_commits(cls.commits)
 
     @classmethod
     def tearDownClass(cls):

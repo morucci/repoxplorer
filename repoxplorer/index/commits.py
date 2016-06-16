@@ -15,7 +15,6 @@
 
 import logging
 from datetime import timedelta
-from elasticsearch import TransportError
 from elasticsearch.helpers import scan as scanner
 from elasticsearch.helpers import bulk
 
@@ -53,38 +52,41 @@ class Commits(object):
         self.ic.put_mapping(index=self.index, doc_type=self.dbname,
                             body=self.mapping)
 
-    def add_commit(self, commit):
-        if 'projects' not in commit:
-            commit['projects'] = [commit['project'], ]
-        if 'project' in commit.keys():
-            del commit['project']
-        try:
-            self.es.create(index=self.index,
-                           doc_type=self.dbname,
-                           id=commit['sha'],
-                           body=commit)
-            self.es.indices.refresh(index=self.index)
-        except TransportError, e:
-            if e.status_code == 409:
-                self.update_commit(commit['sha'], commit)
-        except Exception, e:
-            logger.info('Unable to index commit (%s). %s' % (commit, e))
+    def add_commits(self, source_it):
+        def gen(it):
+            for source in it:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'create'
+                d['_id'] = source['sha']
+                d['_source'] = source
+                yield d
+        bulk(self.es, gen(source_it))
+        self.es.indices.refresh(index=self.index)
 
-    def update_commit(self, sha, commit):
-        """ This is used only when we need to tag the same commit
-        in another project or branch.
+    def update_commits(self, source_it):
+        """ Take the sha from each doc and use
+        it to reference the doc id to delete then
+        create the doc. The doc needs to be already updated.
         """
-        try:
-            orig = self.get_commit(commit['sha'])
-            commit['projects'] = list(
-                set(commit['projects']).union(set(orig['projects'])))
-            self.del_commit(sha)
-            self.add_commit(commit)
-        except Exception, e:
-            logger.info('Unable to update commit (%s). %s' % (commit, e))
-
-    def add_commits_bulk(self, commits):
-        return bulk(self.es, commits, raise_on_error=False)
+        def gen(it):
+            for source in it:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'delete'
+                d['_id'] = source['sha']
+                yield d
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'create'
+                d['_id'] = source['sha']
+                d['_source'] = source
+                yield d
+        bulk(self.es, gen(source_it))
+        self.es.indices.refresh(index=self.index)
 
     def get_commit(self, sha):
         try:
@@ -95,16 +97,28 @@ class Commits(object):
         except Exception, e:
             logger.info('Unable to get commit (%s). %s' % (sha, e))
 
-    def del_commit(self, sha):
+    def get_commits_by_id(self, sha_list):
+        body = {"ids": sha_list}
         try:
-            # TODO need to be smarter to delete only if projects
-            # become empty
-            self.es.delete(index=self.index,
-                           doc_type=self.dbname,
-                           id=sha)
-            self.es.indices.refresh(index=self.index)
+            res = self.es.mget(index=self.index,
+                               doc_type=self.dbname,
+                               _source=True,
+                               body=body)
+            return res
         except Exception, e:
-            logger.info('Unable to del commit (%s). %s' % (sha, e))
+            logger.info('Unable to get mulitple commits. %s' % e)
+
+    def del_commits(self, sha_list):
+        def gen(it):
+            for sha in it:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'delete'
+                d['_id'] = sha
+                yield d
+        bulk(self.es, gen(sha_list))
+        self.es.indices.refresh(index=self.index)
 
     def get_filter(self, mails, projects):
         """ Compute the search filter
@@ -123,7 +137,7 @@ class Commits(object):
         }
         for mail in mails:
             must_mail_clause["bool"]["should"].append(
-                    {"term": {"author_email": mail}}
+                {"term": {"author_email": mail}}
             )
         filter["bool"]["must"].append(must_mail_clause)
 
@@ -230,8 +244,8 @@ class Commits(object):
             },
             "aggs": {
                 "line_modifieds_stats": {
-                   "stats": {
-                       "field": "line_modifieds"
+                    "stats": {
+                        "field": "line_modifieds"
                     }
                 }
             }
