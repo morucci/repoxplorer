@@ -51,8 +51,11 @@ def run(cmd):
 
 
 class ProjectIndexer():
-    def __init__(self, name, uri, branch):
-        self.con = index.Connector()
+    def __init__(self, name, uri, branch, con=None):
+        if not con:
+            self.con = index.Connector()
+        else:
+            self.con = con
         self.c = Commits(self.con)
         if not os.path.isdir(REPOS_STORE):
             os.makedirs(REPOS_STORE)
