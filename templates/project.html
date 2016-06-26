@@ -96,15 +96,15 @@
      <div id="topauthors_table">
       <table class="table table-striped">
        <tr>
+        <th class="col-md-1">Rank</th>
         <th>Name</th>
         <th>Amount</th>
-        <th>Rank</th>
        <tr>
        % for n, i in enumerate(top_authors[3:], start=4):
        <tr>
-        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b>${i['name']}</b></span></td>
-        <td>${i['amount']}</td>
         <td>${n}</td>
+        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b>${i['name']}</b></span></td>
+        <td>${i['amount']}</td>
        <tr>
        % endfor
       </table>
@@ -145,15 +145,15 @@
      <div id="topauthors_m_table">
       <table class="table table-striped">
        <tr>
-        <th>Name</th>
+        <th class="col-md-1">Rank</th>
+        <th>Author name</th>
         <th>Amount</th>
-        <th>Rank</th>
        <tr>
        % for n, i in enumerate(top_authors_modified[3:], start=4):
        <tr>
+        <td>${n}</td>
         <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b>${i['name']}</b></span></td>
         <td>${i['amount']}</td>
-        <td>${n}</td>
        <tr>
        % endfor
       </table>
