@@ -1,12 +1,15 @@
 function gen_histo(histo) {
-  var svg_histo = dimple.newSvg("#history", 1240, 250);
+  var svg_histo = dimple.newSvg("#history", '100%', 250);
   var chart_histo = new dimple.chart(svg_histo, histo);
   chart_histo.addCategoryAxis("x", "date");
   chart_histo.addMeasureAxis("y", "value");
-  chart_histo.setBounds(30, 30, 1200, 150);
+  chart_histo.setMargins("60px", "30px", "60px", "70px");
   chart_histo.addSeries(null, dimple.plot.bar);
   chart_histo.draw();
-}
+  $( window ).resize(function() {
+    chart_histo.draw(0, true);
+  })
+};
 
 function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
