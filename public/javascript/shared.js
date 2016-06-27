@@ -105,6 +105,11 @@ function check_fragment() {
 };
 
 function install_paginator(pid, items_amount) {
+ if (items_amount >= 1000) {
+   // Limit the amount of pages to 100
+   // User should use the calendar filter to dig in the results
+   items_amount = 1000
+ }
  $(window).bind("popstate", check_fragment);
  $(function() {
      $('#pagination').pagination({
