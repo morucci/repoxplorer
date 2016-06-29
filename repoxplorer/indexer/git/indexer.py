@@ -163,7 +163,8 @@ class ProjectIndexer():
                 '<')[1].rstrip('>')
             source[u'committer_name'] = obj.committer.split(
                 '<')[0].rstrip().decode('utf-8')
-            source[u'commit_msg'] = obj.message.split('\n', 1)[0]
+            source[u'commit_msg'] = obj.message.split(
+                '\n', 1)[0].decode('utf-8')
             source[u'line_modifieds'] = self.get_diff_stats(obj)
             source[u'projects'] = [self.project, ]
             yield source
