@@ -119,9 +119,9 @@ class ProjectIndexer():
                     continue
                 if line[0] == '+' or line[0] == '-':
                     modified += 1
-            return modified
+            return modified, False
         if parents > 1:
-            return 0
+            return 0, True
 
     def get_current_commit_indexed(self):
         """ Fetch from the index commits mentionned for this project
@@ -165,7 +165,9 @@ class ProjectIndexer():
                 '<')[0].rstrip().decode('utf-8')
             source[u'commit_msg'] = obj.message.split(
                 '\n', 1)[0].decode('utf-8')
-            source[u'line_modifieds'] = self.get_diff_stats(obj)
+            modified, merge_commit = self.get_diff_stats(obj)
+            source[u'line_modifieds'] = modified
+            source[u'merge_commit'] = merge_commit
             source[u'projects'] = [self.project, ]
             yield source
 

@@ -45,6 +45,7 @@ class Commits(object):
                                  "index": "not_analyzed"},
                     "line_modifieds": {"type": "integer",
                                        "index": "not_analyzed"},
+                    "merge_commit": {"type": "boolean"},
                     "commit_msg": {"type": "string"}
                 }
             }
