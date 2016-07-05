@@ -22,6 +22,7 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
+                'merge_commit': False,
                 'commit_msg': 'Add init method',
             },
             {
@@ -35,7 +36,8 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master', ],
                 'line_modifieds': 100,
-                'commit_msg': 'Fix sanity unittest',
+                'merge_commit': True,
+                'commit_msg': 'Merge "Fix sanity unittest"',
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b186',
@@ -48,6 +50,7 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 200,
+                'merge_commit': False,
                 'commit_msg': 'Add request customer feature 19',
             },
             {
@@ -61,6 +64,7 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 300,
+                'merge_commit': False,
                 'commit_msg': 'Add request customer feature 20',
             },
             {
@@ -75,6 +79,7 @@ class TestCommits(TestCase):
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
                     'https://github.com/amura/kotatsu.git:kotatsu:devel'],
                 'line_modifieds': 400,
+                'merge_commit': False,
                 'commit_msg': 'Add request customer feature 21',
             },
             {
@@ -88,6 +93,7 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
+                'merge_commit': False,
                 'commit_msg': 'Add request customer feature 22',
             },
             {
@@ -101,6 +107,7 @@ class TestCommits(TestCase):
                 'projects': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
+                'merge_commit': False,
                 'commit_msg': 'Add request customer feature 23',
             }
         ]
@@ -153,6 +160,19 @@ class TestCommits(TestCase):
             projects=['https://github.com/amura/kotatsu.git:kotatsu:devel',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret[1], 4)
+
+    def test_get_commits_based_on_merge_info(self):
+        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+                                 merge_commit=False)
+        self.assertEqual(ret[1], 0)
+        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+                                 merge_commit=True)
+        self.assertEqual(ret[1], 1)
+        # When merge_commit at None either merge commit or not
+        # are returned
+        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+                                 merge_commit=None)
+        self.assertEqual(ret[1], 1)
 
     def test_get_commits_amount(self):
         ret = self.c.get_commits_amount(

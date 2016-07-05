@@ -157,7 +157,7 @@ class Commits(object):
 
     def get_commits(self, mails=[], projects=[],
                     fromdate=None, todate=None, start=0, limit=100,
-                    sort='desc', scan=False):
+                    sort='desc', scan=False, merge_commit=None):
         """ Return the list of commits for authors and/or projects.
         """
 
@@ -185,6 +185,12 @@ class Commits(object):
                 }
             }
         )
+
+        # If None both are return. If you expect to skip merge commits
+        # then set merge_commit to False
+        if merge_commit is not None:
+            body["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
         params['size'] = limit
@@ -229,7 +235,8 @@ class Commits(object):
         return res['count']
 
     def get_line_modifieds_stats(self, mails=[], projects=[],
-                                 fromdate=None, todate=None):
+                                 fromdate=None, todate=None,
+                                 merge_commit=None):
         """ Return the stats about line modifieds for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -263,6 +270,10 @@ class Commits(object):
             }
         )
 
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
         params['body'] = body
         params['size'] = 0
         res = self.es.search(**params)
@@ -270,7 +281,8 @@ class Commits(object):
         return took, res["aggregations"]["line_modifieds_stats"]
 
     def get_top_authors(self, mails=[], projects=[],
-                        fromdate=None, todate=None):
+                        fromdate=None, todate=None,
+                        merge_commit=None):
         """ Return the ranking of author emails
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -317,6 +329,10 @@ class Commits(object):
             }
         )
 
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
         params['body'] = body
         params['size'] = 0
         res = self.es.search(**params)
@@ -328,7 +344,8 @@ class Commits(object):
         return took, dict(top)
 
     def get_top_authors_by_lines(self, mails=[], projects=[],
-                                 fromdate=None, todate=None):
+                                 fromdate=None, todate=None,
+                                 merge_commit=None):
         """ Return the ranking of author emails by modidified lines
         of codes
         """
@@ -371,6 +388,10 @@ class Commits(object):
             }
         )
 
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
         params['body'] = body
         params['size'] = 0
         res = self.es.search(**params)
@@ -381,7 +402,8 @@ class Commits(object):
         return took, dict(top)
 
     def get_top_projects(self, mails=[], projects=[],
-                         fromdate=None, todate=None):
+                         fromdate=None, todate=None,
+                         merge_commit=None):
         """ Return the ranking of project contributed
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -429,6 +451,10 @@ class Commits(object):
             }
         )
 
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
         params['body'] = body
         params['size'] = 0
         res = self.es.search(**params)
@@ -438,19 +464,23 @@ class Commits(object):
         return took, dict(top)
 
     def get_commits_time_delta(self, mails=[], projects=[],
-                               fromdate=None, todate=None):
+                               fromdate=None, todate=None,
+                               merge_commit=None):
         first = self.get_commits(mails, projects, start=0, limit=1, sort='asc',
-                                 fromdate=fromdate, todate=todate)
+                                 fromdate=fromdate, todate=todate,
+                                 merge_commit=merge_commit)
         first = first[2][0]['committer_date']
         last = self.get_commits(mails, projects, start=0, limit=1, sort='desc',
-                                fromdate=fromdate, todate=todate)
+                                fromdate=fromdate, todate=todate,
+                                merge_commit=merge_commit)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
         duration = duration.total_seconds()
         return first, last, duration
 
     def get_commits_histo(self, mails=[], projects=[],
-                          fromdate=None, todate=None):
+                          fromdate=None, todate=None,
+                          merge_commit=None):
         """ Return the histogram of contrib for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -499,6 +529,10 @@ class Commits(object):
                 }
             }
         )
+
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
         params['size'] = 0

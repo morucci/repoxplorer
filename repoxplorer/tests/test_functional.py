@@ -25,6 +25,7 @@ class TestRootController(FunctionalTest):
                 'projects': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
+                'merge_commit': False,
                 'commit_msg': 'Add init method',
             }]
         cls.c.add_commits(cls.commits)
