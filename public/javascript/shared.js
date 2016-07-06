@@ -36,6 +36,10 @@ function install_date_pickers(projectid) {
    $( "#todatepicker" ).datepicker('setDate', dto);
  });
 
+ if (getUrlParameter('inc_merge_commit') == 'on') {
+    $('#inc_merge_commit').prop('checked', true)
+ }
+
  $("#filter").click(function(){
   var newlocation = "project.html?pid=" + projectid
   if ($('#fromdatepicker').val() != '') {
@@ -44,19 +48,26 @@ function install_date_pickers(projectid) {
   if ($('#todatepicker').val() != '') {
     newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
   }
+  if ($('#inc_merge_commit').prop('checked')) {
+      newlocation = newlocation + "&inc_merge_commit=on"
+  }
   window.location = newlocation
   });
 }
 
 function get_commits(pid, page) {
  if (page === undefined) {
-       page = 0;
+   page = 0;
+ }
+ if ($('#inc_merge_commit').prop('checked')) {
+   var inc_merge_commit = 'on'
  }
  $.getJSON(
    "/commits.json", {pid : pid,
                      start : page,
                      dfrom: getUrlParameter('dfrom'),
-                     dto: getUrlParameter('dto')}
+                     dto: getUrlParameter('dto'),
+                     inc_merge_commit: inc_merge_commit}
  ).done(function(data) {
    $("#commits-table").empty()
    $("#commits-table").append("<table class=\"table table-striped\">");
@@ -117,7 +128,7 @@ function install_paginator(pid, items_amount) {
          itemsOnPage: 10,
          cssStyle: 'light-theme',
          onPageClick: function(pageNumber) {
-             get_commits(pid, (pageNumber - 1) * 10)
+           get_commits(pid, (pageNumber - 1) * 10)
          }
      });
      check_fragment();

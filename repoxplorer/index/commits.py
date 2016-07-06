@@ -203,7 +203,8 @@ class Commits(object):
         return took, hits, commits
 
     def get_commits_amount(self, mails=[], projects=[],
-                           fromdate=None, todate=None):
+                           fromdate=None, todate=None,
+                           merge_commit=None):
         """ Return the amount of commits for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -229,6 +230,10 @@ class Commits(object):
                 }
             }
         )
+
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
         res = self.es.count(**params)

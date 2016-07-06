@@ -22,10 +22,20 @@
     <div id="filters">
      <span>From date: <input type="text" id="fromdatepicker"></span>
      <span>To date: <input type="text" id="todatepicker"></span>
-     <input id="filter" type="button" value="Apply filter" />
-     % if period[0] and period[1]:
-     <p><b>The following project details are extracted from the period between ${period[0]} to ${period[1]}</b></p>
+     <br />
+     <br />
+     % if inc_merge_commit == 'on':
+         <div>Include merge commits: <input type="checkbox" id="inc_merge_commit" checked></div>
+     % else:
+         <div>Include merge commits: <input type="checkbox" id="inc_merge_commit"></div>
      % endif
+     % if period[0] and period[1]:
+     <div>
+      <br />
+      <p><b>The following project details are extracted from the period between ${period[0]} to ${period[1]}</b></p>
+     </div>
+     % endif
+     <div><input id="filter" type="button" value="Apply filter" class="btn pull-right" /></div>
     </div>
    </div>
   </div>

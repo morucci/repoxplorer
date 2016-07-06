@@ -100,7 +100,15 @@ class RootController(object):
         return top_authors_modified_s_sorted
 
     @expose(template='project.html')
-    def project(self, pid, dfrom=None, dto=None):
+    def project(self, pid, dfrom=None, dto=None,
+                inc_merge_commit=None):
+        if inc_merge_commit != 'on':
+            inc_merge_commit = ''
+            include_merge_commit = False
+        else:
+            # The None value will return all whatever
+            # the commit is a merge one or not
+            include_merge_commit = None
         odfrom = None
         odto = None
         if dfrom:
@@ -121,17 +129,20 @@ class RootController(object):
                                           p['branch']))
         histo = c.get_commits_histo(projects=p_filter,
                                     fromdate=dfrom,
-                                    todate=dto)
+                                    todate=dto,
+                                    merge_commit=include_merge_commit)
         histo = [{'date': d['key_as_string'],
                   'value': d['doc_count']} for d in histo[1]]
 
         top_authors = c.get_top_authors(projects=p_filter,
                                         fromdate=dfrom,
-                                        todate=dto)
+                                        todate=dto,
+                                        merge_commit=include_merge_commit)
         top_authors_modified = c.get_top_authors_by_lines(
             projects=p_filter,
             fromdate=dfrom,
-            todate=dto)
+            todate=dto,
+            merge_commit=include_merge_commit)
 
         top_authors = self.top_authors_sanitize(top_authors)
         top_authors_modified = self.top_authors_modified_sanitize(
@@ -140,12 +151,14 @@ class RootController(object):
         commits_amount = c.get_commits_amount(
             projects=p_filter,
             fromdate=dfrom,
-            todate=dto)
+            todate=dto,
+            merge_commit=include_merge_commit)
 
         first, last, duration = c.get_commits_time_delta(
             projects=p_filter,
             fromdate=dfrom,
-            todate=dto)
+            todate=dto,
+            merge_commit=include_merge_commit)
 
         return {'pid': pid,
                 'histo': json.dumps(histo),
@@ -158,15 +171,22 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
                 'subprojects': len(project),
+                'inc_merge_commit': inc_merge_commit,
                 'period': (odfrom, odto)}
 
     @expose('json')
     def commits(self, pid, mails=None, start=0, limit=10,
-                dfrom=None, dto=None):
+                dfrom=None, dto=None, inc_merge_commit=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Users().get_users()
         project = projects_index.get_projects()[pid]
+        if inc_merge_commit == 'on':
+            # The None value will return all whatever
+            # the commit is a merge one or not
+            inc_merge_commit = None
+        else:
+            inc_merge_commit = False
         p_filter = []
         for p in project:
             p_filter.append("%s:%s:%s" % (p['uri'],
@@ -184,7 +204,8 @@ class RootController(object):
                 dto, "%m/%d/%Y").strftime('%s')
         resp = c.get_commits(projects=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
-                             start=start, limit=limit)
+                             start=start, limit=limit,
+                             merge_commit=inc_merge_commit)
         for cmt in resp[2]:
             # Compute link to access commit diff based on the
             # URL template provided in projects.yaml
