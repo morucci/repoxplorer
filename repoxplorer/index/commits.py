@@ -498,11 +498,11 @@ class Commits(object):
                                                fromdate=fromdate,
                                                todate=todate)[2]
 
-        # Set resolution by day if duration <= 2 months
-        if (duration / (24 * 3600 * 31)) <= 2:
+        # Set resolution by day if duration <= 3 months
+        if (duration / (24 * 3600 * 31)) <= 3:
             res = 'day'
-        # Set resolution by month if duration <= 3 years
-        elif (duration / (24 * 3600 * 31 * 12)) <= 3:
+        # Set resolution by month if duration <= 10 years
+        elif (duration / (24 * 3600 * 31 * 12)) <= 10:
             res = 'month'
         else:
             res = 'year'
