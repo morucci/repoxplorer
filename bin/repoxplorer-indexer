@@ -15,9 +15,15 @@
 # limitations under the License.
 
 import sys
+import logging
+import logging.config
 
 from repoxplorer.indexer.git import indexer
 from repoxplorer.index import projects
+
+logging.config.fileConfig(
+    '%s/local/share/repoxplorer/logging.conf' % sys.prefix)
+logger = logging.getLogger('indexerDaemon')
 
 # Should be read from the config file
 # TODO: Utility like this one should take a "-c" option to the config file
@@ -26,12 +32,12 @@ projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
 if __name__ == "__main__":
     prjs = projects.Projects(projects_file_path).get_projects()
     for pid, plist in prjs.items():
-        print
-        print "Index project id %s" % pid
+        logger.info("Start indexing project id %s" % pid)
         for prj in plist:
             p = indexer.ProjectIndexer(prj['name'],
                                        prj['uri'],
                                        prj['branch'])
+            logger.info("Index sub-project %s" % str(p))
             p.git_init()
             p.git_fetch_branch()
             p.git_get_commit_obj()

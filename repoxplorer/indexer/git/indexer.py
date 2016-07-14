@@ -15,6 +15,7 @@
 
 import os
 import re
+import logging
 import contextlib
 import subprocess
 
@@ -33,6 +34,8 @@ RE_SOURCE_FILENAME = re.compile(
 RE_TARGET_FILENAME = re.compile(
     r'^\+\+\+ (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?')
 
+logger = logging.getLogger('gitIndexer')
+
 
 @contextlib.contextmanager
 def cdir(path):
@@ -46,6 +49,7 @@ def cdir(path):
 
 def run(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
                                shell=True)
     return process.communicate()
 
@@ -69,9 +73,12 @@ class ProjectIndexer():
             os.makedirs(self.local)
         self.project = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
+    def __str__(self):
+        return 'Git indexer of %s' % self.project
+
     def git_init(self):
-        print "Fetched %s %s:%s" % (self.name, self.uri,
-                                    self.branch)
+        logger.info("Fetched %s %s:%s" % (self.name, self.uri,
+                                          self.branch))
         with cdir(self.local):
             run("git init .")
             if "origin" not in run("git remote -v")[0]:
@@ -130,17 +137,23 @@ class ProjectIndexer():
         self.already_indexed = [c['_id'] for c in
                                 self.c.get_commits(projects=[self.project],
                                                    scan=True)]
-        print "Project history is composed of %s commits." % len(
-            self.already_indexed)
+        logger.info(
+            "In the DB - project history is composed of %s commits." % (
+                len(self.already_indexed)))
 
     def compute_to_index_to_delete(self):
         """ Compute the list of commits (sha) to index and the
         list to delete from the index.
         """
+        logger.info(
+             "Upstream - project history is composed of %s commits." % (
+                 len(self.commits)))
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
-        print "Indexer will reference %s commits." % len(self.to_index)
-        print "Indexer will dereference %s commits." % len(self.to_delete)
+        logger.info(
+            "Indexer will reference %s commits." % len(self.to_index))
+        logger.info(
+            "Indexer will dereference %s commits." % len(self.to_delete))
 
     def cmt_list_generator(self, sha_list):
         # TODO: use multiprocessing here
@@ -149,7 +162,7 @@ class ProjectIndexer():
         for sha in sha_list:
             consumed += 1
             if consumed % 500 == 0:
-                print "indexing %s/%s ..." % (consumed, total)
+                logger.info("indexing %s/%s ..." % (consumed, total))
             obj = self.repo.object_store[sha]
             source = {}
             source[u'author_date'] = obj.author_time
@@ -183,11 +196,11 @@ class ProjectIndexer():
             to_delete_update = [c['sha'] for
                                 c in docs if len(c['projects']) > 1]
 
-            print "%s commits will be delete ..." % len(to_delete)
+            logger.info("%s commits will be delete ..." % len(to_delete))
             self.c.del_commits(to_delete)
 
-            print "%s commits belonging to other projects " \
-                  "will be updated ..." % len(to_delete_update)
+            logger.info("%s commits belonging to other projects "
+                        "will be updated ..." % len(to_delete_update))
             res = self.c.get_commits_by_id(to_delete_update)
             if res:
                 original_commits = [c['_source'] for
@@ -204,11 +217,12 @@ class ProjectIndexer():
                          c in res['docs'] if c['found'] is True]
             to_create = [c['_id'] for
                          c in res['docs'] if c['found'] is False]
-            print "%s commits will be created ..." % len(to_create)
+            logger.info("%s commits will be created ..." % len(to_create))
             self.c.add_commits(self.cmt_list_generator(to_create))
 
-            print "%s commits already indexed and need to be updated" % len(
-                to_update)
+            logger.info(
+                "%s commits already indexed and need to be updated" % (
+                    len(to_update)))
             for c in to_update:
                 c['projects'].append(self.project)
                 self.c.update_commits(to_update)
