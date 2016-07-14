@@ -15,22 +15,35 @@
 # limitations under the License.
 
 import sys
+import time
 import logging
+import argparse
 import logging.config
 
 from repoxplorer.indexer.git import indexer
 from repoxplorer.index import projects
 
-logging.config.fileConfig(
-    '%s/local/share/repoxplorer/logging.conf' % sys.prefix)
+ROUND_DELAY=5
+
 logger = logging.getLogger('indexerDaemon')
 
-# Should be read from the config file
-# TODO: Utility like this one should take a "-c" option to the config file
-projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
+parser = argparse.ArgumentParser(description='RepoXplorer indexer')
+parser.add_argument(
+    '--forever', action='store_true', default=False,
+    help='Make the indexer run forever')
+parser.add_argument(
+    '--logging', type=str,
+    default='%s/local/share/repoxplorer/logging.conf' % sys.prefix,
+    help='Specify a custom logging configuration file')
+parser.add_argument(
+    '--projects', type=str,
+    default='%s/local/share/repoxplorer/projects.yaml' % sys.prefix,
+    help='Specify the path to the projects.yaml file')
 
-if __name__ == "__main__":
-    prjs = projects.Projects(projects_file_path).get_projects()
+args = parser.parse_args()
+
+def process():
+    prjs = projects.Projects(args.projects).get_projects()
     for pid, plist in prjs.items():
         logger.info("Start indexing project id %s" % pid)
         for prj in plist:
@@ -44,3 +57,14 @@ if __name__ == "__main__":
             p.get_current_commit_indexed()
             p.compute_to_index_to_delete()
             p.index()
+
+if __name__ == "__main__":
+    logging.config.fileConfig(args.logging)
+    if args.forever:
+        while True:
+            process()
+            if args.forever:
+                logger.info("Waiting %s seconds" % ROUND_DELAY)
+                time.sleep(ROUND_DELAY)
+    else:
+        process()

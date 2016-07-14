@@ -1,0 +1,9 @@
+[Unit]
+Description=RepoXplorer web ui
+After=syslog.target
+
+[Service]
+ExecStart=/usr/bin/uwsgi --http-socket :80 --pecan /usr/local/share/repoxplorer/config.py
+
+[Install]
+WantedBy=multi-user.target

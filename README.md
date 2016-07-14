@@ -30,19 +30,14 @@ python setup.py install
 ```
 
 Install Elasticsearch. Here we use an already "ready to use" Docker
-container.
+container. But you should definitely use a regular installation
+of ElasticSearch.
 
 ```Shell
 ~/repoxplorer/bin/el-start.sh
 ```
 
-Start the RepoXplorer web app.
-
-```Shell
-uwsgi --http-socket :8080 --pecan ~/repoxplorer/local/share/repoxplorer/config.py
-```
-
-## Index a project
+## How to index a list of GIT hosted projects
 
 A yaml file should be provisioned with the projects you want to index. The
 file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
@@ -66,12 +61,53 @@ Edit this file to add projects you want to index.
      gitweb: https://github.com/openstack/python-barbicanclient/commit/%(sha)s
 ```
 
-Then start the GIT indexer manually or configure CRON job. The indexer
-will read the projects.yaml file and will index project' commits in the
-ElasticSearch DB.
+Then start the GIT indexer manually.
 
 ```Shell
 python ~/repoxplorer/bin/repoxplorer-indexer
+```
+
+In order to run the indexer continuously you can use the command
+argument "--forever".
+
+Furthermore you can install the systemd unit file for the indexer.
+
+```
+sudo cp etc/repoxplorer.service /usr/lib/systemd/system/repoxplorer.service
+# Be sure to set the correct path to the repoxplorer-indexer script
+
+sudo systemctl daemon-reload
+sudo systemctl start repoxplorer
+sudo systemctl status repoxplorer
+
+# You can check the indexer log via journalctl
+sudo journalctl -f
+```
+
+## Start the Web UI
+
+Start the RepoXplorer web app.
+
+```Shell
+uwsgi --http-socket :8080 --pecan ~/repoxplorer/local/share/repoxplorer/config.py
+```
+
+Then open a Web browser to access http://localhost:8080. You will be faced a list
+of projects such as defined in projects.yaml. A click on one of the project's ids
+will redirect you to the statistics page of the given project.
+
+Furthermore you can install the systemd unit file for the webui.
+
+```
+sudo cp etc/repoxplorer-webui.service /usr/lib/systemd/system/repoxplorer-webui.service
+# Be sure to set the correct path to the uwsgi tool and to the config.py file.
+
+sudo systemctl daemon-reload
+sudo systemctl start repoxplorer-webui
+sudo systemctl status repoxplorer-webui
+
+# You can check the webui log via journalctl
+sudo journalctl -f
 ```
 
 ## Sanitize author identities

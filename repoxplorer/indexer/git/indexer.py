@@ -34,7 +34,7 @@ RE_SOURCE_FILENAME = re.compile(
 RE_TARGET_FILENAME = re.compile(
     r'^\+\+\+ (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?')
 
-logger = logging.getLogger('gitIndexer')
+logger = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
