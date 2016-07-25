@@ -44,8 +44,8 @@ class RootController(object):
                 main_email = idents[k][0]
                 name = idents[k][1]
             else:
-                main_email = str(k)
-                name = v[1].encode('ascii', errors='ignore')
+                main_email = k
+                name = v[1]
             amount = int(v[0])
             if main_email in sanitized:
                 sanitized[main_email][0] += amount
@@ -73,7 +73,7 @@ class RootController(object):
                 main_email = idents[k][0]
                 name = idents[k][1]
             else:
-                main_email = str(k)
+                main_email = k
                 name = None
             amount = int(v)
             if main_email in sanitized:
