@@ -1,5 +1,7 @@
 # RepoXplorer
 
+This is a test commit
+
 RepoXplorer is a small stats and charts utility for GIT repositories.
 Its main purpose is to ease the visualization of stats for one or
 more projects.
