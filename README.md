@@ -50,18 +50,18 @@ Edit this file to add projects you want to index.
 
 ```YAML
 ---
-- templates:
-   - name: default
-     uri: https://github.com/openstack/%(name)s
-     branch: master
-     gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+templates:
+- name: default
+  uri: https://github.com/openstack/%(name)s
+  branch: master
+  gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
 
-- projects:
-   - Barbican:
-      - name: barbican
-        template: default
-      - name: python-barbicanclient
-        template: default
+projects:
+  Barbican:
+  - name: barbican
+    template: default
+  - name: python-barbicanclient
+    template: default
 ```
 
 Then start the GIT indexer manually.
