@@ -24,18 +24,18 @@ class TestProjects(TestCase):
     def test_projects_data_init(self):
         projects_yaml = """
 ---
-- templates:
-   - name: default
-     branch: master
-     uri: http://gb.com/ok/%(name)s
-     gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
+templates:
+- name: default
+  branch: master
+  uri: http://gb.com/ok/%(name)s
+  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
 
-- projects:
-   - Barbican:
-      - name: barbican
-        template: default
-      - name: python-barbicanclient
-        template: default
+projects:
+  Barbican:
+  - name: barbican
+    template: default
+  - name: python-barbicanclient
+    template: default
 """
         path = self.create_projects_yaml(projects_yaml)
         p = Projects(projects_file_path=path)
@@ -43,21 +43,20 @@ class TestProjects(TestCase):
         self.assertEqual(len(p.projects['Barbican']), 2)
 
         projects_yaml = """
----
-- templates:
-   - name: default
-     branch: master
-     uri: http://gb.com/ok/%(name)s
-     gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
+templates:
+- name: default
+  branch: master
+  uri: http://gb.com/ok/%(name)s
+  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
 
-- projects:
-   - Barbican:
-      - name: barbican
-        template: default
-        uri: http://test.com/ok/%(name)s
-        gitweb: http://test.com/ok/%(name)s/commit/%%(sha)s
-      - name: python-barbicanclient
-        template: default
+projects:
+  Barbican:
+  - name: barbican
+    template: default
+    uri: http://test.com/ok/%(name)s
+    gitweb: http://test.com/ok/%(name)s/commit/%%(sha)s
+  - name: python-barbicanclient
+    template: default
 """
         path = self.create_projects_yaml(projects_yaml)
         p = Projects(projects_file_path=path)

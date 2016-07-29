@@ -40,21 +40,14 @@ class Projects(object):
             self.data = []
         self.projects = {}
         self.gitweb_lookup = {}
-        self.projects_raw = []
-        self.templates_raw = []
+        self.projects_raw = {}
+        self.templates_raw = {}
         if self.data:
-            self._projects_raw = [d['projects'] for d in self.data
-                                  if 'projects' in d]
-            for project in self._projects_raw:
-                self.projects_raw.extend(project)
-            self._templates_raw = [d['templates'] for d in self.data
-                                   if 'templates' in d]
-            for template in self._templates_raw:
-                self.templates_raw.extend(template)
-        for elm in self.projects_raw:
-            pid = elm.keys()[0]
+            self.projects_raw = self.data['projects']
+            self.templates_raw = self.data['templates']
+        for pid, details in self.projects_raw.items():
             self.projects[pid] = []
-            for prj in elm[pid]:
+            for prj in details:
                 if 'template' in prj:
                     try:
                         tmpl = self.find_template_by_name(prj['template'])
