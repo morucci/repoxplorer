@@ -54,6 +54,7 @@
 
 </div>
 
+% if not empty:
 <div class="row-fluid">
 
  <div class="col-md-3">
@@ -211,7 +212,6 @@
 
 <div class="row-fluid">
 </div>
-
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
  gen_histo(histo);
@@ -219,3 +219,15 @@
  install_paginator('${pid}', '${commits_amount}');
  get_commits('${pid}');
 </script>
+% else:
+<div class="row-fluid">
+ <div class="col-md-12">
+  <div class="alert alert-warning text-center">
+   <strong>This project does not contains any commit or the filter you setup returned nothing.</strong>
+  </div>
+ </div>
+</div>
+<script type="text/javascript">
+ install_date_pickers('${pid}');
+</script>
+% endif

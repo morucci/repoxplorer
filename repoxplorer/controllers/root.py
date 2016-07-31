@@ -127,6 +127,20 @@ class RootController(object):
             p_filter.append("%s:%s:%s" % (p['uri'],
                                           p['name'],
                                           p['branch']))
+
+        commits_amount = c.get_commits_amount(
+            projects=p_filter,
+            fromdate=dfrom,
+            todate=dto,
+            merge_commit=include_merge_commit)
+
+        if not commits_amount:
+            # No commit found
+            return {'pid': pid,
+                    'inc_merge_commit': inc_merge_commit,
+                    'period': (odfrom, odto),
+                    'empty': True}
+
         histo = c.get_commits_histo(projects=p_filter,
                                     fromdate=dfrom,
                                     todate=dto,
@@ -148,12 +162,6 @@ class RootController(object):
         top_authors_modified = self.top_authors_modified_sanitize(
             top_authors_modified, c, top_amount=25)
 
-        commits_amount = c.get_commits_amount(
-            projects=p_filter,
-            fromdate=dfrom,
-            todate=dto,
-            merge_commit=include_merge_commit)
-
         first, last, duration = c.get_commits_time_delta(
             projects=p_filter,
             fromdate=dfrom,
@@ -172,7 +180,8 @@ class RootController(object):
                              datetime.fromtimestamp(0)),
                 'subprojects': len(project),
                 'inc_merge_commit': inc_merge_commit,
-                'period': (odfrom, odto)}
+                'period': (odfrom, odto),
+                'empty': False}
 
     @expose('json')
     def commits(self, pid, mails=None, start=0, limit=10,
