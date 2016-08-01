@@ -40,6 +40,11 @@ function install_date_pickers(projectid) {
     $('#inc_merge_commit').prop('checked', true)
  }
 
+ if (getUrlParameter('inc_projects')) {
+     selected = getUrlParameter('inc_projects').split(',')
+     $('#subprojects').val(selected)
+ }
+
  $("#filter").click(function(){
   var newlocation = "project.html?pid=" + projectid
   if ($('#fromdatepicker').val() != '') {
@@ -50,6 +55,9 @@ function install_date_pickers(projectid) {
   }
   if ($('#inc_merge_commit').prop('checked')) {
       newlocation = newlocation + "&inc_merge_commit=on"
+  }
+  if ($('#subprojects').val() != undefined) {
+    newlocation = newlocation + "&inc_projects=" + encodeURIComponent($('#subprojects').val())
   }
   window.location = newlocation
   });
@@ -67,7 +75,8 @@ function get_commits(pid, page) {
                      start : page,
                      dfrom: getUrlParameter('dfrom'),
                      dto: getUrlParameter('dto'),
-                     inc_merge_commit: inc_merge_commit}
+                     inc_merge_commit: inc_merge_commit,
+                     inc_projects: getUrlParameter('inc_projects')}
  ).done(function(data) {
    $("#commits-table").empty()
    $("#commits-table").append("<table class=\"table table-striped\">");

@@ -101,7 +101,7 @@ class RootController(object):
 
     @expose(template='project.html')
     def project(self, pid, dfrom=None, dto=None,
-                inc_merge_commit=None):
+                inc_merge_commit=None, inc_projects=None):
         if inc_merge_commit != 'on':
             inc_merge_commit = ''
             include_merge_commit = False
@@ -124,6 +124,9 @@ class RootController(object):
         project = projects[pid]
         p_filter = []
         for p in project:
+            if inc_projects:
+                if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
+                    continue
             p_filter.append("%s:%s:%s" % (p['uri'],
                                           p['name'],
                                           p['branch']))
@@ -139,6 +142,8 @@ class RootController(object):
             return {'pid': pid,
                     'inc_merge_commit': inc_merge_commit,
                     'period': (odfrom, odto),
+                    'subprojects': project,
+                    'inc_projects': inc_projects,
                     'empty': True}
 
         histo = c.get_commits_histo(projects=p_filter,
@@ -178,14 +183,16 @@ class RootController(object):
                 'last': datetime.fromtimestamp(last),
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
-                'subprojects': len(project),
+                'subprojects': project,
                 'inc_merge_commit': inc_merge_commit,
+                'inc_projects': inc_projects,
                 'period': (odfrom, odto),
                 'empty': False}
 
     @expose('json')
     def commits(self, pid, mails=None, start=0, limit=10,
-                dfrom=None, dto=None, inc_merge_commit=None):
+                dfrom=None, dto=None, inc_merge_commit=None,
+                inc_projects=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Users().get_users()
@@ -198,6 +205,9 @@ class RootController(object):
             inc_merge_commit = False
         p_filter = []
         for p in project:
+            if inc_projects:
+                if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
+                    continue
             p_filter.append("%s:%s:%s" % (p['uri'],
                                           p['name'],
                                           p['branch']))
