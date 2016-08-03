@@ -18,7 +18,7 @@ import glob
 from distutils.core import setup
 
 setup(name='repoxplorer',
-      version='0.1',
+      version='0.4',
       description='Git repositories statistics and charts.',
       author='Fabien Boucher',
       author_email='fabien.dot.boucher@gmail.com',
