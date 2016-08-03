@@ -132,6 +132,7 @@ Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
 ## Run tests
 
 ```Shell
+./bin/el-start.sh
 tox
 ```
 
@@ -145,3 +146,23 @@ Look at the feature requests list on the Github issue tracker:
 If you find an issue please fill a bug report here:
 
 - [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
+
+RepoXplorer is hosted on this Gerrit instance [Software Factory] (http://softwarefactory-project.io)
+a contribution should be done via Gerrit instead of using the Pull Request system of Github.
+
+If you wante to help by contributing on the code:
+
+```Shell
+git clone http://softwarefactory-project.io/r/repoxplorer
+git review -s # You should have login on Software Factory using you Github identity first
+```
+
+Your local copy is now configured. Please read the following instructions to
+learn about git review sub-command [git-review] (http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
+
+```
+# make some changes
+git add -a
+git commit # local commit your changes
+git review # propose your changes on Gerrit
+```
