@@ -14,7 +14,8 @@ class TestCommits(TestCase):
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'author_date': 1410456005,
-                'committer_date': 1410456005,
+                'committer_date': 1410456010,
+                'ttl': 5,
                 'author_name': 'Nakata Daisuke',
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
@@ -29,6 +30,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b185',
                 'author_date': 1410457005,
                 'committer_date': 1410457005,
+                'ttl': 0,
                 'author_name': 'Keiko Amura',
                 'committer_name': 'Keiko Amura',
                 'author_email': 'keiko.a@joker.org',
@@ -43,6 +45,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b186',
                 'author_date': 1410458005,
                 'committer_date': 1410458005,
+                'ttl': 0,
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
@@ -57,6 +60,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b187',
                 'author_date': 1410459005,
                 'committer_date': 1410459005,
+                'ttl': 0,
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
@@ -71,6 +75,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b188',
                 'author_date': 1410460005,
                 'committer_date': 1410460005,
+                'ttl': 0,
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
@@ -86,6 +91,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b189',
                 'author_date': 1410461005,
                 'committer_date': 1410461005,
+                'ttl': 0,
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
@@ -100,6 +106,7 @@ class TestCommits(TestCase):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b190',
                 'author_date': 1410491005,
                 'committer_date': 1410491005,
+                'ttl': 0,
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
@@ -188,7 +195,7 @@ class TestCommits(TestCase):
             ['n.suke@joker.org',
              'jean.bon@joker.org'],
             fromdate=1410456000,
-            todate=1410456010)
+            todate=1410456011)
         self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
@@ -217,20 +224,27 @@ class TestCommits(TestCase):
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret, 4)
 
-    def test_get_line_modifieds_amount(self):
+    def test_line_modifieds_stats(self):
         ret = self.c.get_line_modifieds_stats(
-            ['n.suke@joker.org'])
+            mails=['n.suke@joker.org'])
         self.assertDictEqual(ret[1], {u'avg': 10.0, u'min': 10.0,
                                       u'count': 1, u'max': 10.0,
                                       u'sum': 10.0})
 
         ret = self.c.get_line_modifieds_stats(
-            ['jean.bon@joker.org'],
+            mails=['jean.bon@joker.org'],
             projects=['https://github.com/nakata/monkey.git:monkey:master',
                       'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertDictEqual(ret[1], {u'avg': 300.0, u'min': 200.0,
                                       u'max': 400.0, u'count': 3,
                                       u'sum': 900.0})
+
+    def test_commit_ttl_stats(self):
+        ret = self.c.get_ttl_stats(
+            mails=['n.suke@joker.org'])
+        self.assertDictEqual(ret[1], {u'avg': 5.0, u'min': 5.0,
+                                      u'count': 1, u'max': 5.0,
+                                      u'sum': 5.0})
 
     def test_get_top_authors(self):
         ret = self.c.get_top_authors(
