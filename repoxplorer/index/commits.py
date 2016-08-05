@@ -35,6 +35,8 @@ class Commits(object):
                                     "format": "epoch_second"},
                     "committer_date": {"type": "date",
                                        "format": "epoch_second"},
+                    "ttl": {"type": "integer",
+                            "index": "not_analyzed"},
                     "author_name": {"type": "string"},
                     "committer_name": {"type": "string"},
                     "author_email": {"type": "string",
@@ -239,10 +241,16 @@ class Commits(object):
         res = self.es.count(**params)
         return res['count']
 
-    def get_line_modifieds_stats(self, mails=[], projects=[],
-                                 fromdate=None, todate=None,
-                                 merge_commit=None):
-        """ Return the stats about line modifieds for authors and/or projects.
+    def get_line_modifieds_stats(self, **kwargs):
+        return self.get_field_stats("line_modifieds", **kwargs)
+
+    def get_ttl_stats(self, **kwargs):
+        return self.get_field_stats("ttl", **kwargs)
+
+    def get_field_stats(self, field, mails=[], projects=[],
+                        fromdate=None, todate=None,
+                        merge_commit=None):
+        """ Return the stats about the specified field for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
@@ -256,9 +264,9 @@ class Commits(object):
                 }
             },
             "aggs": {
-                "line_modifieds_stats": {
+                "%s_stats" % field: {
                     "stats": {
-                        "field": "line_modifieds"
+                        "field": field
                     }
                 }
             }
@@ -283,7 +291,7 @@ class Commits(object):
         params['size'] = 0
         res = self.es.search(**params)
         took = res['took']
-        return took, res["aggregations"]["line_modifieds_stats"]
+        return took, res["aggregations"]["%s_stats" % field]
 
     def get_top_authors(self, mails=[], projects=[],
                         fromdate=None, todate=None,

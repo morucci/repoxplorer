@@ -167,6 +167,7 @@ class ProjectIndexer():
             source = {}
             source[u'author_date'] = obj.author_time
             source[u'committer_date'] = obj.commit_time
+            source[u'ttl'] = int(obj.commit_time - obj.author_time)
             source[u'sha'] = obj.id
             source[u'author_email'] = obj.author.split(
                 '<')[1].rstrip('>')
