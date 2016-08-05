@@ -18,6 +18,7 @@ class TestRootController(FunctionalTest):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'author_date': 1410456005,
                 'committer_date': 1410456005,
+                'ttl': 0,
                 'author_name': 'Nakata Daisuke',
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',

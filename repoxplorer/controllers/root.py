@@ -241,4 +241,7 @@ class RootController(object):
             for elm in ('author', 'committer'):
                 if idents.get(cmt['%s_email' % elm]):
                     cmt['%s_name' % elm] = idents.get(cmt['%s_email' % elm])[1]
+            # Convert the TTL to something human readable
+            cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
+                              datetime.fromtimestamp(0)))
         return resp
