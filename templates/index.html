@@ -35,7 +35,7 @@
       <td><a href="project.html?pid=${project}"><b>${project}</b></a></td>
       <td>
        % for p in plist:
-        <p>${p['uri']}:${p['branch']}</p>
+        <p><a href="project.html?pid=${project}&inc_projects=${p['name']}:${p['branch']}">${p['uri']}:${p['branch']}</a></p>
        % endfor
       </td>
      <tr>
