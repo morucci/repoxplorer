@@ -100,6 +100,17 @@ class RootController(object):
                 [author['email']], [], limit=1)[2][0]['author_name']
         return top_authors_modified_s_sorted
 
+    def get_project_filter(self, project, inc_projects):
+        p_filter = []
+        for p in project:
+            if inc_projects:
+                if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
+                    continue
+            p_filter.append("%s:%s:%s" % (p['uri'],
+                                          p['name'],
+                                          p['branch']))
+        return p_filter
+
     @expose(template='project.html')
     def project(self, pid, dfrom=None, dto=None,
                 inc_merge_commit=None, inc_projects=None):
@@ -123,20 +134,16 @@ class RootController(object):
         c = Commits(index.Connector(index=indexname))
         projects = Projects().get_projects()
         project = projects[pid]
-        p_filter = []
-        for p in project:
-            if inc_projects:
-                if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
-                    continue
-            p_filter.append("%s:%s:%s" % (p['uri'],
-                                          p['name'],
-                                          p['branch']))
+        p_filter = self.get_project_filter(project, inc_projects)
 
-        commits_amount = c.get_commits_amount(
-            projects=p_filter,
-            fromdate=dfrom,
-            todate=dto,
-            merge_commit=include_merge_commit)
+        query_kwargs = {
+            'projects': p_filter,
+            'fromdate': dfrom,
+            'todate': dto,
+            'merge_commit': include_merge_commit,
+        }
+
+        commits_amount = c.get_commits_amount(**query_kwargs)
 
         if not commits_amount:
             # No commit found
@@ -147,38 +154,20 @@ class RootController(object):
                     'inc_projects': inc_projects,
                     'empty': True}
 
-        histo = c.get_commits_histo(projects=p_filter,
-                                    fromdate=dfrom,
-                                    todate=dto,
-                                    merge_commit=include_merge_commit)
+        histo = c.get_commits_histo(**query_kwargs)
         histo = [{'date': d['key_as_string'],
                   'value': d['doc_count']} for d in histo[1]]
 
-        top_authors = c.get_top_authors(projects=p_filter,
-                                        fromdate=dfrom,
-                                        todate=dto,
-                                        merge_commit=include_merge_commit)
-        top_authors_modified = c.get_top_authors_by_lines(
-            projects=p_filter,
-            fromdate=dfrom,
-            todate=dto,
-            merge_commit=include_merge_commit)
+        top_authors = c.get_top_authors(**query_kwargs)
+        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
 
         top_authors = self.top_authors_sanitize(top_authors)
         top_authors_modified = self.top_authors_modified_sanitize(
             top_authors_modified, c, top_amount=25)
 
-        first, last, duration = c.get_commits_time_delta(
-            projects=p_filter,
-            fromdate=dfrom,
-            todate=dto,
-            merge_commit=include_merge_commit)
+        first, last, duration = c.get_commits_time_delta(**query_kwargs)
 
-        ttl_average = c.get_ttl_stats(
-            projects=p_filter,
-            fromdate=dfrom,
-            todate=dto,
-            merge_commit=include_merge_commit)[1]['avg']
+        ttl_average = c.get_ttl_stats(**query_kwargs)[1]['avg']
         ttl_average = timedelta(
             seconds=int(ttl_average)) - timedelta(seconds=0)
 
@@ -213,14 +202,9 @@ class RootController(object):
             inc_merge_commit = None
         else:
             inc_merge_commit = False
-        p_filter = []
-        for p in project:
-            if inc_projects:
-                if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
-                    continue
-            p_filter.append("%s:%s:%s" % (p['uri'],
-                                          p['name'],
-                                          p['branch']))
+
+        p_filter = self.get_project_filter(project, inc_projects)
+
         if mails:
             mails = mails.split('+')
         else:
