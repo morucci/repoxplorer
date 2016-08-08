@@ -15,17 +15,17 @@ class TestProjectIndexer(TestCase):
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
         cls.cmts = commits.Commits(cls.con)
-        indexer.REPOS_STORE = tempfile.mkdtemp()
+        indexer.conf['git_store'] = tempfile.mkdtemp()
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(indexer.REPOS_STORE)
+        shutil.rmtree(indexer.conf['git_store'])
         cls.con.ic.delete(index=cls.con.index)
 
     def test_init(self):
         pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1', 'master')
         self.assertEqual(pi.project, 'file:///tmp/p1:p1:master')
-        self.assertTrue(os.path.isdir(indexer.REPOS_STORE))
+        self.assertTrue(os.path.isdir(indexer.conf['git_store']))
 
     def test_index(self):
         pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1',

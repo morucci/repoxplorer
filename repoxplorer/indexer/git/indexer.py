@@ -21,13 +21,14 @@ import subprocess
 
 from io import BytesIO
 
+from pecan import conf
+
 from dulwich import repo
 from dulwich import patch
 
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 
-REPOS_STORE = '/tmp/kmachine/repos_store'
 
 RE_SOURCE_FILENAME = re.compile(
     r'^--- (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?')
@@ -61,12 +62,12 @@ class ProjectIndexer():
         else:
             self.con = con
         self.c = Commits(self.con)
-        if not os.path.isdir(REPOS_STORE):
-            os.makedirs(REPOS_STORE)
+        if not os.path.isdir(conf.git_store):
+            os.makedirs(conf.git_store)
         self.name = name
         self.uri = uri
         self.branch = branch
-        self.local = os.path.join(REPOS_STORE,
+        self.local = os.path.join(conf.git_store,
                                   self.name,
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):

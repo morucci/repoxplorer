@@ -1,12 +1,12 @@
 import sys
 
-# Server Specific Configurations
+# Backend Server Specific Configurations
+
 server = {
     'port': '8080',
     'host': '0.0.0.0'
 }
 
-# Pecan Application Configurations
 app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
@@ -19,7 +19,6 @@ app = {
     }
 }
 
-# Logging configuration
 logging = {
     'root': {'level': 'INFO', 'handlers': ['console']},
     'loggers': {
@@ -51,6 +50,6 @@ logging = {
     }
 }
 
-# RepoXplorer configuration
 projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
 idents_file_path = '%s/local/share/repoxplorer/idents.yaml' % sys.prefix
+git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix

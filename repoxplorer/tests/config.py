@@ -19,3 +19,4 @@ app = {
 
 projects_file_path = None
 idents_file_path = None
+git_store = None
