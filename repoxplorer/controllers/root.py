@@ -19,6 +19,7 @@ import hashlib
 from pecan import expose
 
 from datetime import datetime
+from datetime import timedelta
 
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
@@ -173,6 +174,14 @@ class RootController(object):
             todate=dto,
             merge_commit=include_merge_commit)
 
+        ttl_average = c.get_ttl_stats(
+            projects=p_filter,
+            fromdate=dfrom,
+            todate=dto,
+            merge_commit=include_merge_commit)[1]['avg']
+        ttl_average = timedelta(
+            seconds=int(ttl_average)) - timedelta(seconds=0)
+
         return {'pid': pid,
                 'histo': json.dumps(histo),
                 'top_authors': top_authors[:25],
@@ -187,6 +196,7 @@ class RootController(object):
                 'inc_merge_commit': inc_merge_commit,
                 'inc_projects': inc_projects,
                 'period': (odfrom, odto),
+                'ttl_average': ttl_average,
                 'empty': False}
 
     @expose('json')
