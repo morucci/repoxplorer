@@ -101,8 +101,8 @@ function get_commits(pid, page) {
     })
     elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>"
     elm += "<td>" + projects + "</td>"
-    elm += "<td>" + v['author_name'] + "</td>"
-    elm += "<td>" + v['committer_name'] + "</td>"
+    elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" + v['author_gravatar'] + "?s=20&d=wavatar'></span><span>" + v['author_name'] + "<span></td>"
+    elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" + v['committer_gravatar'] + "?s=20&d=wavatar'></span><span>" + v['committer_name'] + "<span></td>"
     // Just use the first gitweb link atm
     if (v['gitwebs'][0].length > 0) {
      elm += "<td><a href=" + v['gitwebs'][0] + ">" + v['commit_msg'] + "</a></td>"

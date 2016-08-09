@@ -238,4 +238,8 @@ class RootController(object):
             # Convert the TTL to something human readable
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))
+            cmt['author_gravatar'] = \
+                hashlib.md5(cmt['author_email']).hexdigest()
+            cmt['committer_gravatar'] = \
+                hashlib.md5(cmt['committer_email']).hexdigest()
         return resp
