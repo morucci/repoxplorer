@@ -242,4 +242,6 @@ class RootController(object):
                 hashlib.md5(cmt['author_email']).hexdigest()
             cmt['committer_gravatar'] = \
                 hashlib.md5(cmt['committer_email']).hexdigest()
+            if len(cmt['commit_msg']) > 80:
+                cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
         return resp
