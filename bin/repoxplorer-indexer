@@ -25,6 +25,7 @@ from repoxplorer.index import projects
 
 ROUND_DELAY=5
 
+config = '%s/local/share/repoxplorer/config.py' % sys.prefix
 logger = logging.getLogger('indexerDaemon')
 
 parser = argparse.ArgumentParser(description='RepoXplorer indexer')
@@ -49,7 +50,8 @@ def process():
         for prj in plist:
             p = indexer.ProjectIndexer(prj['name'],
                                        prj['uri'],
-                                       prj['branch'])
+                                       prj['branch'],
+                                       config=config)
             logger.info("Index sub-project %s" % str(p))
             p.git_init()
             p.git_fetch_branch()

@@ -21,6 +21,7 @@ import subprocess
 
 from io import BytesIO
 
+from pecan import configuration
 from pecan import conf
 
 from dulwich import repo
@@ -56,12 +57,14 @@ def run(cmd):
 
 
 class ProjectIndexer():
-    def __init__(self, name, uri, branch, con=None):
+    def __init__(self, name, uri, branch, con=None, config=None):
         if not con:
             self.con = index.Connector()
         else:
             self.con = con
         self.c = Commits(self.con)
+        if config:
+            configuration.set_config(config)
         if not os.path.isdir(conf.git_store):
             os.makedirs(conf.git_store)
         self.name = name
