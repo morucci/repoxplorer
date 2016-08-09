@@ -92,13 +92,14 @@ function get_commits(pid, page) {
    $("#commits-table table").append(theader);
    $.each( data[2], function(k, v) {
     var cmt_date = new Date(1000 * v['committer_date']);
+    var cmt_date = moment(cmt_date)
     var elm = "<tr>"
     var projects = ""
     $.each(v['projects'], function(i, p) {
       if (i > 0) {projects += "<br>"}
       projects += p
     })
-    elm += "<td>" + cmt_date.toUTCString() + "</td>"
+    elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>"
     elm += "<td>" + projects + "</td>"
     elm += "<td>" + v['author_name'] + "</td>"
     elm += "<td>" + v['committer_name'] + "</td>"
