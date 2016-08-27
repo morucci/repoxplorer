@@ -231,10 +231,11 @@ class RootController(object):
             # Also remove the URI part
             cmt['projects'] = [":".join(p.split(':')[-2:]) for
                                p in cmt['projects'] if p in p_filter]
-            # Request the ident index to fetch author/committer name
+            # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
                 if idents.get(cmt['%s_email' % elm]):
                     cmt['%s_name' % elm] = idents.get(cmt['%s_email' % elm])[1]
+                    cmt['%s_email' % elm] = idents.get(cmt['%s_email' % elm])[0]
             # Convert the TTL to something human readable
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))
