@@ -69,6 +69,7 @@ class RootController(object):
         idents = Users().get_users()
         top_authors_modified_s = []
         sanitized = {}
+        name_to_requests = []
         for k, v in top_authors_modified[1].items():
             if k in idents:
                 main_email = idents[k][0]
@@ -76,28 +77,27 @@ class RootController(object):
             else:
                 main_email = k
                 name = None
+                name_to_requests.append(main_email)
             amount = int(v)
             if main_email in sanitized:
                 sanitized[main_email][0] += amount
             else:
                 sanitized[main_email] = [amount, name]
+        raw_names = {}
+        if name_to_requests:
+            raw_names = commits.get_commits_author_name_by_emails(
+                name_to_requests)
         for k, v in sanitized.items():
             top_authors_modified_s.append(
                 {'email': k,
                  'gravatar': hashlib.md5(k).hexdigest(),
                  'amount': v[0],
-                 'name': v[1]})
+                 'name': v[1] or raw_names[k]})
         top_authors_modified_s_sorted = sorted(
             top_authors_modified_s,
             key=lambda k: k['amount'],
             reverse=True)[:top_amount]
         top_authors_modified_s_sorted = top_authors_modified_s_sorted
-        for author in top_authors_modified_s_sorted:
-            # Get author name if not known in ident
-            if author['name']:
-                continue
-            author['name'] = commits.get_commits(
-                [author['email']], [], limit=1)[2][0]['author_name']
         return top_authors_modified_s_sorted
 
     def get_project_filter(self, project, inc_projects):
