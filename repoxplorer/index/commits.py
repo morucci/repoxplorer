@@ -293,6 +293,74 @@ class Commits(object):
         took = res['took']
         return took, res["aggregations"]["%s_stats" % field]
 
+    def get_authors(self, mails=[], projects=[],
+                    fromdate=None, todate=None,
+                    merge_commit=None):
+        """ Return the author emails (removed duplicated)
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": self.get_filter(mails, projects),
+                }
+            },
+            "aggs": {
+                "authors": {
+                    "terms": {
+                        "field": "author_email",
+                        "order": {"_count": "asc"},
+                        "size": 0
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "committer_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        res = [(b['key'], b['doc_count'])
+               for b in res["aggregations"]["authors"]["buckets"]]
+        return took, dict(res)
+
+    def get_commits_author_name_by_emails(self, mails=[]):
+        """ Return the list author name based on the
+        list of author email passed as a query. This fetchs
+        each author name from the first commits found in the DB and
+        uses the bulk search API to reduce round trip.
+        """
+        if not mails:
+            raise Exception('At least an author email is required')
+        request = []
+        for email in mails:
+            req_head = {'index': self.index, 'type': self.dbname}
+            req_body = {'query': {'term': {'author_email': email}},
+                        'size': 1,
+                        '_source': ["author_email", "author_name"]}
+            request.extend([req_head, req_body])
+        resp = self.es.msearch(body=request)
+        ret = [(r['hits']['hits'][0]['_source']['author_email'],
+                r['hits']['hits'][0]['_source']['author_name'])
+               for r in resp['responses']]
+        return dict(ret)
+
     def get_top_authors(self, mails=[], projects=[],
                         fromdate=None, todate=None,
                         merge_commit=None):
@@ -303,6 +371,10 @@ class Commits(object):
         if not mails and not projects:
             raise Exception('At least a author email or project is required')
 
+        # TODO: instead of using a sub agg use "order" : { "_count" : "asc" }
+        # in that term agg. This will be more accurate according to the EL doc
+        # in case of multi-sharding. Then a solution is needed for retrieving
+        # author names.
         body = {
             "query": {
                 "filtered": {

@@ -293,3 +293,15 @@ class TestCommits(TestCase):
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertDictEqual(ret[1], {u'n.suke@joker.org': 10.0,
                                       u'jean.bon@joker.org': 500.0})
+
+    def test_get_authors(self):
+        ret = self.c.get_authors()
+        self.assertDictEqual(ret[1], {u'keiko.a@joker.org': 1,
+                                      u'jean.bon@joker.org': 5,
+                                      u'n.suke@joker.org': 1})
+
+    def test_get_commits_author_name_by_emails(self):
+        ret = self.c.get_commits_author_name_by_emails(
+            ['keiko.a@joker.org', 'jean.bon@joker.org'])
+        self.assertDictEqual(ret, {u'jean.bon@joker.org': u'Jean Bon',
+                                   u'keiko.a@joker.org': u'Keiko Amura'})
