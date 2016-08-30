@@ -24,13 +24,15 @@
     <tr>
      <th class="col-md-3">Contributor name</th>
      <th>Commits amount</th>
+     <th>Projects contributed</th>
     </tr>
-      % for name, amount in contributors:
-      <tr>
-       <td>${name}</td>
-       <td>${amount}</td>
-      </tr>
-      % endfor
+       % for cont in contributors:
+       <tr>
+        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${cont['gravatar']}?s=25&d=wavatar" title="${cont['name']}"></span><span><b>${cont['name']}</b></span></td>
+        <td>${cont['amount']}</td>
+        <td>Not Implemented</td>
+       </tr>
+       % endfor
    </table>
   </div>
 

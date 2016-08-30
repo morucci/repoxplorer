@@ -40,18 +40,9 @@ class RootController(object):
     @expose(template='contributors.html')
     def contributors(self):
         c = Commits(index.Connector(index=indexname))
-        idents = Users().get_users()
-        conts = []
-        raw_conts = c.get_authors()[1]
-        raw_names = c.get_commits_author_name_by_emails(raw_conts.keys())
-        for email, cname in raw_names.items():
-            name = cname
-            if email in idents:
-                name = idents[email][1]
-            conts.append((name, raw_conts[email]))
-        return {'contributors': sorted(conts,
-                                       key=lambda elm: elm[1],
-                                       reverse=True)}
+        raw_conts = c.get_authors()
+        conts = self.top_authors_sanitize(raw_conts, c)
+        return {'contributors': conts}
 
     def top_authors_sanitize(self, top_authors, commits):
         idents = Users().get_users()
