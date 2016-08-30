@@ -40,7 +40,7 @@ class RootController(object):
     @expose(template='contributors.html')
     def contributors(self):
         c = Commits(index.Connector(index=indexname))
-        raw_conts = c.get_authors()
+        raw_conts = c.get_authors(merge_commit=False)
         conts = self.top_authors_sanitize(raw_conts, c)
         return {'contributors': conts}
 
