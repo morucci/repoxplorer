@@ -246,21 +246,6 @@ class TestCommits(TestCase):
                                       u'count': 1, u'max': 5.0,
                                       u'sum': 5.0})
 
-    def test_get_top_authors(self):
-        ret = self.c.get_top_authors(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
-        self.assertDictEqual(ret[1],
-                             {u'jean.bon@joker.org': (2, 'Jean Bon'),
-                              u'n.suke@joker.org': (1, u'Nakata Daisuke')})
-
-        ret = self.c.get_top_authors(
-            projects=['https://github.com/nakata/monkey.git:monkey:master',
-                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
-        self.assertDictEqual(ret[1],
-                             {u'jean.bon@joker.org': (3, 'Jean Bon'),
-                              u'keiko.a@joker.org': (1, 'Keiko Amura'),
-                              u'n.suke@joker.org': (1, 'Nakata Daisuke')})
-
     def test_get_top_projects(self):
         ret = self.c.get_top_projects(
             ['jean.bon@joker.org'])

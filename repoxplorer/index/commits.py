@@ -296,7 +296,10 @@ class Commits(object):
     def get_authors(self, mails=[], projects=[],
                     fromdate=None, todate=None,
                     merge_commit=None):
-        """ Return the author emails (removed duplicated)
+        """ Return the author emails (removed duplicated) also
+        this return the amount of hits for a given unique
+        author_email. The hits value is the amount of commits
+        for a given email.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
@@ -310,7 +313,7 @@ class Commits(object):
                 "authors": {
                     "terms": {
                         "field": "author_email",
-                        "order": {"_count": "asc"},
+                        "order": {"_count": "desc"},
                         "size": 0
                     }
                 }
@@ -360,73 +363,6 @@ class Commits(object):
                 r['hits']['hits'][0]['_source']['author_name'])
                for r in resp['responses']]
         return dict(ret)
-
-    def get_top_authors(self, mails=[], projects=[],
-                        fromdate=None, todate=None,
-                        merge_commit=None):
-        """ Return the ranking of author emails
-        """
-        params = {'index': self.index, 'doc_type': self.dbname}
-
-        if not mails and not projects:
-            raise Exception('At least a author email or project is required')
-
-        # TODO: instead of using a sub agg use "order" : { "_count" : "asc" }
-        # in that term agg. This will be more accurate according to the EL doc
-        # in case of multi-sharding. Then a solution is needed for retrieving
-        # author names.
-        body = {
-            "query": {
-                "filtered": {
-                    "filter": self.get_filter(mails, projects),
-                }
-            },
-            "aggs": {
-                "top-author": {
-                    "terms": {
-                        "field": "author_email",
-                        "size": 0
-                    },
-                    "aggs": {
-                        "top-author-hits": {
-                            "top_hits": {
-                                "_source": {
-                                    "include": [
-                                        "author_name",
-                                    ]
-                                },
-                                "size": 1
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
-            {
-                "range": {
-                    "committer_date": {
-                        "gte": fromdate,
-                        "lt": todate,
-                    }
-                }
-            }
-        )
-
-        if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
-                {"term": {"merge_commit": merge_commit}})
-
-        params['body'] = body
-        params['size'] = 0
-        res = self.es.search(**params)
-        took = res['took']
-        top = [(b['key'], (b['doc_count'],
-                           b['top-author-hits']['hits']
-                           ['hits'][0]['_source']['author_name']))
-               for b in res["aggregations"]["top-author"]["buckets"]]
-        return took, dict(top)
 
     def get_top_authors_by_lines(self, mails=[], projects=[],
                                  fromdate=None, todate=None,

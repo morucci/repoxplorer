@@ -37,28 +37,33 @@ class RootController(object):
         projects = Projects().get_projects()
         return {'projects': projects}
 
-    def top_authors_sanitize(self, top_authors):
+    def top_authors_sanitize(self, top_authors, commits):
         idents = Users().get_users()
         sanitized = {}
+        name_to_requests = []
         for k, v in top_authors[1].items():
             if k in idents:
                 main_email = idents[k][0]
                 name = idents[k][1]
             else:
                 main_email = k
-                name = v[1]
-            amount = int(v[0])
+                name = None
+                name_to_requests.append(main_email)
             if main_email in sanitized:
-                sanitized[main_email][0] += amount
+                sanitized[main_email][0] += v
             else:
-                sanitized[main_email] = [amount, name]
+                sanitized[main_email] = [v, name]
         top_authors_s = []
+        raw_names = {}
+        if name_to_requests:
+            raw_names = commits.get_commits_author_name_by_emails(
+                name_to_requests)
         for k, v in sanitized.items():
             top_authors_s.append(
                 {'email': k,
                  'gravatar': hashlib.md5(k).hexdigest(),
                  'amount': v[0],
-                 'name': v[1]})
+                 'name': v[1] or raw_names[k]})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
                                       reverse=True)
@@ -158,10 +163,10 @@ class RootController(object):
         histo = [{'date': d['key_as_string'],
                   'value': d['doc_count']} for d in histo[1]]
 
-        top_authors = c.get_top_authors(**query_kwargs)
+        top_authors = c.get_authors(**query_kwargs)
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
 
-        top_authors = self.top_authors_sanitize(top_authors)
+        top_authors = self.top_authors_sanitize(top_authors, c)
         top_authors_modified = self.top_authors_modified_sanitize(
             top_authors_modified, c, top_amount=25)
 
