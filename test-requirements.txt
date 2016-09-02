@@ -4,3 +4,4 @@ mock
 pecan
 dulwich
 PyYAML
+pycrypto

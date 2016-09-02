@@ -56,5 +56,5 @@ class TestRootController(FunctionalTest):
             m.return_value = self.projects
             response = self.app.get('/commits.json?pid=test')
         assert response.status_int == 200
-        self.assertEqual(response.json[2][0]['author_email'],
-                         'n.suke@joker.org')
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Nakata Daisuke')
