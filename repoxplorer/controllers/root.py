@@ -44,6 +44,53 @@ class RootController(object):
         conts = self.top_authors_sanitize(raw_conts, c)
         return {'contributors': conts}
 
+    @expose(template='contributor.html')
+    def contributor(self, cid):
+        c = Commits(index.Connector(index=indexname))
+        idents = Users().get_users()
+        if cid in idents:
+            mails = idents[cid][2]
+            name = idents[cid][1]
+        else:
+            mails = [cid]
+            raw_names = c.get_commits_author_name_by_emails([cid])
+            name = raw_names[cid]
+        commits_amount = c.get_commits_amount(mails=mails)
+
+        query_kwargs = {
+            'fromdate': None,
+            'todate': None,
+            'mails': mails,
+            'merge_commit': False,
+        }
+
+        c_subprojects = c.get_top_projects(**query_kwargs)[1]
+        projects = Projects().get_projects()
+
+        projects_contributed = {}
+
+        for pname, subprojects in projects.items():
+            for p in subprojects:
+                pid = "%s:%s:%s" % (p['uri'],
+                                    p['name'],
+                                    p['branch'])
+                if pid in c_subprojects:
+                    if pid not in projects_contributed:
+                        projects_contributed[pname] = c_subprojects[pid]
+                    else:
+                        projects_contributed[pname] += c_subprojects[pid]
+
+        histo = c.get_commits_histo(**query_kwargs)
+        histo = [{'date': d['key_as_string'],
+                  'value': d['doc_count']} for d in histo[1]]
+
+        return {'name': name,
+                'histo': json.dumps(histo),
+                'commits_amount': commits_amount,
+                'projects_amount': len(projects_contributed),
+                'known_emails_amount': len(mails),
+                'cid': cid}
+
     def top_authors_sanitize(self, top_authors, commits):
         idents = Users().get_users()
         sanitized = {}
