@@ -28,7 +28,7 @@
     </tr>
        % for cont in contributors:
        <tr>
-        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${cont['gravatar']}?s=25&d=wavatar" title="${cont['name']}"></span><span><b>${cont['name']}</b></span></td>
+        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${cont['gravatar']}?s=25&d=wavatar" title="${cont['name']}"></span><span><a href="contributor.html?cid=${cont['email']}"><b>${cont['name']}</b></a></span></td>
         <td>${cont['amount']}</td>
         <td>Not Implemented</td>
        </tr>

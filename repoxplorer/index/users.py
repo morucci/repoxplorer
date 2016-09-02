@@ -21,6 +21,7 @@ from pecan import conf
 logger = logging.getLogger(__name__)
 
 
+# TODO: Should be called Contributors instead
 class Users(object):
     def __init__(self):
         path = conf.idents_file_path
@@ -35,7 +36,11 @@ class Users(object):
     def get_users(self):
         for user in self.users:
             main_email = user['emails'][0]
-            self.idents[main_email] = (main_email, user['name'])
+            self.idents[main_email] = (main_email,
+                                       user['name'],
+                                       user['emails'])
             for email in user['emails'][1:]:
-                self.idents[email] = (main_email, user['name'])
+                self.idents[email] = (main_email,
+                                      user['name'],
+                                      user['emails'])
         return self.idents
