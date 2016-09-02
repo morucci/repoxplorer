@@ -26,15 +26,45 @@ function getUrlParameter(sParam) {
     }
 };
 
-function install_date_pickers(projectid) {
- $(function() {
-   var dfrom = getUrlParameter('dfrom')
-   var dto = getUrlParameter('dto')
-   $( "#fromdatepicker" ).datepicker();
-   $( "#fromdatepicker" ).datepicker('setDate', dfrom);
-   $( "#todatepicker" ).datepicker();
-   $( "#todatepicker" ).datepicker('setDate', dto);
- });
+function install_date_pickers() {
+  var dfrom = getUrlParameter('dfrom')
+  var dto = getUrlParameter('dto')
+  $( "#fromdatepicker" ).datepicker();
+  $( "#fromdatepicker" ).datepicker('setDate', dfrom);
+  $( "#todatepicker" ).datepicker();
+  $( "#todatepicker" ).datepicker('setDate', dto);
+}
+
+function contributor_page_init(cid) {
+ install_date_pickers();
+
+ if (getUrlParameter('inc_merge_commit') == 'on') {
+    $('#inc_merge_commit').prop('checked', true)
+ }
+ if (getUrlParameter('inc_subproject_detail') == 'on') {
+    $('#inc_subproject_detail').prop('checked', true)
+ }
+
+ $("#filter").click(function(){
+  var newlocation = "contributor.html?cid=" + cid
+  if ($('#fromdatepicker').val() != '') {
+    newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
+  }
+  if ($('#todatepicker').val() != '') {
+    newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
+  }
+  if ($('#inc_merge_commit').prop('checked')) {
+      newlocation = newlocation + "&inc_merge_commit=on"
+  }
+  if ($('#inc_subproject_detail').prop('checked')) {
+      newlocation = newlocation + "&inc_subproject_detail=on"
+  }
+  window.location = newlocation
+  });
+}
+
+function project_page_init(projectid) {
+ install_date_pickers();
 
  if (getUrlParameter('inc_merge_commit') == 'on') {
     $('#inc_merge_commit').prop('checked', true)
@@ -63,7 +93,7 @@ function install_date_pickers(projectid) {
   });
 }
 
-function get_commits(pid, page) {
+function get_commits(pid, cid, page) {
  if (page === undefined) {
    page = 0;
  }
@@ -72,6 +102,7 @@ function get_commits(pid, page) {
  }
  $.getJSON(
    "/commits.json", {pid : pid,
+                     cid: cid,
                      start : page,
                      dfrom: getUrlParameter('dfrom'),
                      dto: getUrlParameter('dto'),
@@ -127,7 +158,7 @@ function check_fragment() {
         $("#pagination").pagination('selectPage', page);
 };
 
-function install_paginator(pid, items_amount) {
+function install_paginator(pid, cid, items_amount) {
  if (items_amount >= 1000) {
    // Limit the amount of pages to 100
    // User should use the calendar filter to dig in the results
@@ -140,7 +171,7 @@ function install_paginator(pid, items_amount) {
          itemsOnPage: 10,
          cssStyle: 'light-theme',
          onPageClick: function(pageNumber) {
-           get_commits(pid, (pageNumber - 1) * 10)
+           get_commits(pid, cid, (pageNumber - 1) * 10)
          }
      });
      check_fragment();

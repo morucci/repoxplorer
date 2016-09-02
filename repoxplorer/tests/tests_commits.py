@@ -246,8 +246,8 @@ class TestCommits(TestCase):
                                       u'count': 1, u'max': 5.0,
                                       u'sum': 5.0})
 
-    def test_get_top_projects(self):
-        ret = self.c.get_top_projects(
+    def test_get_projects(self):
+        ret = self.c.get_projects(
             ['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
             u'https://github.com/amura/kotatsu.git:kotatsu:devel': 3,
@@ -278,6 +278,14 @@ class TestCommits(TestCase):
             projects=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertDictEqual(ret[1], {u'n.suke@joker.org': 10.0,
                                       u'jean.bon@joker.org': 500.0})
+
+    def test_get_top_projects_by_lines(self):
+        ret = self.c.get_top_projects_by_lines(
+            mails=['jean.bon@joker.org'])
+        self.assertDictEqual(ret[1], {
+            u'https://github.com/amura/kotatsu.git:kotatsu:master': 400.0,
+            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 1200.0,
+            u'https://github.com/nakata/monkey.git:monkey:master': 500.0})
 
     def test_get_authors(self):
         ret = self.c.get_authors()
