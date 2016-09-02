@@ -44,6 +44,93 @@ class RootController(object):
         conts = self.top_authors_sanitize(raw_conts, c)
         return {'contributors': conts}
 
+    @expose(template='contributor.html')
+    def contributor(self, cid, dfrom=None, dto=None,
+                    inc_merge_commit=None,
+                    inc_subproject_detail=None):
+        if inc_merge_commit != 'on':
+            inc_merge_commit = ''
+            include_merge_commit = False
+        else:
+            # The None value will return all whatever
+            # the commit is a merge one or not
+            include_merge_commit = None
+        odfrom = None
+        odto = None
+        if dfrom:
+            odfrom = dfrom
+            dfrom = datetime.strptime(
+                dfrom, "%m/%d/%Y").strftime('%s')
+        if dto:
+            odto = dto
+            dto = datetime.strptime(
+                dto, "%m/%d/%Y").strftime('%s')
+        c = Commits(index.Connector(index=indexname))
+        idents = Users().get_users()
+        if cid in idents:
+            mails = idents[cid][2]
+            name = idents[cid][1]
+        else:
+            mails = [cid]
+            raw_names = c.get_commits_author_name_by_emails([cid])
+            name = raw_names[cid]
+
+        query_kwargs = {
+            'fromdate': dfrom,
+            'todate': dto,
+            'mails': mails,
+            'merge_commit': include_merge_commit,
+        }
+
+        commits_amount = c.get_commits_amount(**query_kwargs)
+        projects = Projects().get_projects()
+
+        c_subprojects = c.get_projects(**query_kwargs)[1]
+        projects_contributed = {}
+
+        lm_subprojects = c.get_top_projects_by_lines(**query_kwargs)[1]
+        projects_contributed_modified = {}
+
+        for pname, subprojects in projects.items():
+            for p in subprojects:
+                pid = "%s:%s:%s" % (p['uri'],
+                                    p['name'],
+                                    p['branch'])
+                if pid in c_subprojects:
+                    projects_contributed.setdefault(pname, 0)
+                    projects_contributed[pname] += c_subprojects[pid]
+                if pid in lm_subprojects:
+                    projects_contributed_modified.setdefault(pname, 0)
+                    projects_contributed_modified[pname] += lm_subprojects[pid]
+
+        projects_contributed = [
+            (p, ca) for p, ca in projects_contributed.items()]
+        sorted_projects_contributed = sorted(
+            projects_contributed,
+            key=lambda i: i[1],
+            reverse=True)
+
+        projects_contributed_modified = [
+            (p, lm) for p, lm in projects_contributed_modified.items()]
+        sorted_projects_contributed_modified = sorted(
+            projects_contributed_modified,
+            key=lambda i: i[1],
+            reverse=True)
+
+        histo = c.get_commits_histo(**query_kwargs)
+        histo = [{'date': d['key_as_string'],
+                  'value': d['doc_count']} for d in histo[1]]
+
+        return {'name': name,
+                'histo': json.dumps(histo),
+                'commits_amount': commits_amount,
+                'projects': sorted_projects_contributed,
+                'projects_line_mdfds': sorted_projects_contributed_modified,
+                'projects_amount': len(sorted_projects_contributed),
+                'known_emails_amount': len(mails),
+                'inc_merge_commit': inc_merge_commit,
+                'cid': cid}
+
     def top_authors_sanitize(self, top_authors, commits):
         idents = Users().get_users()
         sanitized = {}

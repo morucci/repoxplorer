@@ -26,15 +26,45 @@ function getUrlParameter(sParam) {
     }
 };
 
-function install_date_pickers(projectid) {
- $(function() {
-   var dfrom = getUrlParameter('dfrom')
-   var dto = getUrlParameter('dto')
-   $( "#fromdatepicker" ).datepicker();
-   $( "#fromdatepicker" ).datepicker('setDate', dfrom);
-   $( "#todatepicker" ).datepicker();
-   $( "#todatepicker" ).datepicker('setDate', dto);
- });
+function install_date_pickers() {
+  var dfrom = getUrlParameter('dfrom')
+  var dto = getUrlParameter('dto')
+  $( "#fromdatepicker" ).datepicker();
+  $( "#fromdatepicker" ).datepicker('setDate', dfrom);
+  $( "#todatepicker" ).datepicker();
+  $( "#todatepicker" ).datepicker('setDate', dto);
+}
+
+function contributor_page_init(cid) {
+ install_date_pickers();
+
+ if (getUrlParameter('inc_merge_commit') == 'on') {
+    $('#inc_merge_commit').prop('checked', true)
+ }
+ if (getUrlParameter('inc_subproject_detail') == 'on') {
+    $('#inc_subproject_detail').prop('checked', true)
+ }
+
+ $("#filter").click(function(){
+  var newlocation = "contributor.html?cid=" + cid
+  if ($('#fromdatepicker').val() != '') {
+    newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
+  }
+  if ($('#todatepicker').val() != '') {
+    newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
+  }
+  if ($('#inc_merge_commit').prop('checked')) {
+      newlocation = newlocation + "&inc_merge_commit=on"
+  }
+  if ($('#inc_subproject_detail').prop('checked')) {
+      newlocation = newlocation + "&inc_subproject_detail=on"
+  }
+  window.location = newlocation
+  });
+}
+
+function project_page_init(projectid) {
+ install_date_pickers();
 
  if (getUrlParameter('inc_merge_commit') == 'on') {
     $('#inc_merge_commit').prop('checked', true)

@@ -40,10 +40,8 @@
 
  <div class="col-md-9">
   <div class="panel panel-default">
-   <div class="panel-heading container-fluid">
-     <div class="col-md-6 text-left">
-      <h3 class="panel-title"><b>Filters</b></h3>
-     </div>
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Filters</b></h3>
    </div>
    <div class="panel-body container-fluid">
     <div id="filters">
@@ -227,7 +225,7 @@
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
  gen_histo(histo);
- install_date_pickers('${pid}');
+ project_page_init('${pid}');
  install_paginator('${pid}', '${commits_amount}');
  get_commits('${pid}');
 </script>
@@ -240,6 +238,6 @@
  </div>
 </div>
 <script type="text/javascript">
- install_date_pickers('${pid}');
+ project_page_init('${pid}');
 </script>
 % endif
