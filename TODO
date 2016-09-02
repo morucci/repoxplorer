@@ -1,0 +1,13 @@
+Contributors listing page:
+--------------------------
+
+- Only list the cross project (all projects) top 100.
+- Add a search box to research over contributor names
+  and display results.
+- Display in the listing the amount of project contributed and the
+  number of repos contributed (subprojects)
+
+Trends:
+-------
+
+- Display top N new contributors since M months
