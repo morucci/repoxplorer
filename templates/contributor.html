@@ -1,0 +1,182 @@
+<%inherit file="layout.html" />
+
+<%def name="title()">
+  [${cid}] - Contributor page
+</%def>
+
+<div class="row-fluid">
+
+ <div class="col-md-12">
+  <div class="jumbotron">
+   <h2>${cid} contributor details</h2>
+  </div>
+ </div>
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-4">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Contributor infos</b></h3>
+   </div>
+   <div class="panel-body container-fluid">
+    <div id="gravatar" class="col-md-4">
+     <div><img src="https://www.gravatar.com/avatar/${gravatar}?s=150&d=wavatar" title="${name}"></div>
+    </div>
+    <div id="infos" class="col-md-8">
+     <div><b>Full Name:</b> ${name}</div>
+     <div><b>Amount of commits:</b> ${commits_amount}</div>
+     <div><b>Amount of projects contributed:</b> ${projects_amount}</div>
+     <div><b>Contributor has been active for:</b> ${duration}</div>
+     <div><b>Date of first commits:</b> ${first}</div>
+     <div><b>Date of last commits:</b> ${last}</div>
+     <div><b>Known emails:</b> ${known_emails_amount}</div>
+     <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <div class="col-md-8">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Filters</b></h3>
+   </div>
+   <div class="panel-body container-fluid">
+    <div id="filters">
+     <div class="col-md-6">
+      <div class="form-group">
+       <label for="fromdatepicker">From date</label>
+       <input type="text" class="form-control" id="fromdatepicker"></span>
+      </div>
+      <div class="form-group">
+       <label for="todatepicker">To date</label>
+       <input type="text" class="form-control" id="todatepicker"></span>
+      </div>
+      <div class="checkbox">
+       % if inc_merge_commit == 'on':
+           <label><input type="checkbox" id="inc_merge_commit" checked>Include merge commits</label>
+       % else:
+           <label><input type="checkbox" id="inc_merge_commit">Include merge commits</label>
+       % endif
+      </div>
+      <div class="checkbox">
+       % if inc_subproject_detail == 'on':
+           <label><input type="checkbox" id="inc_subproject_detail" checked>Display sub-project details</label>
+       % else:
+           <label><input type="checkbox" id="inc_subproject_detail">Display sub-project details</label>
+       % endif
+      </div>
+     </div>
+     <div class="col-md-6 form-group">
+     </div>
+    </div>
+    <div><input id="filter" type="button" value="Apply filter" class="btn pull-right" /></div>
+   </div>
+  </div>
+ </div>
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-12">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Commits history</b></h3>
+   </div>
+   <div class="panel-body">
+    <div id="history">
+    </div>
+   </div>
+  </div>
+ </div>
+
+</div>
+
+<div class="row-fluid">
+
+ <div class="col-md-6">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Top 10 projects by commit amount</b></h3>
+   </div>
+   <div class="panel-body">
+    <div id="topauthors">
+     <div id="topauthors_table">
+      <table class="table table-striped">
+       <tr>
+        <th class="col-md-1">Rank</th>
+        <th>Name</th>
+        <th>Amount</th>
+       <tr>
+       % for n, p in enumerate(projects, start=1):
+       <tr>
+        <td>${n}</td>
+        <td>${p[0]}</td>
+        <td>${p[1]}</td>
+       <tr>
+       % endfor
+      </table>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <div class="col-md-6">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Top 10 projects by line modifieds amount</b></h3>
+   </div>
+   <div class="panel-body">
+    <div id="topauthors">
+     <div id="topauthors_table">
+      <table class="table table-striped">
+       <tr>
+        <th class="col-md-1">Rank</th>
+        <th>Name</th>
+        <th>Amount</th>
+       <tr>
+       % for n, p in enumerate(projects_line_mdfds, start=1):
+       <tr>
+        <td>${n}</td>
+        <td>${p[0]}</td>
+        <td>${p[1]}</td>
+       <tr>
+       % endfor
+      </table>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+<div class="row-fluid">
+ <div class="col-md-12">
+  <div class="panel panel-default">
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Contributor commits</b><i> (Limited to 100 pages)</i></h3>
+   </div>
+   <div id="commits-table">
+   </div>
+   <div class="panel-footer">
+    <div class="block-center">
+     <div id="pagination">
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+ var histo = jQuery.parseJSON('${histo}');
+ gen_histo(histo);
+ contributor_page_init('${cid}');
+ install_paginator(undefined, '${cid}', '${commits_amount}');
+ get_commits(undefined, '${cid}', undefined);
+</script>
