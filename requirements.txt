@@ -4,3 +4,4 @@ dulwich
 PyYAML
 uWSGI
 github3.py
+pycrypto

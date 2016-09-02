@@ -361,14 +361,29 @@ class Commits(object):
                         '_source': ["author_email", "author_name"]}
             request.extend([req_head, req_body])
         resp = self.es.msearch(body=request)
-        ret = [(r['hits']['hits'][0]['_source']['author_email'],
-                r['hits']['hits'][0]['_source']['author_name'])
-               for r in resp['responses']]
+        ret = []
+        for r in resp['responses']:
+            try:
+                # Need to investigate further will
+                # the hit is empty after all
+                r['hits']['hits'][0]
+            except Exception:
+                continue
+            ret.append(
+                (r['hits']['hits'][0]['_source']['author_email'],
+                 r['hits']['hits'][0]['_source']['author_name'])
+            )
         return dict(ret)
 
-    def get_top_authors_by_lines(self, mails=[], projects=[],
-                                 fromdate=None, todate=None,
-                                 merge_commit=None):
+    def get_top_authors_by_lines(self, **kwargs):
+        return self.get_top_field_by_lines("author_email", **kwargs)
+
+    def get_top_projects_by_lines(self, **kwargs):
+        return self.get_top_field_by_lines("projects", **kwargs)
+
+    def get_top_field_by_lines(self, field, mails=[], projects=[],
+                               fromdate=None, todate=None,
+                               merge_commit=None):
         """ Return the ranking of author emails by modidified lines
         of codes
         """
@@ -384,9 +399,9 @@ class Commits(object):
                 }
             },
             "aggs": {
-                "top-author-by-modified": {
+                "top-field-by-modified": {
                     "terms": {
-                        "field": "author_email",
+                        "field": field,
                         "size": 0,
                     },
                     "aggs": {
@@ -421,13 +436,15 @@ class Commits(object):
         took = res['took']
         top = [(b['key'], b['modified']['value'])
                for b in res["aggregations"]
-               ["top-author-by-modified"]["buckets"]]
+               ["top-field-by-modified"]["buckets"]]
         return took, dict(top)
 
-    def get_top_projects(self, mails=[], projects=[],
-                         fromdate=None, todate=None,
-                         merge_commit=None):
-        """ Return the ranking of project contributed
+    def get_projects(self, mails=[], projects=[],
+                     fromdate=None, todate=None,
+                     merge_commit=None):
+        """ Return the projects (removed duplicated) also
+        this return the amount of hits. The hits value is
+        the amount of commit for an uniq project.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
@@ -441,23 +458,11 @@ class Commits(object):
                 }
             },
             "aggs": {
-                "top-project": {
+                "projects": {
                     "terms": {
                         "field": "projects",
-                        "size": 50
-                    },
-                    "aggs": {
-                        "top-projects-hits": {
-                            "top_hits": {
-                                "sort": [
-                                    {
-                                        "committer_date": {
-                                            "order": "desc"
-                                        }
-                                    }],
-                                "size": 1
-                            }
-                        }
+                        "order": {"_count": "desc"},
+                        "size": 0
                     }
                 }
             }
@@ -483,7 +488,7 @@ class Commits(object):
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['doc_count'])
-               for b in res["aggregations"]["top-project"]["buckets"]]
+               for b in res["aggregations"]["projects"]["buckets"]]
         return took, dict(top)
 
     def get_commits_time_delta(self, mails=[], projects=[],

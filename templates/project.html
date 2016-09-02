@@ -40,10 +40,8 @@
 
  <div class="col-md-9">
   <div class="panel panel-default">
-   <div class="panel-heading container-fluid">
-     <div class="col-md-6 text-left">
-      <h3 class="panel-title"><b>Filters</b></h3>
-     </div>
+   <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Filters</b></h3>
    </div>
    <div class="panel-body container-fluid">
     <div id="filters">
@@ -124,9 +122,11 @@
        <div align="center"><p><b><h3>${n}</h3></b></p></div>
        <div align="center"><p><b><h4>${i['amount']} commits</h4></b></p></div>
        <div align="center">
-        <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+        <a href=contributor.html?cid=${i['cid']}>
+         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+        </a>
        </div>
-       <div align="center"><p><b><h3>${i['name']}</h3></b></p></div>
+       <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
       </div>
       % endfor
      </div>
@@ -143,7 +143,7 @@
        % for n, i in enumerate(top_authors[3:], start=4):
        <tr>
         <td>${n}</td>
-        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b>${i['name']}</b></span></td>
+        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
        <tr>
        % endfor
@@ -175,9 +175,11 @@
        <div align="center"><p><b><h3>${n}</h3></b></p></div>
        <div align="center"><p><b><h4>${i['amount']} line modifieds</h4></b></p></div>
        <div align="center">
-        <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+        <a href=contributor.html?cid=${i['cid']}>
+         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+        </a>
        </div>
-       <div align="center"><p><b><h3>${i['name']}</h3></b></p></div>
+       <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
       </div>
       % endfor
      </div>
@@ -194,7 +196,7 @@
        % for n, i in enumerate(top_authors_modified[3:], start=4):
        <tr>
         <td>${n}</td>
-        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b>${i['name']}</b></span></td>
+        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
        <tr>
        % endfor
@@ -227,9 +229,9 @@
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
  gen_histo(histo);
- install_date_pickers('${pid}');
- install_paginator('${pid}', '${commits_amount}');
- get_commits('${pid}');
+ project_page_init('${pid}');
+ install_paginator('${pid}', undefined, '${commits_amount}');
+ get_commits('${pid}', undefined, undefined);
 </script>
 % else:
 <div class="row-fluid">
@@ -240,6 +242,6 @@
  </div>
 </div>
 <script type="text/javascript">
- install_date_pickers('${pid}');
+ project_page_init('${pid}');
 </script>
 % endif
