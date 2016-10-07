@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # Copyright 2016, Fabien Boucher
 #
@@ -24,7 +24,7 @@ from repoxplorer.indexer.git import indexer
 from repoxplorer import index
 from repoxplorer.index import projects
 
-ROUND_DELAY=5
+ROUND_DELAY = 5
 
 config = '%s/local/share/repoxplorer/config.py' % sys.prefix
 logger = logging.getLogger('indexerDaemon')
@@ -44,6 +44,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+
 def process():
     con = index.Connector()
     prjs = projects.Projects(args.projects).get_projects()
@@ -57,7 +58,13 @@ def process():
                                        config=config)
             logger.info("Index sub-project %s" % str(p))
             p.git_init()
-            p.git_fetch_branch()
+            try:
+                p.git_fetch_branch()
+            except KeyError:
+                logger.info(
+                    "Sub-project %s does not have the"
+                    " requested branch %s. Skip it." % (str(p), prj['branch']))
+                continue
             p.git_get_commit_obj()
             p.get_current_commit_indexed()
             p.compute_to_index_to_delete()
