@@ -58,16 +58,21 @@ if __name__ == "__main__":
             fd.write(yaml.safe_dump(struct,
                                     default_flow_style=False))
         print "%s source repositories details" \
-              " has been written to output.yaml" % (org.name)
+              " has been written to output.yaml" % (args.org)
         sys.exit(0)
     else:
         if os.path.isfile(args.projects_file_path):
             content = yaml.load(file(args.projects_file_path))
             content['projects'].update(struct['projects'])
-            content['templates'].append(struct['templates'][0])
+            if struct['templates'][0]['name'] not in [
+                    t['name'] for t in content['templates']]:
+                content['templates'].append(struct['templates'][0])
             with open(args.projects_file_path, 'w') as fd:
                 fd.write(yaml.safe_dump(content,
                                         default_flow_style=False))
+            print "%s source repositories details" \
+                  " has been updated to %s" % (args.org,
+                                               args.projects_file_path)
             sys.exit(0)
         else:
             print "%s has not been found on the FS" % args.project_file_path
