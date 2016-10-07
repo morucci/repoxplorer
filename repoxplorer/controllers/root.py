@@ -229,7 +229,7 @@ class RootController(object):
                 {'cid': self.encrypt(xorkey, k),
                  'gravatar': hashlib.md5(k).hexdigest(),
                  'amount': v[0],
-                 'name': v[1] or raw_names[k]})
+                 'name': v[1] or raw_names.get(k, None)})
         top_authors_modified_s_sorted = sorted(
             top_authors_modified_s,
             key=lambda k: k['amount'],
