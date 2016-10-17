@@ -14,7 +14,10 @@
 
 
 import logging
+
+from collections import deque
 from datetime import timedelta
+
 from elasticsearch.helpers import scan as scanner
 from elasticsearch.helpers import bulk
 
@@ -351,28 +354,51 @@ class Commits(object):
         each author name from the first commits found in the DB and
         uses the bulk search API to reduce round trip.
         """
+        def subreq(mails):
+            request = []
+            for email in mails:
+                req_head = {'index': self.index, 'type': self.dbname}
+                req_body = {'query': {'term': {'author_email': email}},
+                            'size': 1,
+                            '_source': ["author_email", "author_name"]}
+                request.extend([req_head, req_body])
+            resp = self.es.msearch(body=request)
+            return resp
+
         if not mails:
             raise Exception('At least an author email is required')
-        request = []
-        for email in mails:
-            req_head = {'index': self.index, 'type': self.dbname}
-            req_body = {'query': {'term': {'author_email': email}},
-                        'size': 1,
-                        '_source': ["author_email", "author_name"]}
-            request.extend([req_head, req_body])
-        resp = self.es.msearch(body=request)
+
         ret = []
-        for r in resp['responses']:
-            try:
-                # Need to investigate further will
-                # the hit is empty after all
-                r['hits']['hits'][0]
-            except Exception:
-                continue
-            ret.append(
-                (r['hits']['hits'][0]['_source']['author_email'],
-                 r['hits']['hits'][0]['_source']['author_name'])
-            )
+        resps = []
+        amount = 100
+
+        mails = deque(mails)
+        while True:
+            _mails = []
+            for _ in xrange(amount):
+                try:
+                    _mails.append(mails.pop())
+                except IndexError:
+                    break
+            if _mails:
+                resps.append(subreq(_mails))
+            else:
+                break
+
+        for resp in resps:
+            for r in resp['responses']:
+                try:
+                    r['hits']['hits'][0]
+                except Exception:
+                    ret.append((None, None))
+                    # Here we hit EsThreadPoolExecutor[search,
+                    # queue capacity = 1000]
+                    # print r
+                    continue
+                ret.append(
+                    (r['hits']['hits'][0]['_source']['author_email'],
+                     r['hits']['hits'][0]['_source']['author_name'])
+                )
         return dict(ret)
 
     def get_top_authors_by_lines(self, **kwargs):
