@@ -1,29 +1,39 @@
 <%inherit file="layout.html" />
 
 <%def name="title()">
-  [RepoXplorer] - Contributors listing
+  [RepoXplorer] - Search contributors
 </%def>
 
 <div class="row-fluid">
 
  <div class="col-md-12">
   <div class="jumbotron">
-   <h3>Listing of the commit authors referenced in the database. You can click on it in order to display details.</h3>
+   <h3>Enter the author name to search. You can click on a result in order to display details.</h3>
   </div>
  </div>
 
 <div class="row-fluid">
 
  <div class="col-md-12">
+  <form class="form-inline" id="search-form">
+   <div class="form-group">
+    <label for="search-txt">Search contributors</label>
+    <input type="text" class="form-control" id="search-txt">
+   </div>
+   <input id="search-btn" type="button" value="Search" class="btn btn-default" />
+  </form>
+ </div>
+
+ <div class="col-md-12">
 
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Contributors list</b></h3>
+    <h3 class="panel-title text-left"><b>Search results - hits: ${total_hits}/${total_contributors} (page limited to ${max_result}) </b></h3>
    </div>
    <table class="table">
     <tr>
-     <th class="col-md-3">Contributor name</th>
-     <th>Commits amount</th>
+     <th class="col-md-3">Contributor names</th>
+     <th>Commit amounts</th>
      <th>Projects contributed</th>
     </tr>
        % for cont in contributors:
@@ -39,3 +49,6 @@
  </div>
 
 </div>
+<script type="text/javascript">
+ contributors_page_init();
+</script>

@@ -50,11 +50,19 @@ class RootController(object):
         return {'projects': projects}
 
     @expose(template='contributors.html')
-    def contributors(self):
+    def contributors(self, search=""):
+        max_result = 50
         c = Commits(index.Connector(index=indexname))
         raw_conts = c.get_authors(merge_commit=False)
         conts = self.top_authors_sanitize(raw_conts, c)
-        return {'contributors': conts}
+        total_contributors = len(conts)
+        conts = [co for co in conts
+                 if co['name'].find(search) >= 0]
+        total_hits = len(conts)
+        return {'contributors': conts[:max_result],
+                'total_contributors': total_contributors,
+                'total_hits': total_hits,
+                'max_result': max_result}
 
     @expose(template='contributor.html')
     def contributor(self, cid, dfrom=None, dto=None,
@@ -169,7 +177,7 @@ class RootController(object):
                 'ttl_average': ttl_average,
                 'cid': self.encrypt(xorkey, cid)}
 
-    def top_authors_sanitize(self, top_authors, commits, top=25):
+    def top_authors_sanitize(self, top_authors, commits, top=100000):
         idents = Users().get_users()
         sanitized = {}
         for k, v in top_authors[1].items():

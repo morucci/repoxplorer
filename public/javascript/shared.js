@@ -93,6 +93,13 @@ function project_page_init(projectid) {
   });
 }
 
+function contributors_page_init() {
+ $("#search-btn").click(function() {
+  var newlocation = "contributors.html?search=" + $("#search-txt").val()
+  window.location = newlocation
+ });
+}
+
 function get_commits(pid, cid, page) {
  if (page === undefined) {
    page = 0;
