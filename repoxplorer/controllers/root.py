@@ -169,10 +169,9 @@ class RootController(object):
                 'ttl_average': ttl_average,
                 'cid': self.encrypt(xorkey, cid)}
 
-    def top_authors_sanitize(self, top_authors, commits):
+    def top_authors_sanitize(self, top_authors, commits, top=25):
         idents = Users().get_users()
         sanitized = {}
-        name_to_requests = []
         for k, v in top_authors[1].items():
             if k in idents:
                 main_email = idents[k][0]
@@ -180,62 +179,33 @@ class RootController(object):
             else:
                 main_email = k
                 name = None
-                name_to_requests.append(main_email)
             if main_email in sanitized:
                 sanitized[main_email][0] += v
             else:
                 sanitized[main_email] = [v, name]
         top_authors_s = []
         raw_names = {}
-        if name_to_requests:
-            raw_names = commits.get_commits_author_name_by_emails(
-                name_to_requests)
         for k, v in sanitized.items():
             top_authors_s.append(
                 {'cid': self.encrypt(xorkey, k),
+                 'email': k,
                  'gravatar': hashlib.md5(k).hexdigest(),
-                 'amount': v[0],
-                 'name': v[1] or raw_names.get(k, None)})
+                 'amount': int(v[0]),
+                 'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
-                                      reverse=True)
-        return top_authors_s_sorted
-
-    def top_authors_modified_sanitize(self, top_authors_modified,
-                                      commits, top_amount=25):
-        idents = Users().get_users()
-        top_authors_modified_s = []
-        sanitized = {}
+                                      reverse=True)[:top]
         name_to_requests = []
-        for k, v in top_authors_modified[1].items():
-            if k in idents:
-                main_email = idents[k][0]
-                name = idents[k][1]
-            else:
-                main_email = k
-                name = None
-                name_to_requests.append(main_email)
-            amount = int(v)
-            if main_email in sanitized:
-                sanitized[main_email][0] += amount
-            else:
-                sanitized[main_email] = [amount, name]
-        raw_names = {}
+        for v in top_authors_s_sorted:
+            if not v['name']:
+                name_to_requests.append(v['email'])
         if name_to_requests:
             raw_names = commits.get_commits_author_name_by_emails(
                 name_to_requests)
-        for k, v in sanitized.items():
-            top_authors_modified_s.append(
-                {'cid': self.encrypt(xorkey, k),
-                 'gravatar': hashlib.md5(k).hexdigest(),
-                 'amount': v[0],
-                 'name': v[1] or raw_names.get(k, None)})
-        top_authors_modified_s_sorted = sorted(
-            top_authors_modified_s,
-            key=lambda k: k['amount'],
-            reverse=True)[:top_amount]
-        top_authors_modified_s_sorted = top_authors_modified_s_sorted
-        return top_authors_modified_s_sorted
+        for v in top_authors_s_sorted:
+            v['name'] = v['name'] or raw_names[v['email']]
+            del v['email']
+        return top_authors_s_sorted
 
     def get_project_filter(self, project, inc_projects):
         p_filter = []
@@ -304,9 +274,12 @@ class RootController(object):
         top_authors = c.get_authors(**query_kwargs)
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
 
-        top_authors = self.top_authors_sanitize(top_authors, c)
-        top_authors_modified = self.top_authors_modified_sanitize(
-            top_authors_modified, c, top_amount=25)
+        authors_amount = len(top_authors)
+
+        top_authors = self.top_authors_sanitize(
+            top_authors, c, top=25)
+        top_authors_modified = self.top_authors_sanitize(
+            top_authors_modified, c, top=25)
 
         first, last, duration = c.get_commits_time_delta(**query_kwargs)
 
@@ -316,9 +289,9 @@ class RootController(object):
 
         return {'pid': pid,
                 'histo': json.dumps(histo),
-                'top_authors': top_authors[:25],
+                'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
-                'authors_amount': len(top_authors),
+                'authors_amount': authors_amount,
                 'commits_amount': commits_amount,
                 'first': datetime.fromtimestamp(first),
                 'last': datetime.fromtimestamp(last),
