@@ -31,8 +31,8 @@ class TestProjectIndexer(TestCase):
         pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1',
                                     'master', con=self.con)
         pi.cmt_list_generator = \
-            lambda sha_list: [c for c in repo_commits
-                              if c['sha'] in sha_list]
+            lambda sha_list, _: [c for c in repo_commits
+                                 if c['sha'] in sha_list]
 
         # This is the initial commits list of a repository we
         # are going to index
@@ -108,8 +108,8 @@ class TestProjectIndexer(TestCase):
         pi2 = indexer.ProjectIndexer('p2', 'file:///tmp/p2',
                                      'master', con=self.con)
         pi2.cmt_list_generator = \
-            lambda sha_list: [c for c in repo2_commits
-                              if c['sha'] in sha_list]
+            lambda sha_list, _: [c for c in repo2_commits
+                                 if c['sha'] in sha_list]
         repo2_commits = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',

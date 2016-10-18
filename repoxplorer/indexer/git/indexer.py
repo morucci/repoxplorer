@@ -18,6 +18,7 @@ import re
 import logging
 import contextlib
 import subprocess
+import multiprocessing as mp
 
 from io import BytesIO
 
@@ -54,6 +55,67 @@ def run(cmd):
                                stderr=subprocess.STDOUT,
                                shell=True)
     return process.communicate()
+
+
+def get_diff_stats(r, obj):
+    parents = len(obj.parents)
+    if parents <= 1:
+        parent = getattr(obj, 'parents', None)
+        if parent:
+            parent = parent[0]
+            parent_tree = r.object_store[parent].tree
+        else:
+            parent_tree = None
+        current_tree = obj.tree
+        patch_content = BytesIO()
+        patch.write_tree_diff(patch_content, r.object_store,
+                              parent_tree, current_tree)
+        patch_content.seek(0)
+        content = patch_content.readlines()
+        modified = 0
+        for line in content:
+            if RE_SOURCE_FILENAME.match(line):
+                continue
+            if RE_TARGET_FILENAME.match(line):
+                continue
+            if line[0] == '+' or line[0] == '-':
+                modified += 1
+        return modified, False
+    if parents > 1:
+        return 0, True
+
+
+def extract_cmts(args):
+    sha_list, path, project = args
+    cmts = []
+    logger.info("Worker start extracting %s commits" % len(sha_list))
+    r = repo.Repo(path)
+    for c, sha in enumerate(sha_list):
+        if c % 250 == 0:
+            logger.info("Worker %s remains %s commits to extract" % (
+                mp.current_process(), len(sha_list) - c))
+        obj = r.object_store[sha]
+        source = {}
+        source[u'author_date'] = obj.author_time
+        source[u'committer_date'] = obj.commit_time
+        source[u'ttl'] = int(obj.commit_time - obj.author_time)
+        source[u'sha'] = obj.id
+        source[u'author_email'] = obj.author.split(
+            '<')[1].rstrip('>')
+        source[u'committer_email'] = obj.committer.split(
+            '<')[1].rstrip('>')
+        source[u'author_name'] = obj.author.split(
+            '<')[0].rstrip().decode('utf-8', errors="replace")
+        source[u'committer_name'] = obj.committer.split(
+            '<')[0].rstrip().decode('utf-8', errors="replace")
+        source[u'commit_msg'] = obj.message.split(
+            '\n', 1)[0].decode('utf-8', errors="replace")
+        modified, merge_commit = get_diff_stats(r, obj)
+        source[u'line_modifieds'] = modified
+        source[u'merge_commit'] = merge_commit
+        source[u'projects'] = [project, ]
+        cmts.append(source)
+    return cmts
 
 
 class ProjectIndexer():
@@ -107,33 +169,6 @@ class ProjectIndexer():
                     to_consume.append(n)
         self.commits = commits.keys()
 
-    def get_diff_stats(self, obj):
-        parents = len(obj.parents)
-        if parents <= 1:
-            parent = getattr(obj, 'parents', None)
-            if parent:
-                parent = parent[0]
-                parent_tree = self.repo.object_store[parent].tree
-            else:
-                parent_tree = None
-            current_tree = obj.tree
-            patch_content = BytesIO()
-            patch.write_tree_diff(patch_content, self.repo.object_store,
-                                  parent_tree, current_tree)
-            patch_content.seek(0)
-            content = patch_content.readlines()
-            modified = 0
-            for line in content:
-                if RE_SOURCE_FILENAME.match(line):
-                    continue
-                if RE_TARGET_FILENAME.match(line):
-                    continue
-                if line[0] == '+' or line[0] == '-':
-                    modified += 1
-            return modified, False
-        if parents > 1:
-            return 0, True
-
     def get_current_commit_indexed(self):
         """ Fetch from the index commits mentionned for this project
         and branch.
@@ -150,8 +185,8 @@ class ProjectIndexer():
         list to delete from the index.
         """
         logger.info(
-             "Upstream - project history is composed of %s commits." % (
-                 len(self.commits)))
+            "Upstream - project history is composed of %s commits." % (
+                len(self.commits)))
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
         logger.info(
@@ -159,37 +194,27 @@ class ProjectIndexer():
         logger.info(
             "Indexer will dereference %s commits." % len(self.to_delete))
 
-    def cmt_list_generator(self, sha_list):
-        # TODO: use multiprocessing here
-        total = len(sha_list)
-        consumed = 0
-        for sha in sha_list:
-            consumed += 1
-            if consumed % 500 == 0:
-                logger.info("indexing %s/%s ..." % (consumed, total))
-            obj = self.repo.object_store[sha]
-            source = {}
-            source[u'author_date'] = obj.author_time
-            source[u'committer_date'] = obj.commit_time
-            source[u'ttl'] = int(obj.commit_time - obj.author_time)
-            source[u'sha'] = obj.id
-            source[u'author_email'] = obj.author.split(
-                '<')[1].rstrip('>')
-            source[u'author_name'] = obj.author.split(
-                '<')[0].rstrip().decode('utf-8')
-            source[u'committer_email'] = obj.committer.split(
-                '<')[1].rstrip('>')
-            source[u'committer_name'] = obj.committer.split(
-                '<')[0].rstrip().decode('utf-8')
-            source[u'commit_msg'] = obj.message.split(
-                '\n', 1)[0].decode('utf-8')
-            modified, merge_commit = self.get_diff_stats(obj)
-            source[u'line_modifieds'] = modified
-            source[u'merge_commit'] = merge_commit
-            source[u'projects'] = [self.project, ]
-            yield source
+    def cmt_list_generator(self, sha_list, workers):
+        if workers == 0:
+            # Default value (auto)
+            workers = mp.cpu_count() - 1 or 1
+        elif workers == 1:
+            return extract_cmts((sha_list, self.local, self.project))
+        logger.info("Start commits extract with %s workers" % workers)
+        worker_pool = mp.Pool(workers)
+        sets = []
+        set_lenght = len(sha_list) / workers
+        for _ in xrange(workers - 1):
+            sets.append((sha_list[:set_lenght], self.local, self.project))
+            del sha_list[:set_lenght]
+        sets.append((sha_list, self.local, self.project))
+        extracted_sets = worker_pool.map(extract_cmts, sets)
+        ret = []
+        for r in extracted_sets:
+            ret.extend(r)
+        return ret
 
-    def index(self):
+    def index(self, extract_workers=1):
         # check whether a commit should be completly delete or
         # updated by removing the project from the projects field
         if self.to_delete:
@@ -223,7 +248,8 @@ class ProjectIndexer():
             to_create = [c['_id'] for
                          c in res['docs'] if c['found'] is False]
             logger.info("%s commits will be created ..." % len(to_create))
-            self.c.add_commits(self.cmt_list_generator(to_create))
+            self.c.add_commits(
+                self.cmt_list_generator(to_create, extract_workers))
 
             logger.info(
                 "%s commits already indexed and need to be updated" % (

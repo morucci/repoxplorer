@@ -282,7 +282,7 @@ class RootController(object):
         top_authors = c.get_authors(**query_kwargs)
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
 
-        authors_amount = len(top_authors)
+        authors_amount = len(top_authors[1])
 
         top_authors = self.top_authors_sanitize(
             top_authors, c, top=25)

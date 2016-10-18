@@ -38,6 +38,10 @@ parser.add_argument(
     default='%s/local/share/repoxplorer/logging.conf' % sys.prefix,
     help='Specify a custom logging configuration file')
 parser.add_argument(
+    '--extract-workers', type=int, default=0,
+    help='Specify the amount of worker processes for '
+         'extracting commits information (default = auto)')
+parser.add_argument(
     '--projects', type=str,
     default='%s/local/share/repoxplorer/projects.yaml' % sys.prefix,
     help='Specify the path to the projects.yaml file')
@@ -68,7 +72,7 @@ def process():
             p.git_get_commit_obj()
             p.get_current_commit_indexed()
             p.compute_to_index_to_delete()
-            p.index()
+            p.index(args.extract_workers)
 
 if __name__ == "__main__":
     logging.config.fileConfig(args.logging)
