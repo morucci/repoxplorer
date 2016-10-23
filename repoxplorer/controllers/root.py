@@ -57,7 +57,7 @@ class RootController(object):
         conts = self.top_authors_sanitize(raw_conts, c)
         total_contributors = len(conts)
         conts = [co for co in conts
-                 if co['name'].find(search) >= 0]
+                 if co['name'].lower().find(search.lower()) >= 0]
         total_hits = len(conts)
         return {'contributors': conts[:max_result],
                 'total_contributors': total_contributors,

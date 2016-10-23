@@ -32,15 +32,13 @@
    </div>
    <table class="table">
     <tr>
-     <th class="col-md-3">Contributor names</th>
-     <th>Commit amounts</th>
-     <th>Projects contributed</th>
+     <th class="col-md-6">Contributor names</th>
+     <th class="col-md-6">Commit amounts</th>
     </tr>
        % for cont in contributors:
        <tr>
         <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${cont['gravatar']}?s=25&d=wavatar" title="${cont['name']}"></span><span><a href="contributor.html?cid=${cont['cid']}"><b>${cont['name']}</b></a></span></td>
         <td>${cont['amount']}</td>
-        <td>Not Implemented</td>
        </tr>
        % endfor
    </table>
