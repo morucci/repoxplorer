@@ -20,7 +20,7 @@
     <label for="search-txt">Search contributors</label>
     <input type="text" class="form-control" id="search-txt">
    </div>
-   <input id="search-btn" type="button" value="Search" class="btn btn-default" />
+   <button id="search-btn" type="submit" class="btn btn-default">Search</button>
   </form>
  </div>
 
@@ -28,7 +28,7 @@
 
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Search results - hits: ${total_hits}/${total_contributors} (page limited to ${max_result}) </b></h3>
+    <h3 class="panel-title text-left"><b>Search results for query "${search}" - hits: ${total_hits}/${total_contributors} (page limited to ${max_result}) </b></h3>
    </div>
    <table class="table">
     <tr>

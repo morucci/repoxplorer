@@ -58,11 +58,11 @@ class RootController(object):
         total_contributors = len(conts)
         conts = [co for co in conts
                  if co['name'].lower().find(search.lower()) >= 0]
-        total_hits = len(conts)
         return {'contributors': conts[:max_result],
                 'total_contributors': total_contributors,
-                'total_hits': total_hits,
-                'max_result': max_result}
+                'total_hits': len(conts),
+                'max_result': max_result,
+                'search': search}
 
     @expose(template='contributor.html')
     def contributor(self, cid, dfrom=None, dto=None,

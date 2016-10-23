@@ -94,8 +94,9 @@ function project_page_init(projectid) {
 }
 
 function contributors_page_init() {
- $("#search-btn").click(function() {
+ $("#search-form").submit(function(event) {
   var newlocation = "contributors.html?search=" + $("#search-txt").val()
+  event.preventDefault()
   window.location = newlocation
  });
 }
