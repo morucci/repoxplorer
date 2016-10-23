@@ -160,10 +160,14 @@ class RootController(object):
         histo = [{'date': d['key_as_string'],
                   'value': d['doc_count']} for d in histo[1]]
 
+        line_modifieds_amount = sum([v[1] for
+                                     v in projects_contributed_modified])
+
         return {'name': name,
                 'gravatar': hashlib.md5(cid).hexdigest(),
                 'histo': json.dumps(histo),
                 'commits_amount': commits_amount,
+                'line_modifieds_amount': line_modifieds_amount,
                 'period': (odfrom, odto),
                 'projects': sorted_projects_contributed,
                 'projects_line_mdfds': sorted_projects_contributed_modified,
