@@ -178,8 +178,11 @@ function install_paginator(pid, cid, items_amount) {
          items: items_amount,
          itemsOnPage: 10,
          cssStyle: 'light-theme',
-         onPageClick: function(pageNumber) {
-           get_commits(pid, cid, (pageNumber - 1) * 10)
+         onPageClick: function(pageNumber, ev) {
+           // This check prevent get_commits to be called twice
+           if (ev != undefined) {
+             get_commits(pid, cid, (pageNumber - 1) * 10)
+           }
          }
      });
      check_fragment();
