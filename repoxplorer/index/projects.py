@@ -80,6 +80,8 @@ class Projects(object):
                     for tag in repo['tags']:
                         self.tags.setdefault(tag, [])
                         self.tags[tag].append(repo)
+                else:
+                    repo['tags'] = []
 
     def get_repo_id(self, repo):
         return "%s:%s:%s" % (

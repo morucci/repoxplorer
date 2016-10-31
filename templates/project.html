@@ -36,8 +36,8 @@
    <div class="panel-body">
     <div id="infos">
      % if not empty:
-     <% subprojects_len = len(subprojects) %>
-     <div><b>Amount of sub-projects:</b> ${subprojects_len}</div>
+     <% repos_len = len(repos) %>
+     <div><b>Amount of repositories:</b> ${repos_len}</div>
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of authors:</b> ${authors_amount}</div>
      <div><b>Project(s) has been active for:</b> ${duration}</div>
@@ -81,10 +81,10 @@
       % endif
      </div>
      <div class="col-md-6 form-group">
-      <label for="subprojects">Only include selected sub-projects</label>
-      <select id='subprojects' multiple class="form-control">
-       % for subproject in subprojects:
-       <option>${subproject['name']}:${subproject['branch']}</option>
+      <label for="repositories">Only include selected repositories</label>
+      <select id='repositories' multiple class="form-control">
+       % for repo in repos:
+       <option>${repo['name']}:${repo['branch']}</option>
        % endfor
       </select>
      </div>
