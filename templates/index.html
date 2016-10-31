@@ -18,12 +18,26 @@
 
   <div class="panel panel-default">
    <div class="panel-heading">
+    <h3 class="panel-title text-left"><b>Tags list</b></h3>
+   </div>
+   <div class="panel-body">
+     <h4>
+     % for tag in tags:
+     <a href="project.html?tid=${tag}">${tag}</a>
+     % endfor
+     </h4>
+   </div>
+  </div>
+
+  <div class="panel panel-default">
+   <div class="panel-heading">
     <h3 class="panel-title text-left"><b>Projects list</b></h3>
    </div>
    <table class="table">
     <tr>
-     <th class="col-md-3">Project id</th>
-     <th>Sub-projects</th>
+     <th class="col-md-2">Project id</th>
+     <th class="col-md-4">Sub-projects</th>
+     <th class="col-md-6">Tags</th>
     <tr>
      % for project, plist in projects.items():
      <tr>
@@ -31,6 +45,15 @@
       <td>
        % for p in plist:
         <p><a href="project.html?pid=${project}&inc_projects=${p['name']}:${p['branch']}">${p['uri']}:${p['branch']}</a></p>
+       % endfor
+      </td>
+      <td>
+       % for p in plist:
+        <p>
+        % for tag in p['tags']:
+        <a href="project.html?tid=${tag}">${tag}</a>
+        % endfor
+        </p>
        % endfor
       </td>
      <tr>

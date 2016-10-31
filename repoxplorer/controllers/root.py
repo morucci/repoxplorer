@@ -18,6 +18,7 @@ import base64
 import hashlib
 
 from pecan import expose
+from pecan import abort
 
 from datetime import datetime
 from datetime import timedelta
@@ -47,7 +48,9 @@ class RootController(object):
     @expose(template='index.html')
     def index(self):
         projects = Projects().get_projects()
-        return {'projects': projects}
+        tags = Projects().tags.keys()
+        return {'projects': projects,
+                'tags': tags}
 
     @expose(template='contributors.html')
     def contributors(self, search=""):
@@ -219,9 +222,9 @@ class RootController(object):
             del v['email']
         return top_authors_s_sorted
 
-    def get_project_filter(self, project, inc_projects):
+    def get_project_filter(self, projects, inc_projects):
         p_filter = []
-        for p in project:
+        for p in projects:
             if inc_projects:
                 if not "%s:%s" % (p['name'], p['branch']) in inc_projects:
                     continue
@@ -230,6 +233,11 @@ class RootController(object):
                                           p['branch']))
         return p_filter
 
+    def get_tag_filter(self, tag, inc_projects):
+        projects = [{'uri': p[0], 'name': p[1], 'branch': p[2]}
+                    for p in tag]
+        return self.get_project_filter(projects, inc_projects)
+
     def get_mail_filter(self, idents, cid):
         if cid in idents:
             return idents[cid][2]
@@ -237,8 +245,14 @@ class RootController(object):
             return [cid]
 
     @expose(template='project.html')
-    def project(self, pid, dfrom=None, dto=None,
+    def project(self, pid=None, tid=None, dfrom=None, dto=None,
                 inc_merge_commit=None, inc_projects=None):
+        if not pid and not tid:
+            abort(404,
+                  detail="tag ID or project ID is mandatory")
+        if pid and tid:
+            abort(404,
+                  detail="tag ID and project ID can't be requested together")
         if inc_merge_commit != 'on':
             inc_merge_commit = ''
             include_merge_commit = False
@@ -257,8 +271,10 @@ class RootController(object):
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
         c = Commits(index.Connector(index=indexname))
-        projects = Projects().get_projects()
-        project = projects[pid]
+        if pid:
+            project = Projects().get_projects()[pid]
+        else:
+            project = Projects().get_repos_by_tag(tid)
         p_filter = self.get_project_filter(project, inc_projects)
 
         query_kwargs = {
@@ -273,6 +289,7 @@ class RootController(object):
         if not commits_amount:
             # No commit found
             return {'pid': pid,
+                    'tid': tid,
                     'inc_merge_commit': inc_merge_commit,
                     'period': (odfrom, odto),
                     'subprojects': project,
@@ -300,6 +317,7 @@ class RootController(object):
             seconds=int(ttl_average)) - timedelta(seconds=0)
 
         return {'pid': pid,
+                'tid': tid,
                 'histo': json.dumps(histo),
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
@@ -317,7 +335,7 @@ class RootController(object):
                 'empty': False}
 
     @expose('json')
-    def commits(self, pid=None, cid=None, start=0, limit=10,
+    def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
                 inc_projects=None):
         c = Commits(index.Connector(index=indexname))
@@ -332,6 +350,9 @@ class RootController(object):
 
         if pid:
             project = projects_index.get_projects()[pid]
+            p_filter = self.get_project_filter(project, inc_projects)
+        elif tid:
+            project = Projects().get_repos_by_tag(tid)
             p_filter = self.get_project_filter(project, inc_projects)
         else:
             p_filter = []

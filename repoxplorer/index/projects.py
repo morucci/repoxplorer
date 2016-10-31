@@ -79,7 +79,7 @@ class Projects(object):
                     assert isinstance(repo['tags'], list)
                     for tag in repo['tags']:
                         self.tags.setdefault(tag, [])
-                        self.tags[tag].append(self.get_repo_id(repo))
+                        self.tags[tag].append(repo)
 
     def get_repo_id(self, repo):
         return "%s:%s:%s" % (
@@ -101,5 +101,5 @@ class Projects(object):
     def get_gitweb_link(self, simple_uri):
         return self.gitweb_lookup.get(simple_uri, "")
 
-    def get_repos_tag(self, tag):
+    def get_repos_by_tag(self, tag):
         return self.tags.get(tag, [])

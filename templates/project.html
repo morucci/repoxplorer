@@ -1,14 +1,22 @@
 <%inherit file="layout.html" />
 
 <%def name="title()">
-  [${pid}] - Project page
+  % if pid:
+  RepoXplorer - ${pid} - project stats page
+  % else:
+  RepoXplorer - ${tid} - tagged repositories stats page
+  % endif
 </%def>
 
 <div class="row-fluid">
 
  <div class="col-md-12">
   <div class="jumbotron">
-   <h2>${pid} project details</h2>
+   % if pid:
+   <h2>Stats page for project: ${pid}</h2>
+   % else:
+   <h2>Stats page for repositories tagged: ${tid}</h2>
+   % endif
   </div>
  </div>
 
@@ -19,7 +27,11 @@
  <div class="col-md-3">
   <div class="panel panel-default">
    <div class="panel-heading">
+    % if pid:
     <h3 class="panel-title text-left"><b>Project infos</b></h3>
+    % else:
+    <h3 class="panel-title text-left"><b>Tagged repositories infos</b></h3>
+    % endif
    </div>
    <div class="panel-body">
     <div id="infos">
@@ -28,7 +40,7 @@
      <div><b>Amount of sub-projects:</b> ${subprojects_len}</div>
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of authors:</b> ${authors_amount}</div>
-     <div><b>Project has been active for:</b> ${duration}</div>
+     <div><b>Project(s) has been active for:</b> ${duration}</div>
      <div><b>Date of first commits:</b> ${first}</div>
      <div><b>Date of last commits:</b> ${last}</div>
      <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div>
@@ -229,9 +241,15 @@
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
  gen_histo(histo);
- project_page_init('${pid}');
- install_paginator('${pid}', undefined, '${commits_amount}');
- get_commits('${pid}', undefined, undefined);
+ % if pid:
+ project_page_init('${pid}', undefined);
+ install_paginator('${pid}', undefined, undefined, '${commits_amount}');
+ get_commits('${pid}', undefined, undefined, undefined);
+ % elif tid:
+ project_page_init(undefined, '${tid}');
+ install_paginator(undefined, '${tid}', undefined, '${commits_amount}');
+ get_commits(undefined, '${tid}', undefined, undefined);
+ % endif
 </script>
 % else:
 <div class="row-fluid">
@@ -242,6 +260,6 @@
  </div>
 </div>
 <script type="text/javascript">
- project_page_init('${pid}');
+ project_page_init('${pid}', '${tid}');
 </script>
 % endif

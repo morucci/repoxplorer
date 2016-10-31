@@ -63,7 +63,7 @@ function contributor_page_init(cid) {
   });
 }
 
-function project_page_init(projectid) {
+function project_page_init(projectid, tagid) {
  install_date_pickers();
 
  if (getUrlParameter('inc_merge_commit') == 'on') {
@@ -76,7 +76,12 @@ function project_page_init(projectid) {
  }
 
  $("#filter").click(function(){
-  var newlocation = "project.html?pid=" + projectid
+  if (projectid) {
+      var newlocation = "project.html?pid=" + projectid
+  }
+  else {
+      var newlocation = "project.html?tid=" + tagid
+  }
   if ($('#fromdatepicker').val() != '') {
     newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
   }
@@ -101,22 +106,25 @@ function contributors_page_init() {
  });
 }
 
-function get_commits(pid, cid, page) {
+function get_commits(pid, tid, cid, page) {
  if (page === undefined) {
    page = 0;
  }
  if ($('#inc_merge_commit').prop('checked')) {
    var inc_merge_commit = 'on'
  }
- $.getJSON(
-   "/commits.json", {pid : pid,
-                     cid: cid,
-                     start : page,
-                     dfrom: getUrlParameter('dfrom'),
-                     dto: getUrlParameter('dto'),
-                     inc_merge_commit: inc_merge_commit,
-                     inc_projects: getUrlParameter('inc_projects')}
- ).done(function(data) {
+
+ var args = {}
+ args['pid'] = pid
+ args['tid'] = tid
+ args['cid'] = cid
+ args['start'] = page
+ args['dfrom'] = getUrlParameter('dfrom')
+ args['dto'] = getUrlParameter('dto')
+ args['inc_merge_commit'] = inc_merge_commit,
+ args['inc_projects'] = getUrlParameter('inc_projects')
+
+ $.getJSON("/commits.json", args).done(function(data) {
    $("#commits-table").empty()
    $("#commits-table").append("<table class=\"table table-striped\">");
    var theader = "<tr>"
@@ -166,7 +174,7 @@ function check_fragment() {
         $("#pagination").pagination('selectPage', page);
 };
 
-function install_paginator(pid, cid, items_amount) {
+function install_paginator(pid, tid, cid, items_amount) {
  if (items_amount >= 1000) {
    // Limit the amount of pages to 100
    // User should use the calendar filter to dig in the results
@@ -181,7 +189,7 @@ function install_paginator(pid, cid, items_amount) {
          onPageClick: function(pageNumber, ev) {
            // This check prevent get_commits to be called twice
            if (ev != undefined) {
-             get_commits(pid, cid, (pageNumber - 1) * 10)
+             get_commits(pid, tid, cid, (pageNumber - 1) * 10)
            }
          }
      });
