@@ -42,35 +42,48 @@ class Projects(object):
         self.gitweb_lookup = {}
         self.projects_raw = {}
         self.templates_raw = {}
+        self.tags = {}
         if self.data:
             self.projects_raw = self.data['projects']
             self.templates_raw = self.data['templates']
         for pid, details in self.projects_raw.items():
             self.projects[pid] = []
-            for prj in details:
-                if 'template' in prj:
+            for repo in details:
+                if 'template' in repo:
                     try:
-                        tmpl = self.find_template_by_name(prj['template'])
+                        tmpl = self.find_template_by_name(repo['template'])
                     except NoTemplateFound:
                         logger.info(
                             "%s requests a non exisiting template %s" % (
-                                prj['name'], prj['template']))
+                                repo['name'], repo['template']))
                         continue
-                    del prj['template']
-                    for k in prj.keys():
+                    del repo['template']
+                    for k in repo.keys():
                         # Remove already existing key from the template
                         # to prevent deletion of special configuration
                         if k in tmpl.keys():
                             del tmpl[k]
-                    prj.update(tmpl)
-                    prj_computed = {}
-                    for k, v in prj.items():
-                        prj_computed[k] = v % prj
-                    prj = prj_computed
-                self.projects[pid].append(prj)
-                if 'gitweb' in prj:
-                    simple_uri = '%s:%s' % (prj['uri'], prj['name'])
-                    self.gitweb_lookup[simple_uri] = prj['gitweb']
+                    repo.update(tmpl)
+                    repo_computed = {}
+                    for k, v in repo.items():
+                        if isinstance(v, str):
+                            repo_computed[k] = v % repo
+                        else:
+                            repo_computed[k] = v
+                    repo = repo_computed
+                self.projects[pid].append(repo)
+                if 'gitweb' in repo:
+                    simple_uri = '%s:%s' % (repo['uri'], repo['name'])
+                    self.gitweb_lookup[simple_uri] = repo['gitweb']
+                if 'tags' in repo:
+                    assert isinstance(repo['tags'], list)
+                    for tag in repo['tags']:
+                        self.tags.setdefault(tag, [])
+                        self.tags[tag].append(self.get_repo_id(repo))
+
+    def get_repo_id(self, repo):
+        return "%s:%s:%s" % (
+            repo['uri'], repo['name'], repo['branch'])
 
     def find_template_by_name(self, name):
         try:
@@ -87,3 +100,6 @@ class Projects(object):
 
     def get_gitweb_link(self, simple_uri):
         return self.gitweb_lookup.get(simple_uri, "")
+
+    def get_repos_tag(self, tag):
+        return self.tags.get(tag, [])

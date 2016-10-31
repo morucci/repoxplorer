@@ -34,13 +34,33 @@ projects:
   Barbican:
   - name: barbican
     template: default
+    tags:
+      - server
+      - security
   - name: python-barbicanclient
     template: default
+    tags:
+      - client
+      - security
 """
         path = self.create_projects_yaml(projects_yaml)
         p = Projects(projects_file_path=path)
         self.assertIn("Barbican", p.projects)
         self.assertEqual(len(p.projects['Barbican']), 2)
+        self.assertIn("http://gb.com/ok/barbican:barbican:master",
+                      p.tags['server'])
+        self.assertIn("http://gb.com/ok/python-barbicanclient:"
+                      "python-barbicanclient:master",
+                      p.tags['client'])
+        self.assertIn("http://gb.com/ok/barbican:barbican:master",
+                      p.tags['security'])
+        self.assertIn("http://gb.com/ok/python-barbicanclient:"
+                      "python-barbicanclient:master",
+                      p.tags['security'])
+        self.assertTrue(len(p.tags['security']), 2)
+        self.assertTrue(len(p.tags['client']), 1)
+        self.assertTrue(len(p.tags['server']), 1)
+        self.assertTrue(len(p.tags.keys()), 3)
 
         projects_yaml = """
 templates:
@@ -48,6 +68,8 @@ templates:
   branch: master
   uri: http://gb.com/ok/%(name)s
   gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
+  tags:
+    - default_org
 
 projects:
   Barbican:
@@ -68,3 +90,8 @@ projects:
                if m['name'] == 'python-barbicanclient'][0]
         self.assertEqual(mp1['uri'], 'http://test.com/ok/barbican')
         self.assertEqual(mp2['uri'], 'http://gb.com/ok/python-barbicanclient')
+        self.assertIn("http://gb.com/ok/python-barbicanclient:"
+                      "python-barbicanclient:master",
+                      p.tags['default_org'])
+        self.assertTrue(len(p.tags['default_org']), 1)
+        self.assertTrue(len(p.tags.keys()), 1)
