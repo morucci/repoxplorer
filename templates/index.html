@@ -8,7 +8,7 @@
 
  <div class="col-md-12">
   <div class="jumbotron">
-   <h3>Listing of the projects referenced in the database. You can click on it in order to display details.</h3>
+   <h3>Listing of projects, GIT repositories, and tags referenced in the database. You can click on them in order to display details.</h3>
   </div>
  </div>
 
@@ -35,22 +35,22 @@
    </div>
    <table class="table">
     <tr>
-     <th class="col-md-2">Project id</th>
-     <th class="col-md-4">Sub-projects</th>
-     <th class="col-md-6">Tags</th>
+     <th class="col-md-3">Project names</th>
+     <th class="col-md-5">Repositories</th>
+     <th class="col-md-4">Tags</th>
     <tr>
-     % for project, plist in projects.items():
+     % for project, repolist in projects.items():
      <tr>
       <td><a href="project.html?pid=${project}"><b>${project}</b></a></td>
       <td>
-       % for p in plist:
-        <p><a href="project.html?pid=${project}&inc_projects=${p['name']}:${p['branch']}">${p['uri']}:${p['branch']}</a></p>
+       % for repo in repolist:
+        <p><a href="project.html?pid=${project}&inc_repos=${repo['name']}:${repo['branch']}">${repo['uri']}:${repo['branch']}</a></p>
        % endfor
       </td>
       <td>
-       % for p in plist:
+       % for repo in repolist:
         <p>
-        % for tag in p['tags']:
+        % for tag in repo['tags']:
         <a href="project.html?tid=${tag}">${tag}</a>
         % endfor
         </p>

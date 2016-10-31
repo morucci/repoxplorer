@@ -30,6 +30,7 @@
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of line modifieds:</b> ${line_modifieds_amount}</div>
      <div><b>Amount of projects contributed:</b> ${projects_amount}</div>
+     <div><b>Amount of repositories contributed:</b> ${repos_amount}</div>
      <div><b>Contributor has been active for:</b> ${duration}</div>
      <div><b>Date of first commits:</b> ${first}</div>
      <div><b>Date of last commits:</b> ${last}</div>
@@ -64,10 +65,10 @@
        % endif
       </div>
       <div class="checkbox">
-       % if inc_subproject_detail == 'on':
-           <label><input type="checkbox" id="inc_subproject_detail" checked>Display sub-project details</label>
+       % if inc_repos_detail == 'on':
+           <label><input type="checkbox" id="inc_repos_detail" checked>Display repositories details</label>
        % else:
-           <label><input type="checkbox" id="inc_subproject_detail">Display sub-project details</label>
+           <label><input type="checkbox" id="inc_repos_detail">Display repositories details</label>
        % endif
       </div>
       % if period[0] and period[1]:

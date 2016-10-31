@@ -41,8 +41,8 @@ function contributor_page_init(cid) {
  if (getUrlParameter('inc_merge_commit') == 'on') {
     $('#inc_merge_commit').prop('checked', true)
  }
- if (getUrlParameter('inc_subproject_detail') == 'on') {
-    $('#inc_subproject_detail').prop('checked', true)
+ if (getUrlParameter('inc_repos_detail') == 'on') {
+    $('#inc_repos_detail').prop('checked', true)
  }
 
  $("#filter").click(function(){
@@ -56,8 +56,8 @@ function contributor_page_init(cid) {
   if ($('#inc_merge_commit').prop('checked')) {
       newlocation = newlocation + "&inc_merge_commit=on"
   }
-  if ($('#inc_subproject_detail').prop('checked')) {
-      newlocation = newlocation + "&inc_subproject_detail=on"
+  if ($('#inc_repos_detail').prop('checked')) {
+      newlocation = newlocation + "&inc_repos_detail=on"
   }
   window.location = newlocation
   });
@@ -70,9 +70,9 @@ function project_page_init(projectid, tagid) {
     $('#inc_merge_commit').prop('checked', true)
  }
 
- if (getUrlParameter('inc_projects')) {
-     selected = getUrlParameter('inc_projects').split(',')
-     $('#subprojects').val(selected)
+ if (getUrlParameter('inc_repos')) {
+     selected = getUrlParameter('inc_repos').split(',')
+     $('#repositories').val(selected)
  }
 
  $("#filter").click(function(){
@@ -91,8 +91,8 @@ function project_page_init(projectid, tagid) {
   if ($('#inc_merge_commit').prop('checked')) {
       newlocation = newlocation + "&inc_merge_commit=on"
   }
-  if ($('#subprojects').val() != undefined) {
-    newlocation = newlocation + "&inc_projects=" + encodeURIComponent($('#subprojects').val())
+  if ($('#repositories').val() != undefined) {
+    newlocation = newlocation + "&inc_repos=" + encodeURIComponent($('#repositories').val())
   }
   window.location = newlocation
   });
@@ -122,14 +122,14 @@ function get_commits(pid, tid, cid, page) {
  args['dfrom'] = getUrlParameter('dfrom')
  args['dto'] = getUrlParameter('dto')
  args['inc_merge_commit'] = inc_merge_commit,
- args['inc_projects'] = getUrlParameter('inc_projects')
+ args['inc_repos'] = getUrlParameter('inc_repos')
 
  $.getJSON("/commits.json", args).done(function(data) {
    $("#commits-table").empty()
    $("#commits-table").append("<table class=\"table table-striped\">");
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
-   theader += "<th>Project</th>"
+   theader += "<th>Repository</th>"
    theader += "<th>Author</th>"
    theader += "<th>Committer</th>"
    theader += "<th>Message</th>"

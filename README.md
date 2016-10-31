@@ -2,17 +2,17 @@
 
 RepoXplorer is a small stats and charts utility for GIT repositories.
 Its main purpose is to ease the visualization of stats for one or
-more projects.
+more project(s) composed of multiple GIT repositories.
 
-As lot of projects are composed of multiple sub-projects (server, client,
-libraries). RepoXplorer let's you define how a project is composed and
-then compute stats across multiple sub-projects.
+As lot of projects are composed of multiple GIT repositories (server,
+client, libraries). RepoXplorer let's you describe how a project is composed
+and then computes stats across multiple GIT repositories.
 
 Furthermore it is possible to define author identities by listing
-author' emails and then avoid duplicated author in computed stats.
+author emails and then avoid duplicated authors in computed stats.
 
-RepoXplorer relies on ElasticSearch and Pecan. Once the service is
-started only a web browser is needed to access the user interface.
+RepoXplorer relies on ElasticSearch. Once the service is started only
+a web browser is needed to access the user interface.
 
 ## A visual overview of the user interface
 
@@ -43,7 +43,11 @@ A yaml file should be provisioned with the projects you want to index. The
 file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
 
 Below is the default projects.yaml files provided. Note that Barbican project
-is composed of two sub-projects: the server and the client.
+is composed of two GIT repositories: the server and the client.
+
+A list of tags can be given to each GIT repositories. This tag notion
+should not be concidered as GIT tags but only as a way to group
+GIT repositories.
 
 Edit this file to add projects you want to index.
 ~/repoxplorer/local/share/repoxplorer/projects.yaml.
@@ -59,8 +63,12 @@ templates:
 projects:
   Barbican:
   - name: barbican
+    tags:
+      - python
     template: default
   - name: python-barbicanclient
+    tags:
+      - python
     template: default
 ```
 
@@ -95,7 +103,7 @@ Start the RepoXplorer web app.
 uwsgi --http-socket :8080 --pecan ~/repoxplorer/local/share/repoxplorer/config.py
 ```
 
-Then open a Web browser to access http://localhost:8080. You will be faced a list
+Then open a Web browser to access http://localhost:8080. You will be faced to a list
 of projects such as defined in projects.yaml. A click on one of the project's ids
 will redirect you to the statistics page of the given project.
 
