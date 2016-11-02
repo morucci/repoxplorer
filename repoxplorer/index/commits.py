@@ -73,25 +73,21 @@ class Commits(object):
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
 
-    def update_commits(self, source_it):
+    def update_commits(self, source_it, field='projects'):
         """ Take the sha from each doc and use
-        it to reference the doc id to delete then
-        create the doc. The doc needs to be already updated.
+        it to reference the doc to update. This method only
+        support updating a single field for now. The default one
+        is projects because that's the only one to make sense in
+        this context.
         """
         def gen(it):
             for source in it:
                 d = {}
                 d['_index'] = self.index
                 d['_type'] = self.dbname
-                d['_op_type'] = 'delete'
+                d['_op_type'] = 'update'
                 d['_id'] = source['sha']
-                yield d
-                d = {}
-                d['_index'] = self.index
-                d['_type'] = self.dbname
-                d['_op_type'] = 'create'
-                d['_id'] = source['sha']
-                d['_source'] = source
+                d['_source'] = {'doc': {field: source[field]}}
                 yield d
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
