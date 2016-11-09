@@ -23,7 +23,7 @@ import yaml
 # reference/projects.yaml and create a repoXplorer compatible
 # projects.yaml file.
 
-EXPLICIT_INCLUDE = ('', )
+EXPLICIT_INCLUDE = tuple()
 # EXPLICIT_INCLUDE = ('keystone', 'swift')
 
 parser = argparse.ArgumentParser(
@@ -37,13 +37,16 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+noalias_dumper = yaml.dumper.SafeDumper
+noalias_dumper.ignore_aliases = lambda self, data: True
+
 if __name__ == "__main__":
     gp = yaml.load(file(args.governance_file_path))
     out = {'projects': {},
            'templates': {}}
 
     for name, details in gp.items():
-        if name not in EXPLICIT_INCLUDE:
+        if name not in EXPLICIT_INCLUDE and len(EXPLICIT_INCLUDE) > 0:
             continue
         out['projects'][name] = []
         for _, detail in details['deliverables'].items():
@@ -51,20 +54,22 @@ if __name__ == "__main__":
                 for repo in detail['repos']:
                     _out = {}
                     _out['name'] = repo
-                    _out['tags'] = detail['tags']
+                    _out['tags'] = detail.get('tags', [])
                     _out['uri'] = "http://github.com/%s" % repo
                     _out['branch'] = "master"
-                out['projects'][name].append(_out)
+                    out['projects'][name].append(_out)
     if not args.projects_file_path:
         with open('output.yml', 'w') as fd:
-            fd.write(yaml.safe_dump(out,
-                                    default_flow_style=False))
+            fd.write(yaml.dump(out,
+                               Dumper=noalias_dumper,
+                               default_flow_style=False))
     elif os.path.isfile(args.projects_file_path):
         content = yaml.load(file(args.projects_file_path))
         content['projects'].update(out['projects'])
         content['templates'].update(out['templates'])
         with open(args.projects_file_path, 'w') as fd:
-            fd.write(yaml.safe_dump(content,
-                                    default_flow_style=False))
+            fd.write(yaml.dump(content,
+                               Dumper=noalias_dumper,
+                               default_flow_style=False))
     else:
         print "%s not found" % args.projects_file_path
