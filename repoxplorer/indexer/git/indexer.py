@@ -209,6 +209,10 @@ class ProjectIndexer():
             del sha_list[:set_lenght]
         sets.append((sha_list, self.local, self.project))
         extracted_sets = worker_pool.map(extract_cmts, sets)
+        # TODO(fbo): Seems an issue exists here as childs should terminate
+        # by themself
+        worker_pool.terminate()
+        worker_pool.join()
         ret = []
         for r in extracted_sets:
             ret.extend(r)
