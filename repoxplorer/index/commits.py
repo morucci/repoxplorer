@@ -73,7 +73,7 @@ class Commits(object):
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
 
-    def update_commits(self, source_it, field='projects'):
+    def update_commits_alt(self, source_it, field='projects'):
         """ Take the sha from each doc and use
         it to reference the doc to update. This method only
         support updating a single field for now. The default one
@@ -91,6 +91,11 @@ class Commits(object):
                 yield d
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
+
+    def update_commits(self, sources):
+        ids = [s['sha'] for s in sources]
+        self.del_commits(ids)
+        self.add_commits(sources)
 
     def get_commit(self, sha):
         try:
