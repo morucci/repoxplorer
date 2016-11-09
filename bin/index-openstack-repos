@@ -25,6 +25,7 @@ import yaml
 
 EXPLICIT_INCLUDE = tuple()
 # EXPLICIT_INCLUDE = ('keystone', 'swift')
+SKIP = ('Packaging-deb')
 
 parser = argparse.ArgumentParser(
     description='Read/Index Openstack Governance/project.yaml file')
@@ -47,6 +48,8 @@ if __name__ == "__main__":
 
     for name, details in gp.items():
         if name not in EXPLICIT_INCLUDE and len(EXPLICIT_INCLUDE) > 0:
+            continue
+        if name in SKIP:
             continue
         out['projects'][name] = []
         for _, detail in details['deliverables'].items():
