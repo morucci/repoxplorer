@@ -260,4 +260,4 @@ class ProjectIndexer():
                     len(to_update)))
             for c in to_update:
                 c['projects'].append(self.project)
-                self.c.update_commits(to_update)
+            self.c.update_commits(to_update)
