@@ -131,8 +131,8 @@ function get_commits(pid, tid, cid, page) {
    theader += "<th>Date of commit</th>"
    theader += "<th>Repository</th>"
    theader += "<th>Author</th>"
-   theader += "<th>Committer</th>"
    theader += "<th>Message</th>"
+   theader += "<th>Metadata</th>"
    theader += "<th>Modified lines</th>"
    theader += "<th>Time To Land</th>"
    theader += "</tr>"
@@ -142,6 +142,7 @@ function get_commits(pid, tid, cid, page) {
     var cmt_date = moment(cmt_date)
     var elm = "<tr>"
     var projects = ""
+    var metadata = ""
     $.each(v['projects'], function(i, p) {
       if (i > 0) {projects += "<br>"}
       projects += p
@@ -149,13 +150,17 @@ function get_commits(pid, tid, cid, page) {
     elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>"
     elm += "<td>" + projects + "</td>"
     elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" + v['author_gravatar'] + "?s=20&d=wavatar'></span><span>" + "<a href=contributor.html?cid=" + v['cid'] + ">" + v['author_name'] + "</a><span></td>"
-    elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" + v['committer_gravatar'] + "?s=20&d=wavatar'></span><span>" + "<a href=contributor.html?cid=" + v['ccid'] + ">" + v['committer_name'] + "</a><span></td>"
     // Just use the first gitweb link atm
     if (v['gitwebs'][0].length > 0) {
      elm += "<td><a href=" + v['gitwebs'][0] + ">" + v['commit_msg'] + "</a></td>"
     } else {
      elm += "<td>" + v['commit_msg'] + "</td>"
     }
+    $.each(v['metadata'], function(i, key) {
+      if (key === "Change-Id") {return true}
+      metadata += key + ": " + v[key] + "<br>"
+    })
+    elm += "<td>" + metadata + "</td>"
     elm += "<td>" + v['line_modifieds'] + "</td>"
     elm += "<td>" + v['ttl'] + "</td>"
     elm += "</tr>"
