@@ -23,6 +23,28 @@ from elasticsearch.helpers import bulk
 
 logger = logging.getLogger(__name__)
 
+PROPERTIES = {
+    "sha": {"type": "string", "index": "not_analyzed"},
+    "author_date": {"type": "date",
+                    "format": "epoch_second"},
+    "committer_date": {"type": "date",
+                       "format": "epoch_second"},
+    "ttl": {"type": "integer",
+            "index": "not_analyzed"},
+    "author_name": {"type": "string"},
+    "committer_name": {"type": "string"},
+    "author_email": {"type": "string",
+                     "index": "not_analyzed"},
+    "committer_email": {"type": "string",
+                        "index": "not_analyzed"},
+    "projects": {"type": "string",
+                 "index": "not_analyzed"},
+    "line_modifieds": {"type": "integer",
+                       "index": "not_analyzed"},
+    "merge_commit": {"type": "boolean"},
+    "commit_msg": {"type": "string"}
+}
+
 
 class Commits(object):
     def __init__(self, connector=None):
@@ -30,33 +52,9 @@ class Commits(object):
         self.ic = connector.ic
         self.index = connector.index
         self.dbname = 'commits'
+        self.mapping = {self.dbname: {"properties": PROPERTIES}}
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
-            self.mapping = {
-                self.dbname: {
-                    "properties": {
-                        "sha": {"type": "string", "index": "not_analyzed"},
-                        "author_date": {"type": "date",
-                                        "format": "epoch_second"},
-                        "committer_date": {"type": "date",
-                                           "format": "epoch_second"},
-                        "ttl": {"type": "integer",
-                                "index": "not_analyzed"},
-                        "author_name": {"type": "string"},
-                        "committer_name": {"type": "string"},
-                        "author_email": {"type": "string",
-                                         "index": "not_analyzed"},
-                        "committer_email": {"type": "string",
-                                            "index": "not_analyzed"},
-                        "projects": {"type": "string",
-                                     "index": "not_analyzed"},
-                        "line_modifieds": {"type": "integer",
-                                           "index": "not_analyzed"},
-                        "merge_commit": {"type": "boolean"},
-                        "commit_msg": {"type": "string"}
-                    }
-                }
-            }
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
                                 body=self.mapping)
 

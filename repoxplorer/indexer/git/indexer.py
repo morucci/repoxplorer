@@ -30,6 +30,7 @@ from dulwich import patch
 
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.commits import PROPERTIES
 
 
 RE_SOURCE_FILENAME = re.compile(
@@ -85,6 +86,22 @@ def get_diff_stats(r, obj):
         return 0, True
 
 
+def parse_commit_msg(msg):
+    reserved_metadata_keys = PROPERTIES.keys()
+    metadata_re = re.compile('^(.+):(.+)$')
+    metadatas = {}
+    lines = msg.split('\n')
+    subject = lines[0].decode('utf-8', errors="replace")
+    for line in lines[1:]:
+        m = metadata_re.match(line)
+        if m:
+            key = m.groups()[0].decode('utf-8', errors="replace")
+            if key not in reserved_metadata_keys:
+                value = m.groups()[1].decode('utf-8', errors="replace")
+                metadatas[key.strip()] = value.strip()
+    return subject, metadatas
+
+
 def extract_cmts(args):
     sha_list, path, project = args
     cmts = []
@@ -108,8 +125,9 @@ def extract_cmts(args):
             '<')[0].rstrip().decode('utf-8', errors="replace")
         source[u'committer_name'] = obj.committer.split(
             '<')[0].rstrip().decode('utf-8', errors="replace")
-        source[u'commit_msg'] = obj.message.split(
-            '\n', 1)[0].decode('utf-8', errors="replace")
+        subject, metadatas = parse_commit_msg(obj.msg)
+        source[u'commit_msg'] = subject
+        source.update(metadatas)
         modified, merge_commit = get_diff_stats(r, obj)
         source[u'line_modifieds'] = modified
         source[u'merge_commit'] = merge_commit
