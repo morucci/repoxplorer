@@ -9,6 +9,52 @@ from repoxplorer.index import commits
 from repoxplorer.indexer.git import indexer
 
 
+class TestExtractCmtFunctions(TestCase):
+
+    def test_parse_commit_msg(self):
+        msg = """cmt subject
+
+body line 1
+body line 2
+metakey: metavalue
+"""
+        subject, metadatas = indexer.parse_commit_msg(msg)
+        self.assertEqual(subject, 'cmt subject')
+        self.assertDictEqual(metadatas, {'metakey': 'metavalue'})
+        msg = """cmt subject
+
+body line 1
+body line 2
+metakey: metavalue
+author_date: 123
+metakey2: metavalue2
+"""
+        subject, metadatas = indexer.parse_commit_msg(msg)
+        self.assertEqual(subject, 'cmt subject')
+        self.assertDictEqual(metadatas, {'metakey': 'metavalue',
+                                         'metakey2': 'metavalue2'})
+        msg = """cmt subject
+
+body line 1. nokey: novalue
+body line 2
+metakey: metavalue
+author_date: 123
+metakey2: metavalue2
+"""
+        subject, metadatas = indexer.parse_commit_msg(msg)
+        self.assertEqual(subject, 'cmt subject')
+        self.assertDictEqual(metadatas, {'metakey': 'metavalue',
+                                         'metakey2': 'metavalue2'})
+
+    def test_get_diff_stats(self):
+        # TODO(fbo)
+        pass
+
+    def test_extracts_cmts(self):
+        # TODO(fbo)
+        pass
+
+
 class TestProjectIndexer(TestCase):
 
     @classmethod
@@ -134,3 +180,32 @@ class TestProjectIndexer(TestCase):
         cmt = self.cmts.get_commit(repo2_commits[0]['sha'])
         self.assertIn('file:///tmp/p2:p2:master', cmt['projects'])
         self.assertIn('file:///tmp/p1:p1:master', cmt['projects'])
+
+        # Add another commit with metadata extracted
+        cmt = {
+            'sha': '3597334f2cb10772950c97ddf2f6cc17b200',
+            'author_date': 1410456005,
+            'committer_date': 1410456005,
+            'author_name': 'Nakata Daisuke',
+            'committer_name': 'Nakata Daisuke',
+            'author_email': 'n.suke@joker.org',
+            'committer_email': 'n.suke@joker.org',
+            'projects': [
+                'file:///tmp/p2:p2:master', ],
+            'line_modifieds': 10,
+            'commit_msg': 'Add init method',
+            'close-bug': '123',
+            'related-to-story': '124',
+        }
+        repo2_commits.append(cmt)
+        pi2.commits = [rc['sha'] for rc in repo2_commits]
+        # Start the indexation
+        pi2.get_current_commit_indexed()
+        pi2.compute_to_index_to_delete()
+        pi2.index()
+        # Check the commits has been marked belonging to both projects
+        cmt = self.cmts.get_commit(repo2_commits[1]['sha'])
+        self.assertIn('close-bug', cmt)
+        self.assertEqual(cmt['close-bug'], '123')
+        self.assertIn('related-to-story', cmt)
+        self.assertEqual(cmt['related-to-story'], '124')
