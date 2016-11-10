@@ -27,6 +27,7 @@ from Crypto.Cipher import XOR
 
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.users import Users
 
@@ -385,6 +386,9 @@ class RootController(object):
                              start=start, limit=limit,
                              merge_commit=inc_merge_commit)
         for cmt in resp[2]:
+            # Get extra metadata keys
+            extra = set(cmt.keys()) - set(PROPERTIES.keys())
+            cmt['metadata'] = list(extra)
             # Compute link to access commit diff based on the
             # URL template provided in projects.yaml
             cmt['gitwebs'] = [projects_index.get_gitweb_link(
