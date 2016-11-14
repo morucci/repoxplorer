@@ -185,8 +185,10 @@ class Commits(object):
 
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not projects:
-            raise Exception('At least a author email or project is required')
+        if not mails and not projects and not metadata:
+            raise Exception(
+                'At least a author email or project or a metadata'
+                'is required to run a request')
 
         body = {
             "filter": self.get_filter(mails, projects, metadata),
