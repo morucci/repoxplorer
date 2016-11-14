@@ -137,6 +137,51 @@ Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
     - jdoe@server
 ```
 
+## Metadata automatic indexation
+
+In addition to the standard Git object fields, the indexer will detect
+metadata such as:
+
+- close-bug: #123
+- implement-feature: bp-new-scheduler
+
+To be complete all key: value that match the following regex will
+be indexed:
+
+```
+'^([a-zA-Z-0-9_-]+):([^//].+)$'
+```
+
+## Use the commits.json REST endpoint to query the internal DB
+
+This endpoint is used by the UI to fetch commits listing according
+to the filters you setup in the UI but the endpoint can be also used
+outside of the UI. Here are some examples about how to use it:
+
+```
+# Return all commits from repositories included in the designate project
+curl "http://localhost:8080/commits.json?pid=designate"
+# Return all commits from repositories included in the designate project that
+# have a metadata "Closes-bug" (whatever the field value)
+curl "http://localhost:8080/commits.json?pid=designate&metadata=Closes-Bug=*"
+# Return all commits from all project repositories that have the
+# metadata "implement-feature" that match "bp-new-scheduler"
+curl "http://localhost:8080/commits.json?metadata=implement-bp=bp-new-scheduler"
+# Return all commits from all project repositories that have the
+# metadata "implement-feature" that match "bp-new-scheduler" and
+# "need-qa" is "true"
+curl "http://localhost:8080/commits.json?metadata=implement-bp=bp-new-scheduler,need-qa=true"
+```
+
+Available arguments are:
+- fromdate: epoch
+- todate: epoch
+- limit: amount of result returned by page (default: 10)
+- start: page cursor
+- pid: project name as configured in projects.yaml
+- tid: tag as configured in the projects.yaml
+- cid: contributor id
+
 ## Run tests
 
 ```Shell
