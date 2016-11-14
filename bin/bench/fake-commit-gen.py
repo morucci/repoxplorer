@@ -85,6 +85,7 @@ def gen_fake_commits(amount=10000):
     print "Generation of %s fake commits done." % amount
     return ret
 
+
 if __name__ == '__main__':
     amount = 100000
     c = Commits(index.Connector())
