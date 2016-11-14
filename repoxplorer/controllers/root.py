@@ -350,10 +350,20 @@ class RootController(object):
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None):
+                inc_repos=None, metadata=""):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Users().get_users()
+        _metadata = {}
+        metadata_splitted = metadata.split(',')
+        for meta in metadata_splitted:
+            try:
+                key, value = meta.split('=')
+                if value == '*':
+                    value = None
+            except ValueError:
+                continue
+            _metadata[key] = value
         if inc_merge_commit == 'on':
             # The None value will return all whatever
             # the commit is a merge one or not
@@ -384,7 +394,8 @@ class RootController(object):
         resp = c.get_commits(projects=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit,
-                             merge_commit=inc_merge_commit)
+                             merge_commit=inc_merge_commit,
+                             metadata=_metadata)
         for cmt in resp[2]:
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())

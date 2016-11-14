@@ -25,25 +25,30 @@ logger = logging.getLogger(__name__)
 
 PROPERTIES = {
     "sha": {"type": "string", "index": "not_analyzed"},
-    "author_date": {"type": "date",
-                    "format": "epoch_second"},
-    "committer_date": {"type": "date",
-                       "format": "epoch_second"},
-    "ttl": {"type": "integer",
-            "index": "not_analyzed"},
+    "author_date": {"type": "date", "format": "epoch_second"},
+    "committer_date": {"type": "date", "format": "epoch_second"},
+    "ttl": {"type": "integer", "index": "not_analyzed"},
     "author_name": {"type": "string"},
     "committer_name": {"type": "string"},
-    "author_email": {"type": "string",
-                     "index": "not_analyzed"},
-    "committer_email": {"type": "string",
-                        "index": "not_analyzed"},
-    "projects": {"type": "string",
-                 "index": "not_analyzed"},
-    "line_modifieds": {"type": "integer",
-                       "index": "not_analyzed"},
+    "author_email": {"type": "string", "index": "not_analyzed"},
+    "committer_email": {"type": "string", "index": "not_analyzed"},
+    "projects": {"type": "string", "index": "not_analyzed"},
+    "line_modifieds": {"type": "integer", "index": "not_analyzed"},
     "merge_commit": {"type": "boolean"},
-    "commit_msg": {"type": "string"}
+    "commit_msg": {"type": "string"},
 }
+
+DYNAMIC_TEMPLATES = [
+    {
+        "strings": {
+            "match": "*",
+            "mapping": {
+                "type": "string",
+                "index": "not_analyzed",
+            }
+        }
+    }
+]
 
 
 class Commits(object):
@@ -52,7 +57,12 @@ class Commits(object):
         self.ic = connector.ic
         self.index = connector.index
         self.dbname = 'commits'
-        self.mapping = {self.dbname: {"properties": PROPERTIES}}
+        self.mapping = {
+            self.dbname: {
+                "properties": PROPERTIES,
+                "dynamic_templates": DYNAMIC_TEMPLATES,
+            }
+        }
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
@@ -122,7 +132,7 @@ class Commits(object):
         bulk(self.es, gen(sha_list))
         self.es.indices.refresh(index=self.index)
 
-    def get_filter(self, mails, projects):
+    def get_filter(self, mails, projects, metadata={}):
         """ Compute the search filter
         """
         filter = {
@@ -154,11 +164,22 @@ class Commits(object):
             )
             filter["bool"]["should"].append(should_project_clause)
 
+        for key, value in metadata.items():
+            if value is None:
+                filter["bool"]["must"].append(
+                    {"exists": {"field": key}}
+                )
+            else:
+                filter["bool"]["must"].append(
+                    {"term": {key: value}}
+                )
+
         return filter
 
     def get_commits(self, mails=[], projects=[],
                     fromdate=None, todate=None, start=0, limit=100,
-                    sort='desc', scan=False, merge_commit=None):
+                    sort='desc', scan=False, merge_commit=None,
+                    metadata={}):
         """ Return the list of commits for authors and/or projects.
         """
 
@@ -168,7 +189,7 @@ class Commits(object):
             raise Exception('At least a author email or project is required')
 
         body = {
-            "filter": self.get_filter(mails, projects),
+            "filter": self.get_filter(mails, projects, metadata),
         }
 
         if scan:

@@ -98,7 +98,10 @@ def parse_commit_msg(msg):
             key = m.groups()[0].decode('utf-8', errors="replace")
             if key not in reserved_metadata_keys:
                 value = m.groups()[1].decode('utf-8', errors="replace")
-                metadatas[key.strip()] = value.strip()
+                # Remove space before and after the string and remove
+                # the \# that will cause trouble when metadata are queried
+                # via the URL arguments
+                metadatas[key.strip()] = value.strip().replace('#', '')
     return subject, metadatas
 
 

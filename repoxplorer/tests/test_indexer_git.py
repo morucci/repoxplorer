@@ -39,7 +39,7 @@ body line 1. nokey: novalue
 body line 2
 metakey: metavalue
 author_date: 123
-metakey2:metavalue2
+metakey2:#metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')

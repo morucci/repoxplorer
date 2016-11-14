@@ -55,6 +55,7 @@ class TestCommits(TestCase):
                 'line_modifieds': 200,
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 19',
+                'implement-feature': '19',
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b187',
@@ -70,6 +71,8 @@ class TestCommits(TestCase):
                 'line_modifieds': 300,
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 20',
+                'implement-feature': '20',
+                'implement-partial-epic': 'Great Feature'
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b188',
@@ -298,3 +301,28 @@ class TestCommits(TestCase):
             ['keiko.a@joker.org', 'jean.bon@joker.org'])
         self.assertDictEqual(ret, {u'jean.bon@joker.org': u'Jean Bon',
                                    u'keiko.a@joker.org': u'Keiko Amura'})
+
+    def test_get_commits_with_metadata_constraint(self):
+        metadata = {'implement-feature': '19'}
+        ret = self.c.get_commits(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            metadata=metadata)
+        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret[2][0]['sha'],
+                         '3597334f2cb10772950c97ddf2f6cc17b186')
+        metadata = {'implement-feature': None}
+        ret = self.c.get_commits(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            metadata=metadata)
+        self.assertEqual(ret[1], 2)
+        shas = [c['sha'] for c in ret[2]]
+        self.assertIn('3597334f2cb10772950c97ddf2f6cc17b186', shas)
+        self.assertIn('3597334f2cb10772950c97ddf2f6cc17b187', shas)
+        metadata = {'implement-feature': '20',
+                    'implement-partial-epic': 'Great Feature'}
+        ret = self.c.get_commits(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            metadata=metadata)
+        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret[2][0]['sha'],
+                         '3597334f2cb10772950c97ddf2f6cc17b187')
