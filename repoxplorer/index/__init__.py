@@ -15,14 +15,22 @@
 
 import time
 
+from pecan import conf
+
 from elasticsearch import client
 
 
 class Connector(object):
-    def __init__(self, host='localhost', port=9200, index='repoxplorer'):
-        self.host = host
-        self.port = port
-        self.index = index
+    def __init__(self, host=None, port=None, index=None):
+        self.host = (host or
+                     getattr(conf, 'elasticsearch_host', None) or
+                     'localhost')
+        self.port = (port or
+                     getattr(conf, 'elasticsearch_port', None) or
+                     9200)
+        self.index = (index or
+                      getattr(conf, 'elasticsearch_index', None) or
+                      'repoxplorer')
         self.es = client.Elasticsearch([{"host": self.host,
                                          "port": self.port}])
         self.ic = client.IndicesClient(self.es)
