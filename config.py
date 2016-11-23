@@ -2,11 +2,13 @@ import sys
 
 # Backend Server Specific Configurations
 
+# Internal dev pecan server
 server = {
     'port': '8080',
     'host': '0.0.0.0'
 }
 
+# Pecan REST and rendering configuration
 app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
@@ -19,6 +21,7 @@ app = {
     }
 }
 
+# Logging configuration
 logging = {
     'root': {'level': 'INFO', 'handlers': ['console']},
     'loggers': {
@@ -50,6 +53,10 @@ logging = {
     }
 }
 
+# Additional RepoXplorer configurations
 projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
 idents_file_path = '%s/local/share/repoxplorer/idents.yaml' % sys.prefix
 git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix
+elasticsearch_host = 'localhost'
+elasticsearch_port = 9200
+elasticsearch_index = 'repoxplorer'
