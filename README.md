@@ -1,18 +1,18 @@
 # RepoXplorer
 
-RepoXplorer is a small stats and charts utility for GIT repositories.
+RepoXplorer is a small stats and charts utility for Git repositories.
 Its main purpose is to ease the visualization of stats for one or
-more project(s) composed of multiple GIT repositories.
+more project(s) composed of multiple Git repositories.
 
-As lot of projects are composed of multiple GIT repositories (server,
+As lot of projects are composed of multiple Git repositories (server,
 client, libraries). RepoXplorer let's you describe how a project is composed
-and then computes stats across multiple GIT repositories.
+and then computes stats across multiple them.
 
 Furthermore it is possible to define author identities by listing
-author emails and then avoid duplicated authors in computed stats.
+author emails and then avoid duplicated authors in the computed stats.
 
-RepoXplorer relies on ElasticSearch. Once the service is started only
-a web browser is needed to access the user interface.
+RepoXplorer relies on ElasticSearch. Only a Web browser is needed to access
+the user interface.
 
 ## A visual overview of the user interface
 
@@ -20,7 +20,7 @@ a web browser is needed to access the user interface.
 
 ## How to install
 
-First install repoxplorer in a virtualenv.
+First install repoXplorer in a virtualenv.
 
 ```Shell
 virtualenv ~/repoxplorer
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-Install Elasticsearch. Here we use an already "ready to use" Docker
+Install Elasticsearch. Here, we use an already "ready to use" Docker
 container. But you should definitely use a regular installation
 of ElasticSearch.
 
@@ -37,17 +37,17 @@ of ElasticSearch.
 ~/repoxplorer/bin/el-start.sh
 ```
 
-## How to index a list of GIT hosted projects
+## How to index a list of Git hosted projects
 
 A yaml file should be provisioned with the projects you want to index. The
 file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
 
-Below is the default projects.yaml files provided. Note that Barbican project
-is composed of two GIT repositories: the server and the client.
+Below is the default projects.yaml file provided. Note that Barbican project
+is composed of two Git repositories: the server and the client.
 
-A list of tags can be given to each GIT repositories. This tag notion
-should not be concidered as GIT tags but only as a way to group
-GIT repositories.
+A list of tags can be given to each Git repositories. This tag notion
+should not be considered as Git tags but only as a way to group
+Git repositories together.
 
 Edit this file to add projects you want to index.
 ~/repoxplorer/local/share/repoxplorer/projects.yaml.
@@ -72,7 +72,7 @@ projects:
     template: default
 ```
 
-Then start the GIT indexer manually.
+Then start the Git indexer manually.
 
 ```Shell
 python ~/repoxplorer/bin/repoxplorer-indexer
@@ -145,8 +145,7 @@ metadata such as:
 - close-bug: #123
 - implement-feature: bp-new-scheduler
 
-To be complete all key: value that match the following regex will
-be indexed:
+All "key: value" that match the following regex will be indexed:
 
 ```
 '^([a-zA-Z-0-9_-]+):([^//].+)$'
@@ -155,7 +154,7 @@ be indexed:
 ## Use the commits.json REST endpoint to query the internal DB
 
 This endpoint is used by the UI to fetch commits listing according
-to the filters you setup in the UI but the endpoint can be also used
+to the filters you have setup in the UI but the endpoint can be also used
 outside of the UI. Here are some examples about how to use it:
 
 ```
@@ -203,15 +202,15 @@ If you find an issue please fill a bug report here:
 RepoXplorer is hosted on this Gerrit instance [Software Factory] (http://softwarefactory-project.io)
 a contribution should be done via Gerrit instead of using the Pull Request system of Github.
 
-If you wante to help by contributing on the code:
+If you want to help:
 
 ```Shell
 git clone http://softwarefactory-project.io/r/repoxplorer
-git review -s # You should have login on Software Factory using you Github identity first
+git review -s # You should have login on Software Factory using your Github identity first
 ```
 
 Your local copy is now configured. Please read the following instructions to
-learn about git review sub-command [git-review] (http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
+learn about Git review sub-command [git-review] (http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
 
 ```
 # make some changes
