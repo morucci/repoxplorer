@@ -141,13 +141,13 @@ def extract_cmts(args):
 
 class ProjectIndexer():
     def __init__(self, name, uri, branch, con=None, config=None):
+        if config:
+            configuration.set_config(config)
         if not con:
             self.con = index.Connector()
         else:
             self.con = con
         self.c = Commits(self.con)
-        if config:
-            configuration.set_config(config)
         if not os.path.isdir(conf.git_store):
             os.makedirs(conf.git_store)
         self.name = name

@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 class Users(object):
     def __init__(self):
         path = conf.idents_file_path
+        self.users = {}
         try:
-            self.users = yaml.load(file(path))
+            self.users = yaml.load(file(path)) or {}
         except Exception, e:
             logger.info(
                 'Unable to read idents.yaml (%s). Default is empty.' % e)
-            self.users = {}
         self.idents = {}
 
     def get_users(self):

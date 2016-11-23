@@ -50,7 +50,6 @@ args = parser.parse_args()
 
 
 def process():
-    con = index.Connector()
     prjs = projects.Projects(args.projects).get_projects()
     for pid, plist in prjs.items():
         logger.info("Start indexing project id %s" % pid)
@@ -58,7 +57,6 @@ def process():
             p = indexer.ProjectIndexer(prj['name'],
                                        prj['uri'],
                                        prj['branch'],
-                                       con=con,
                                        config=config)
             logger.info("Index sub-project %s" % str(p))
             p.git_init()
