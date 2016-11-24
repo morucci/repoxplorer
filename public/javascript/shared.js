@@ -124,7 +124,7 @@ function get_commits(pid, tid, cid, page) {
  args['inc_merge_commit'] = inc_merge_commit,
  args['inc_repos'] = getUrlParameter('inc_repos')
 
- $.getJSON("/commits.json", args).done(function(data) {
+ $.getJSON("commits.json", args).done(function(data) {
    $("#commits-table").empty()
    $("#commits-table").append("<table class=\"table table-striped\">");
    var theader = "<tr>"
