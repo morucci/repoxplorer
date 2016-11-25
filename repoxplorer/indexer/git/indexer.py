@@ -107,13 +107,15 @@ def parse_commit_msg(msg):
 
 def extract_cmts(args):
     sha_list, path, project = args
+    name = project.split(':')[-2]
     cmts = []
-    logger.info("Worker start extracting %s commits" % len(sha_list))
+    logger.debug("%s: Worker start extracting %s commits" % (
+        name, len(sha_list)))
     r = repo.Repo(path)
     for c, sha in enumerate(sha_list):
-        if c % 250 == 0:
-            logger.info("Worker %s remains %s commits to extract" % (
-                mp.current_process(), len(sha_list) - c))
+        if c % 500 == 0:
+            logger.info("%s: Worker %s remains %s commits to extract" % (
+                name, mp.current_process(), len(sha_list) - c))
         obj = r.object_store[sha]
         source = {}
         source[u'author_date'] = obj.author_time
@@ -164,8 +166,8 @@ class ProjectIndexer():
         return 'Git indexer of %s' % self.project
 
     def git_init(self):
-        logger.info("Fetched %s %s:%s" % (self.name, self.uri,
-                                          self.branch))
+        logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
+                                         self.branch))
         with cdir(self.local):
             run("git init .")
             if "origin" not in run("git remote -v")[0]:
@@ -197,23 +199,27 @@ class ProjectIndexer():
         self.already_indexed = [c['_id'] for c in
                                 self.c.get_commits(projects=[self.project],
                                                    scan=True)]
-        logger.info(
-            "In the DB - project history is composed of %s commits." % (
-                len(self.already_indexed)))
+        logger.debug(
+            "%s: In the DB - project history is composed of %s commits." % (
+                self.name, len(self.already_indexed)))
 
     def compute_to_index_to_delete(self):
         """ Compute the list of commits (sha) to index and the
         list to delete from the index.
         """
-        logger.info(
-            "Upstream - project history is composed of %s commits." % (
-                len(self.commits)))
+        logger.debug(
+            "%s: Upstream - project history is composed of %s commits." % (
+                self.name, len(self.commits)))
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
-        logger.info(
-            "Indexer will reference %s commits." % len(self.to_index))
-        logger.info(
-            "Indexer will dereference %s commits." % len(self.to_delete))
+        logger.debug(
+            "%s: Indexer will reference %s commits." % (
+                self.name,
+                len(self.to_index)))
+        logger.debug(
+            "%s: Indexer will dereference %s commits." % (
+                self.name,
+                len(self.to_delete)))
 
     def cmt_list_generator(self, sha_list, workers):
         if workers == 0:
@@ -221,7 +227,8 @@ class ProjectIndexer():
             workers = mp.cpu_count() - 1 or 1
         elif workers == 1:
             return extract_cmts((sha_list, self.local, self.project))
-        logger.info("Start commits extract with %s workers" % workers)
+        logger.debug("%s: Start commits extract with %s workers" % (
+            self.name, workers))
         worker_pool = mp.Pool(workers)
         sets = []
         set_lenght = len(sha_list) / workers
@@ -251,11 +258,13 @@ class ProjectIndexer():
             to_delete_update = [c['sha'] for
                                 c in docs if len(c['projects']) > 1]
 
-            logger.info("%s commits will be delete ..." % len(to_delete))
+            logger.info("%s: %s commits will be delete ..." % (
+                self.name, len(to_delete)))
             self.c.del_commits(to_delete)
 
-            logger.info("%s commits belonging to other projects "
-                        "will be updated ..." % len(to_delete_update))
+            logger.info("%s: %s commits belonging to other projects "
+                        "will be updated ..." % (
+                            self.name, len(to_delete_update)))
             res = self.c.get_commits_by_id(to_delete_update)
             if res:
                 original_commits = [c['_source'] for
@@ -272,13 +281,14 @@ class ProjectIndexer():
                          c in res['docs'] if c['found'] is True]
             to_create = [c['_id'] for
                          c in res['docs'] if c['found'] is False]
-            logger.info("%s commits will be created ..." % len(to_create))
+            logger.info("%s: %s commits will be created ..." % (
+                self.name, len(to_create)))
             self.c.add_commits(
                 self.cmt_list_generator(to_create, extract_workers))
 
             logger.info(
-                "%s commits already indexed and need to be updated" % (
-                    len(to_update)))
+                "%s: %s commits already indexed and need to be updated" % (
+                    self.name, len(to_update)))
             for c in to_update:
                 c['projects'].append(self.project)
             self.c.update_commits(to_update)

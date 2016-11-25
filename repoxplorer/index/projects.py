@@ -35,7 +35,7 @@ class Projects(object):
         try:
             self.data = yaml.load(file(path))
         except Exception, e:
-            logger.info(
+            logger.error(
                 'Unable to read projects.yaml (%s). Default is empty.' % e)
             self.data = []
         self.projects = {}
@@ -53,7 +53,7 @@ class Projects(object):
                     try:
                         tmpl = self.find_template_by_name(repo['template'])
                     except NoTemplateFound:
-                        logger.info(
+                        logger.error(
                             "%s requests a non exisiting template %s" % (
                                 repo['name'], repo['template']))
                         continue

@@ -1,6 +1,50 @@
+import copy
 import sys
 
-# Backend Server Specific Configurations
+# RepoXplorer configuration file
+base_logging = {
+    'version': 1,
+    'root': {'level': 'DEBUG', 'handlers': ['normal']},
+    'loggers': {
+        'indexerDaemon': {
+            'level': 'DEBUG',
+            'handlers': ['normal', 'console'],
+            'propagate': False,
+        },
+        'repoxplorer': {
+            'level': 'DEBUG',
+            'handlers': ['normal', 'console'],
+            'propagate': False,
+        },
+        'elasticsearch': {
+            'level': 'WARN',
+            'handlers': ['normal', 'console'],
+            'propagate': False,
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+        'normal': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'normal',
+            'filename': '',
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 30,
+        },
+    },
+    'formatters': {
+        'console': {'format': ('%(levelname)-5.5s [%(name)s]'
+                    '[%(threadName)s] %(message)s')},
+        'normal': {'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
+                   '[%(threadName)s] %(message)s')},
+    }
+}
 
 # Internal dev pecan server
 server = {
@@ -21,38 +65,6 @@ app = {
     }
 }
 
-# Logging configuration
-logging = {
-    'root': {'level': 'INFO', 'handlers': ['console']},
-    'loggers': {
-        'repoxplorer': {'level': 'DEBUG', 'handlers': ['console'],
-                        'propagate': False},
-        'pecan': {'level': 'DEBUG', 'handlers': ['console'],
-                  'propagate': False},
-        'py.warnings': {'handlers': ['console']},
-        '__force_dict__': True
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'color'
-        }
-    },
-    'formatters': {
-        'simple': {
-            'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                       '[%(threadName)s] %(message)s')
-        },
-        'color': {
-            '()': 'pecan.log.ColorFormatter',
-            'format': ('%(asctime)s [%(padded_color_levelname)s] [%(name)s]'
-                       '[%(threadName)s] %(message)s'),
-            '__force_dict__': True
-        }
-    }
-}
-
 # Additional RepoXplorer configurations
 projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
 idents_file_path = '%s/local/share/repoxplorer/idents.yaml' % sys.prefix
@@ -60,3 +72,14 @@ git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
+indexer_loop_delay = 60
+
+# Logging configuration for the wsgi app
+logging = copy.deepcopy(base_logging)
+logging['handlers']['normal']['filename'] = (
+    '%s/local/share/repoxplorer/repoxplorer-webui-debug.log' % sys.prefix)
+
+# Logging configuration for the indexer
+indexer_logging = copy.deepcopy(base_logging)
+indexer_logging['handlers']['normal']['filename'] = (
+    '%s/local/share/repoxplorer/repoxplorer-indexer-debug.log' % sys.prefix)
