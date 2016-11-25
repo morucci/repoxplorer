@@ -23,33 +23,31 @@ app = {
 
 # Logging configuration
 logging = {
-    'root': {'level': 'INFO', 'handlers': ['console']},
+    'root': {'level': 'DEBUG', 'handlers': ['normal']},
     'loggers': {
-        'repoxplorer': {'level': 'DEBUG', 'handlers': ['console'],
-                        'propagate': False},
-        'pecan': {'level': 'DEBUG', 'handlers': ['console'],
-                  'propagate': False},
-        'py.warnings': {'handlers': ['console']},
-        '__force_dict__': True
+        'repoxplorer': {'level': 'DEBUG', 'handlers': ['normal', 'console']},
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'color'
-        }
+            'formatter': 'console'
+        },
+        'normal': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'normal',
+            'filename': '/var/log/repoxplorer/repoxplorer.log',
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 30,
+        },
     },
     'formatters': {
-        'simple': {
-            'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                       '[%(threadName)s] %(message)s')
-        },
-        'color': {
-            '()': 'pecan.log.ColorFormatter',
-            'format': ('%(asctime)s [%(padded_color_levelname)s] [%(name)s]'
-                       '[%(threadName)s] %(message)s'),
-            '__force_dict__': True
-        }
+        'console': {'format': ('%(levelname)-5.5s [%(name)s]'
+                    '[%(threadName)s] %(message)s')},
+        'normal': {'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
+                   '[%(threadName)s] %(message)s')},
     }
 }
 

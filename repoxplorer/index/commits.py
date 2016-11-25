@@ -107,7 +107,7 @@ class Commits(object):
                               id=sha)
             return res['_source']
         except Exception, e:
-            logger.info('Unable to get commit (%s). %s' % (sha, e))
+            logger.error('Unable to get commit (%s). %s' % (sha, e))
 
     def get_commits_by_id(self, sha_list):
         body = {"ids": sha_list}
@@ -118,7 +118,7 @@ class Commits(object):
                                body=body)
             return res
         except Exception, e:
-            logger.info('Unable to get mulitple commits. %s' % e)
+            logger.error('Unable to get mulitple commits. %s' % e)
 
     def del_commits(self, sha_list):
         def gen(it):
