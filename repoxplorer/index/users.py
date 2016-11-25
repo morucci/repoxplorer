@@ -29,7 +29,7 @@ class Users(object):
         try:
             self.users = yaml.load(file(path)) or {}
         except Exception, e:
-            logger.info(
+            logger.error(
                 'Unable to read idents.yaml (%s). Default is empty.' % e)
         self.idents = {}
 
