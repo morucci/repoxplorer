@@ -326,3 +326,10 @@ class TestCommits(TestCase):
         self.assertEqual(ret[1], 1)
         self.assertEqual(ret[2][0]['sha'],
                          '3597334f2cb10772950c97ddf2f6cc17b187')
+
+    def test_get_metadata_keys(self):
+        ret = self.c.get_metadata_keys(
+            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+        self.assertIn('implement-partial-epic', ret)
+        self.assertIn('implement-feature', ret)
+        self.assertEqual(len(ret), 2)

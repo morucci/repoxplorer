@@ -329,6 +329,9 @@ class RootController(object):
         ttl_average = timedelta(
             seconds=int(ttl_average)) - timedelta(seconds=0)
 
+        metadata_keys = c.get_metadata_keys(**query_kwargs)
+        print metadata_keys
+
         return {'pid': pid,
                 'tid': tid,
                 'histo': json.dumps(histo),
@@ -345,6 +348,7 @@ class RootController(object):
                 'inc_repos': inc_repos,
                 'period': (odfrom, odto),
                 'ttl_average': ttl_average,
+                'metadata_keys': metadata_keys,
                 'empty': False}
 
     @expose('json')

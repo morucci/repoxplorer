@@ -14,6 +14,7 @@
 
 
 import logging
+import itertools
 
 from collections import deque
 from datetime import timedelta
@@ -481,6 +482,28 @@ class Commits(object):
                for b in res["aggregations"]
                ["top-field-by-modified"]["buckets"]]
         return took, dict(top)
+
+    def get_metadata_keys(self, mails=[], projects=[],
+                          fromdate=None, todate=None,
+                          merge_commit=None):
+        """ Return the metadata keys found inside
+        the filtered commits. The returned list contains
+        does not contains duplicated keys.
+        """
+        page = 0
+        limit = 5000
+        ret = None
+        uniq_keys = set()
+        while not ret or ret[1] >= page:
+            ret = self.get_commits(mails, projects,
+                                   fromdate, todate,
+                                   start=page, limit=limit,
+                                   merge_commit=merge_commit)
+            keys = [c.keys() for c in ret[2]]
+            map(uniq_keys.add, [i for i in itertools.chain(*keys) if
+                                i not in PROPERTIES])
+            page += limit
+        return list(uniq_keys)
 
     def get_projects(self, mails=[], projects=[],
                      fromdate=None, todate=None,
