@@ -14,6 +14,7 @@
 
 
 import logging
+import itertools
 
 from collections import deque
 from datetime import timedelta
@@ -481,6 +482,56 @@ class Commits(object):
                for b in res["aggregations"]
                ["top-field-by-modified"]["buckets"]]
         return took, dict(top)
+
+    def get_metadata_keys(self, mails=[], projects=[],
+                          fromdate=None, todate=None,
+                          merge_commit=None):
+        """ Return the metadata keys found inside
+        the filtered commits. The returned dictionnary contains
+        keys associated via the amount of hits.
+        """
+        page = 0
+        limit = 5000
+        uniq_keys = {}
+
+        def storekey(key):
+            key = key.lower()
+            if key not in uniq_keys:
+                uniq_keys[key] = 1
+            else:
+                uniq_keys[key] += 1
+
+        ret = None
+        while not ret or ret[1] >= page:
+            ret = self.get_commits(mails, projects,
+                                   fromdate, todate,
+                                   start=page, limit=limit,
+                                   merge_commit=merge_commit)
+            keys = [c.keys() for c in ret[2]]
+            map(storekey, [i for i in itertools.chain(*keys) if
+                           i not in PROPERTIES])
+            page += limit
+        return uniq_keys
+
+    def get_metadata_key_values(self, key, mails=[], projects=[],
+                                fromdate=None, todate=None,
+                                merge_commit=None):
+        """ Return for a metadata key the values found inside
+        the filtered commits.
+        """
+        page = 0
+        limit = 5000
+        ret = None
+        values = set()
+        while not ret or ret[1] >= page:
+            ret = self.get_commits(mails, projects,
+                                   fromdate, todate,
+                                   start=page, limit=limit,
+                                   merge_commit=merge_commit,
+                                   metadata={key: None})
+            values |= set([c[key] for c in ret[2]])
+            page += limit
+        return list(values)
 
     def get_projects(self, mails=[], projects=[],
                      fromdate=None, todate=None,
