@@ -15,6 +15,7 @@
 
 import os
 import re
+import copy
 import logging
 import contextlib
 import subprocess
@@ -87,26 +88,35 @@ def get_diff_stats(r, obj):
         return 0, True
 
 
-def parse_commit_msg(msg):
+def parse_commit_line(line, re):
+    metadata = {}
     reserved_metadata_keys = PROPERTIES.keys()
+    m = re.match(line)
+    if m:
+        key = m.groups()[0].decode('utf-8', errors="replace")
+        if key not in reserved_metadata_keys:
+            value = m.groups()[1].decode('utf-8', errors="replace")
+            # Remove space before and after the string and remove
+            # the \# that will cause trouble when metadata are queried
+            # via the URL arguments
+            metadata[key.strip()] = value.strip().replace('#', '')
+    return metadata
+
+
+def parse_commit_msg(msg, parsers=[]):
     metadatas = {}
     lines = msg.split('\n')
     subject = lines[0].decode('utf-8', errors="replace")
+    parsers.append(METADATA_RE)
     for line in lines[1:]:
-        m = METADATA_RE.match(line)
-        if m:
-            key = m.groups()[0].decode('utf-8', errors="replace")
-            if key not in reserved_metadata_keys:
-                value = m.groups()[1].decode('utf-8', errors="replace")
-                # Remove space before and after the string and remove
-                # the \# that will cause trouble when metadata are queried
-                # via the URL arguments
-                metadatas[key.strip()] = value.strip().replace('#', '')
+        for parser in parsers:
+            metadata = parse_commit_line(line, parser)
+            metadatas.update(metadata)
     return subject, metadatas
 
 
 def extract_cmts(args):
-    sha_list, path, project = args
+    sha_list, path, project, parsers = args
     name = project.split(':')[-2]
     cmts = []
     logger.debug("%s: Worker start extracting %s commits" % (
@@ -130,7 +140,7 @@ def extract_cmts(args):
             '<')[0].rstrip().decode('utf-8', errors="replace")
         source[u'committer_name'] = obj.committer.split(
             '<')[0].rstrip().decode('utf-8', errors="replace")
-        subject, metadatas = parse_commit_msg(obj.message)
+        subject, metadatas = parse_commit_msg(obj.message, parsers)
         source[u'commit_msg'] = subject
         source.update(metadatas)
         modified, merge_commit = get_diff_stats(r, obj)
@@ -142,7 +152,8 @@ def extract_cmts(args):
 
 
 class ProjectIndexer():
-    def __init__(self, name, uri, branch, con=None, config=None):
+    def __init__(self, name, uri, branch, parsers=[],
+                 con=None, config=None):
         if config:
             configuration.set_config(config)
         if not con:
@@ -155,6 +166,7 @@ class ProjectIndexer():
         self.name = name
         self.uri = uri
         self.branch = branch
+        self.parsers = parsers
         self.local = os.path.join(conf.git_store,
                                   self.name,
                                   self.uri.replace('/', '_'))
@@ -226,16 +238,19 @@ class ProjectIndexer():
             # Default value (auto)
             workers = mp.cpu_count() - 1 or 1
         elif workers == 1:
-            return extract_cmts((sha_list, self.local, self.project))
+            return extract_cmts((sha_list, self.local,
+                                 self.project, self.parsers))
         logger.debug("%s: Start commits extract with %s workers" % (
             self.name, workers))
         worker_pool = mp.Pool(workers)
         sets = []
         set_lenght = len(sha_list) / workers
         for _ in xrange(workers - 1):
-            sets.append((sha_list[:set_lenght], self.local, self.project))
+            sets.append((sha_list[:set_lenght], self.local,
+                         self.project, self.parsers))
             del sha_list[:set_lenght]
-        sets.append((sha_list, self.local, self.project))
+        sets.append((sha_list, self.local,
+                     self.project, self.parsers))
         extracted_sets = worker_pool.map(extract_cmts, sets)
         # TODO(fbo): Seems an issue exists here as childs should terminate
         # by themself
@@ -247,7 +262,15 @@ class ProjectIndexer():
         return ret
 
     def index(self, extract_workers=1):
-        # check whether a commit should be completly delete or
+        # Compile the parsers
+        if self.parsers:
+            raw_parsers = copy.deepcopy(self.parsers)
+            self.parsers = []
+            for parser in raw_parsers:
+                self.parsers.append(re.compile(parser))
+            logger.debug("%s: Prepared %s regex parsers for commit msgs" % (
+                self.name, len(self.parsers)))
+        # check whether a commit should be completly deleted or
         # updated by removing the project from the projects field
         if self.to_delete:
             res = self.c.get_commits_by_id(list(self.to_delete))

@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import tempfile
 
@@ -54,6 +55,24 @@ http://metavalue
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
         self.assertDictEqual(metadatas, {})
+
+        msg = """Implement feature bp-feature-cool
+
+This patch implement blueprint bp-feature-cool. Also
+it add the documentation of the feature. I included
+the fix for the bug bz16 as it was releated.
+body line 2
+http://metavalue
+"""
+        p1 = re.compile('.*(blueprint) ([^ .]+).*')
+        p2 = re.compile('.*(bug) ([^ .]+).*')
+        parsers = [p1, p2]
+        subject, metadatas = indexer.parse_commit_msg(msg, parsers=parsers)
+        self.assertEqual(subject, 'Implement feature bp-feature-cool')
+        self.assertDictEqual(metadatas, {
+            'blueprint': 'bp-feature-cool',
+            'bug': 'bz16',
+            })
 
     def test_get_diff_stats(self):
         # TODO(fbo)

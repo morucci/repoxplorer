@@ -145,10 +145,29 @@ metadata such as:
 - close-bug: #123
 - implement-feature: bp-new-scheduler
 
-All "key: value" that match the following regex will be indexed:
+All "key: value" that match the following default regex will be indexed:
 
 ```
 '^([a-zA-Z-0-9_-]+):([^//].+)$'
+```
+
+Furthermore in the projects.yaml file it is possible to specify
+custom capturing regexs to extract metadata that does not
+follow to the default regex.
+
+All regexs specified in the *parsers* key will be executed on
+each commit message line. You need to have two captured elements
+and the first one will be used as the key the second one as
+the value.
+
+```YAML
+templates:
+- name: default
+  uri: https://github.com/openstack/%(name)s
+  branch: master
+  gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+  parsers:
+  - .*(blueprint) ([^ .]+).*
 ```
 
 ## Use the commits.json REST endpoint to query the internal DB

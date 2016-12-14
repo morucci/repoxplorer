@@ -82,6 +82,8 @@ class Projects(object):
                         self.tags[tag].append(repo)
                 else:
                     repo['tags'] = []
+                if 'parsers' not in repo:
+                    repo['parsers'] = []
 
     def get_repo_id(self, repo):
         return "%s:%s:%s" % (

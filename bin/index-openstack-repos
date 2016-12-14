@@ -23,9 +23,9 @@ import yaml
 # reference/projects.yaml and create a repoXplorer compatible
 # projects.yaml file.
 
-EXPLICIT_INCLUDE = tuple()
-# EXPLICIT_INCLUDE = ('keystone', 'swift')
-SKIP = ('Packaging-deb')
+EXPLICIT_INCLUDE = []
+# EXPLICIT_INCLUDE = ['keystone', 'swift']
+SKIP = ['Packaging-deb']
 
 parser = argparse.ArgumentParser(
     description='Read/Index Openstack Governance/project.yaml file')
@@ -42,9 +42,14 @@ noalias_dumper = yaml.dumper.SafeDumper
 noalias_dumper.ignore_aliases = lambda self, data: True
 
 if __name__ == "__main__":
+    templates = [{'name': 'default',
+                  'branch': 'master',
+                  'uri': 'https://github.com/%(name)s',
+                  'gitweb': 'https://github.com/%(name)s/commit/%%(sha)s',
+                  'parsers': ['.*(blueprint) ([^ .]+).*']}]
     gp = yaml.load(file(args.governance_file_path))
     out = {'projects': {},
-           'templates': {}}
+           'templates': templates}
 
     for name, details in gp.items():
         if name not in EXPLICIT_INCLUDE and len(EXPLICIT_INCLUDE) > 0:
@@ -58,8 +63,7 @@ if __name__ == "__main__":
                     _out = {}
                     _out['name'] = repo
                     _out['tags'] = detail.get('tags', [])
-                    _out['uri'] = "http://github.com/%s" % repo
-                    _out['branch'] = "master"
+                    _out['template'] = "default"
                     out['projects'][name].append(_out)
     if not args.projects_file_path:
         with open('output.yml', 'w') as fd:

@@ -48,6 +48,7 @@ def process():
             p = indexer.ProjectIndexer(prj['name'],
                                        prj['uri'],
                                        prj['branch'],
+                                       parsers=prj['parsers'],
                                        config=config)
             logger.debug("Index sub-project %s" % str(p))
             p.git_init()
