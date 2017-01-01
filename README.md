@@ -179,16 +179,19 @@ outside of the UI. Here are some examples about how to use it:
 ```
 # Return all commits from repositories included in the designate project
 curl "http://localhost:8080/commits.json?pid=designate"
-# Return all commits from repositories included in the designate project that
+
+# Return all commits from repositories included into the designate project that
 # have a metadata "Closes-bug" (whatever the field value)
 curl "http://localhost:8080/commits.json?pid=designate&metadata=Closes-Bug=*"
-# Return all commits from all project repositories that have the
+
+# Return all commits from all repositories that have the
 # metadata "implement-feature" that match "bp-new-scheduler"
-curl "http://localhost:8080/commits.json?metadata=implement-bp=bp-new-scheduler"
-# Return all commits from all project repositories that have the
-# metadata "implement-feature" that match "bp-new-scheduler" and
-# "need-qa" is "true"
-curl "http://localhost:8080/commits.json?metadata=implement-bp=bp-new-scheduler,need-qa=true"
+curl "http://localhost:8080/commits.json?metadata=implement-feature=bp-new-scheduler"
+
+# Return all commits from all repositories that have the
+# metadata "implement-feature" that match "bp-new-scheduler" or
+# "implement" that match "bp-new-scheduler"
+curl "http://localhost:8080/commits.json?metadata=implement-feature=bp-new-scheduler,implement=bp-new-scheduler"
 ```
 
 Available arguments are:
