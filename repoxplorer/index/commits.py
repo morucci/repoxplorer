@@ -165,15 +165,21 @@ class Commits(object):
             )
             filter["bool"]["should"].append(should_project_clause)
 
+        must_metadata_clause = {
+            "bool": {
+                "should": []
+            }
+        }
         for key, value in metadata.items():
             if value is None:
-                filter["bool"]["must"].append(
+                must_metadata_clause["bool"]["should"].append(
                     {"exists": {"field": key}}
                 )
             else:
-                filter["bool"]["must"].append(
+                must_metadata_clause["bool"]["should"].append(
                     {"term": {key: value}}
                 )
+        filter["bool"]["must"].append(must_metadata_clause)
 
         return filter
 
@@ -495,7 +501,6 @@ class Commits(object):
         uniq_keys = {}
 
         def storekey(key):
-            key = key.lower()
             if key not in uniq_keys:
                 uniq_keys[key] = 1
             else:
