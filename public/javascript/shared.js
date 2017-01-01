@@ -106,6 +106,69 @@ function contributors_page_init() {
  });
 }
 
+function get_metadata_keys(pid, tid, cid) {
+  if ($('#inc_merge_commit').prop('checked')) {
+   var inc_merge_commit = 'on'
+  }
+
+  var args = {}
+  args['pid'] = pid
+  args['tid'] = tid
+  args['cid'] = cid
+  args['dfrom'] = getUrlParameter('dfrom')
+  args['dto'] = getUrlParameter('dto')
+  args['inc_merge_commit'] = inc_merge_commit,
+  args['inc_repos'] = getUrlParameter('inc_repos')
+
+ $('#metadata').on('change', function() {
+  $('#metadata-values')
+   .find('option')
+   .remove()
+   .end()
+  console.log(this.value);
+  args['key'] = this.value
+  $.getJSON("metadata.json", args)
+   .done(
+    function(data) {
+     console.log(data)
+     $.each(data, function(i, v) {
+      $('#metadata-values').append($('<option>', {
+       text: v,
+       value: v,
+      }))
+     })
+    })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+ })
+
+ $.getJSON("metadata.json", args)
+  .done(
+   function(data) {
+    var temp = []
+    $.each(data, function(key, value) {
+     temp.push({v:value, k: key});
+    });
+    temp.sort(function(a, b){
+     if(a.v < b.v){ return 1}
+     if(a.v > b.v){ return -1}
+     return 0;
+    });
+    $.each(temp, function(i, o) {
+     $('#metadata').append($('<option>', {
+      text: o.k + " (" + o.v + " hits)",
+      value: o.k,
+     }))
+    })
+   })
+  .fail(
+   function(err) {
+    console.log(err)
+   })
+}
+
 function get_commits(pid, tid, cid, page) {
  if (page === undefined) {
    page = 0;

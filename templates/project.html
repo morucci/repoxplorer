@@ -57,7 +57,7 @@
    </div>
    <div class="panel-body container-fluid">
     <div id="filters">
-     <div class="col-md-6">
+     <div class="col-md-3">
       <div class="form-group">
        <label for="fromdatepicker">From date</label>
        <input type="text" class="form-control" id="fromdatepicker"></span>
@@ -80,12 +80,20 @@
       </div>
       % endif
      </div>
-     <div class="col-md-6 form-group">
+     <div class="col-md-3 form-group">
       <label for="repositories">Only include selected repositories</label>
       <select id='repositories' multiple class="form-control">
        % for repo in repos:
        <option>${repo['name']}:${repo['branch']}</option>
        % endfor
+      </select>
+     </div>
+     <div class="col-md-3 form-group">
+      <label for="metadata">Filter by a metadata key</label>
+      <select id='metadata' class="form-control">
+      </select>
+      <label for="metadata-values">Select metadata value</label>
+      <select id='metadata-values' class="form-control">
       </select>
      </div>
     </div>
@@ -244,6 +252,7 @@
  % if pid:
  project_page_init('${pid}', undefined);
  install_paginator('${pid}', undefined, undefined, '${commits_amount}');
+ get_metadata_keys('${pid}', undefined, undefined, undefined);
  get_commits('${pid}', undefined, undefined, undefined);
  % elif tid:
  project_page_init(undefined, '${tid}');

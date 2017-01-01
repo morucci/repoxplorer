@@ -495,7 +495,6 @@ class Commits(object):
         uniq_keys = {}
 
         def storekey(key):
-            key = key.lower()
             if key not in uniq_keys:
                 uniq_keys[key] = 1
             else:
