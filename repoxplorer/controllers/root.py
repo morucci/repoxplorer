@@ -259,7 +259,7 @@ class RootController(object):
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
-                inc_merge_commit=None, inc_repos=None):
+                inc_merge_commit=None, inc_repos=None, metadata=None):
         if not pid and not tid:
             abort(404,
                   detail="tag ID or project ID is mandatory")
@@ -283,6 +283,7 @@ class RootController(object):
             odto = dto
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
+        print metadata
         c = Commits(index.Connector(index=indexname))
         if pid:
             repos = Projects().get_projects()[pid]
