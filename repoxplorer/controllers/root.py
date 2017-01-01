@@ -347,6 +347,62 @@ class RootController(object):
                 'ttl_average': ttl_average,
                 'empty': False}
 
+    def resolv_filters(self, projects_index, idents, pid,
+                       tid, cid, dfrom, dto, inc_repos,
+                       inc_merge_commit):
+
+        if pid:
+            project = projects_index.get_projects()[pid]
+            p_filter = self.get_repos_filter(project, inc_repos)
+        elif tid:
+            project = Projects().get_repos_by_tag(tid)
+            p_filter = self.get_repos_filter(project, inc_repos)
+        else:
+            p_filter = []
+
+        if cid:
+            cid = self.decrypt(xorkey, cid)
+            mails = self.get_mail_filter(idents, cid)
+        else:
+            mails = []
+
+        if dfrom:
+            dfrom = datetime.strptime(
+                dfrom, "%m/%d/%Y").strftime('%s')
+
+        if dto:
+            dto = datetime.strptime(
+                dto, "%m/%d/%Y").strftime('%s')
+
+        inc_merge_commit = False
+        if inc_merge_commit == 'on':
+            # The None value will return all whatever
+            # the commit is a merge one or not
+            inc_merge_commit = None
+
+        return p_filter, mails, dfrom, dto, inc_merge_commit
+
+    @expose('json')
+    def metadata(self, key=None, pid=None, tid=None, cid=None,
+                 dfrom=None, dto=None, inc_merge_commit=None,
+                 inc_repos=None):
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Users().get_users()
+        p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
+            projects_index, idents,
+            pid, tid, cid, dfrom, dto, inc_repos,
+            inc_merge_commit)
+
+        if not key:
+            keys = c.get_metadata_keys(mails, p_filter, dfrom, dto,
+                                       inc_merge_commit)
+            return keys
+        else:
+            vals = c.get_metadata_key_values(key, mails, p_filter, dfrom,
+                                             dto, inc_merge_commit)
+            return vals
+
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
@@ -364,33 +420,12 @@ class RootController(object):
             except ValueError:
                 continue
             _metadata[key] = value
-        if inc_merge_commit == 'on':
-            # The None value will return all whatever
-            # the commit is a merge one or not
-            inc_merge_commit = None
-        else:
-            inc_merge_commit = False
 
-        if pid:
-            project = projects_index.get_projects()[pid]
-            p_filter = self.get_repos_filter(project, inc_repos)
-        elif tid:
-            project = Projects().get_repos_by_tag(tid)
-            p_filter = self.get_repos_filter(project, inc_repos)
-        else:
-            p_filter = []
+        p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
+            projects_index, idents,
+            pid, tid, cid, dfrom, dto, inc_repos,
+            inc_merge_commit)
 
-        if cid:
-            cid = self.decrypt(xorkey, cid)
-            mails = self.get_mail_filter(idents, cid)
-        else:
-            mails = []
-        if dfrom:
-            dfrom = datetime.strptime(
-                dfrom, "%m/%d/%Y").strftime('%s')
-        if dto:
-            dto = datetime.strptime(
-                dto, "%m/%d/%Y").strftime('%s')
         resp = c.get_commits(projects=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit,

@@ -108,3 +108,18 @@ class TestRootController(FunctionalTest):
                 '/commits.json?pid=test&metadata=implement=*')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 2)
+
+    def test_get_metadata(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/metadata.json?pid=test')
+            assert response.status_int == 200
+            self.assertDictEqual(
+                response.json,
+                {u'implement': 2, u'close-bug': 1})
+            response = self.app.get('/metadata.json?key=implement&pid=test')
+            assert response.status_int == 200
+            self.assertIn('feature 35', response.json)
+            self.assertIn('feature 36', response.json)
+            self.assertEqual(len(response.json), 2)
