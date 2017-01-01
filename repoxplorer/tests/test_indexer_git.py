@@ -21,7 +21,20 @@ metakey: metavalue
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertDictEqual(metadatas, {'metakey': 'metavalue'})
+        self.assertIn((u'metakey', u'metavalue'), metadatas)
+        self.assertTrue(len(metadatas) == 1)
+        msg = """cmt subject
+
+body line 1
+body line 2
+metakey: metavalue
+metakey: metavalue2
+"""
+        subject, metadatas = indexer.parse_commit_msg(msg)
+        self.assertEqual(subject, 'cmt subject')
+        self.assertIn((u'metakey', u'metavalue'), metadatas)
+        self.assertIn((u'metakey', u'metavalue2'), metadatas)
+        self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
 body line 1
@@ -32,8 +45,9 @@ metakey2: metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertDictEqual(metadatas, {'metakey': 'metavalue',
-                                         'metakey2': 'metavalue2'})
+        self.assertIn((u'metakey', u'metavalue'), metadatas)
+        self.assertIn((u'metakey2', u'metavalue2'), metadatas)
+        self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
 body line 1. nokey: novalue
@@ -44,8 +58,9 @@ metakey2:#metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertDictEqual(metadatas, {'metakey': 'metavalue',
-                                         'metakey2': 'metavalue2'})
+        self.assertIn((u'metakey', u'metavalue'), metadatas)
+        self.assertIn((u'metakey2', u'metavalue2'), metadatas)
+        self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
 body line 1
@@ -54,7 +69,7 @@ http://metavalue
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertDictEqual(metadatas, {})
+        self.assertTrue(len(metadatas) == 0)
 
         msg = """Implement feature bp-feature-cool
 
@@ -67,12 +82,12 @@ http://metavalue
         p1 = re.compile('.*(blueprint) ([^ .]+).*')
         p2 = re.compile('.*(bug) ([^ .]+).*')
         parsers = [p1, p2]
-        subject, metadatas = indexer.parse_commit_msg(msg, parsers=parsers)
+        subject, metadatas = indexer.parse_commit_msg(
+            msg, extra_parsers=parsers)
         self.assertEqual(subject, 'Implement feature bp-feature-cool')
-        self.assertDictEqual(metadatas, {
-            'blueprint': 'bp-feature-cool',
-            'bug': 'bz16',
-            })
+        self.assertIn((u'blueprint', u'bp-feature-cool'), metadatas)
+        self.assertIn((u'bug', u'bz16'), metadatas)
+        self.assertTrue(len(metadatas) == 2)
 
     def test_get_diff_stats(self):
         # TODO(fbo)

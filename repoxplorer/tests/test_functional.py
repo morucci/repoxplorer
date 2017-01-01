@@ -28,7 +28,7 @@ class TestRootController(FunctionalTest):
                 'line_modifieds': 10,
                 'merge_commit': False,
                 'commit_msg': 'Add init method',
-                'implement': 'feature 35',
+                'implement': ['feature 35', ],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
@@ -44,8 +44,8 @@ class TestRootController(FunctionalTest):
                 'line_modifieds': 10,
                 'merge_commit': False,
                 'commit_msg': 'Add feature 36',
-                'implement': 'feature 36',
-                'close-bug': '18',
+                'implement': ['feature 36', ],
+                'close-bug': ['18', ],
             }]
         cls.c.add_commits(cls.commits)
         cls.projects = {'test': [
@@ -80,7 +80,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement=feature 35')
+                '/commits.json?pid=test&metadata=implement:feature 35')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Nakata Daisuke')
@@ -88,7 +88,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement=feature 36')
+                '/commits.json?pid=test&metadata=implement:feature 36')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Jean Paul')
@@ -97,7 +97,7 @@ class TestRootController(FunctionalTest):
             m.return_value = self.projects
             response = self.app.get(
                 '/commits.json?pid=test&metadata='
-                'implement=feature 36,close-bug=18')
+                'implement:feature 36,close-bug:18')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Jean Paul')
@@ -105,7 +105,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement=*')
+                '/commits.json?pid=test&metadata=implement:*')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 2)
 

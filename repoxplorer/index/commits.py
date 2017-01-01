@@ -133,7 +133,7 @@ class Commits(object):
         bulk(self.es, gen(sha_list))
         self.es.indices.refresh(index=self.index)
 
-    def get_filter(self, mails, projects, metadata={}):
+    def get_filter(self, mails, projects, metadata):
         """ Compute the search filter
         """
         filter = {
@@ -165,22 +165,28 @@ class Commits(object):
             )
             filter["bool"]["should"].append(should_project_clause)
 
-        for key, value in metadata.items():
+        must_metadata_clause = {
+            "bool": {
+                "should": []
+            }
+        }
+        for key, value in metadata:
             if value is None:
-                filter["bool"]["must"].append(
+                must_metadata_clause["bool"]["should"].append(
                     {"exists": {"field": key}}
                 )
             else:
-                filter["bool"]["must"].append(
+                must_metadata_clause["bool"]["should"].append(
                     {"term": {key: value}}
                 )
+        filter["bool"]["must"].append(must_metadata_clause)
 
         return filter
 
     def get_commits(self, mails=[], projects=[],
                     fromdate=None, todate=None, start=0, limit=100,
                     sort='desc', scan=False, merge_commit=None,
-                    metadata={}):
+                    metadata=[]):
         """ Return the list of commits for authors and/or projects.
         """
 
@@ -229,7 +235,7 @@ class Commits(object):
 
     def get_commits_amount(self, mails=[], projects=[],
                            fromdate=None, todate=None,
-                           merge_commit=None):
+                           merge_commit=None, metadata=[]):
         """ Return the amount of commits for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -240,7 +246,7 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": self.get_filter(mails, projects, metadata),
                 }
             }
         }
@@ -272,7 +278,7 @@ class Commits(object):
 
     def get_field_stats(self, field, mails=[], projects=[],
                         fromdate=None, todate=None,
-                        merge_commit=None):
+                        merge_commit=None, metadata=[]):
         """ Return the stats about the specified field for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -283,7 +289,7 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": self.get_filter(mails, projects, metadata),
                 }
             },
             "aggs": {
@@ -318,7 +324,7 @@ class Commits(object):
 
     def get_authors(self, mails=[], projects=[],
                     fromdate=None, todate=None,
-                    merge_commit=None):
+                    merge_commit=None, metadata=[]):
         """ Return the author emails (removed duplicated) also
         this return the amount of hits for a given unique
         author_email. The hits value is the amount of commits
@@ -329,7 +335,7 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": self.get_filter(mails, projects, metadata),
                 }
             },
             "aggs": {
@@ -427,7 +433,7 @@ class Commits(object):
 
     def get_top_field_by_lines(self, field, mails=[], projects=[],
                                fromdate=None, todate=None,
-                               merge_commit=None):
+                               merge_commit=None, metadata=[]):
         """ Return the ranking of author emails by modidified lines
         of codes
         """
@@ -439,7 +445,7 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": self.get_filter(mails, projects, metadata),
                 }
             },
             "aggs": {
@@ -495,7 +501,6 @@ class Commits(object):
         uniq_keys = {}
 
         def storekey(key):
-            key = key.lower()
             if key not in uniq_keys:
                 uniq_keys[key] = 1
             else:
@@ -528,14 +533,17 @@ class Commits(object):
                                    fromdate, todate,
                                    start=page, limit=limit,
                                    merge_commit=merge_commit,
-                                   metadata={key: None})
-            values |= set([c[key] for c in ret[2]])
+                                   metadata=((key, None),))
+            for c in ret[2]:
+                values |= set(c[key])
             page += limit
-        return list(values)
+        values = list(values)
+        values.sort()
+        return values
 
     def get_projects(self, mails=[], projects=[],
                      fromdate=None, todate=None,
-                     merge_commit=None):
+                     merge_commit=None, metadata={}):
         """ Return the projects (removed duplicated) also
         this return the amount of hits. The hits value is
         the amount of commit for an uniq project.
@@ -548,7 +556,7 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, projects),
+                    "filter": self.get_filter(mails, projects, metadata),
                 }
             },
             "aggs": {
@@ -587,14 +595,14 @@ class Commits(object):
 
     def get_commits_time_delta(self, mails=[], projects=[],
                                fromdate=None, todate=None,
-                               merge_commit=None):
+                               merge_commit=None, metadata=[]):
         first = self.get_commits(mails, projects, start=0, limit=1, sort='asc',
                                  fromdate=fromdate, todate=todate,
-                                 merge_commit=merge_commit)
+                                 merge_commit=merge_commit, metadata=metadata)
         first = first[2][0]['committer_date']
         last = self.get_commits(mails, projects, start=0, limit=1, sort='desc',
                                 fromdate=fromdate, todate=todate,
-                                merge_commit=merge_commit)
+                                merge_commit=merge_commit, metadata=metadata)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
         duration = duration.total_seconds()
@@ -602,7 +610,7 @@ class Commits(object):
 
     def get_commits_histo(self, mails=[], projects=[],
                           fromdate=None, todate=None,
-                          merge_commit=None):
+                          merge_commit=None, metadata=[]):
         """ Return the histogram of contrib for authors and/or projects.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -610,10 +618,11 @@ class Commits(object):
         if not mails and not projects:
             raise Exception('At least a author email or project is required')
 
-        qfilter = self.get_filter(mails, projects)
+        qfilter = self.get_filter(mails, projects, metadata)
         duration = self.get_commits_time_delta(mails, projects,
                                                fromdate=fromdate,
-                                               todate=todate)[2]
+                                               todate=todate,
+                                               metadata=metadata)[2]
 
         # Set resolution by day if duration <= 3 months
         if (duration / (24 * 3600 * 31)) <= 3:

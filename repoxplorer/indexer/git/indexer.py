@@ -89,7 +89,6 @@ def get_diff_stats(r, obj):
 
 
 def parse_commit_line(line, re):
-    metadata = {}
     reserved_metadata_keys = PROPERTIES.keys()
     m = re.match(line)
     if m:
@@ -99,24 +98,27 @@ def parse_commit_line(line, re):
             # Remove space before and after the string and remove
             # the \# that will cause trouble when metadata are queried
             # via the URL arguments
-            metadata[key.strip()] = value.strip().replace('#', '')
-    return metadata
+            return key.strip(), value.strip().replace('#', '')
 
 
-def parse_commit_msg(msg, parsers=[]):
-    metadatas = {}
+def parse_commit_msg(msg, extra_parsers=None):
+    metadatas = []
+    parsers = [METADATA_RE, ]
+    if extra_parsers:
+        for p in extra_parsers:
+            parsers.append(p)
     lines = msg.split('\n')
     subject = lines[0].decode('utf-8', errors="replace")
-    parsers.append(METADATA_RE)
     for line in lines[1:]:
         for parser in parsers:
             metadata = parse_commit_line(line, parser)
-            metadatas.update(metadata)
+            if metadata:
+                metadatas.append(metadata)
     return subject, metadatas
 
 
 def extract_cmts(args):
-    sha_list, path, project, parsers = args
+    sha_list, path, project, extra_parsers = args
     name = project.split(':')[-2]
     cmts = []
     logger.debug("%s: Worker start extracting %s commits" % (
@@ -140,9 +142,12 @@ def extract_cmts(args):
             '<')[0].rstrip().decode('utf-8', errors="replace")
         source[u'committer_name'] = obj.committer.split(
             '<')[0].rstrip().decode('utf-8', errors="replace")
-        subject, metadatas = parse_commit_msg(obj.message, parsers)
+        subject, metadatas = parse_commit_msg(obj.message, extra_parsers)
         source[u'commit_msg'] = subject
-        source.update(metadatas)
+        for metadata in metadatas:
+            if metadata[0] not in source:
+                source[metadata[0]] = []
+            source[metadata[0]].append(metadata[1])
         modified, merge_commit = get_diff_stats(r, obj)
         source[u'line_modifieds'] = modified
         source[u'merge_commit'] = merge_commit
@@ -152,7 +157,7 @@ def extract_cmts(args):
 
 
 class ProjectIndexer():
-    def __init__(self, name, uri, branch, parsers=[],
+    def __init__(self, name, uri, branch, parsers=None,
                  con=None, config=None):
         if config:
             configuration.set_config(config)
@@ -166,7 +171,10 @@ class ProjectIndexer():
         self.name = name
         self.uri = uri
         self.branch = branch
-        self.parsers = parsers
+        if not parsers:
+            self.parsers = []
+        else:
+            self.parsers = parsers
         self.local = os.path.join(conf.git_store,
                                   self.name,
                                   self.uri.replace('/', '_'))

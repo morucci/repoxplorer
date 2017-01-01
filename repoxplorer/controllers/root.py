@@ -259,7 +259,7 @@ class RootController(object):
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
-                inc_merge_commit=None, inc_repos=None):
+                inc_merge_commit=None, inc_repos=None, metadata=None):
         if not pid and not tid:
             abort(404,
                   detail="tag ID or project ID is mandatory")
@@ -283,6 +283,18 @@ class RootController(object):
             odto = dto
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
+        _metadata = []
+        if metadata:
+            metadata_splitted = metadata.split(',')
+            for meta in metadata_splitted:
+                try:
+                    key, value = meta.split(':')
+                    if value == '*':
+                        value = None
+                except ValueError:
+                    continue
+                _metadata.append((key, value))
+        metadata = _metadata
         c = Commits(index.Connector(index=indexname))
         if pid:
             repos = Projects().get_projects()[pid]
@@ -295,6 +307,7 @@ class RootController(object):
             'fromdate': dfrom,
             'todate': dto,
             'merge_commit': include_merge_commit,
+            'metadata': metadata,
         }
 
         commits_amount = c.get_commits_amount(**query_kwargs)
@@ -410,16 +423,16 @@ class RootController(object):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Users().get_users()
-        _metadata = {}
+        _metadata = []
         metadata_splitted = metadata.split(',')
         for meta in metadata_splitted:
             try:
-                key, value = meta.split('=')
+                key, value = meta.split(':')
                 if value == '*':
                     value = None
             except ValueError:
                 continue
-            _metadata[key] = value
+            _metadata.append((key, value))
 
         p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
             projects_index, idents,

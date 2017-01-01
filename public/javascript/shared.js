@@ -60,11 +60,13 @@ function contributor_page_init(cid) {
       newlocation = newlocation + "&inc_repos_detail=on"
   }
   window.location = newlocation
-  });
+ });
 }
 
 function project_page_init(projectid, tagid) {
  install_date_pickers();
+
+ var selected_metadata = []
 
  if (getUrlParameter('inc_merge_commit') == 'on') {
     $('#inc_merge_commit').prop('checked', true)
@@ -73,6 +75,13 @@ function project_page_init(projectid, tagid) {
  if (getUrlParameter('inc_repos')) {
      selected = getUrlParameter('inc_repos').split(',')
      $('#repositories').val(selected)
+ }
+
+ if (getUrlParameter('metadata')) {
+     selected_metadata = getUrlParameter('metadata').split(',')
+     $.each(selected_metadata, function(i, v) {
+       $("#metadata-selected").append('<span class="badge">'+v+'</div>');
+     });
  }
 
  $("#filter").click(function(){
@@ -94,8 +103,27 @@ function project_page_init(projectid, tagid) {
   if ($('#repositories').val() != undefined) {
     newlocation = newlocation + "&inc_repos=" + encodeURIComponent($('#repositories').val())
   }
+  if (selected_metadata.length > 0) {
+    newlocation = newlocation + "&metadata=" + encodeURIComponent(selected_metadata.toString())
+  }
   window.location = newlocation
-  });
+ });
+
+ $("#add-to-filter").click(function(){
+   metadata = $('#metadata').val()
+   value = $('#metadata-values').val()
+   if (metadata === '') {return 1}
+   selected_metadata.push(metadata + ":" + value)
+   $("#metadata-selected").html("");
+   $.each(selected_metadata, function(i, v) {
+     $("#metadata-selected").append('<span class="badge">'+v+'</div>');
+   });
+ });
+
+ $("#clean-filter").click(function(){
+   selected_metadata = []
+   $("#metadata-selected").html("");
+ });
 }
 
 function contributors_page_init() {
@@ -104,6 +132,81 @@ function contributors_page_init() {
   event.preventDefault()
   window.location = newlocation
  });
+}
+
+function get_metadata_keys(pid, tid, cid) {
+  if ($('#inc_merge_commit').prop('checked')) {
+   var inc_merge_commit = 'on'
+  }
+
+  var args = {}
+  args['pid'] = pid
+  args['tid'] = tid
+  args['cid'] = cid
+  args['dfrom'] = getUrlParameter('dfrom')
+  args['dto'] = getUrlParameter('dto')
+  args['inc_merge_commit'] = inc_merge_commit,
+  args['inc_repos'] = getUrlParameter('inc_repos')
+
+ $('#metadata').append($('<option>', {
+  text: 'Select a metadata key',
+  value: '',
+ }))
+ $('#metadata-values').append($('<option>', {
+  text: 'Select a metadata value',
+  value: '',
+ }))
+
+ $('#metadata').on('change', function() {
+  $('#metadata-values')
+   .find('option')
+   .remove()
+   .end()
+  if (this.value === '') {return 1}
+  args['key'] = this.value
+  $.getJSON("metadata.json", args)
+   .done(
+    function(data) {
+     $('#metadata-values').append($('<option>', {
+      text: '*',
+      value: '*',
+     }))
+     $.each(data, function(i, v) {
+      $('#metadata-values').append($('<option>', {
+       text: v,
+       value: v,
+      }))
+     })
+    })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+ })
+
+ $.getJSON("metadata.json", args)
+  .done(
+   function(data) {
+    var temp = []
+    $.each(data, function(key, value) {
+     temp.push({v:value, k: key});
+    });
+    temp.sort(function(a, b){
+     if(a.v < b.v){ return 1}
+     if(a.v > b.v){ return -1}
+     return 0;
+    });
+    $.each(temp, function(i, o) {
+     $('#metadata').append($('<option>', {
+      text: o.k + " (" + o.v + " hits)",
+      value: o.k,
+     }))
+    })
+   })
+  .fail(
+   function(err) {
+    console.log(err)
+   })
 }
 
 function get_commits(pid, tid, cid, page) {
@@ -123,6 +226,7 @@ function get_commits(pid, tid, cid, page) {
  args['dto'] = getUrlParameter('dto')
  args['inc_merge_commit'] = inc_merge_commit,
  args['inc_repos'] = getUrlParameter('inc_repos')
+ args['metadata'] = getUrlParameter('metadata')
 
  $.getJSON("commits.json", args).done(function(data) {
    $("#commits-table").empty()
