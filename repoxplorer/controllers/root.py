@@ -408,12 +408,12 @@ class RootController(object):
             inc_merge_commit)
 
         if not key:
-            keys = c.get_metadata_keys(mails, p_filter, dfrom, dto,
-                                       inc_merge_commit)
+            keys = c.get_metadata_keys(
+                mails, p_filter, dfrom, dto, inc_merge_commit)
             return keys
         else:
-            vals = c.get_metadata_key_values(key, mails, p_filter, dfrom,
-                                             dto, inc_merge_commit)
+            vals = c.get_metadata_key_values(
+                key, mails, p_filter, dfrom, dto, inc_merge_commit)
             return vals
 
     @expose('json')
