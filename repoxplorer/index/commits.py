@@ -201,6 +201,12 @@ class Commits(object):
             "filter": self.get_filter(mails, projects, metadata),
         }
 
+        # If None both are return. If you expect to skip merge commits
+        # then set merge_commit to False
+        if merge_commit is not None:
+            body["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
         if scan:
             return scanner(self.es, query=body,
                            index=self.index,
@@ -216,12 +222,6 @@ class Commits(object):
                 }
             }
         )
-
-        # If None both are return. If you expect to skip merge commits
-        # then set merge_commit to False
-        if merge_commit is not None:
-            body["filter"]["bool"]["must"].append(
-                {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
         params['size'] = limit
@@ -490,14 +490,11 @@ class Commits(object):
         return took, dict(top)
 
     def get_metadata_keys(self, mails=[], projects=[],
-                          fromdate=None, todate=None,
                           merge_commit=None):
         """ Return the metadata keys found inside
         the filtered commits. The returned dictionnary contains
         keys associated via the amount of hits.
         """
-        page = 0
-        limit = 5000
         uniq_keys = {}
 
         def storekey(key):
@@ -506,37 +503,25 @@ class Commits(object):
             else:
                 uniq_keys[key] += 1
 
-        ret = None
-        while not ret or ret[1] >= page:
-            ret = self.get_commits(mails, projects,
-                                   fromdate, todate,
-                                   start=page, limit=limit,
-                                   merge_commit=merge_commit)
-            keys = [c.keys() for c in ret[2]]
-            map(storekey, [i for i in itertools.chain(*keys) if
-                           i not in PROPERTIES])
-            page += limit
+        ret = self.get_commits(mails, projects,
+                               merge_commit=merge_commit, scan=True)
+        keys = [c['_source'].keys() for c in ret]
+        map(storekey, [i for i in itertools.chain(*keys) if
+                       i not in PROPERTIES])
         return uniq_keys
 
     def get_metadata_key_values(self, key, mails=[], projects=[],
-                                fromdate=None, todate=None,
                                 merge_commit=None):
         """ Return for a metadata key the values found inside
         the filtered commits.
         """
-        page = 0
-        limit = 5000
-        ret = None
         values = set()
-        while not ret or ret[1] >= page:
-            ret = self.get_commits(mails, projects,
-                                   fromdate, todate,
-                                   start=page, limit=limit,
-                                   merge_commit=merge_commit,
-                                   metadata=((key, None),))
-            for c in ret[2]:
-                values |= set(c[key])
-            page += limit
+
+        ret = self.get_commits(mails, projects,
+                               merge_commit=merge_commit,
+                               metadata=((key, None),), scan=True)
+        for c in ret:
+            values |= set(c['_source'][key])
         values = list(values)
         values.sort()
         return values

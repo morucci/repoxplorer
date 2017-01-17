@@ -402,18 +402,18 @@ class RootController(object):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Users().get_users()
-        p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
+        p_filter, mails, _, _, inc_merge_commit = self.resolv_filters(
             projects_index, idents,
             pid, tid, cid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
         if not key:
-            keys = c.get_metadata_keys(mails, p_filter, dfrom, dto,
+            keys = c.get_metadata_keys(mails, p_filter,
                                        inc_merge_commit)
             return keys
         else:
-            vals = c.get_metadata_key_values(key, mails, p_filter, dfrom,
-                                             dto, inc_merge_commit)
+            vals = c.get_metadata_key_values(key, mails, p_filter,
+                                             inc_merge_commit)
             return vals
 
     @expose('json')
