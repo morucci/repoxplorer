@@ -387,11 +387,12 @@ class RootController(object):
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
 
-        inc_merge_commit = False
         if inc_merge_commit == 'on':
             # The None value will return all whatever
             # the commit is a merge one or not
             inc_merge_commit = None
+        else:
+            inc_merge_commit = False
 
         return p_filter, mails, dfrom, dto, inc_merge_commit
 

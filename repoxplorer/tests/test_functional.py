@@ -46,6 +46,21 @@ class TestRootController(FunctionalTest):
                 'commit_msg': 'Add feature 36',
                 'implement': ['feature 36', ],
                 'close-bug': ['18', ],
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b1846',
+                'author_date': 1410456005,
+                'committer_date': 1410456005,
+                'ttl': 0,
+                'author_name': 'Jean Marc',
+                'committer_name': 'Jean Marc',
+                'author_email': 'j.marc@joker2.org',
+                'committer_email': 'j.marc@joker2.org',
+                'projects': [
+                    'https://github.com/nakata/monkey.git:monkey:master', ],
+                'line_modifieds': 0,
+                'merge_commit': True,
+                'commit_msg': 'Merge: something',
             }]
         cls.c.add_commits(cls.commits)
         cls.projects = {'test': [
@@ -108,6 +123,13 @@ class TestRootController(FunctionalTest):
                 '/commits.json?pid=test&metadata=implement:*')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 2)
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get(
+                '/commits.json?pid=test&inc_merge_commit=on')
+        assert response.status_int == 200
+        self.assertEqual(response.json[1], 3)
 
     def test_get_metadata(self):
         with patch.object(root.Projects, 'get_projects') as m:
