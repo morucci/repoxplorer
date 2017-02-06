@@ -27,6 +27,7 @@
     </div>
     <div id="infos" class="col-md-8">
      <div><b>Full Name:</b> ${name}</div>
+     % if not empty:
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of line modifieds:</b> ${line_modifieds_amount}</div>
      <div><b>Amount of projects contributed:</b> ${projects_amount}</div>
@@ -36,6 +37,7 @@
      <div><b>Date of last commits:</b> ${last}</div>
      <div><b>Known emails:</b> ${known_emails_amount}</div>
      <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div>
+     % endif
     </div>
    </div>
   </div>
@@ -58,18 +60,10 @@
        <input type="text" class="form-control" id="todatepicker"></span>
       </div>
       <div class="checkbox">
-       % if inc_merge_commit == 'on':
-           <label><input type="checkbox" id="inc_merge_commit" checked>Include merge commits</label>
-       % else:
-           <label><input type="checkbox" id="inc_merge_commit">Include merge commits</label>
-       % endif
+      <label><input type="checkbox" id="inc_merge_commit">Include merge commits</label>
       </div>
       <div class="checkbox">
-       % if inc_repos_detail == 'on':
-           <label><input type="checkbox" id="inc_repos_detail" checked>Display repositories details</label>
-       % else:
-           <label><input type="checkbox" id="inc_repos_detail">Display repositories details</label>
-       % endif
+      <label><input type="checkbox" id="inc_repos_detail">Display repositories details</label>
       </div>
       % if period[0] and period[1]:
       <div>
@@ -87,7 +81,7 @@
  </div>
 
 </div>
-
+% if not empty:
 <div class="row-fluid">
 
  <div class="col-md-12">
@@ -188,3 +182,15 @@
  install_paginator(undefined, undefined, '${cid}', '${commits_amount}');
  get_commits(undefined, undefined, '${cid}', undefined);
 </script>
+% else:
+<div class="row-fluid">
+ <div class="col-md-12">
+  <div class="alert alert-warning text-center">
+   <strong>This contributor hasn't any commit or the filter you setup returned nothing.</strong>
+  </div>
+ </div>
+</div>
+<script type="text/javascript">
+ contributor_page_init('${cid}');
+</script>
+% endif

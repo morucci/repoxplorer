@@ -74,20 +74,15 @@ class RootController(object):
                     inc_repos_detail=None):
         cid = self.decrypt(xorkey, cid)
         if inc_merge_commit != 'on':
-            inc_merge_commit = ''
             include_merge_commit = False
         else:
             # The None value will return all whatever
             # the commit is a merge one or not
             include_merge_commit = None
-        odfrom = None
-        odto = None
         if dfrom:
-            odfrom = dfrom
             dfrom = datetime.strptime(
                 dfrom, "%m/%d/%Y").strftime('%s')
         if dto:
-            odto = dto
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
         c = Commits(index.Connector(index=indexname))
@@ -107,7 +102,22 @@ class RootController(object):
             'merge_commit': include_merge_commit,
         }
 
+        if dfrom is None or dto is None:
+            period = (None, None)
+        else:
+            period = (datetime.fromtimestamp(float(dfrom)),
+                      datetime.fromtimestamp(float(dto)))
+
         commits_amount = c.get_commits_amount(**query_kwargs)
+
+        if not commits_amount:
+            # No commit found
+            return {'name': name,
+                    'gravatar': hashlib.md5(cid).hexdigest(),
+                    'cid': self.encrypt(xorkey, cid),
+                    'period': period,
+                    'empty': True}
+
         projects = Projects().get_projects()
 
         c_repos = c.get_projects(**query_kwargs)[1]
@@ -183,19 +193,19 @@ class RootController(object):
                 'histo': json.dumps(histo),
                 'commits_amount': commits_amount,
                 'line_modifieds_amount': line_modifieds_amount,
-                'period': (odfrom, odto),
+                'period': period,
                 'projects': sorted_repos_contributed,
                 'projects_line_mdfds': sorted_repos_contributed_modified,
                 'projects_amount': len(c_projects),
                 'repos_amount': len(c_repos),
                 'known_emails_amount': len(mails),
-                'inc_merge_commit': inc_merge_commit,
                 'first': datetime.fromtimestamp(first),
                 'last': datetime.fromtimestamp(last),
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
                 'ttl_average': ttl_average,
-                'cid': self.encrypt(xorkey, cid)}
+                'cid': self.encrypt(xorkey, cid),
+                'empty': False}
 
     def top_authors_sanitize(self, top_authors, commits, top=100000):
         idents = Users().get_users()
@@ -267,22 +277,15 @@ class RootController(object):
             abort(404,
                   detail="tag ID and project ID can't be requested together")
         if inc_merge_commit != 'on':
-            inc_merge_commit = ''
             include_merge_commit = False
         else:
             # The None value will return all whatever
             # the commit is a merge one or not
             include_merge_commit = None
-        odfrom = None
-        odto = None
         if dfrom:
-            odfrom = dfrom
-            dfrom = datetime.strptime(
-                dfrom, "%m/%d/%Y").strftime('%s')
+            dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
         if dto:
-            odto = dto
-            dto = datetime.strptime(
-                dto, "%m/%d/%Y").strftime('%s')
+            dto = datetime.strptime(dto, "%m/%d/%Y").strftime('%s')
         _metadata = []
         if metadata:
             metadata_splitted = metadata.split(',')
@@ -312,12 +315,17 @@ class RootController(object):
 
         commits_amount = c.get_commits_amount(**query_kwargs)
 
+        if dfrom is None or dto is None:
+            period = (None, None)
+        else:
+            period = (datetime.fromtimestamp(float(dfrom)),
+                      datetime.fromtimestamp(float(dto)))
+
         if not commits_amount:
             # No commit found
             return {'pid': pid,
                     'tid': tid,
-                    'inc_merge_commit': inc_merge_commit,
-                    'period': (odfrom, odto),
+                    'period': period,
                     'repos': repos,
                     'inc_repos': inc_repos,
                     'empty': True}
@@ -354,9 +362,8 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
                 'repos': repos,
-                'inc_merge_commit': inc_merge_commit,
                 'inc_repos': inc_repos,
-                'period': (odfrom, odto),
+                'period': period,
                 'ttl_average': ttl_average,
                 'empty': False}
 

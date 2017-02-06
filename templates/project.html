@@ -67,11 +67,7 @@
        <input type="text" class="form-control" id="todatepicker"></span>
       </div>
       <div class="checkbox">
-       % if inc_merge_commit == 'on':
-           <label><input type="checkbox" id="inc_merge_commit" checked>Include merge commits</label>
-       % else:
-           <label><input type="checkbox" id="inc_merge_commit">Include merge commits</label>
-       % endif
+       <label><input type="checkbox" id="inc_merge_commit">Include merge commits</label>
       </div>
       % if period[0] and period[1]:
       <div>
