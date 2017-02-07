@@ -32,6 +32,7 @@ from dulwich import patch
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
+from repoxplorer.index.tags import Tags
 
 
 RE_SOURCE_FILENAME = re.compile(
@@ -166,6 +167,7 @@ class ProjectIndexer():
         else:
             self.con = con
         self.c = Commits(self.con)
+        self.t = Tags(self.con)
         if not os.path.isdir(conf.git_store):
             os.makedirs(conf.git_store)
         self.name = name
@@ -199,6 +201,16 @@ class ProjectIndexer():
         self.repo = repo.Repo(self.local)
         self.head = self.repo.get_refs()[
             'refs/remotes/origin/%s' % self.branch]
+
+    def get_tags(self):
+        with cdir(self.local):
+            _refs = run("git ls-remote origin")[0].split('\n')
+            del _refs[-1]
+            refs = []
+            for r in _refs:
+                refs.append(r.split('\t'))
+            self.tags = filter(lambda x: x[1].startswith('refs/tags') and
+                                         not x[1].endswith('^{}'), refs)
 
     def git_get_commit_obj(self):
         commits = {}
@@ -252,11 +264,11 @@ class ProjectIndexer():
             self.name, workers))
         worker_pool = mp.Pool(workers)
         sets = []
-        set_lenght = len(sha_list) / workers
+        set_length = len(sha_list) / workers
         for _ in xrange(workers - 1):
-            sets.append((sha_list[:set_lenght], self.local,
+            sets.append((sha_list[:set_length], self.local,
                          self.project, self.parsers))
-            del sha_list[:set_lenght]
+            del sha_list[:set_length]
         sets.append((sha_list, self.local,
                      self.project, self.parsers))
         extracted_sets = worker_pool.map(extract_cmts, sets)
@@ -268,6 +280,42 @@ class ProjectIndexer():
         for r in extracted_sets:
             ret.extend(r)
         return ret
+
+    def index_tags(self):
+        def c_tid(t):
+            return "%s%s%s" % (t['sha'],
+                               t['name'],
+                               t['project'])
+        if not self.tags:
+            logger.debug('%s: no tags detected for this repository' % self.name)
+            return
+        logger.debug('%s: %s tags exist upstream' % (self.name, len(self.tags)))
+        tags = self.t.get_tags([self.project])
+        existing = dict([(c_tid(t['_source']), t['_id']) for t in tags])
+        logger.debug('%s: %s tags already referenced' % (self.name, len(existing)))
+        # Some commits may be not found because it is possible the branches has not been indexed
+        # In that case the _source key won't exist
+        commits = [c['_source'] for c in self.c.get_commits_by_id([t[0] for t in self.tags])['docs']
+                   if c and '_source' in c]
+        lookup = dict([(c['sha'], c['committer_date']) for c in commits])
+        to_delete = [v for k, v in existing.items() if
+                     k not in ["%s%s%s" % (sha, name, self.project) for
+                               sha, name in self.tags]]
+        docs = []
+        for sha, name in self.tags:
+            if sha in lookup:
+                doc = {}
+                doc['name'] = name
+                doc['sha'] = sha
+                doc['date'] = lookup[sha]
+                doc['project'] = self.project
+                if c_tid(doc) in existing:
+                    continue
+                docs.append(doc)
+        logger.info('%s: %s tags will be indexed' % (self.name, len(docs)))
+        self.t.add_tags(docs)
+        logger.info('%s: %s tags will be deleted' % (self.name, len(to_delete)))
+        self.t.del_tags(to_delete)
 
     def index(self, extract_workers=1):
         # Compile the parsers
