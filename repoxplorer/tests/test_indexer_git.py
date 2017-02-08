@@ -1,5 +1,6 @@
 import os
 import re
+import mock
 import shutil
 import tempfile
 
@@ -252,3 +253,66 @@ class TestProjectIndexer(TestCase):
         self.assertEqual(cmt['close-bug'], '123')
         self.assertIn('related-to-story', cmt)
         self.assertEqual(cmt['related-to-story'], '124')
+
+    def test_index_tags(self):
+        pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1',
+                                    'master', con=self.con)
+        with mock.patch.object(indexer, 'run') as run:
+            run.return_value = ['123\trefs/tags/t1\n124\trefs/tags/t2\n']
+            pi.get_tags()
+            self.assertListEqual(
+                pi.tags, [['123', 'refs/tags/t1'], ['124', 'refs/tags/t2']])
+
+        pi.cmt_list_generator = \
+            lambda sha_list, _: [c for c in repo_commits
+                                 if c['sha'] in sha_list]
+
+        # This is the initial commits list of a repository we
+        # are going to index
+        repo_commits = [
+            {
+                'sha': '123',
+                'author_date': 1410456005,
+                'committer_date': 1410456005,
+                'author_name': 'Nakata Daisuke',
+                'committer_name': 'Nakata Daisuke',
+                'author_email': 'n.suke@joker.org',
+                'committer_email': 'n.suke@joker.org',
+                'projects': [
+                    'file:///tmp/p1:p1:master', ],
+                'line_modifieds': 10,
+                'commit_msg': 'Add init method',
+            },
+            {
+                'sha': '124',
+                'author_date': 1410456006,
+                'committer_date': 1410456006,
+                'author_name': 'Nakata Daisuke',
+                'committer_name': 'Nakata Daisuke',
+                'author_email': 'n.suke@joker.org',
+                'committer_email': 'n.suke@joker.org',
+                'projects': [
+                    'file:///tmp/p1:p1:master', ],
+                'line_modifieds': 10,
+                'commit_msg': 'Add init method',
+            },
+        ]
+        pi.commits = [rc['sha'] for rc in repo_commits]
+        # Start the indexation
+        pi.get_current_commit_indexed()
+        pi.compute_to_index_to_delete()
+        pi.index()
+        # Start indexation of tags
+        pi.index_tags()
+        # Do it a second time
+        pi.index_tags()
+
+        tags = pi.t.get_tags(['file:///tmp/p1:p1:master'])
+
+        t1 = [t['_source'] for t in tags if t['_source']['sha'] == '123'][0]
+        self.assertEqual(t1['date'], 1410456005)
+        self.assertEqual(t1['name'], 'refs/tags/t1')
+
+        t2 = [t['_source'] for t in tags if t['_source']['sha'] == '124'][0]
+        self.assertEqual(t2['date'], 1410456006)
+        self.assertEqual(t2['name'], 'refs/tags/t2')
