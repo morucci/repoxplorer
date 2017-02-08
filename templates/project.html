@@ -59,11 +59,28 @@
     <div id="filters">
      <div class="col-md-3">
       <div class="form-group">
-       <label for="fromdatepicker">From date</label>
+       <div class="modal fade bs-modal-lg" id="releasesmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+         <div class="modal-content">
+          <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title" id="gridSystemModalLabel">Pickup a release date</h4>
+          </div>
+          <div class="modal-body">
+           <select id='releases' class="form-control">
+           </select>
+          </div>
+          <div class="modal-footer">
+           <button type="button" class="btn btn-primary" id="selectrelease" data-dismiss="modal">Pick that release</button>
+          </div>
+         </div>
+        </div>
+       </div>
+       <label for="fromdatepicker">From date</label><button type="button" id="pickuprelease" class="btn btn-link" data-toggle="modal" data-target="#releasesmodal" data-datetarget="fromdatepicker">(pick a release date)</button>
        <input type="text" class="form-control" id="fromdatepicker"></span>
       </div>
       <div class="form-group">
-       <label for="todatepicker">To date</label>
+       <label for="todatepicker">To date</label><button type="button" id="pickuprelease" class="btn btn-link" data-toggle="modal" data-target="#releasesmodal" data-datetarget="todatepicker">(pick a release date)</button>
        <input type="text" class="form-control" id="todatepicker"></span>
       </div>
       <div class="checkbox">
@@ -256,11 +273,13 @@
  install_paginator('${pid}', undefined, undefined, '${commits_amount}');
  get_metadata_keys('${pid}', undefined, undefined, undefined);
  get_commits('${pid}', undefined, undefined, undefined);
+ get_releases('${pid}', undefined);
  % elif tid:
  project_page_init(undefined, '${tid}');
  install_paginator(undefined, '${tid}', undefined, '${commits_amount}');
  get_metadata_keys(undefined, '${tid}', undefined, undefined);
  get_commits(undefined, '${tid}', undefined, undefined);
+ get_releases(undefined, '${tid}');
  % endif
 </script>
 % else:

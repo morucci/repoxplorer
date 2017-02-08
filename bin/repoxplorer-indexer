@@ -59,10 +59,12 @@ def process():
                     "Sub-project %s does not have the"
                     " requested branch %s. Skip it." % (str(p), prj['branch']))
                 continue
+            p.get_tags()
             p.git_get_commit_obj()
             p.get_current_commit_indexed()
             p.compute_to_index_to_delete()
             p.index(args.extract_workers)
+            p.index_tags()
 
 if __name__ == "__main__":
     conf = imp.load_source('config', config)
