@@ -30,6 +30,7 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.users import Users
+from repoxplorer.index.tags import Tags
 
 
 indexname = 'repoxplorer'
@@ -48,6 +49,13 @@ class RootController(object):
 
     @expose(template='index.html')
     def index(self):
+        projects = Projects().get_projects()
+        tags = Projects().tags.keys()
+        return {'projects': projects,
+                'tags': tags}
+
+    @expose('json')
+    def projects(self):
         projects = Projects().get_projects()
         tags = Projects().tags.keys()
         return {'projects': projects,
@@ -423,6 +431,16 @@ class RootController(object):
             vals = c.get_metadata_key_values(
                 key, mails, p_filter, dfrom, dto, inc_merge_commit)
             return vals
+
+    @expose('json')
+    def tags(self, pid=None, tid=None,
+             dfrom=None, dto=None, inc_repos=None):
+        t = Tags(index.Connector(index=indexname))
+        projects_index = Projects()
+        p_filter, _, dfrom, dto, _ = self.resolv_filters(
+            projects_index, None,
+            pid, tid, None, dfrom, dto, inc_repos, None)
+        return [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
 
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,
