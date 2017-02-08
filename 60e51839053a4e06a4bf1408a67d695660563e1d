@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a75e904_6f9e8158",
+        "filename": "repoxplorer/index/tags.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-02-08T21:02:53Z",
+      "side": 1,
+      "message": "sdfqsd\ndsqfqdsf",
+      "revId": "60e51839053a4e06a4bf1408a67d695660563e1d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
