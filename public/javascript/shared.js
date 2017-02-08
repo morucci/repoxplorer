@@ -35,6 +35,7 @@ function install_date_pickers() {
   $( "#todatepicker" ).datepicker('setDate', dto);
 }
 
+
 function contributor_page_init(cid) {
  install_date_pickers();
 
@@ -44,6 +45,70 @@ function contributor_page_init(cid) {
  if (getUrlParameter('inc_repos_detail') == 'on') {
     $('#inc_repos_detail').prop('checked', true)
  }
+
+ $("#releasesmodal").on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget)
+  pickupdatetarget = button.data('datetarget')
+
+  $.getJSON("projects.json")
+   .done(
+    function(data) {
+     $('#projects')
+      .find('option')
+      .remove()
+      .end()
+     $('#releases')
+      .find('option')
+      .remove()
+      .end()
+     $('#projects').append($('<option>', {
+      text: 'Select a project',
+      value: '',
+     }))
+     $.each(data['projects'], function(i, o) {
+       $('#projects').append($('<option>', {
+        text: i,
+        value: i,
+       }))
+      })
+     })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+ })
+
+ $('#projects').on('change', function() {
+  $('#releases')
+   .find('option')
+   .remove()
+   .end()
+  if (this.value === '') {return 1}
+  args = {}
+  args['pid'] = this.value
+  $.getJSON("tags.json", args)
+   .done(
+    function(data) {
+     $.each(data, function(i, o) {
+      rdate = new Date(1000 * o.date);
+      rdate = moment(rdate)
+      $('#releases').append($('<option>', {
+       text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.project,
+       value: rdate.format("MM/DD/YYYY"),
+      }))
+     })
+    })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+ })
+
+ $("#selectrelease").click(function(){
+  var rdate = $('#releases').val();
+  if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+  if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+ });
 
  $("#filter").click(function(){
   var newlocation = "contributor.html?cid=" + cid
@@ -124,6 +189,18 @@ function project_page_init(projectid, tagid) {
    selected_metadata = []
    $("#metadata-selected").html("");
  });
+
+ var pickupdatetarget = undefined
+ $('#releasesmodal').on('show.bs.modal', function (event) {
+   var button = $(event.relatedTarget)
+   pickupdatetarget = button.data('datetarget')
+ });
+ $("#selectrelease").click(function(){
+  var rdate = $('#releases').val();
+  if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+  if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+ });
+
 }
 
 function contributors_page_init() {
@@ -132,6 +209,32 @@ function contributors_page_init() {
   event.preventDefault()
   window.location = newlocation
  });
+}
+
+function get_releases(pid, tid) {
+  var args = {}
+  args['pid'] = pid
+  args['tid'] = tid
+  args['dfrom'] = getUrlParameter('dfrom')
+  args['dto'] = getUrlParameter('dto')
+  args['inc_repos'] = getUrlParameter('inc_repos')
+
+  var releases = []
+  $.getJSON("tags.json", args)
+   .done(
+    function(data) {
+     $.each(data, function(i, o) {
+      rdate = new Date(1000 * o.date);
+      rdate = moment(rdate)
+      $('#releases').append($('<option>', {
+      text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.project,
+      value: rdate.format("MM/DD/YYYY"),
+     }))})
+     })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
 }
 
 function get_metadata_keys(pid, tid, cid) {

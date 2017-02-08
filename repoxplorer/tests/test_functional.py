@@ -1,6 +1,7 @@
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.tags import Tags
 
 from repoxplorer.controllers import root
 
@@ -13,6 +14,7 @@ class TestRootController(FunctionalTest):
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
+        cls.t = Tags(cls.con)
         cls.commits = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
@@ -67,6 +69,22 @@ class TestRootController(FunctionalTest):
             {'uri': 'https://github.com/nakata/monkey.git',
              'name': 'monkey',
              'branch': 'master'}]}
+        cls.tags = [
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
+                'date': 1410456005,
+                'project':
+                    'https://github.com/nakata/monkey.git:monkey:master',
+                'name': 'tag1',
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
+                'date': 1410456005,
+                'project':
+                    'https://github.com/nakata/monkey.git:monkey:master',
+                'name': 'tag2',
+            }]
+        cls.t.add_tags(cls.tags)
 
     @classmethod
     def tearDownClass(cls):
@@ -145,3 +163,32 @@ class TestRootController(FunctionalTest):
             self.assertIn('feature 35', response.json)
             self.assertIn('feature 36', response.json)
             self.assertEqual(len(response.json), 2)
+
+    def test_get_tags(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/tags.json?pid=test')
+            assert response.status_int == 200
+            tag1 = [t for t in response.json if t['name'] == 'tag1'][0]
+            tag2 = [t for t in response.json if t['name'] == 'tag2'][0]
+            self.assertDictEqual(tag2, {
+                u'name': u'tag2',
+                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
+                u'date': 1410456005,
+                u'project':
+                    u'https://github.com/nakata/monkey.git:monkey:master'})
+            self.assertDictEqual(tag1, {
+                u'name': u'tag1',
+                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
+                u'date': 1410456005,
+                u'project':
+                    u'https://github.com/nakata/monkey.git:monkey:master'})
+
+    def test_get_projects(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/projects.json?')
+            assert response.status_int == 200
+            self.assertIn('test', response.json['projects'])
