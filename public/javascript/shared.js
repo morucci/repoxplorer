@@ -84,24 +84,7 @@ function contributor_page_init(cid) {
    .remove()
    .end()
   if (this.value === '') {return 1}
-  args = {}
-  args['pid'] = this.value
-  $.getJSON("tags.json", args)
-   .done(
-    function(data) {
-     $.each(data, function(i, o) {
-      rdate = new Date(1000 * o.date);
-      rdate = moment(rdate)
-      $('#releases').append($('<option>', {
-       text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.project,
-       value: rdate.format("MM/DD/YYYY"),
-      }))
-     })
-    })
-   .fail(
-    function(err) {
-     console.log(err)
-    })
+  get_releases(this.value)
  })
 
  $("#selectrelease").click(function(){
@@ -223,6 +206,11 @@ function get_releases(pid, tid) {
   $.getJSON("tags.json", args)
    .done(
     function(data) {
+     data.sort(function(a, b){
+      if(a.date < b.date){ return 1}
+      if(a.date > b.date){ return -1}
+      return 0;
+     });
      $.each(data, function(i, o) {
       rdate = new Date(1000 * o.date);
       rdate = moment(rdate)
