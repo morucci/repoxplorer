@@ -440,7 +440,21 @@ class RootController(object):
         p_filter, _, dfrom, dto, _ = self.resolv_filters(
             projects_index, None,
             pid, tid, None, dfrom, dto, inc_repos, None)
-        return [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
+        ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
+        if not pid:
+            return ret
+        # now append user defined releases
+        ur = {}
+        project = projects_index.get_projects()[pid]
+        for repo in project:
+            if 'releases' in repo:
+                for release in repo['releases']:
+                    ur[release['name']] = {'name': release['name'],
+                                           'date': release['date'],
+                                           'project': release['project']}
+        for rel in ur.values():
+            ret.append(rel)
+        return ret
 
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,

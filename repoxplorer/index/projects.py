@@ -15,6 +15,7 @@
 
 import yaml
 import copy
+import time
 import logging
 
 from pecan import conf
@@ -72,6 +73,25 @@ class Projects(object):
                             repo_computed[k] = v
                     repo = repo_computed
                 self.projects[pid].append(repo)
+                if 'releases' in repo:
+                    try:
+                        assert isinstance(repo['releases'], list)
+                        rels = []
+                        for release in repo['releases']:
+                            assert isinstance(release, dict)
+                            assert len(release) == 2
+                            assert 'name' in release
+                            assert 'date' in release
+                            epoch = time.mktime(
+                                time.strptime(release['date'], "%d/%m/%Y"))
+                            rels.append({'name': release['name'],
+                                         'date': epoch,
+                                         'project': pid})
+                    except Exception, e:
+                        logger.error(
+                            "%s unable to parse releases dates (%s)" % (
+                                repo['name'], e))
+                    repo['releases'] = rels
                 if 'gitweb' in repo:
                     simple_uri = '%s:%s' % (repo['uri'], repo['name'])
                     self.gitweb_lookup[simple_uri] = repo['gitweb']
