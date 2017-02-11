@@ -4,6 +4,11 @@ templates:
   uri: https://github.com/openstack/%(name)s
   branch: master
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+  releases:
+  - name: tag1
+    date: 10/01/2015
+  - name: tag2
+    date: 10/01/2016
 
 projects:
   Barbican:

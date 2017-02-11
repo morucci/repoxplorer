@@ -6,7 +6,7 @@ more project(s) composed of multiple Git repositories.
 
 As lot of projects are composed of multiple Git repositories (server,
 client, libraries). RepoXplorer let's you describe how a project is composed
-and then computes stats across multiple them.
+and then computes stats across them.
 
 Furthermore it is possible to define author identities by listing
 author emails and then avoid duplicated authors in the computed stats.
@@ -49,6 +49,14 @@ A list of tags can be given to each Git repositories. This tag notion
 should not be considered as Git tags but only as a way to group
 Git repositories together.
 
+A list of releases can be defined (can be also defined in a template).
+It is useful when you want to define release points in a time accross
+all repositories defined in a project. Release dates are added to detected
+Git tags dates.
+
+As of now RepoXplorer index and compute stats frim Git commit objects
+and Git tags.
+
 Edit this file to add projects you want to index.
 ~/repoxplorer/local/share/repoxplorer/projects.yaml.
 
@@ -65,6 +73,9 @@ projects:
   - name: barbican
     tags:
       - python
+    releases:
+    - name: 2.0
+      date: 20/12/2016
     template: default
   - name: python-barbicanclient
     tags:
