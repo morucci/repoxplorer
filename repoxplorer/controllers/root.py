@@ -128,10 +128,10 @@ class RootController(object):
 
         projects = Projects().get_projects()
 
-        c_repos = c.get_projects(**query_kwargs)[1]
+        c_repos = c.get_repos(**query_kwargs)[1]
         repos_contributed = {}
 
-        lm_repos = c.get_top_projects_by_lines(**query_kwargs)[1]
+        lm_repos = c.get_top_repos_by_lines(**query_kwargs)[1]
         repos_contributed_modified = {}
 
         c_projects = {}
@@ -151,8 +151,6 @@ class RootController(object):
                 (":".join(p.split(':')[-2:]), int(lm)) for
                 p, lm in lm_repos.items()]
         else:
-            # Variables name use repos in that case but should be
-            # concidered representing a project
             for pname, repos in projects.items():
                 for r in repos:
                     pid = "%s:%s:%s" % (r['uri'],
@@ -202,8 +200,8 @@ class RootController(object):
                 'commits_amount': commits_amount,
                 'line_modifieds_amount': line_modifieds_amount,
                 'period': period,
-                'projects': sorted_repos_contributed,
-                'projects_line_mdfds': sorted_repos_contributed_modified,
+                'repos': sorted_repos_contributed,
+                'repos_line_mdfds': sorted_repos_contributed_modified,
                 'projects_amount': len(c_projects),
                 'repos_amount': len(c_repos),
                 'known_emails_amount': len(mails),
@@ -264,11 +262,6 @@ class RootController(object):
                                           p['branch']))
         return p_filter
 
-    def get_tag_filter(self, tag, inc_repos):
-        projects = [{'uri': p[0], 'name': p[1], 'branch': p[2]}
-                    for p in tag]
-        return self.get_project_filter(projects, inc_repos)
-
     def get_mail_filter(self, idents, cid):
         if cid in idents:
             return idents[cid][2]
@@ -314,7 +307,7 @@ class RootController(object):
         p_filter = self.get_repos_filter(repos, inc_repos)
 
         query_kwargs = {
-            'projects': p_filter,
+            'repos': p_filter,
             'fromdate': dfrom,
             'todate': dto,
             'merge_commit': include_merge_commit,
@@ -451,7 +444,7 @@ class RootController(object):
                 for release in repo['releases']:
                     ur[release['name']] = {'name': release['name'],
                                            'date': release['date'],
-                                           'project': release['project']}
+                                           'repo': release['repo']}
         for rel in ur.values():
             ret.append(rel)
         return ret
@@ -479,7 +472,7 @@ class RootController(object):
             pid, tid, cid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
-        resp = c.get_commits(projects=p_filter, mails=mails,
+        resp = c.get_commits(repos=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit,
                              merge_commit=inc_merge_commit,
@@ -493,12 +486,12 @@ class RootController(object):
             cmt['gitwebs'] = [projects_index.get_gitweb_link(
                               ":".join(p.split(':')[0:-1])) %
                               {'sha': cmt['sha']} for
-                              p in cmt['projects']]
+                              p in cmt['repos']]
             # Remove to verbose details mentionning this commit belong
-            # to projects not included in the search
+            # to repos not included in the search
             # Also remove the URI part
-            cmt['projects'] = [":".join(p.split(':')[-2:]) for
-                               p in cmt['projects']]
+            cmt['repos'] = [":".join(p.split(':')[-2:]) for
+                            p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
                 if idents.get(cmt['%s_email' % elm]):

@@ -114,7 +114,7 @@ class TestRepoIndexer(TestCase):
 
     def test_init(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1', 'master')
-        self.assertEqual(pi.project, 'file:///tmp/p1:p1:master')
+        self.assertEqual(pi.repo_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
 
     def test_index(self):
@@ -135,7 +135,7 @@ class TestRepoIndexer(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'file:///tmp/p1:p1:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
@@ -153,7 +153,7 @@ class TestRepoIndexer(TestCase):
         self.assertEqual(
             len(self.cmts.get_commits_by_id(pi.commits)['docs']), 1)
 
-        # The project evolves with an additional commit
+        # The repo evolves with an additional commit
         additional_cmt = {
             'sha': '3597334f2cb10772950c97ddf2f6cc17b185',
             'author_date': 1410456006,
@@ -162,7 +162,7 @@ class TestRepoIndexer(TestCase):
             'committer_name': 'Nakata Daisuke',
             'author_email': 'n.suke@joker.org',
             'committer_email': 'n.suke@joker.org',
-            'projects': [
+            'repos': [
                 'file:///tmp/p1:p1:master', ],
             'line_modifieds': 15,
             'commit_msg': 'Second commit',
@@ -180,7 +180,7 @@ class TestRepoIndexer(TestCase):
         cmts.difference_update(set([c['sha'] for c in repo_commits]))
         self.assertEqual(len(cmts), 0)
 
-        # The project history has been rewritten
+        # The repo history has been rewritten
         repo_commits.pop()
         pi.commits = [rc['sha'] for rc in repo_commits]
         # Start the indexation
@@ -209,7 +209,7 @@ class TestRepoIndexer(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'file:///tmp/p2:p2:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
@@ -220,10 +220,10 @@ class TestRepoIndexer(TestCase):
         pi2.get_current_commit_indexed()
         pi2.compute_to_index_to_delete()
         pi2.index()
-        # Check the commits has been marked belonging to both projects
+        # Check the commits has been marked belonging to both repos
         cmt = self.cmts.get_commit(repo2_commits[0]['sha'])
-        self.assertIn('file:///tmp/p2:p2:master', cmt['projects'])
-        self.assertIn('file:///tmp/p1:p1:master', cmt['projects'])
+        self.assertIn('file:///tmp/p2:p2:master', cmt['repos'])
+        self.assertIn('file:///tmp/p1:p1:master', cmt['repos'])
 
         # Add another commit with metadata extracted
         cmt = {
@@ -234,7 +234,7 @@ class TestRepoIndexer(TestCase):
             'committer_name': 'Nakata Daisuke',
             'author_email': 'n.suke@joker.org',
             'committer_email': 'n.suke@joker.org',
-            'projects': [
+            'repos': [
                 'file:///tmp/p2:p2:master', ],
             'line_modifieds': 10,
             'commit_msg': 'Add init method',
@@ -247,7 +247,7 @@ class TestRepoIndexer(TestCase):
         pi2.get_current_commit_indexed()
         pi2.compute_to_index_to_delete()
         pi2.index()
-        # Check the commits has been marked belonging to both projects
+        # Check the commits has been marked belonging to both repos
         cmt = self.cmts.get_commit(repo2_commits[1]['sha'])
         self.assertIn('close-bug', cmt)
         self.assertEqual(cmt['close-bug'], '123')
@@ -278,7 +278,7 @@ class TestRepoIndexer(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'file:///tmp/p1:p1:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
@@ -291,7 +291,7 @@ class TestRepoIndexer(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'file:///tmp/p1:p1:master', ],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',

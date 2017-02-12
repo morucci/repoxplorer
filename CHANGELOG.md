@@ -2,7 +2,7 @@
 Release Notes
 =============
 
-0.6-6
+0.6-8
 =====
 
 New Features
@@ -24,7 +24,7 @@ Known Issues
 Upgrade Notes
 -------------
 
-- Git tags indexation have been added. No db maintainance needed. Tags indexation will be handled automatically.
+- EL db schema has changed. A key has been renamed. Please wipe the repoxplorer index then run repoxplorer-indexer to repopulate.
 
 
 Bug Fixes

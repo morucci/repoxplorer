@@ -25,7 +25,7 @@ class TestRootController(FunctionalTest):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'merge_commit': False,
@@ -41,7 +41,7 @@ class TestRootController(FunctionalTest):
                 'committer_name': 'Jean Paul',
                 'author_email': 'j.paul@joker.org',
                 'committer_email': 'j.paul@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'merge_commit': False,
@@ -58,7 +58,7 @@ class TestRootController(FunctionalTest):
                 'committer_name': 'Jean Marc',
                 'author_email': 'j.marc@joker2.org',
                 'committer_email': 'j.marc@joker2.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 0,
                 'merge_commit': True,
@@ -73,14 +73,14 @@ class TestRootController(FunctionalTest):
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'date': 1410456005,
-                'project':
+                'repo':
                     'https://github.com/nakata/monkey.git:monkey:master',
                 'name': 'tag1',
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
                 'date': 1410456005,
-                'project':
+                'repo':
                     'https://github.com/nakata/monkey.git:monkey:master',
                 'name': 'tag2',
             }]
@@ -176,13 +176,13 @@ class TestRootController(FunctionalTest):
                 u'name': u'tag2',
                 u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
                 u'date': 1410456005,
-                u'project':
+                u'repo':
                     u'https://github.com/nakata/monkey.git:monkey:master'})
             self.assertDictEqual(tag1, {
                 u'name': u'tag1',
                 u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
                 u'date': 1410456005,
-                u'project':
+                u'repo':
                     u'https://github.com/nakata/monkey.git:monkey:master'})
 
     def test_get_projects(self):

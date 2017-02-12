@@ -20,7 +20,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'merge_commit': False,
@@ -36,7 +36,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Keiko Amura',
                 'author_email': 'keiko.a@joker.org',
                 'committer_email': 'keiko.a@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master', ],
                 'line_modifieds': 100,
                 'merge_commit': True,
@@ -51,7 +51,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 200,
                 'merge_commit': False,
@@ -67,7 +67,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 300,
                 'merge_commit': False,
@@ -84,7 +84,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
                     'https://github.com/amura/kotatsu.git:kotatsu:devel'],
                 'line_modifieds': 400,
@@ -100,7 +100,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
                 'merge_commit': False,
@@ -115,7 +115,7 @@ class TestCommits(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
                 'line_modifieds': 400,
                 'merge_commit': False,
@@ -143,24 +143,24 @@ class TestCommits(TestCase):
                          'Add request customer feature 23')
 
         ret = self.c.get_commits(
-            projects=['https://github.com/amura/kotatsu.git:kotatsu:master'])
+            repos=['https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret[1], 2)
         self.assertEqual(ret[2][0]['commit_msg'],
                          'Add request customer feature 21')
 
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             mails=['jean.bon@joker.org'])
         self.assertEqual(ret[1], 2)
         self.assertEqual(ret[2][0]['commit_msg'],
                          'Add request customer feature 20')
 
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertEqual(ret[1], 3)
 
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             fromdate=1410456000,
             todate=1410458010,)
         self.assertEqual(ret[1], 2)
@@ -168,8 +168,8 @@ class TestCommits(TestCase):
                          'Add request customer feature 19')
 
         ret = self.c.get_commits(
-            projects=['https://github.com/amura/kotatsu.git:kotatsu:devel',
-                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
+            repos=['https://github.com/amura/kotatsu.git:kotatsu:devel',
+                   'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret[1], 4)
 
     def test_get_commits_based_on_merge_info(self):
@@ -203,29 +203,29 @@ class TestCommits(TestCase):
         self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertEqual(ret, 3)
 
         ret = self.c.get_commits_amount(
             ['n.suke@joker.org'],
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertEqual(ret, 1)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org'],
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertEqual(ret, 2)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org'],
-            projects=['https://github.com/nakata/monkey.git:monkey:master',
-                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master',
+                   'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret, 3)
 
         ret = self.c.get_commits_amount(
             ['jean.bon@joker.org', 'keiko.a@joker.org'],
-            projects=['https://github.com/nakata/monkey.git:monkey:master',
-                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master',
+                   'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret, 4)
 
     def test_line_modifieds_stats(self):
@@ -237,8 +237,8 @@ class TestCommits(TestCase):
 
         ret = self.c.get_line_modifieds_stats(
             mails=['jean.bon@joker.org'],
-            projects=['https://github.com/nakata/monkey.git:monkey:master',
-                      'https://github.com/amura/kotatsu.git:kotatsu:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master',
+                   'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertDictEqual(ret[1], {u'avg': 300.0, u'min': 200.0,
                                       u'max': 400.0, u'count': 3,
                                       u'sum': 900.0})
@@ -250,8 +250,8 @@ class TestCommits(TestCase):
                                       u'count': 1, u'max': 5.0,
                                       u'sum': 5.0})
 
-    def test_get_projects(self):
-        ret = self.c.get_projects(
+    def test_get_repos(self):
+        ret = self.c.get_repos(
             ['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
             u'https://github.com/amura/kotatsu.git:kotatsu:devel': 3,
@@ -269,7 +269,7 @@ class TestCommits(TestCase):
                                          u'key_as_string': u'2014-09-12'})
         ret = self.c.get_commits_histo(
             ['jean.bon@joker.org'],
-            projects=['https://github.com/amura/kotatsu.git:kotatsu:devel'])
+            repos=['https://github.com/amura/kotatsu.git:kotatsu:devel'])
         self.assertDictEqual(ret[1][0], {u'key': 1410393600000,
                                          u'doc_count': 2,
                                          u'key_as_string': u'2014-09-11'})
@@ -279,12 +279,12 @@ class TestCommits(TestCase):
 
     def test_get_top_authors_by_lines(self):
         ret = self.c.get_top_authors_by_lines(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertDictEqual(ret[1], {u'n.suke@joker.org': 10.0,
                                       u'jean.bon@joker.org': 500.0})
 
-    def test_get_top_projects_by_lines(self):
-        ret = self.c.get_top_projects_by_lines(
+    def test_get_top_repos_by_lines(self):
+        ret = self.c.get_top_repos_by_lines(
             mails=['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
             u'https://github.com/amura/kotatsu.git:kotatsu:master': 400.0,
@@ -306,14 +306,14 @@ class TestCommits(TestCase):
     def test_get_commits_with_metadata_constraint(self):
         metadata = [('implement-feature', '19')]
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             metadata=metadata)
         self.assertEqual(ret[1], 1)
         self.assertEqual(ret[2][0]['sha'],
                          '3597334f2cb10772950c97ddf2f6cc17b186')
         metadata = [('implement-feature', None)]
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             metadata=metadata)
         self.assertEqual(ret[1], 2)
         shas = [c['sha'] for c in ret[2]]
@@ -322,7 +322,7 @@ class TestCommits(TestCase):
         metadata = [('implement-feature', '20'),
                     ('implement-partial-epic', 'Great Feature')]
         ret = self.c.get_commits(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             metadata=metadata)
         self.assertEqual(ret[1], 2)
         shas = [c['sha'] for c in ret[2]]
@@ -331,7 +331,7 @@ class TestCommits(TestCase):
 
     def test_get_metadata_keys(self):
         ret = self.c.get_metadata_keys(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertIn('implement-partial-epic', ret)
         self.assertIn('implement-feature', ret)
         self.assertDictEqual(
@@ -341,7 +341,7 @@ class TestCommits(TestCase):
     def test_get_metadata_key_values(self):
         ret = self.c.get_metadata_key_values(
             'implement-feature',
-            projects=['https://github.com/nakata/monkey.git:monkey:master'])
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertIn('19', ret)
         self.assertIn('20', ret)
         self.assertTrue(len(ret), 2)

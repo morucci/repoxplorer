@@ -215,7 +215,7 @@ function get_releases(pid, tid) {
       rdate = new Date(1000 * o.date);
       rdate = moment(rdate)
       $('#releases').append($('<option>', {
-      text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.project,
+      text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.repo,
       value: rdate.format("MM/DD/YYYY"),
      }))})
      })
@@ -337,7 +337,7 @@ function get_commits(pid, tid, cid, page) {
     var cmt_date = moment(cmt_date)
     var elm = "<tr>"
     var projects = ""
-    $.each(v['projects'], function(i, p) {
+    $.each(v['repos'], function(i, p) {
       if (i > 0) {projects += "<br>"}
       projects += p
     })

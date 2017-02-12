@@ -24,7 +24,7 @@ class CommitsAmountTrend(object):
     def __init__(self, connector=None):
         self.ic = Commits(connector)
 
-    def get_trend(self, mails=[], projects=[],
+    def get_trend(self, mails=[], repos=[],
                   period_a=None, period_b=None,
                   merge_commit=None):
         """ Return the amount diff and the percentil
@@ -33,10 +33,10 @@ class CommitsAmountTrend(object):
         """
         assert isinstance(period_a, tuple)
         assert isinstance(period_b, tuple)
-        c_amnt_a = self.ic.get_commits_amount(mails, projects,
+        c_amnt_a = self.ic.get_commits_amount(mails, repos,
                                               period_a[0], period_a[1],
                                               merge_commit)
-        c_amnt_b = self.ic.get_commits_amount(mails, projects,
+        c_amnt_b = self.ic.get_commits_amount(mails, repos,
                                               period_b[0], period_b[1],
                                               merge_commit)
         diff = c_amnt_a - c_amnt_b
