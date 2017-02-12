@@ -122,8 +122,8 @@ def parse_commit_msg(msg, extra_parsers=None):
 
 
 def extract_cmts(args):
-    sha_list, path, project, extra_parsers = args
-    name = project.split(':')[-2]
+    sha_list, path, repo_name, extra_parsers = args
+    name = repo_name.split(':')[-2]
     cmts = []
     logger.debug("%s: Worker start extracting %s commits" % (
         name, len(sha_list)))
@@ -155,7 +155,7 @@ def extract_cmts(args):
         modified, merge_commit = get_diff_stats(r, obj)
         source[u'line_modifieds'] = modified
         source[u'merge_commit'] = merge_commit
-        source[u'projects'] = [project, ]
+        source[u'repos'] = [repo_name, ]
         cmts.append(source)
     return cmts
 
@@ -185,10 +185,10 @@ class RepoIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
-        self.project = '%s:%s:%s' % (self.uri, self.name, self.branch)
+        self.repo_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
     def __str__(self):
-        return 'Git indexer of %s' % self.project
+        return 'Git indexer of %s' % self.repo_id
 
     def git_init(self):
         logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
@@ -227,14 +227,14 @@ class RepoIndexer():
         self.commits = commits.keys()
 
     def get_current_commit_indexed(self):
-        """ Fetch from the index commits mentionned for this project
+        """ Fetch from the index commits mentionned for this repo
         and branch.
         """
         self.already_indexed = [c['_id'] for c in
-                                self.c.get_commits(projects=[self.project],
+                                self.c.get_commits(repos=[self.repo_id],
                                                    scan=True)]
         logger.debug(
-            "%s: In the DB - project history is composed of %s commits." % (
+            "%s: In the DB - repo history is composed of %s commits." % (
                 self.name, len(self.already_indexed)))
 
     def compute_to_index_to_delete(self):
@@ -242,7 +242,7 @@ class RepoIndexer():
         list to delete from the index.
         """
         logger.debug(
-            "%s: Upstream - project history is composed of %s commits." % (
+            "%s: Upstream - repo history is composed of %s commits." % (
                 self.name, len(self.commits)))
         self.to_delete = set(self.already_indexed) - set(self.commits)
         self.to_index = set(self.commits) - set(self.already_indexed)
@@ -261,7 +261,7 @@ class RepoIndexer():
             workers = mp.cpu_count() - 1 or 1
         elif workers == 1:
             return extract_cmts((sha_list, self.local,
-                                 self.project, self.parsers))
+                                 self.repo_id, self.parsers))
         logger.debug("%s: Start commits extract with %s workers" % (
             self.name, workers))
         worker_pool = mp.Pool(workers)
@@ -269,10 +269,10 @@ class RepoIndexer():
         set_length = len(sha_list) / workers
         for _ in xrange(workers - 1):
             sets.append((sha_list[:set_length], self.local,
-                         self.project, self.parsers))
+                         self.repo_id, self.parsers))
             del sha_list[:set_length]
         sets.append((sha_list, self.local,
-                     self.project, self.parsers))
+                     self.repo_id, self.parsers))
         extracted_sets = worker_pool.map(extract_cmts, sets)
         # TODO(fbo): Seems an issue exists here as childs should terminate
         # by themself
@@ -287,14 +287,14 @@ class RepoIndexer():
         def c_tid(t):
             return "%s%s%s" % (t['sha'],
                                t['name'].replace('refs/tags/', ''),
-                               t['project'])
+                               t['repo'])
         if not self.tags:
             logger.debug('%s: no tags detected for this repository' % (
                          self.name))
             return
         logger.debug('%s: %s tags exist upstream' % (
                      self.name, len(self.tags)))
-        tags = self.t.get_tags([self.project])
+        tags = self.t.get_tags([self.repo_id])
         existing = dict([(c_tid(t['_source']), t['_id']) for t in tags])
         logger.debug('%s: %s tags already referenced' % (
                      self.name, len(existing)))
@@ -306,7 +306,7 @@ class RepoIndexer():
         to_delete = [v for k, v in existing.items() if
                      k not in ["%s%s%s" % (sha,
                                            name.replace('refs/tags/', ''),
-                                           self.project) for
+                                           self.repo_id) for
                                sha, name in self.tags]]
         docs = []
         for sha, name in self.tags:
@@ -315,7 +315,7 @@ class RepoIndexer():
                 doc['name'] = name.replace('refs/tags/', '')
                 doc['sha'] = sha
                 doc['date'] = lookup[sha]
-                doc['project'] = self.project
+                doc['repo'] = self.repo_id
                 if c_tid(doc) in existing:
                     continue
                 docs.append(doc)
@@ -338,21 +338,21 @@ class RepoIndexer():
             logger.debug("%s: Prepared %s regex parsers for commit msgs" % (
                 self.name, len(self.parsers)))
         # check whether a commit should be completly deleted or
-        # updated by removing the project from the projects field
+        # updated by removing the repo from the repos field
         if self.to_delete:
             res = self.c.get_commits_by_id(list(self.to_delete))
             docs = [c['_source'] for
                     c in res['docs'] if c['found'] is True]
             to_delete = [c['sha'] for
-                         c in docs if len(c['projects']) == 1]
+                         c in docs if len(c['repos']) == 1]
             to_delete_update = [c['sha'] for
-                                c in docs if len(c['projects']) > 1]
+                                c in docs if len(c['repos']) > 1]
 
             logger.info("%s: %s commits will be delete ..." % (
                 self.name, len(to_delete)))
             self.c.del_commits(to_delete)
 
-            logger.info("%s: %s commits belonging to other projects "
+            logger.info("%s: %s commits belonging to other repos "
                         "will be updated ..." % (
                             self.name, len(to_delete_update)))
             res = self.c.get_commits_by_id(to_delete_update)
@@ -360,11 +360,11 @@ class RepoIndexer():
                 original_commits = [c['_source'] for
                                     c in res['docs']]
                 for c in original_commits:
-                    c['projects'].remove(self.project)
+                    c['repos'].remove(self.repo_id)
                 self.c.update_commits(original_commits)
 
         # check whether a commit should be created or
-        # updated by adding the project into the projects field
+        # updated by adding the repo into the repos field
         if self.to_index:
             res = self.c.get_commits_by_id(list(self.to_index))
             to_update = [c['_source'] for
@@ -380,5 +380,5 @@ class RepoIndexer():
                 "%s: %s commits already indexed and need to be updated" % (
                     self.name, len(to_update)))
             for c in to_update:
-                c['projects'].append(self.project)
+                c['repos'].append(self.repo_id)
             self.c.update_commits(to_update)

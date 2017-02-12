@@ -86,7 +86,7 @@ class Projects(object):
                                 time.strptime(release['date'], "%d/%m/%Y"))
                             rels.append({'name': release['name'],
                                          'date': epoch,
-                                         'project': pid})
+                                         'repo': pid})
                     except Exception, e:
                         logger.error(
                             "%s unable to parse releases dates (%s)" % (

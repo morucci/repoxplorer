@@ -22,7 +22,7 @@ class TestCommitsAmountTrend(TestCase):
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 10,
                 'merge_commit': False,
@@ -37,7 +37,7 @@ class TestCommitsAmountTrend(TestCase):
                 'committer_name': 'Keiko Amura',
                 'author_email': 'keiko.a@joker.org',
                 'committer_email': 'keiko.a@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 100,
                 'merge_commit': False,
@@ -52,7 +52,7 @@ class TestCommitsAmountTrend(TestCase):
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
                 'committer_email': 'jean.bon@joker.org',
-                'projects': [
+                'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
                 'line_modifieds': 200,
                 'merge_commit': False,
@@ -67,21 +67,21 @@ class TestCommitsAmountTrend(TestCase):
 
     def test_get_trend(self):
         ret = self.t.get_trend(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             period_a=(1410457000, 1410459000),
             period_b=(1410456005, 1410456015))
         self.assertEqual(ret[0], 1)
         self.assertEqual(ret[1], 50)
 
         ret = self.t.get_trend(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             period_a=(1410457000, 1410459000),
             period_b=(1410455005, 1410455015))
         self.assertEqual(ret[0], 2)
         self.assertEqual(ret[1], 100)
 
         ret = self.t.get_trend(
-            projects=['https://github.com/nakata/monkey.git:monkey:master'],
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
             period_a=(1410455005, 1410455015),
             period_b=(1410457000, 1410459000))
         self.assertEqual(ret[0], -2)

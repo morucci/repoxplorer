@@ -24,7 +24,7 @@ PROPERTIES = {
     "sha": {"type": "string", "index": "not_analyzed"},
     "date": {"type": "date", "format": "epoch_second"},
     "name": {"type": "string", "index": "not_analyzed"},
-    "project": {"type": "string", "index": "not_analyzed"},
+    "repo": {"type": "string", "index": "not_analyzed"},
 }
 
 
@@ -68,7 +68,7 @@ class Tags(object):
         bulk(self.es, gen(id_list))
         self.es.indices.refresh(index=self.index)
 
-    def get_tags(self, projects, fromdate=None, todate=None):
+    def get_tags(self, repos, fromdate=None, todate=None):
 
         filter = {
             "bool": {
@@ -77,16 +77,16 @@ class Tags(object):
                 }
             }
 
-        for project in projects:
-            should_project_clause = {
+        for repo in repos:
+            should_repo_clause = {
                 "bool": {
                     "must": []
                 }
             }
-            should_project_clause["bool"]["must"].append(
-                {"term": {"project": project}}
+            should_repo_clause["bool"]["must"].append(
+                {"term": {"repo": repo}}
             )
-            filter["bool"]["should"].append(should_project_clause)
+            filter["bool"]["should"].append(should_repo_clause)
 
         body = {
             "filter": filter

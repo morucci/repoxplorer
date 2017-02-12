@@ -9,7 +9,7 @@ features:
 issues:
   - Nothing to report.
 upgrade:
-  - Git tags indexation have been added. No db maintainance needed. Tags
-    indexation will be handled automatically.
+  - EL db schema has changed. A key has been renamed. Please wipe
+    the repoxplorer index then run repoxplorer-indexer to repopulate.
 fixes:
   - Multiple fixes.
