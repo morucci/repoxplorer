@@ -8,7 +8,7 @@
 
  <div class="col-md-12">
   <div class="jumbotron">
-   <h2>${name} contributor details</h2>
+   <h2><a href=contributor.html?cid=${cid}>${name}</a>'s contributor details</h2>
   </div>
  </div>
 
@@ -31,8 +31,8 @@
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of line modifieds:</b> ${line_modifieds_amount}</div>
      <div><b>Amount of projects contributed:</b> ${projects_amount}</div>
-     <div><b>Amount of repositories contributed:</b> ${repos_amount}</div>
-     <div><b>Contributor has been active for:</b> ${duration}</div>
+     <div><b>Amount of repository refs contributed:</b> ${repos_amount}</div>
+     <div><b>Activity duration:</b> ${duration}</div>
      <div><b>Date of first commits:</b> ${first}</div>
      <div><b>Date of last commits:</b> ${last}</div>
      <div><b>Known emails:</b> ${known_emails_amount}</div>
