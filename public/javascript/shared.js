@@ -324,7 +324,7 @@ function get_commits(pid, tid, cid, page) {
    $("#commits-table").append("<table class=\"table table-striped\">");
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
-   theader += "<th>Repository</th>"
+   theader += "<th>Repository refs</th>"
    theader += "<th>Author</th>"
    theader += "<th>Committer</th>"
    theader += "<th>Message</th>"

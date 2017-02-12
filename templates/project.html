@@ -37,10 +37,10 @@
     <div id="infos">
      % if not empty:
      <% repos_len = len(repos) %>
-     <div><b>Amount of repositories:</b> ${repos_len}</div>
+     <div><b>Amount of repository refs:</b> ${repos_len}</div>
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of authors:</b> ${authors_amount}</div>
-     <div><b>Project(s) has been active for:</b> ${duration}</div>
+     <div><b>Activity duration:</b> ${duration}</div>
      <div><b>Date of first commits:</b> ${first}</div>
      <div><b>Date of last commits:</b> ${last}</div>
      <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div>
@@ -88,7 +88,7 @@
       </div>
      </div>
      <div class="col-md-3 form-group">
-      <label for="repositories">Only include selected repositories</label>
+      <label for="repositories">Only include selected repository refs</label>
       <select id='repositories' multiple class="form-control">
        % for repo in repos:
        <option>${repo['name']}:${repo['branch']}</option>
