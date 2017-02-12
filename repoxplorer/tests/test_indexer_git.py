@@ -113,13 +113,14 @@ class TestRepoIndexer(TestCase):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_init(self):
-        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1', 'master')
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1')
+        pi.set_branch('master')
         self.assertEqual(pi.repo_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
 
     def test_index(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
-                                 'master', con=self.con)
+                                 con=self.con)
         pi.cmt_list_generator = \
             lambda sha_list, _: [c for c in repo_commits
                                  if c['sha'] in sha_list]
@@ -142,6 +143,7 @@ class TestRepoIndexer(TestCase):
             },
         ]
         pi.commits = [rc['sha'] for rc in repo_commits]
+        pi.set_branch('master')
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
@@ -196,7 +198,7 @@ class TestRepoIndexer(TestCase):
 
         # Index p2 a fork of p1
         pi2 = indexer.RepoIndexer('p2', 'file:///tmp/p2',
-                                  'master', con=self.con)
+                                  con=self.con)
         pi2.cmt_list_generator = \
             lambda sha_list, _: [c for c in repo2_commits
                                  if c['sha'] in sha_list]
@@ -216,6 +218,7 @@ class TestRepoIndexer(TestCase):
             },
         ]
         pi2.commits = [rc['sha'] for rc in repo2_commits]
+        pi2.set_branch('master')
         # Start the indexation
         pi2.get_current_commit_indexed()
         pi2.compute_to_index_to_delete()
@@ -256,9 +259,10 @@ class TestRepoIndexer(TestCase):
 
     def test_index_tags(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
-                                 'master', con=self.con)
+                                 con=self.con)
         with mock.patch.object(indexer, 'run') as run:
             run.return_value = ['123\trefs/tags/t1\n124\trefs/tags/t2\n']
+            pi.get_refs()
             pi.get_tags()
             self.assertListEqual(
                 pi.tags, [['123', 'refs/tags/t1'], ['124', 'refs/tags/t2']])
@@ -298,6 +302,7 @@ class TestRepoIndexer(TestCase):
             },
         ]
         pi.commits = [rc['sha'] for rc in repo_commits]
+        pi.set_branch('master')
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
@@ -307,7 +312,7 @@ class TestRepoIndexer(TestCase):
         # Do it a second time
         pi.index_tags()
 
-        tags = pi.t.get_tags(['file:///tmp/p1:p1:master'])
+        tags = pi.t.get_tags(['file:///tmp/p1:p1'])
 
         t1 = [t['_source'] for t in tags if t['_source']['sha'] == '123'][0]
         self.assertEqual(t1['date'], 1410456005)

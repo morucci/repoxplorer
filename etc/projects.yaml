@@ -2,7 +2,11 @@
 templates:
 - name: default
   uri: https://github.com/openstack/%(name)s
-  branch: master
+  branches:
+  - master
+  - stable/mitaka
+  - stable/newton
+  - stable/ocata
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
   releases:
   - name: tag1

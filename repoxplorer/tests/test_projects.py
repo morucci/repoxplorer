@@ -26,7 +26,8 @@ class TestProjects(TestCase):
 ---
 templates:
 - name: default
-  branch: master
+  branches:
+  - master
   uri: http://gb.com/ok/%(name)s
   gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
 
@@ -55,7 +56,8 @@ projects:
         projects_yaml = """
 templates:
 - name: default
-  branch: master
+  branches:
+   - master
   uri: http://gb.com/ok/%(name)s
   gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
   tags:

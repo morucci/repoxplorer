@@ -433,7 +433,10 @@ class RootController(object):
         p_filter, _, dfrom, dto, _ = self.resolv_filters(
             projects_index, None,
             pid, tid, None, dfrom, dto, inc_repos, None)
+        p_filter = [":".join(r.split(':')[:-1]) for r in p_filter]
         ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
+        # TODO: if tid is given we can include user defined releases
+        # for repo tagged with tid.
         if not pid:
             return ret
         # now append user defined releases

@@ -44,30 +44,35 @@ args = parser.parse_args()
 
 
 def process():
-    prjs = projects.Projects(conf.projects_file_path).get_projects()
-    for pid, plist in prjs.items():
+    prjs = projects.Projects(conf.projects_file_path).get_projects_unf()
+    for pid, repos in prjs.items():
         logger.info("Start indexing project id %s ..." % pid)
-        for prj in plist:
-            p = indexer.RepoIndexer(prj['name'],
-                                    prj['uri'],
-                                    prj['branch'],
-                                    parsers=prj['parsers'],
+        for repo in repos:
+            r = indexer.RepoIndexer(repo['name'],
+                                    repo['uri'],
+                                    parsers=repo['parsers'],
                                     config=config)
-            logger.debug("Index sub-project %s" % str(p))
-            p.git_init()
-            try:
-                p.git_fetch_branch()
-            except:
-                logger.warning(
-                    "Sub-project %s does not have the"
-                    " requested branch %s. Skip it." % (str(p), prj['branch']))
-                continue
-            p.get_tags()
-            p.git_get_commit_obj()
-            p.get_current_commit_indexed()
-            p.compute_to_index_to_delete()
-            p.index(args.extract_workers)
-            p.index_tags()
+            r.git_init()
+            # TODO(fbo) to handle when ref can't be fetched
+            r.get_refs()
+            r.get_heads()
+            r.get_tags()
+            for branch in repo['branches']:
+                if not [head for head in r.heads if
+                        head[1].endswith(branch)]:
+                    logger.warning(
+                        "Repository %s does not have the"
+                        " requested branch %s. Skip it." % (
+                            str(r), branch))
+                    continue
+                r.set_branch(branch)
+                logger.info("Index repository branch %s" % str(r))
+                r.git_fetch_branch()
+                r.git_get_commit_obj()
+                r.get_current_commit_indexed()
+                r.compute_to_index_to_delete()
+                r.index(args.extract_workers)
+            r.index_tags()
 
 if __name__ == "__main__":
     conf = imp.load_source('config', args.config)

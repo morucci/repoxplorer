@@ -161,7 +161,7 @@ def extract_cmts(args):
 
 
 class RepoIndexer():
-    def __init__(self, name, uri, branch, parsers=None,
+    def __init__(self, name, uri, parsers=None,
                  con=None, config=None):
         if config:
             configuration.set_config(config)
@@ -175,7 +175,7 @@ class RepoIndexer():
             os.makedirs(conf.git_store)
         self.name = name
         self.uri = uri
-        self.branch = branch
+        self.base_id = '%s:%s' % (self.uri, self.name)
         if not parsers:
             self.parsers = []
         else:
@@ -185,34 +185,46 @@ class RepoIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
-        self.repo_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
     def __str__(self):
         return 'Git indexer of %s' % self.repo_id
 
+    def set_branch(self, branch):
+        self.branch = branch
+        # TODO(fbo): should be renamed branch_id
+        self.repo_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
+
     def git_init(self):
-        logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
-                                         self.branch))
+        logger.debug("Git init for %s:%s in %s" % (
+            self.uri, self.name, self.local))
         with cdir(self.local):
             run("git init .")
             if "origin" not in run("git remote -v")[0]:
                 run("git remote add origin %s" % self.uri)
 
     def git_fetch_branch(self):
+        logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
+                                         self.branch))
         with cdir(self.local):
             run("git fetch origin %s" % self.branch)
             self.head = run("git rev-parse FETCH_HEAD")[0].strip()
         self.repo = repo.Repo(self.local)
 
-    def get_tags(self):
+    def get_refs(self):
         with cdir(self.local):
             _refs = run("git ls-remote origin")[0].split('\n')
             del _refs[-1]
-            refs = []
+            self.refs = []
             for r in _refs:
-                refs.append(r.split('\t'))
-            self.tags = filter(lambda x: x[1].startswith('refs/tags') and
-                               not x[1].endswith('^{}'), refs)
+                self.refs.append(r.split('\t'))
+
+    def get_heads(self):
+        self.heads = filter(lambda x: x[1].startswith('refs/heads/'),
+                            self.refs)
+
+    def get_tags(self):
+        self.tags = filter(lambda x: x[1].startswith('refs/tags/'),
+                           self.refs)
 
     def git_get_commit_obj(self):
         commits = {}
@@ -294,28 +306,29 @@ class RepoIndexer():
             return
         logger.debug('%s: %s tags exist upstream' % (
                      self.name, len(self.tags)))
-        tags = self.t.get_tags([self.repo_id])
+        tags = self.t.get_tags([self.base_id])
         existing = dict([(c_tid(t['_source']), t['_id']) for t in tags])
         logger.debug('%s: %s tags already referenced' % (
                      self.name, len(existing)))
         # Some commits may be not found because it is possible the branches
-        # has not been indexed In that case the _source key won't exist
+        # has not been indexed.
         commits = [c['_source'] for c in self.c.get_commits_by_id(
-                   [t[0] for t in self.tags])['docs'] if c and '_source' in c]
+                   [t[0] for t in self.tags])['docs'] if c['found']]
         lookup = dict([(c['sha'], c['committer_date']) for c in commits])
         to_delete = [v for k, v in existing.items() if
                      k not in ["%s%s%s" % (sha,
-                                           name.replace('refs/tags/', ''),
-                                           self.repo_id) for
+                                           name.replace('refs/tags/',
+                                                        '').replace('^{}', ''),
+                                           self.base_id) for
                                sha, name in self.tags]]
         docs = []
         for sha, name in self.tags:
             if sha in lookup:
                 doc = {}
-                doc['name'] = name.replace('refs/tags/', '')
+                doc['name'] = name.replace('refs/tags/', '').replace('^{}', '')
                 doc['sha'] = sha
                 doc['date'] = lookup[sha]
-                doc['repo'] = self.repo_id
+                doc['repo'] = self.base_id
                 if c_tid(doc) in existing:
                     continue
                 docs.append(doc)
