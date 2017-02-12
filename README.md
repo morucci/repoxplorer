@@ -45,9 +45,13 @@ file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
 Below is the default projects.yaml file provided. Note that Barbican project
 is composed of two Git repositories: the server and the client.
 
+The branches key of a Git repository definition permits to defines which
+branches to index. This key expects a list of branches name.
+
 A list of tags can be given to each Git repositories. This tag notion
 should not be considered as Git tags but only as a way to group
-Git repositories together.
+Git repositories together. For example tags like 'documentation', 'librairies',
+...) could be considered.
 
 A list of releases can be defined (can be also defined in a template).
 It is useful when you want to define release points in a time accross
@@ -65,7 +69,10 @@ Edit this file to add projects you want to index.
 templates:
 - name: default
   uri: https://github.com/openstack/%(name)s
-  branch: master
+  branches:
+  - master
+  - stable/mitaka
+  - stable/newton
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
 
 projects:
@@ -74,8 +81,8 @@ projects:
     tags:
       - python
     releases:
-    - name: 2.0
-      date: 20/12/2016
+      - name: 2.0
+        date: 20/12/2016
     template: default
   - name: python-barbicanclient
     tags:
