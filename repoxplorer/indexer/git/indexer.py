@@ -157,7 +157,7 @@ def extract_cmts(args):
     return cmts
 
 
-class ProjectIndexer():
+class RepoIndexer():
     def __init__(self, name, uri, branch, parsers=None,
                  con=None, config=None):
         if config:

@@ -45,11 +45,11 @@ def process():
     for pid, plist in prjs.items():
         logger.info("Start indexing project id %s ..." % pid)
         for prj in plist:
-            p = indexer.ProjectIndexer(prj['name'],
-                                       prj['uri'],
-                                       prj['branch'],
-                                       parsers=prj['parsers'],
-                                       config=config)
+            p = indexer.RepoIndexer(prj['name'],
+                                    prj['uri'],
+                                    prj['branch'],
+                                    parsers=prj['parsers'],
+                                    config=config)
             logger.debug("Index sub-project %s" % str(p))
             p.git_init()
             try:

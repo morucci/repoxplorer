@@ -99,7 +99,7 @@ http://metavalue
         pass
 
 
-class TestProjectIndexer(TestCase):
+class TestRepoIndexer(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -113,13 +113,13 @@ class TestProjectIndexer(TestCase):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_init(self):
-        pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1', 'master')
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1', 'master')
         self.assertEqual(pi.project, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
 
     def test_index(self):
-        pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1',
-                                    'master', con=self.con)
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
+                                 'master', con=self.con)
         pi.cmt_list_generator = \
             lambda sha_list, _: [c for c in repo_commits
                                  if c['sha'] in sha_list]
@@ -195,8 +195,8 @@ class TestProjectIndexer(TestCase):
             len(self.cmts.get_commits_by_id(pi.commits)['docs']), 1)
 
         # Index p2 a fork of p1
-        pi2 = indexer.ProjectIndexer('p2', 'file:///tmp/p2',
-                                     'master', con=self.con)
+        pi2 = indexer.RepoIndexer('p2', 'file:///tmp/p2',
+                                  'master', con=self.con)
         pi2.cmt_list_generator = \
             lambda sha_list, _: [c for c in repo2_commits
                                  if c['sha'] in sha_list]
@@ -255,8 +255,8 @@ class TestProjectIndexer(TestCase):
         self.assertEqual(cmt['related-to-story'], '124')
 
     def test_index_tags(self):
-        pi = indexer.ProjectIndexer('p1', 'file:///tmp/p1',
-                                    'master', con=self.con)
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
+                                 'master', con=self.con)
         with mock.patch.object(indexer, 'run') as run:
             run.return_value = ['123\trefs/tags/t1\n124\trefs/tags/t2\n']
             pi.get_tags()
