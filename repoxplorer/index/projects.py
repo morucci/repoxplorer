@@ -105,10 +105,6 @@ class Projects(object):
                 if 'parsers' not in repo:
                     repo['parsers'] = []
 
-    def get_repo_id(self, repo):
-        return "%s:%s:%s" % (
-            repo['uri'], repo['name'], repo['branch'])
-
     def find_template_by_name(self, name):
         try:
             tmpl = [t for t in self.templates_raw
@@ -119,8 +115,20 @@ class Projects(object):
         del ret['name']
         return ret
 
-    def get_projects(self):
+    def get_projects_unf(self):
         return self.projects
+
+    def get_projects(self):
+        projects = {}
+        for pid, details in self.projects.items():
+            projects[pid] = []
+            for repo in details:
+                for branch in repo['branches']:
+                    crepo = copy.deepcopy(repo)
+                    crepo['branch'] = branch
+                    del crepo['branches']
+                    projects[pid].append(crepo)
+        return projects
 
     def get_gitweb_link(self, simple_uri):
         return self.gitweb_lookup.get(simple_uri, "")

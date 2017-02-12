@@ -74,14 +74,14 @@ class TestRootController(FunctionalTest):
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
                 'date': 1410456005,
                 'repo':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                    'https://github.com/nakata/monkey.git:monkey',
                 'name': 'tag1',
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
                 'date': 1410456005,
                 'repo':
-                    'https://github.com/nakata/monkey.git:monkey:master',
+                    'https://github.com/nakata/monkey.git:monkey',
                 'name': 'tag2',
             }]
         cls.t.add_tags(cls.tags)
@@ -177,13 +177,13 @@ class TestRootController(FunctionalTest):
                 u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
                 u'date': 1410456005,
                 u'repo':
-                    u'https://github.com/nakata/monkey.git:monkey:master'})
+                    u'https://github.com/nakata/monkey.git:monkey'})
             self.assertDictEqual(tag1, {
                 u'name': u'tag1',
                 u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
                 u'date': 1410456005,
                 u'repo':
-                    u'https://github.com/nakata/monkey.git:monkey:master'})
+                    u'https://github.com/nakata/monkey.git:monkey'})
 
     def test_get_projects(self):
         with patch.object(root.Projects, 'get_projects') as m:
