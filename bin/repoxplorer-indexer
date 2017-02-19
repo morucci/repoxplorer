@@ -36,6 +36,9 @@ parser.add_argument(
     '--extract-workers', type=int, default=0,
     help='Specify the amount of worker processes for '
          'extracting commits information (default = auto)')
+parser.add_argument(
+    '--config', default=config,
+    help='Path to the repoXplorer configuration file')
 
 args = parser.parse_args()
 
@@ -49,12 +52,12 @@ def process():
                                        prj['uri'],
                                        prj['branch'],
                                        parsers=prj['parsers'],
-                                       config=config)
+                                       config=args.config)
             logger.debug("Index sub-project %s" % str(p))
             p.git_init()
             try:
                 p.git_fetch_branch()
-            except KeyError:
+            except:
                 logger.warning(
                     "Sub-project %s does not have the"
                     " requested branch %s. Skip it." % (str(p), prj['branch']))
@@ -65,7 +68,7 @@ def process():
             p.index(args.extract_workers)
 
 if __name__ == "__main__":
-    conf = imp.load_source('config', config)
+    conf = imp.load_source('config', args.config)
     logging.config.dictConfig(conf.indexer_logging)
     if args.forever:
         while True:
