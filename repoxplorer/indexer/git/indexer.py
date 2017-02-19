@@ -196,9 +196,8 @@ class ProjectIndexer():
     def git_fetch_branch(self):
         with cdir(self.local):
             run("git fetch origin %s" % self.branch)
+            self.head = run("git rev-parse FETCH_HEAD")[0].strip()
         self.repo = repo.Repo(self.local)
-        self.head = self.repo.get_refs()[
-            'refs/remotes/origin/%s' % self.branch]
 
     def git_get_commit_obj(self):
         commits = {}
