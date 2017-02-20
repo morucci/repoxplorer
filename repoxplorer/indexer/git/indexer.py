@@ -57,7 +57,10 @@ def run(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT,
                                shell=True)
-    return process.communicate()
+    out = process.communicate()
+    if process.returncode != 0:
+        raise Exception('%s exited with code %s' % (cmd, process.returncode))
+    return out
 
 
 def get_diff_stats(r, obj):
