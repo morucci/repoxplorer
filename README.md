@@ -1,43 +1,107 @@
 # RepoXplorer
 
-RepoXplorer is a small stats and charts utility for Git repositories.
-Its main purpose is to ease the visualization of stats for one or
-more project(s) composed of multiple Git repositories.
+RepoXplorer is a stats and charts utility for Git repositories. Its main
+purpose is to ease the visualization of stats for projects composed of one
+or multiple Git repositories. Indeed lot of projects are splitted and have
+a Git repository by components (server, client, library A, ...) and most of
+classic Git stat tools do not handle that.
 
-As lot of projects are composed of multiple Git repositories (server,
-client, libraries). RepoXplorer let's you describe how a project is composed
-and then computes stats across them.
-
-Furthermore it is possible to define author identities by listing
-author emails and then avoid duplicated authors in the computed stats.
-
-RepoXplorer relies on ElasticSearch. Only a Web browser is needed to access
-the user interface.
+RepoXplorer let's you describe how a project is composed and then computes
+stats across them. RepoXplorer provides a Web user interface based on Bootstrap
+and Jquery to let a user access data easily. It relies on ElasticSearch for
+its data backend.
 
 ## A visual overview of the user interface
 
-![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer.jpg)
+![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-plist.jpg)
+![capture 2](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-pstats.jpg)
+![capture 3](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-cont.jpg)
 
 ## How to install
 
-First install repoXplorer in a virtualenv.
+### All In One Docker container
+
+Comming soon.
+
+### RPM installation for CentOS 7
+
+Comming soon.
+
+### Install in a python virtualenv
 
 ```Shell
 virtualenv ~/repoxplorer
 . ~/repoxplorer/bin/activate
 pip install -r requirements.txt
 python setup.py install
+./fetch-web-assets.py
 ```
 
-Install Elasticsearch. Here, we use an already "ready to use" Docker
-container. But you should definitely use a regular installation
-of ElasticSearch.
+An Elasticsearch instance is needed and repoXplorer will try to access it
+default at 127.0.0.1.
+
+Here, we use a "ready to use" Docker container for Elasticsearch.
+But you should definitely use a regular installation of ElasticSearch.
 
 ```Shell
 ~/repoxplorer/bin/el-start.sh
 ```
 
-## How to index a list of Git hosted projects
+Start the RepoXplorer web UI.
+
+```Shell
+uwsgi --http-socket :8080 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
+ --static-map /css=/home/<user>/repoxplorer/local/share/repoxplorer/public/css \
+ --static-map /javascript=/home/<user>/repoxplorer/local/share/repoxplorer/public/javascript \
+ --static-map /images=/home/<user>/repoxplorer/local/share/repoxplorer/public/images
+```
+
+Then open a Web browser to access http://localhost:8080.
+
+Start the RepoXplorer indexer
+
+```Shell
+python ~/repoxplorer/bin/repoxplorer-indexer
+```
+
+In order to run the indexer continuously you can use the command
+argument "--forever".
+
+#### Install systemd unit file for the web UI
+
+You can install the systemd unit file for the web UI.
+Be sure to set the correct path to the uwsgi tool, the config.py file
+and web assets as this unit file expect repoXplorer installed outside
+of a virtualenv.
+
+```
+sudo cp etc/repoxplorer-webui.service /usr/lib/systemd/system/repoxplorer-webui.service
+
+sudo systemctl daemon-reload
+sudo systemctl start repoxplorer-webui
+sudo systemctl status repoxplorer-webui
+
+# You can check the webui log via journalctl
+sudo journalctl -f
+```
+
+#### Install systemd unit file for the indexer
+
+```
+sudo cp etc/repoxplorer.service /usr/lib/systemd/system/repoxplorer.service
+# Be sure to set the correct path to the repoxplorer-indexer script
+
+sudo systemctl daemon-reload
+sudo systemctl start repoxplorer
+sudo systemctl status repoxplorer
+
+# You can check the indexer log via journalctl
+sudo journalctl -f
+```
+
+## Configuration
+
+### How to index a list of Git hosted projects
 
 A yaml file should be provisioned with the projects you want to index. The
 file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
@@ -90,63 +154,13 @@ projects:
     template: default
 ```
 
-Then start the Git indexer manually.
+Then start the Git indexer manually or let the indexer daemon
+reads the file (every minute) and handles the changes.
 
-```Shell
-python ~/repoxplorer/bin/repoxplorer-indexer
-```
+### Sanitize author identities
 
-In order to run the indexer continuously you can use the command
-argument "--forever".
-
-Furthermore you can install the systemd unit file for the indexer.
-
-```
-sudo cp etc/repoxplorer.service /usr/lib/systemd/system/repoxplorer.service
-# Be sure to set the correct path to the repoxplorer-indexer script
-
-sudo systemctl daemon-reload
-sudo systemctl start repoxplorer
-sudo systemctl status repoxplorer
-
-# You can check the indexer log via journalctl
-sudo journalctl -f
-```
-
-## Start the Web UI
-
-Start the RepoXplorer web app.
-
-```Shell
-uwsgi --http-socket :8080 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
- --static-map /css=/home/<user>/repoxplorer/local/share/repoxplorer/public/css \
- --static-map /javascript=/home/<user>/repoxplorer/local/share/repoxplorer/public/javascript \
- --static-map /images=/home/<user>/repoxplorer/local/share/repoxplorer/public/images
-```
-
-Then open a Web browser to access http://localhost:8080. You will be faced to a list
-of projects such as defined in projects.yaml. A click on one of the project's ids
-will redirect you to the statistics page of the given project.
-
-Furthermore you can install the systemd unit file for the webui.
-
-```
-sudo cp etc/repoxplorer-webui.service /usr/lib/systemd/system/repoxplorer-webui.service
-# Be sure to set the correct path to the uwsgi tool and to the config.py file.
-
-sudo systemctl daemon-reload
-sudo systemctl start repoxplorer-webui
-sudo systemctl status repoxplorer-webui
-
-# You can check the webui log via journalctl
-sudo journalctl -f
-```
-
-## Sanitize author identities
-
-In the example below all contributions for John Doe will be stacked if
-the author email field of the GIT commit object is one of the defined
-emails.
+In the example below contributions from both author emails 'john.doe@server'
+and 'jdoe@server' will be stacked for John Doe.
 
 Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
 
@@ -158,7 +172,7 @@ Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
     - jdoe@server
 ```
 
-## Metadata automatic indexation
+### Metadata automatic indexation
 
 In addition to the standard Git object fields, the indexer will detect
 metadata such as:
@@ -185,7 +199,8 @@ the value.
 templates:
 - name: default
   uri: https://github.com/openstack/%(name)s
-  branch: master
+  branches:
+    - master
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
   parsers:
   - .*(blueprint) ([^ .]+).*
@@ -224,12 +239,6 @@ Available arguments are:
 - tid: tag as configured in the projects.yaml
 - cid: contributor id
 
-## Run tests
-
-```Shell
-./bin/el-start.sh
-tox
-```
 
 ## Contribute
 
@@ -260,4 +269,13 @@ learn about Git review sub-command [git-review] (http://softwarefactory-project.
 git add -a
 git commit # local commit your changes
 git review # propose your changes on Gerrit
+```
+
+### Run tests
+
+Tests require an ElasticSearch instance.
+
+```Shell
+./bin/el-start.sh
+tox
 ```
