@@ -13,11 +13,10 @@ projects:
   Barbican:
   - name: barbican
     template: default
-    releases:
-    - name: tag1
-      date: 10/01/2015
   - name: python-barbicanclient
     template: default
-    releases:
-    - name: tag2
-      date: 10/01/2016
+  Swift:
+  - name: swift
+    template: default
+  - name: python-swiftclient
+    template: default
