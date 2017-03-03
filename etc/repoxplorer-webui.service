@@ -3,7 +3,7 @@ Description=RepoXplorer web ui
 After=syslog.target
 
 [Service]
-ExecStart=/usr/bin/uwsgi --http-socket :80 --pecan /usr/local/share/repoxplorer/config.py
+ExecStart=/usr/bin/uwsgi --http-socket :80 --pecan /usr/local/share/repoxplorer/config.py --static-map /css=/usr/local/share/repoxplorer/public/css --static-map /javascript=/usr/local/share/repoxplorer/public/javascript --static-map /images=/usr/local/share/repoxplorer/public/images
 
 [Install]
 WantedBy=multi-user.target

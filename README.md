@@ -118,7 +118,10 @@ sudo journalctl -f
 Start the RepoXplorer web app.
 
 ```Shell
-uwsgi --http-socket :8080 --pecan ~/repoxplorer/local/share/repoxplorer/config.py
+uwsgi --http-socket :8080 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
+ --static-map /css=/home/<user>/repoxplorer/local/share/repoxplorer/public/css \
+ --static-map /javascript=/home/<user>/repoxplorer/local/share/repoxplorer/public/javascript \
+ --static-map /images=/home/<user>/repoxplorer/local/share/repoxplorer/public/images
 ```
 
 Then open a Web browser to access http://localhost:8080. You will be faced to a list
