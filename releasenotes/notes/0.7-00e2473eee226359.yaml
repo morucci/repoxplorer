@@ -18,3 +18,5 @@ upgrade:
     your projects.yaml file.
 fixes:
   - Multiple fixes.
+others:
+  - Removed most of bundled CSS/JS libs.
