@@ -8,15 +8,16 @@ templates:
   - stable/newton
   - stable/ocata
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
-  releases:
-  - name: tag1
-    date: 10/01/2015
-  - name: tag2
-    date: 10/01/2016
 
 projects:
   Barbican:
   - name: barbican
     template: default
+    releases:
+    - name: tag1
+      date: 10/01/2015
   - name: python-barbicanclient
     template: default
+    releases:
+    - name: tag2
+      date: 10/01/2016
