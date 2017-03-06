@@ -19,13 +19,59 @@ its data backend.
 
 ## How to install
 
+Last release is RepoXplorer [0.7.1](https://github.com/morucci/repoxplorer/releases/tag/0.7.1).
+
 ### All In One Docker container
 
 Comming soon.
 
 ### RPM installation for CentOS 7
 
-Comming soon.
+RepoXplorer has been packaged for CentOS 7 with EPEL7 repository activated. It is
+not in the official EPEL7 repositories but rpm and src.rpm are available.
+
+Here is the process to follow:
+
+First install the EPEL7 repository.
+
+```Shell
+sudo yum install epel-release
+```
+
+Install ElasticSearch 2.x for CentOS via rpm:
+
+```Shell
+sudo rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+cat << EOF | sudo tee /etc/yum.repo.d/elasticsearch.repo
+[elasticsearch-2.x]
+name=Elasticsearch repository for 2.x packages
+baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+gpgcheck=1
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+EOF
+sudo yum install elasticsearch java-1.8.0-openjdk
+sudo systemctl enable elasticsearch
+sudo systemctl start elasticsearch
+```
+
+Finally install RepoXplorer:
+
+```Shell
+sudo yum install https://github.com/morucci/repoxplorer/releases/download/0.7.1/repoxplorer-0.7.1-1.el7.centos.noarch.rpm
+# Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...) 
+sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
+# Enable and start services
+sudo systemctl enable repoxplorer
+sudo systemctl enable repoxplorer-webui
+sudo systemctl start repoxplorer
+sudo systemctl start repoxplorer-webui
+```
+
+The web UI should be accessible on http://<ip>:51000
+
+projects.yaml and idents.yaml are available in /etc/repoxplorer. Please
+then follow the [Configuration section](#configuration).
 
 ### Install in a python virtualenv
 
@@ -101,32 +147,15 @@ sudo journalctl -f
 
 ## Configuration
 
+If RepoXplorer has been installed via its setup.py then
+replace /etc/repoxplorer to $install-prefix/local/share/repoxplorer/.
+
 ### How to index a list of Git hosted projects
 
-A yaml file should be provisioned with the projects you want to index. The
-file $prefix/local/share/repoxplorer/projects.yaml is expected to be found.
+Below is an example of projects.yaml, note that Barbican and Swift projects
+are composed of two Git repositories, the server and the client.
 
-Below is the default projects.yaml file provided. Note that Barbican project
-is composed of two Git repositories: the server and the client.
-
-The branches key of a Git repository definition permits to defines which
-branches to index. This key expects a list of branches name.
-
-A list of tags can be given to each Git repositories. This tag notion
-should not be considered as Git tags but only as a way to group
-Git repositories together. For example tags like 'documentation', 'librairies',
-...) could be considered.
-
-A list of releases can be defined (can be also defined in a template).
-It is useful when you want to define release points in a time accross
-all repositories defined in a project. Release dates are added to detected
-Git tags dates.
-
-As of now RepoXplorer index and compute stats frim Git commit objects
-and Git tags.
-
-Edit this file to add projects you want to index.
-~/repoxplorer/local/share/repoxplorer/projects.yaml.
+Edit /etc/repoxplorer/projects.yaml to add projects you want to index.
 
 ```YAML
 ---
@@ -153,15 +182,59 @@ projects:
     template: default
 ```
 
-Then start the Git indexer manually or let the indexer daemon
-reads the file (every minute) and handles the changes.
+After a change in this file you can start the Git indexer manually or
+let the indexer daemon reads the file (every minute) and handles changes.
+
+#### Advanced configuration
+
+The branches key of a Git repository definition permits to defines which
+branches to index. This key expects a list of branches name.
+
+A list of tags can be given to each Git repositories. This tag notion
+should not be considered as Git tags but only as a way to mark
+Git repositories. For example tags like 'documentation', 'librairies',
+packaging, ...) could be considered.
+
+```YAML
+projects:
+  MyProject:
+  - name: myproject
+    uri: https://github.com/openstack/%(name)s
+    branches:
+      - master
+    tags:
+      - language:python
+```
+
+A list of releases can be defined. It is useful when you want to define
+release points in a time across all repositories defined in a project.
+Release dates are added in addition to detected Git tags dates.
+
+```YAML
+projects:
+  MyProject:
+  - name: myproject
+    uri: https://github.com/openstack/%(name)s
+    branches:
+      - master
+    releases:
+      - name: 2.0
+        date: 20/12/2016
+```
+
+It is also possible to define metadata parsers. Please refer to
+the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 ### Sanitize author identities
+
+It often happen authors use mulitple identities (email) when
+they contribute. You can then use the file idents.yaml to
+define email belong to a contributor.
 
 In the example below contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
 
-Edit ~/repoxplorer/local/share/repoxplorer/idents.yaml
+Edit /etc/repoxplorer/idents.yaml
 
 ```YAML
 ---
@@ -185,7 +258,7 @@ All "key: value" that match the following default regex will be indexed:
 '^([a-zA-Z-0-9_-]+):([^//].+)$'
 ```
 
-Furthermore in the projects.yaml file it is possible to specify
+Furthermore in projects.yaml it is possible to specify
 custom capturing regexs to extract metadata that does not
 follow to the default regex.
 
@@ -204,6 +277,8 @@ templates:
   parsers:
   - .*(blueprint) ([^ .]+).*
 ```
+Custom capturing regexs must be defined prior to the indexation
+of the Git repository it apply.
 
 ## Use the commits.json REST endpoint to query the internal DB
 
@@ -211,22 +286,22 @@ This endpoint is used by the UI to fetch commits listing according
 to the filters you have setup in the UI but the endpoint can be also used
 outside of the UI. Here are some examples about how to use it:
 
-```
+```Shell
 # Return all commits from repositories included in the designate project
-curl "http://localhost:8080/commits.json?pid=designate"
+curl "http://localhost:51000/commits.json?pid=designate"
 
 # Return all commits from repositories included into the designate project that
 # have a metadata "Closes-bug" (whatever the field value)
-curl "http://localhost:8080/commits.json?pid=designate&metadata=Closes-Bug:*"
+curl "http://localhost:51000/commits.json?pid=designate&metadata=Closes-Bug:*"
 
 # Return all commits from all repositories that have the
 # metadata "implement-feature" that match "bp-new-scheduler"
-curl "http://localhost:8080/commits.json?metadata=implement-feature:bp-new-scheduler"
+curl "http://localhost:51000/commits.json?metadata=implement-feature:bp-new-scheduler"
 
 # Return all commits from all repositories that have the
 # metadata "implement-feature" that match "bp-new-scheduler" or
 # "implement" that match "bp-new-scheduler"
-curl "http://localhost:8080/commits.json?metadata=implement-feature:bp-new-scheduler,implement:bp-new-scheduler"
+curl "http://localhost:51000/commits.json?metadata=implement-feature:bp-new-scheduler,implement:bp-new-scheduler"
 ```
 
 Available arguments are:
