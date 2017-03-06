@@ -51,7 +51,7 @@ def process():
             r = indexer.RepoIndexer(repo['name'],
                                     repo['uri'],
                                     parsers=repo['parsers'],
-                                    config=config)
+                                    config=args.config)
             r.git_init()
             try:
                 r.get_refs()

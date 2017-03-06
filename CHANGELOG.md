@@ -1,6 +1,19 @@
+releasenotes/notes/0.7.1-88d64550bd2049cb.yaml
+releasenotes/notes/0.7-00e2473eee226359.yaml
 =============
 Release Notes
 =============
+
+0.7.1
+=====
+
+Bug Fixes
+---------
+
+- directory rights when fetching and installing web assets
+
+- config argument of the indexer tool not took in account
+
 
 0.7
 ===

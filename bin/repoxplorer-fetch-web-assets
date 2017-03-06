@@ -162,4 +162,5 @@ if os.path.exists(os.path.join(args.path, 'css', 'repoxplorer.css')):
 
 shutil.rmtree(args.path)
 shutil.move(td, args.path)
+os.chmod(args.path, 0755)
 print "Assets moved to %s" % args.path
