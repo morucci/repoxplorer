@@ -59,7 +59,7 @@ Finally install RepoXplorer:
 
 ```Shell
 sudo yum install https://github.com/morucci/repoxplorer/releases/download/0.7.1/repoxplorer-0.7.1-1.el7.centos.noarch.rpm
-# Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...) 
+# Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
 sudo systemctl enable repoxplorer
@@ -68,7 +68,7 @@ sudo systemctl start repoxplorer
 sudo systemctl start repoxplorer-webui
 ```
 
-The web UI should be accessible on http://<ip>:51000
+Then open a Web browser to access http://localhost:51000
 
 projects.yaml and idents.yaml are available in /etc/repoxplorer. Please
 then follow the [Configuration section](#configuration).
@@ -96,13 +96,13 @@ But you should definitely use a regular installation of ElasticSearch.
 Start the RepoXplorer web UI.
 
 ```Shell
-uwsgi --http-socket :8080 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
+uwsgi --http-socket :51000 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
  --static-map /css=/home/<user>/repoxplorer/local/share/repoxplorer/public/css \
  --static-map /javascript=/home/<user>/repoxplorer/local/share/repoxplorer/public/javascript \
  --static-map /images=/home/<user>/repoxplorer/local/share/repoxplorer/public/images
 ```
 
-Then open a Web browser to access http://localhost:8080.
+Then open a Web browser to access http://localhost:51000
 
 Start the RepoXplorer indexer
 
