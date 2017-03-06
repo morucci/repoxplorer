@@ -1,0 +1,16 @@
+[Unit]
+Description=RepoXplorer web ui
+After=syslog.target
+
+[Service]
+User=repoxplorer
+Group=repoxplorer
+ExecStart=/usr/sbin/uwsgi --plugin python --http-socket :51000 --pecan /etc/repoxplorer/config.py \
+ --static-map /css=/usr/share/repoxplorer/public/css \
+ --static-map /css=/usr/share/web-assets/css \
+ --static-map /javascript=/usr/share/repoxplorer/public/javascript \
+ --static-map /javascript=/usr/share/web-assets/javascript \
+ --static-map /images=/usr/share/repoxplorer/public/images
+
+[Install]
+WantedBy=multi-user.target

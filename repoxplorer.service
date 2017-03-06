@@ -1,0 +1,10 @@
+[Unit]
+Description=RepoXplorer indexer daemon
+
+[Service]
+User=repoxplorer
+Group=repoxplorer
+ExecStart=/usr/bin/repoxplorer-indexer --forever --config /etc/repoxplorer/config.py
+
+[Install]
+WantedBy=multi-user.target
