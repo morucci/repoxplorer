@@ -1,5 +1,5 @@
 Name:           repoxplorer
-Version:        0.7
+Version:        0.7.1
 Release:        1%{?dist}
 Summary:        RepoXplorer is a small stats and charts utility for GIT repositories
 
@@ -92,10 +92,13 @@ exit 0
 %attr(-, repoxplorer, repoxplorer) %{_var}/log/repoxplorer
 
 %changelog
+* Mon Mar 06 2017 Fabien Boucher <fboucher@redhat.com> - 0.7.1-1
+- Bump to 0.7.1
+
 * Mon Mar 06 2017 Fabien Boucher <fboucher@redhat.com> - 0.7-1
 - Bump to 0.7
 
-* Tue Mar 01 2017 Fabien Boucher <fboucher@redhat.com> - 0.6.2-2
+* Wed Mar 01 2017 Fabien Boucher <fboucher@redhat.com> - 0.6.2-2
 - Change default config debug state in order to make pecan
   serves static files. This is to ease deployment. A better
   solution with a bundled uwsgi config will come soon.
@@ -123,7 +126,7 @@ exit 0
 * Fri Feb 17 2017 Fabien Boucher - 0.6-3
 - Change default webui listening port to TCP/51000
 
-* Tue Feb 16 2017 Fabien Boucher - 0.6-2
+* Thu Feb 16 2017 Fabien Boucher - 0.6-2
 - Improve package
 
 * Wed Feb 15 2017 Fabien Boucher - 0.6-1
