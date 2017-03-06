@@ -2,6 +2,17 @@
 Release Notes
 =============
 
+0.7.1
+=====
+
+Bug Fixes
+---------
+
+- directory rights when fetching and installing web assets
+
+- config argument of the indexer tool not took in account
+
+
 0.7
 ===
 
@@ -35,5 +46,4 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
-
 
