@@ -2,8 +2,8 @@
 Release Notes
 =============
 
-0.6-9
-=====
+0.7
+===
 
 New Features
 ------------
@@ -35,4 +35,5 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
+
 
