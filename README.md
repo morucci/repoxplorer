@@ -34,7 +34,7 @@ virtualenv ~/repoxplorer
 . ~/repoxplorer/bin/activate
 pip install -r requirements.txt
 python setup.py install
-./fetch-web-assets.py
+./bin/repoxplorer-fetch-web-assets
 ```
 
 An Elasticsearch instance is needed and repoXplorer will try to access it
@@ -137,20 +137,19 @@ templates:
   - master
   - stable/mitaka
   - stable/newton
+  - stable/ocata
   gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
 
 projects:
   Barbican:
   - name: barbican
-    tags:
-      - python
-    releases:
-      - name: 2.0
-        date: 20/12/2016
     template: default
   - name: python-barbicanclient
-    tags:
-      - python
+    template: default
+  Swift:
+  - name: swift
+    template: default
+  - name: python-swiftclient
     template: default
 ```
 
