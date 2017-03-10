@@ -14,6 +14,7 @@
 
 
 import json
+import copy
 import base64
 import hashlib
 
@@ -46,6 +47,34 @@ class RootController(object):
     def decrypt(self, key, ciphertext):
         cipher = XOR.new(key)
         return cipher.decrypt(base64.b64decode(ciphertext))
+
+    def get_projects_from_repos_list(self, projects, c_repos):
+        c_projects = []
+        for pname, repos in projects.items():
+            for r in repos:
+                pid = "%s:%s:%s" % (r['uri'],
+                                    r['name'],
+                                    r['branch'])
+                if pid in c_repos and pname not in c_projects:
+                    c_projects.append(pname)
+        return c_projects
+
+    def get_repos_filter(self, repos, inc_repos):
+        p_filter = []
+        for p in repos:
+            if inc_repos:
+                if not "%s:%s" % (p['name'], p['branch']) in inc_repos:
+                    continue
+            p_filter.append("%s:%s:%s" % (p['uri'],
+                                          p['name'],
+                                          p['branch']))
+        return p_filter
+
+    def get_mail_filter(self, idents, cid):
+        if cid in idents:
+            return idents[cid][2]
+        else:
+            return [cid]
 
     @expose(template='index.html')
     def index(self):
@@ -127,22 +156,12 @@ class RootController(object):
                     'empty': True}
 
         projects = Projects().get_projects()
-
         c_repos = c.get_repos(**query_kwargs)[1]
-        repos_contributed = {}
-
         lm_repos = c.get_top_repos_by_lines(**query_kwargs)[1]
+        c_projects = self.get_projects_from_repos_list(projects, c_repos)
+
+        repos_contributed = {}
         repos_contributed_modified = {}
-
-        c_projects = {}
-        for pname, repos in projects.items():
-            for r in repos:
-                pid = "%s:%s:%s" % (r['uri'],
-                                    r['name'],
-                                    r['branch'])
-                if pid in c_repos:
-                    c_projects.setdefault(pname, 0)
-
         if inc_repos_detail:
             repos_contributed = [
                 (":".join(p.split(':')[-2:]), ca) for
@@ -151,24 +170,21 @@ class RootController(object):
                 (":".join(p.split(':')[-2:]), int(lm)) for
                 p, lm in lm_repos.items()]
         else:
-            for pname, repos in projects.items():
-                for r in repos:
-                    pid = "%s:%s:%s" % (r['uri'],
-                                        r['name'],
-                                        r['branch'])
-                    if pid in c_repos:
-                        repos_contributed.setdefault(pname, 0)
-                        repos_contributed[pname] += c_repos[pid]
-                    if pid in lm_repos:
-                        repos_contributed_modified.setdefault(pname, 0)
-                        repos_contributed_modified[pname] += \
-                            lm_repos[pid]
+            for pname in c_projects:
+                p_repos = projects[pname]
+                p_filter = self.get_repos_filter(p_repos, None)
+                _query_kwargs = copy.deepcopy(query_kwargs)
+                _query_kwargs['repos'] = p_filter
+                repos_contributed[pname] = c.get_commits_amount(
+                    **_query_kwargs)
+                repos_contributed_modified[pname] = int(
+                    c.get_line_modifieds_stats(**_query_kwargs)[1]['sum'])
 
             repos_contributed = [
                 (p, ca) for
                 p, ca in repos_contributed.items()]
             repos_contributed_modified = [
-                (p, int(lm)) for
+                (p, lm) for
                 p, lm in repos_contributed_modified.items()]
 
         sorted_repos_contributed = sorted(
@@ -191,8 +207,8 @@ class RootController(object):
         histo = [{'date': d['key_as_string'],
                   'value': d['doc_count']} for d in histo[1]]
 
-        line_modifieds_amount = sum([v[1] for
-                                     v in repos_contributed_modified])
+        line_modifieds_amount = int(c.get_line_modifieds_stats(
+            **query_kwargs)[1]['sum'])
 
         return {'name': name,
                 'gravatar': hashlib.md5(cid).hexdigest(),
@@ -250,23 +266,6 @@ class RootController(object):
             v['name'] = v['name'] or raw_names[v['email']]
             del v['email']
         return top_authors_s_sorted
-
-    def get_repos_filter(self, repos, inc_repos):
-        p_filter = []
-        for p in repos:
-            if inc_repos:
-                if not "%s:%s" % (p['name'], p['branch']) in inc_repos:
-                    continue
-            p_filter.append("%s:%s:%s" % (p['uri'],
-                                          p['name'],
-                                          p['branch']))
-        return p_filter
-
-    def get_mail_filter(self, idents, cid):
-        if cid in idents:
-            return idents[cid][2]
-        else:
-            return [cid]
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,

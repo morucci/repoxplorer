@@ -2,6 +2,19 @@
 Release Notes
 =============
 
+0.7.2
+=====
+
+Bug Fixes
+---------
+
+- Global line modifieds amount was wrongly computed
+
+- Stacked by project commit amount was wrong
+
+- Stacked by project line modified amount was wrong
+
+
 0.7.1
 =====
 
