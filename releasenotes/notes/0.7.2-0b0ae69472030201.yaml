@@ -3,3 +3,6 @@ fixes:
   - Global line modifieds amount was wrongly computed
   - Stacked by project commit amount was wrong
   - Stacked by project line modified amount was wrong
+other:
+  - Rework Author/Commiter display in commit listing to
+    improve clarity

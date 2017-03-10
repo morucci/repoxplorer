@@ -15,6 +15,12 @@ Bug Fixes
 - Stacked by project line modified amount was wrong
 
 
+Other Notes
+-----------
+
+- Rework Author/Commiter display in commit listing to improve clarity
+
+
 0.7.1
 =====
 

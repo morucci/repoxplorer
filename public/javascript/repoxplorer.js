@@ -325,7 +325,7 @@ function get_commits(pid, tid, cid, page) {
    var theader = "<tr>"
    theader += "<th>Date of commit</th>"
    theader += "<th>Repository refs</th>"
-   theader += "<th>Author</th>"
+   theader += "<th>Author/Committer</th>"
    theader += "<th>Message</th>"
    theader += "<th>Modified lines</th>"
    theader += "<th>Time To Land</th>"
@@ -342,7 +342,15 @@ function get_commits(pid, tid, cid, page) {
     })
     elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>"
     elm += "<td>" + projects + "</td>"
-    elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" + v['author_gravatar'] + "?s=20&d=wavatar'></span><span><a href=contributor.html?cid=" + v['cid'] + ">" + v['author_name'] + "</a><span><span style='padding-left: 13px'><a href=contributor.html?cid=" + v['ccid'] + "><img src='https://www.gravatar.com/avatar/" + v['committer_gravatar'] + "?s=20&d=wavatar' title='Committed By: " + v['committer_name'] + "'></a></span></td>"
+    elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
+           v['author_gravatar'] + "?s=20&d=wavatar'></span><span><a href=contributor.html?cid=" +
+           v['cid'] + ">" + v['author_name'] + "</a></span>"
+    if (v['ccid'] != v['cid']) {
+      elm += "<br><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
+             v['committer_gravatar'] + "?s=20&d=wavatar'></span><span><a href=contributor.html?cid=" +
+             v['ccid'] + ">" + v['committer_name'] + "</a><span>"
+    }
+    elm += "</td>"
     // Just use the first gitweb link atm
     if (v['gitwebs'][0].length > 0) {
      elm += "<td><a href=" + v['gitwebs'][0] + ">" + v['commit_msg'] + "</a></td>"
