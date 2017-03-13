@@ -43,7 +43,7 @@ noalias_dumper.ignore_aliases = lambda self, data: True
 
 if __name__ == "__main__":
     templates = [{'name': 'default',
-                  'branch': 'master',
+                  'branches': ['master', ],
                   'uri': 'https://github.com/%(name)s',
                   'gitweb': 'https://github.com/%(name)s/commit/%%(sha)s',
                   'parsers': ['.*(blueprint) ([^ .]+).*']}]

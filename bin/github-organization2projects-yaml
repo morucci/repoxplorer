@@ -38,7 +38,7 @@ if __name__ == "__main__":
         'projects': {args.org: []},
         'templates': [
             {"name": args.org,
-             "branch": "master",
+             "branches": ["master", ],
              "uri": "http://github.com/%s/" % args.org +
                     "%(name)s",
              "gitweb": "http://github.com/%s/" % args.org +
