@@ -83,7 +83,7 @@ class Projects(object):
                             assert 'name' in release
                             assert 'date' in release
                             epoch = time.mktime(
-                                time.strptime(release['date'], "%d/%m/%Y"))
+                                time.strptime(release['date'], "%m/%d/%Y"))
                             rels.append({'name': release['name'],
                                          'date': epoch,
                                          'repo': pid})

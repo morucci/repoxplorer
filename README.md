@@ -207,8 +207,9 @@ projects:
 ```
 
 A list of releases can be defined. It is useful when you want to define
-release points in a time across all repositories defined in a project.
-Release dates are added in addition to detected Git tags dates.
+release dates across all repositories defined in a project.
+Release dates with %m/%d/%Y format can be defined and will be merged with
+detected Git tags dates.
 
 ```YAML
 projects:
@@ -219,7 +220,7 @@ projects:
       - master
     releases:
       - name: 2.0
-        date: 20/12/2016
+        date: 12/20/2016
 ```
 
 It is also possible to define metadata parsers. Please refer to
