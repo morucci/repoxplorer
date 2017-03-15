@@ -8,9 +8,16 @@ Group=repoxplorer
 ExecStart=/usr/sbin/uwsgi --plugin python --http-socket :51000 --pecan /etc/repoxplorer/config.py \
  --static-map /css=/usr/share/repoxplorer/public/css \
  --static-map /css=/usr/share/web-assets/css \
+ --static-map /css=/var/www/static/css \
+ --static-map /css=/var/www/static/jquery-ui/css \
+ --static-map /css=/var/www/static/bootstrap/css \
  --static-map /javascript=/usr/share/repoxplorer/public/javascript \
  --static-map /javascript=/usr/share/web-assets/javascript \
- --static-map /images=/usr/share/repoxplorer/public/images
+ --static-map /javascript=/var/www/static/js \
+ --static-map /javascript=/var/www/static/jquery-ui/js \
+ --static-map /javascript=/var/www/static/bootstrap/js \
+ --static-map /images=/usr/share/repoxplorer/public/images \
+ --static-safe /usr/share/javascript
 
 [Install]
 WantedBy=multi-user.target
