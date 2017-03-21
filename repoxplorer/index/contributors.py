@@ -21,26 +21,25 @@ from pecan import conf
 logger = logging.getLogger(__name__)
 
 
-# TODO: Should be called Contributors instead
-class Users(object):
+class Contributors(object):
     def __init__(self):
         path = conf.idents_file_path
-        self.users = {}
+        self.contributors = {}
         try:
-            self.users = yaml.load(file(path)) or {}
+            self.contributors = yaml.load(file(path)) or {}
         except Exception, e:
             logger.error(
                 'Unable to read idents.yaml (%s). Default is empty.' % e)
         self.idents = {}
 
-    def get_users(self):
-        for user in self.users:
-            main_email = user['emails'][0]
+    def get_contributors(self):
+        for cont in self.contributors:
+            main_email = cont['emails'][0]
             self.idents[main_email] = (main_email,
-                                       user['name'],
-                                       user['emails'])
-            for email in user['emails'][1:]:
+                                       cont['name'],
+                                       cont['emails'])
+            for email in cont['emails'][1:]:
                 self.idents[email] = (main_email,
-                                      user['name'],
-                                      user['emails'])
+                                      cont['name'],
+                                      cont['emails'])
         return self.idents

@@ -30,7 +30,7 @@ from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
-from repoxplorer.index.users import Users
+from repoxplorer.index.contributors import Contributors
 from repoxplorer.index.tags import Tags
 
 
@@ -123,7 +123,7 @@ class RootController(object):
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
         c = Commits(index.Connector(index=indexname))
-        idents = Users().get_users()
+        idents = Contributors().get_contributors()
         if cid in idents:
             mails = idents[cid][2]
             name = idents[cid][1]
@@ -230,7 +230,7 @@ class RootController(object):
                 'empty': False}
 
     def top_authors_sanitize(self, top_authors, commits, top=100000):
-        idents = Users().get_users()
+        idents = Contributors().get_contributors()
         sanitized = {}
         for k, v in top_authors[1].items():
             if k in idents:
@@ -409,7 +409,7 @@ class RootController(object):
                  inc_repos=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
-        idents = Users().get_users()
+        idents = Contributors().get_contributors()
         p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
             projects_index, idents,
             pid, tid, cid, dfrom, dto, inc_repos,
@@ -457,7 +457,7 @@ class RootController(object):
                 inc_repos=None, metadata=""):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
-        idents = Users().get_users()
+        idents = Contributors().get_contributors()
         _metadata = []
         metadata_splitted = metadata.split(',')
         for meta in metadata_splitted:
