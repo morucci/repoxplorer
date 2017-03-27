@@ -1,4 +1,5 @@
-# Copyright 2016, Fabien Boucher
+# Copyright 2016-2017, Fabien Boucher
+# Copyright 2016-2017, Red Hat
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -71,10 +72,11 @@ class RootController(object):
         return p_filter
 
     def get_mail_filter(self, idents, cid):
-        if cid in idents:
-            return idents[cid][2]
-        else:
-            return [cid]
+        ident = idents.get_ident_by_id(cid)
+        if not ident[1]:
+            # No ident has been declared for that contributor
+            ident = idents.get_ident_by_email(cid)
+        return ident[1]['emails'].keys()
 
     @expose(template='index.html')
     def index(self):
@@ -123,12 +125,14 @@ class RootController(object):
             dto = datetime.strptime(
                 dto, "%m/%d/%Y").strftime('%s')
         c = Commits(index.Connector(index=indexname))
-        idents = Contributors().get_contributors()
-        if cid in idents:
-            mails = idents[cid][2]
-            name = idents[cid][1]
-        else:
-            mails = [cid]
+        idents = Contributors()
+        iid, ident = idents.get_ident_by_id(cid)
+        if not ident:
+            # No ident has been declared for that contributor
+            iid, ident = idents.get_ident_by_email(cid)
+        mails = ident['emails']
+        name = ident['name']
+        if not name:
             raw_names = c.get_commits_author_name_by_emails([cid])
             name = raw_names[cid]
 
@@ -150,7 +154,8 @@ class RootController(object):
         if not commits_amount:
             # No commit found
             return {'name': name,
-                    'gravatar': hashlib.md5(cid).hexdigest(),
+                    'gravatar': hashlib.md5(
+                        ident['default-email']).hexdigest(),
                     'cid': self.encrypt(xorkey, cid),
                     'period': period,
                     'empty': True}
@@ -211,7 +216,7 @@ class RootController(object):
             **query_kwargs)[1]['sum'])
 
         return {'name': name,
-                'gravatar': hashlib.md5(cid).hexdigest(),
+                'gravatar': hashlib.md5(ident['default-email']).hexdigest(),
                 'histo': json.dumps(histo),
                 'commits_amount': commits_amount,
                 'line_modifieds_amount': line_modifieds_amount,
@@ -230,26 +235,23 @@ class RootController(object):
                 'empty': False}
 
     def top_authors_sanitize(self, top_authors, commits, top=100000):
-        idents = Contributors().get_contributors()
+        idents = Contributors()
         sanitized = {}
-        for k, v in top_authors[1].items():
-            if k in idents:
-                main_email = idents[k][0]
-                name = idents[k][1]
-            else:
-                main_email = k
-                name = None
+        for email, v in top_authors[1].items():
+            iid, ident = idents.get_ident_by_email(email)
+            main_email = ident['default-email']
+            name = ident['name']
             if main_email in sanitized:
                 sanitized[main_email][0] += v
             else:
-                sanitized[main_email] = [v, name]
+                sanitized[main_email] = [v, name, iid]
         top_authors_s = []
         raw_names = {}
-        for k, v in sanitized.items():
+        for email, v in sanitized.items():
             top_authors_s.append(
-                {'cid': self.encrypt(xorkey, k),
-                 'email': k,
-                 'gravatar': hashlib.md5(k).hexdigest(),
+                {'cid': self.encrypt(xorkey, v[2]),
+                 'email': email,
+                 'gravatar': hashlib.md5(email).hexdigest(),
                  'amount': int(v[0]),
                  'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,
@@ -409,7 +411,7 @@ class RootController(object):
                  inc_repos=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
-        idents = Contributors().get_contributors()
+        idents = Contributors()
         p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
             projects_index, idents,
             pid, tid, cid, dfrom, dto, inc_repos,
@@ -457,7 +459,7 @@ class RootController(object):
                 inc_repos=None, metadata=""):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
-        idents = Contributors().get_contributors()
+        idents = Contributors()
         _metadata = []
         metadata_splitted = metadata.split(',')
         for meta in metadata_splitted:
@@ -496,11 +498,10 @@ class RootController(object):
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
-                if idents.get(cmt['%s_email' % elm]):
-                    cmt['%s_name' % elm] = idents.get(
-                        cmt['%s_email' % elm])[1]
-                    cmt['%s_email' % elm] = idents.get(
-                        cmt['%s_email' % elm])[0]
+                _, c_data = idents.get_ident_by_email(cmt['%s_email' % elm])
+                cmt['%s_email' % elm] = c_data['default-email']
+                if c_data['name']:
+                    cmt['%s_name' % elm] = c_data['name']
             # Convert the TTL to something human readable
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))

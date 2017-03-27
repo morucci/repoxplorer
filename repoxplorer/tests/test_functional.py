@@ -1,3 +1,19 @@
+# Copyright 2016-2017, Fabien Boucher
+# Copyright 2016-2017, Red Hat
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
 from repoxplorer.index.commits import Commits
@@ -6,6 +22,11 @@ from repoxplorer.index.tags import Tags
 from repoxplorer.controllers import root
 
 from mock import patch
+
+import base64
+from Crypto.Cipher import XOR
+
+xorkey = 'default'
 
 
 class TestRootController(FunctionalTest):
@@ -86,6 +107,10 @@ class TestRootController(FunctionalTest):
             }]
         cls.t.add_tags(cls.tags)
 
+    def encrypt(self, key, plaintext):
+        cipher = XOR.new(key)
+        return base64.b64encode(cipher.encrypt(plaintext))
+
     @classmethod
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
@@ -99,6 +124,14 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/project.html?pid=test')
+        assert response.status_int == 200
+
+    def test_get_contributor_page(self):
+        cid = self.encrypt(xorkey, 'n.suke@joker.org')
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/contributor.html?cid=%s' % cid)
         assert response.status_int == 200
 
     def test_get_commits(self):

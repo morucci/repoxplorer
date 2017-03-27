@@ -5,3 +5,4 @@ pecan
 dulwich
 PyYAML
 pycrypto
+jsonschema

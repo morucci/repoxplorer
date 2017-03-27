@@ -6,3 +6,4 @@ uWSGI
 github3.py
 pycrypto
 urllib3 <= 1.17
+jsonschema
