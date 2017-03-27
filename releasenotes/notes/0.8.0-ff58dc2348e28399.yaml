@@ -1,0 +1,5 @@
+---
+features:
+  - Better YAML structure to define identities and groups
+upgrade:
+  - Old idents.yaml file format is deprecated and need to be refactored manually

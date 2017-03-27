@@ -228,9 +228,10 @@ the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 ### Sanitize author identities
 
-It often happen authors use mulitple identities (email) when
-they contribute. You can then use the file idents.yaml to
-define email belong to a contributor.
+It often happens authors use mulitple identities (multiple emails) when
+they contribute to a project. You can use the file idents.yaml to define
+emails that belong to a contributor. RepoXplorer will use that file to
+group contributions with multiple emails under a single identity.
 
 In the example below contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
@@ -239,10 +240,15 @@ Edit /etc/repoxplorer/idents.yaml
 
 ```YAML
 ---
-- name: John Doe
-  emails:
-    - john.doe@server
-    - jdoe@server
+identities:
+  0000-0000:
+    name: John Doe
+    default-email: john.doe@server
+    emails:
+      john.doe@server:
+        groups: {}
+      jdoe@server:
+        groups: {}
 ```
 
 ### Metadata automatic indexation

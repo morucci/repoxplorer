@@ -1,3 +1,5 @@
+import tempfile
+
 # Server Specific Configurations
 server = {
     'port': '8080',
@@ -18,8 +20,9 @@ app = {
 }
 
 projects_file_path = None
-idents_file_path = None
 git_store = None
+db_path = tempfile.mkdtemp()
+db_default_file = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorertest'

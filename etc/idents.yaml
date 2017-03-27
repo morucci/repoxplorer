@@ -1,5 +1,10 @@
 ---
-- name: John Doe
-  emails:
-    - john.doe@server
-    - jdoe@server
+identities:
+  0000-0000:
+    name: John Doe
+    default-email: john.doe@server
+    emails:
+      john.doe@server:
+        groups: {}
+      jdoe@server:
+        groups: {}
