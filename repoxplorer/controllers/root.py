@@ -71,10 +71,8 @@ class RootController(object):
         return p_filter
 
     def get_mail_filter(self, idents, cid):
-        if cid in idents:
-            return idents[cid][2]
-        else:
-            return [cid]
+        ident = idents.get_ident_by_email(cid)
+        return ident[1]['emails'].keys()
 
     @expose(template='index.html')
     def index(self):
@@ -457,7 +455,7 @@ class RootController(object):
                 inc_repos=None, metadata=""):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
-        idents = Contributors().get_contributors()
+        idents = Contributors()
         _metadata = []
         metadata_splitted = metadata.split(',')
         for meta in metadata_splitted:
@@ -496,11 +494,11 @@ class RootController(object):
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
-                if idents.get(cmt['%s_email' % elm]):
-                    cmt['%s_name' % elm] = idents.get(
-                        cmt['%s_email' % elm])[1]
-                    cmt['%s_email' % elm] = idents.get(
-                        cmt['%s_email' % elm])[0]
+                c_id, c_data = idents.get_ident_by_email(cmt['%s_email' % elm])
+                if c_id:
+                    cmt['%s_name' % elm] = c_data['name']
+                    # TODO: Need to define a default email in the yaml def
+                    cmt['%s_email' % elm] = c_data['emails'].keys()[0]
             # Convert the TTL to something human readable
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))
