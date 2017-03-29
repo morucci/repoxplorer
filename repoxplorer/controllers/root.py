@@ -16,17 +16,16 @@
 
 import json
 import copy
-import base64
 import hashlib
 
 from pecan import expose
 from pecan import abort
+from pecan import conf
 
 from datetime import datetime
 from datetime import timedelta
 
-from Crypto.Cipher import XOR
-
+from repoxplorer.controllers import utils
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
@@ -36,68 +35,34 @@ from repoxplorer.index.tags import Tags
 
 
 indexname = 'repoxplorer'
-xorkey = 'default'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class RootController(object):
 
-    def encrypt(self, key, plaintext):
-        cipher = XOR.new(key)
-        return base64.b64encode(cipher.encrypt(plaintext))
-
-    def decrypt(self, key, ciphertext):
-        cipher = XOR.new(key)
-        return cipher.decrypt(base64.b64decode(ciphertext))
-
-    def get_projects_from_repos_list(self, projects, c_repos):
-        c_projects = []
-        for pname, repos in projects.items():
-            for r in repos:
-                pid = "%s:%s:%s" % (r['uri'],
-                                    r['name'],
-                                    r['branch'])
-                if pid in c_repos and pname not in c_projects:
-                    c_projects.append(pname)
-        return c_projects
-
-    def get_repos_filter(self, repos, inc_repos):
-        p_filter = []
-        for p in repos:
-            if inc_repos:
-                if not "%s:%s" % (p['name'], p['branch']) in inc_repos:
-                    continue
-            p_filter.append("%s:%s:%s" % (p['uri'],
-                                          p['name'],
-                                          p['branch']))
-        return p_filter
-
-    def get_mail_filter(self, idents, cid):
-        ident = idents.get_ident_by_id(cid)
-        if not ident[1]:
-            # No ident has been declared for that contributor
-            ident = idents.get_ident_by_email(cid)
-        return ident[1]['emails'].keys()
-
     @expose(template='index.html')
     def index(self):
-        projects = Projects().get_projects()
-        tags = Projects().tags.keys()
+        projects_index = Projects()
+        projects = projects_index.get_projects()
+        tags = projects_index.tags.keys()
         return {'projects': projects,
                 'tags': tags}
 
     @expose('json')
     def projects(self):
-        projects = Projects().get_projects()
-        tags = Projects().tags.keys()
+        projects_index = Projects()
+        projects = projects_index.get_projects()
+        tags = projects_index.tags.keys()
         return {'projects': projects,
                 'tags': tags}
 
     @expose(template='contributors.html')
     def contributors(self, search=""):
+        idents = Contributors()
         max_result = 50
         c = Commits(index.Connector(index=indexname))
         raw_conts = c.get_authors(merge_commit=False)
-        conts = self.top_authors_sanitize(raw_conts, c)
+        conts = utils.top_authors_sanitize(idents, raw_conts, c)
         total_contributors = len(conts)
         conts = [co for co in conts
                  if co['name'].lower().find(search.lower()) >= 0]
@@ -111,7 +76,7 @@ class RootController(object):
     def contributor(self, cid, dfrom=None, dto=None,
                     inc_merge_commit=None,
                     inc_repos_detail=None):
-        cid = self.decrypt(xorkey, cid)
+        cid = utils.decrypt(xorkey, cid)
         if inc_merge_commit != 'on':
             include_merge_commit = False
         else:
@@ -156,14 +121,14 @@ class RootController(object):
             return {'name': name,
                     'gravatar': hashlib.md5(
                         ident['default-email']).hexdigest(),
-                    'cid': self.encrypt(xorkey, cid),
+                    'cid': utils.encrypt(xorkey, cid),
                     'period': period,
                     'empty': True}
 
         projects = Projects().get_projects()
         c_repos = c.get_repos(**query_kwargs)[1]
         lm_repos = c.get_top_repos_by_lines(**query_kwargs)[1]
-        c_projects = self.get_projects_from_repos_list(projects, c_repos)
+        c_projects = utils.get_projects_from_references(projects, c_repos)
 
         repos_contributed = {}
         repos_contributed_modified = {}
@@ -177,7 +142,7 @@ class RootController(object):
         else:
             for pname in c_projects:
                 p_repos = projects[pname]
-                p_filter = self.get_repos_filter(p_repos, None)
+                p_filter = utils.get_references_filter(p_repos, None)
                 _query_kwargs = copy.deepcopy(query_kwargs)
                 _query_kwargs['repos'] = p_filter
                 repos_contributed[pname] = c.get_commits_amount(
@@ -231,43 +196,8 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
                 'ttl_average': ttl_average,
-                'cid': self.encrypt(xorkey, cid),
+                'cid': utils.encrypt(xorkey, cid),
                 'empty': False}
-
-    def top_authors_sanitize(self, top_authors, commits, top=100000):
-        idents = Contributors()
-        sanitized = {}
-        for email, v in top_authors[1].items():
-            iid, ident = idents.get_ident_by_email(email)
-            main_email = ident['default-email']
-            name = ident['name']
-            if main_email in sanitized:
-                sanitized[main_email][0] += v
-            else:
-                sanitized[main_email] = [v, name, iid]
-        top_authors_s = []
-        raw_names = {}
-        for email, v in sanitized.items():
-            top_authors_s.append(
-                {'cid': self.encrypt(xorkey, v[2]),
-                 'email': email,
-                 'gravatar': hashlib.md5(email).hexdigest(),
-                 'amount': int(v[0]),
-                 'name': v[1]})
-        top_authors_s_sorted = sorted(top_authors_s,
-                                      key=lambda k: k['amount'],
-                                      reverse=True)[:top]
-        name_to_requests = []
-        for v in top_authors_s_sorted:
-            if not v['name']:
-                name_to_requests.append(v['email'])
-        if name_to_requests:
-            raw_names = commits.get_commits_author_name_by_emails(
-                name_to_requests)
-        for v in top_authors_s_sorted:
-            v['name'] = v['name'] or raw_names[v['email']]
-            del v['email']
-        return top_authors_s_sorted
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
@@ -305,7 +235,7 @@ class RootController(object):
             repos = Projects().get_projects()[pid]
         else:
             repos = Projects().get_repos_by_tag(tid)
-        p_filter = self.get_repos_filter(repos, inc_repos)
+        p_filter = utils.get_references_filter(repos, inc_repos)
 
         query_kwargs = {
             'repos': p_filter,
@@ -341,10 +271,11 @@ class RootController(object):
 
         authors_amount = len(top_authors[1])
 
-        top_authors = self.top_authors_sanitize(
-            top_authors, c, top=25)
-        top_authors_modified = self.top_authors_sanitize(
-            top_authors_modified, c, top=25)
+        idents = Contributors()
+        top_authors = utils.top_authors_sanitize(
+            idents, top_authors, c, top=25)
+        top_authors_modified = utils.top_authors_sanitize(
+            idents, top_authors_modified, c, top=25)
 
         first, last, duration = c.get_commits_time_delta(**query_kwargs)
 
@@ -369,42 +300,6 @@ class RootController(object):
                 'ttl_average': ttl_average,
                 'empty': False}
 
-    def resolv_filters(self, projects_index, idents, pid,
-                       tid, cid, dfrom, dto, inc_repos,
-                       inc_merge_commit):
-
-        if pid:
-            project = projects_index.get_projects()[pid]
-            p_filter = self.get_repos_filter(project, inc_repos)
-        elif tid:
-            project = Projects().get_repos_by_tag(tid)
-            p_filter = self.get_repos_filter(project, inc_repos)
-        else:
-            p_filter = []
-
-        if cid:
-            cid = self.decrypt(xorkey, cid)
-            mails = self.get_mail_filter(idents, cid)
-        else:
-            mails = []
-
-        if dfrom:
-            dfrom = datetime.strptime(
-                dfrom, "%m/%d/%Y").strftime('%s')
-
-        if dto:
-            dto = datetime.strptime(
-                dto, "%m/%d/%Y").strftime('%s')
-
-        if inc_merge_commit == 'on':
-            # The None value will return all whatever
-            # the commit is a merge one or not
-            inc_merge_commit = None
-        else:
-            inc_merge_commit = False
-
-        return p_filter, mails, dfrom, dto, inc_merge_commit
-
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
@@ -412,7 +307,7 @@ class RootController(object):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Contributors()
-        p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
+        p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, dfrom, dto, inc_repos,
             inc_merge_commit)
@@ -431,7 +326,7 @@ class RootController(object):
              dfrom=None, dto=None, inc_repos=None):
         t = Tags(index.Connector(index=indexname))
         projects_index = Projects()
-        p_filter, _, dfrom, dto, _ = self.resolv_filters(
+        p_filter, _, dfrom, dto, _ = utils.resolv_filters(
             projects_index, None,
             pid, tid, None, dfrom, dto, inc_repos, None)
         p_filter = [":".join(r.split(':')[:-1]) for r in p_filter]
@@ -471,7 +366,7 @@ class RootController(object):
                 continue
             _metadata.append((key, value))
 
-        p_filter, mails, dfrom, dto, inc_merge_commit = self.resolv_filters(
+        p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, dfrom, dto, inc_repos,
             inc_merge_commit)
@@ -512,8 +407,8 @@ class RootController(object):
             if len(cmt['commit_msg']) > 80:
                 cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
             # Add cid and ccid
-            cmt['cid'] = self.encrypt(xorkey, cmt['author_email'])
-            cmt['ccid'] = self.encrypt(xorkey, cmt['committer_email'])
+            cmt['cid'] = utils.encrypt(xorkey, cmt['author_email'])
+            cmt['ccid'] = utils.encrypt(xorkey, cmt['committer_email'])
             # Remove email details
             del cmt['author_email']
             del cmt['committer_email']

@@ -20,13 +20,13 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.tags import Tags
 
 from repoxplorer.controllers import root
+from repoxplorer.controllers import utils
 
 from mock import patch
 
-import base64
-from Crypto.Cipher import XOR
+from pecan import conf
 
-xorkey = 'default'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class TestRootController(FunctionalTest):
@@ -107,10 +107,6 @@ class TestRootController(FunctionalTest):
             }]
         cls.t.add_tags(cls.tags)
 
-    def encrypt(self, key, plaintext):
-        cipher = XOR.new(key)
-        return base64.b64encode(cipher.encrypt(plaintext))
-
     @classmethod
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
@@ -127,11 +123,16 @@ class TestRootController(FunctionalTest):
         assert response.status_int == 200
 
     def test_get_contributor_page(self):
-        cid = self.encrypt(xorkey, 'n.suke@joker.org')
+        cid = utils.encrypt(xorkey, 'n.suke@joker.org')
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/contributor.html?cid=%s' % cid)
+        assert response.status_int == 200
+
+    def test_get_contributors_page(self):
+        root.indexname = 'repoxplorertest'
+        response = self.app.get('/contributors.html')
         assert response.status_int == 200
 
     def test_get_commits(self):

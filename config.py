@@ -70,6 +70,7 @@ projects_file_path = '%s/local/share/repoxplorer/projects.yaml' % sys.prefix
 db_default_file = None
 db_path = '%s/local/share/repoxplorer/' % sys.prefix
 git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix
+xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
