@@ -23,6 +23,7 @@ projects_file_path = None
 git_store = None
 db_path = tempfile.mkdtemp()
 db_default_file = None
+xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorertest'

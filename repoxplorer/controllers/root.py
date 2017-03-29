@@ -16,17 +16,16 @@
 
 import json
 import copy
-import base64
 import hashlib
 
 from pecan import expose
 from pecan import abort
+from pecan import conf
 
 from datetime import datetime
 from datetime import timedelta
 
-from Crypto.Cipher import XOR
-
+from repoxplorer.controllers import utils
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
@@ -36,18 +35,10 @@ from repoxplorer.index.tags import Tags
 
 
 indexname = 'repoxplorer'
-xorkey = 'default'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class RootController(object):
-
-    def encrypt(self, key, plaintext):
-        cipher = XOR.new(key)
-        return base64.b64encode(cipher.encrypt(plaintext))
-
-    def decrypt(self, key, ciphertext):
-        cipher = XOR.new(key)
-        return cipher.decrypt(base64.b64decode(ciphertext))
 
     def get_projects_from_repos_list(self, projects, c_repos):
         c_projects = []
@@ -111,7 +102,7 @@ class RootController(object):
     def contributor(self, cid, dfrom=None, dto=None,
                     inc_merge_commit=None,
                     inc_repos_detail=None):
-        cid = self.decrypt(xorkey, cid)
+        cid = utils.decrypt(xorkey, cid)
         if inc_merge_commit != 'on':
             include_merge_commit = False
         else:
@@ -156,7 +147,7 @@ class RootController(object):
             return {'name': name,
                     'gravatar': hashlib.md5(
                         ident['default-email']).hexdigest(),
-                    'cid': self.encrypt(xorkey, cid),
+                    'cid': utils.encrypt(xorkey, cid),
                     'period': period,
                     'empty': True}
 
@@ -231,7 +222,7 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(duration) -
                              datetime.fromtimestamp(0)),
                 'ttl_average': ttl_average,
-                'cid': self.encrypt(xorkey, cid),
+                'cid': utils.encrypt(xorkey, cid),
                 'empty': False}
 
     def top_authors_sanitize(self, top_authors, commits, top=100000):
@@ -249,7 +240,7 @@ class RootController(object):
         raw_names = {}
         for email, v in sanitized.items():
             top_authors_s.append(
-                {'cid': self.encrypt(xorkey, v[2]),
+                {'cid': utils.encrypt(xorkey, v[2]),
                  'email': email,
                  'gravatar': hashlib.md5(email).hexdigest(),
                  'amount': int(v[0]),
@@ -383,7 +374,7 @@ class RootController(object):
             p_filter = []
 
         if cid:
-            cid = self.decrypt(xorkey, cid)
+            cid = utils.decrypt(xorkey, cid)
             mails = self.get_mail_filter(idents, cid)
         else:
             mails = []
@@ -512,8 +503,8 @@ class RootController(object):
             if len(cmt['commit_msg']) > 80:
                 cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
             # Add cid and ccid
-            cmt['cid'] = self.encrypt(xorkey, cmt['author_email'])
-            cmt['ccid'] = self.encrypt(xorkey, cmt['committer_email'])
+            cmt['cid'] = utils.encrypt(xorkey, cmt['author_email'])
+            cmt['ccid'] = utils.encrypt(xorkey, cmt['committer_email'])
             # Remove email details
             del cmt['author_email']
             del cmt['committer_email']
