@@ -44,17 +44,17 @@ class RootController(object):
     def index(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
-        tags = projects_index.tags.keys()
+        tags = projects_index.get_tags()
         return {'projects': projects,
-                'tags': tags}
+                'tags': tags.keys()}
 
     @expose('json')
     def projects(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
-        tags = projects_index.tags.keys()
+        tags = projects_index.get_tags()
         return {'projects': projects,
-                'tags': tags}
+                'tags': tags.keys()}
 
     @expose(template='contributors.html')
     def contributors(self, search=""):
