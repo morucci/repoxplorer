@@ -20,118 +20,306 @@ import logging
 
 from pecan import conf
 
+from jsonschema import validate as schema_validate
+
+from repoxplorer.index.yamlbackend import YAMLBackend
+
 logger = logging.getLogger(__name__)
 
 
-class NoTemplateFound(Exception):
-    pass
+project_templates_schema = """
+$schema: http://json-schema.org/draft-04/schema
+
+definitions:
+  release:
+    type: object
+    additionalProperties: false
+    required:
+    - name
+    - date
+    properties:
+      name:
+        type: string
+      date:
+        type: string
+
+type: object
+properties:
+  project-templates:
+    type: object
+    additionalProperties: false
+    patternProperties:
+      ^[a-zA-Z0-9_-]+$:
+        type: object
+        additionalProperties: false
+        required:
+        - uri
+        - branches
+        properties:
+          uri:
+            type: string
+          gitweb:
+            type: string
+          branches:
+            type: array
+            items:
+              type: string
+              minItems: 1
+          tags:
+            type: array
+            items:
+              type: string
+          parsers:
+            type: array
+            items:
+              type: string
+          releases:
+            type: array
+            items:
+              $ref: "#/definitions/release"
+"""
+
+
+project_templates_example = """
+templates:
+  default:
+    uri: https://github.com/%(name)s
+    branches:
+    - master
+    - stable/mitaka
+    - stable/newton
+    - stable/ocata
+    gitweb: https://github.com/%(name)s/commit/%%(sha)s
+    parsers:
+    - .*(blueprint) ([^ .]+).*
+    releases:
+    - name: 1.0
+      date: 12/20/2016
+    - name: 2.0
+      date: 12/31/2016
+    tags:
+    - openstack
+    - language:python
+    - type:cloud
+"""
+
+projects_schema = """
+$schema: http://json-schema.org/draft-04/schema
+
+type: object
+properties:
+  projects:
+    type: object
+    additionalProperties: false
+    patternProperties:
+      ^[a-zA-Z0-9_/-]+$:
+        type: object
+        additionalProperties: false
+        patternProperties:
+          ^[a-zA-Z0-9_/-]+$:
+            type: object
+            additionalProperties: false
+            required:
+            - template
+            properties:
+              template:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+"""
+
+projects_example = """
+projects:
+  Barbican:
+    openstack/barbican:
+      template: default
+    openstack/python-barbicanclient:
+      template: default
+      tags:
+      - client
+      - language:python
+  Swift:
+    openstack/swift:
+      template: default
+    openstack/python-swiftclient:
+      template: default
+"""
 
 
 class Projects(object):
-    def __init__(self, projects_file_path=None):
-        if projects_file_path:
-            path = projects_file_path
-        else:
-            path = conf.projects_file_path
-        try:
-            self.data = yaml.load(file(path))
-        except Exception, e:
-            logger.error(
-                'Unable to read projects.yaml (%s). Default is empty.' % e)
-            self.data = []
+    """ This class manages definition of projects
+    """
+    def __init__(self, db_path=None, db_default_file=None):
         self.projects = {}
+        self.yback = YAMLBackend(
+            db_path or conf.db_path,
+            db_default_file=db_default_file or conf.get('db_default_file'))
+        self.yback.load_db()
+        self.default_data, self.data = self.yback.get_data()
+        self._merge()
+        self.enriched = False
         self.gitweb_lookup = {}
-        self.projects_raw = {}
-        self.templates_raw = {}
-        self.tags = {}
-        if self.data:
-            self.projects_raw = self.data['projects']
-            self.templates_raw = self.data['templates']
-        for pid, details in self.projects_raw.items():
-            self.projects[pid] = []
-            for repo in details:
-                if 'template' in repo:
-                    try:
-                        tmpl = self.find_template_by_name(repo['template'])
-                    except NoTemplateFound:
-                        logger.error(
-                            "%s requests a non exisiting template %s" % (
-                                repo['name'], repo['template']))
-                        continue
-                    del repo['template']
-                    for k in repo.keys():
-                        # Remove already existing key from the template
-                        # to prevent deletion of special configuration
-                        if k in tmpl.keys():
-                            del tmpl[k]
-                    repo.update(tmpl)
-                    repo_computed = {}
-                    for k, v in repo.items():
-                        if isinstance(v, str):
-                            repo_computed[k] = v % repo
-                        else:
-                            repo_computed[k] = v
-                    repo = repo_computed
-                self.projects[pid].append(repo)
-                if 'releases' in repo:
-                    try:
-                        assert isinstance(repo['releases'], list)
-                        rels = []
-                        for release in repo['releases']:
-                            assert isinstance(release, dict)
-                            assert len(release) == 2
-                            assert 'name' in release
-                            assert 'date' in release
-                            epoch = time.mktime(
-                                time.strptime(release['date'], "%m/%d/%Y"))
-                            rels.append({'name': release['name'],
-                                         'date': epoch,
-                                         'repo': pid})
-                    except Exception, e:
-                        logger.error(
-                            "%s unable to parse releases dates (%s)" % (
-                                repo['name'], e))
-                    repo['releases'] = rels
-                if 'gitweb' in repo:
-                    simple_uri = '%s:%s' % (repo['uri'], repo['name'])
-                    self.gitweb_lookup[simple_uri] = repo['gitweb']
-                if 'tags' in repo:
-                    assert isinstance(repo['tags'], list)
-                    for tag in repo['tags']:
-                        self.tags.setdefault(tag, [])
-                        self.tags[tag].append(repo)
-                else:
+
+    def _merge(self):
+        """ Merge self.data and inherites from default_data
+        """
+        merged_templates = {}
+        merged_projects = {}
+        for d in self.data:
+            templates = d.get('project-templates', {})
+            projects = d.get('projects', {})
+            merged_templates.update(copy.copy(templates))
+            merged_projects.update(copy.copy(projects))
+
+        self.templates = {}
+        self.projects = {}
+        if self.default_data:
+            self.templates = copy.copy(
+                self.default_data.get('project-templates', {}))
+            self.projects = copy.copy(
+                self.default_data.get('projects', {}))
+
+        self.templates.update(merged_templates)
+        self.projects.update(merged_projects)
+
+    def _enrich_projects(self):
+        # First resolve templates references
+        for pid, repos in self.projects.items():
+            for rid, repo in repos.items():
+                # Save tags mentioned for a repo
+                tags = []
+                if 'tags' in repo and repo['tags']:
+                    tags = copy.copy(repo['tags'])
+                # Apply the template
+                repo.update(copy.deepcopy(
+                    self.templates[repo['template']]))
+                del repo['template']
+                # Process uri and gitweb string
+                for key in ('uri', 'gitweb'):
+                    repo[key] = repo[key] % {'name': rid}
+                # Re-apply saved tags
+                if 'tags' not in repo:
                     repo['tags'] = []
+                repo['tags'].extend(tags)
+                # Apply default values
                 if 'parsers' not in repo:
                     repo['parsers'] = []
+                if 'releases' not in repo:
+                    repo['releases'] = []
+                # Transform date to epoch
+                for release in repo['releases']:
+                    epoch = time.mktime(
+                        time.strptime(release['date'], "%m/%d/%Y"))
+                    release['date'] = epoch
+                # Init a lookup table for gitweb links
+                if 'gitweb' in repo:
+                    su = '%s:%s' % (repo['uri'], rid)
+                    self.gitweb_lookup[su] = repo['gitweb']
+        self.enriched = True
 
-    def find_template_by_name(self, name):
-        try:
-            tmpl = [t for t in self.templates_raw
-                    if t['name'] == name][0]
-        except KeyError:
-            raise NoTemplateFound
-        ret = copy.deepcopy(tmpl)
-        del ret['name']
-        return ret
+    def _check_basic(self, key, schema, identifier):
+        """ Verify schema and no data duplicated
+        """
+        issues = []
+        ids = set()
+        for d in self.data:
+            data = d.get(key, {})
+            try:
+                schema_validate({key: data},
+                                yaml.load(schema))
+            except Exception, e:
+                issues.append(e.message)
+            duplicated = set(data.keys()) & ids
+            if duplicated:
+                issues.append("%s IDs [%s,] are duplicated" % (
+                              identifier, ",".join(duplicated)))
+            ids.update(set(data.keys()))
+        return ids, issues
 
-    def get_projects_unf(self):
+    def _validate_templates(self):
+        """ Validate self.data consistencies for templates
+        """
+        ids, issues = self._check_basic('project-templates',
+                                        project_templates_schema,
+                                        'Project template')
+        if issues:
+            return ids, issues
+        # Check uncovered by the schema validator
+        for d in self.data:
+            templates = d.get('project-templates', {})
+            for tid, templates in templates.items():
+                if 'releases' in templates:
+                    for r in templates['releases']:
+                        try:
+                            time.mktime(
+                                time.strptime(r['date'], "%m/%d/%Y"))
+                        except Exception:
+                            issues.append("Wrong date format %s defined "
+                                          "in template %s" % (r['date'], tid))
+        return ids, issues
+
+    def _validate_projects(self, tids):
+        """ Validate self.data consistencies for projects
+        """
+        _, issues = self._check_basic('projects',
+                                      projects_schema,
+                                      'Project')
+        if issues:
+            return issues
+        # Check template dependencies
+        for d in self.data:
+            projects = d.get('projects', {})
+            for pid, project in projects.items():
+                for rid, repo in project.items():
+                    template = repo['template']
+                    if template not in tids:
+                        issues.append("Project ID '%s' Repo ID '%s' "
+                                      "references an unknown template %s" % (
+                                          pid, rid, template))
+        return issues
+
+    def validate(self):
+        validation_issues = []
+        tids, issues = self._validate_templates()
+        validation_issues.extend(issues)
+        issues = self._validate_projects(tids)
+        validation_issues.extend(issues)
+        return validation_issues
+
+    def get_projects_raw(self):
+        if not self.enriched:
+            self._enrich_projects()
         return self.projects
 
     def get_projects(self):
-        projects = {}
-        for pid, details in self.projects.items():
-            projects[pid] = []
-            for repo in details:
+        if not self.enriched:
+            self._enrich_projects()
+        flatten = {}
+        # This transforms repos into refs by listing
+        # their branches. A project is now
+        # a list of refs
+        for pid, repos in self.projects.items():
+            flatten[pid] = []
+            for rid, repo in repos.items():
                 for branch in repo['branches']:
-                    crepo = copy.deepcopy(repo)
-                    crepo['branch'] = branch
-                    del crepo['branches']
-                    projects[pid].append(crepo)
-        return projects
+                    r = {}
+                    r.update(copy.deepcopy(repo))
+                    r['name'] = rid
+                    r['branch'] = branch
+                    del r['branches']
+                    flatten[pid].append(r)
+        return flatten
+
+    def get_tags(self):
+        projects = self.get_projects()
+        tags = {}
+        for _, refs in projects.items():
+            for ref in refs:
+                for tag in ref.get('tags', []):
+                    tags.setdefault(tag, []).append(ref)
+        return tags
 
     def get_gitweb_link(self, simple_uri):
         return self.gitweb_lookup.get(simple_uri, "")
-
-    def get_repos_by_tag(self, tag):
-        return self.tags.get(tag, [])

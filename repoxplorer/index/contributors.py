@@ -159,14 +159,11 @@ class Contributors(object):
     """ This class manages definition of contributors as
     individual and group level
     """
-    def __init__(self, db_path=None):
-        if db_path:
-            path = db_path
-        else:
-            path = conf.db_path
+    def __init__(self, db_path=None, db_default_file=None):
         self.contributors = {}
         self.yback = YAMLBackend(
-            path, db_default_file=conf.db_default_file)
+            db_path or conf.db_path,
+            db_default_file=db_default_file or conf.get('db_default_file'))
         self.yback.load_db()
         self.default_data, self.data = self.yback.get_data()
         self._merge()
