@@ -6,3 +6,4 @@ dulwich
 PyYAML
 pycrypto
 jsonschema
+pytz
