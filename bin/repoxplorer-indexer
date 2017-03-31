@@ -44,11 +44,13 @@ args = parser.parse_args()
 
 
 def process():
-    prjs = projects.Projects(conf.projects_file_path).get_projects_unf()
+    projects_index = projects.Projects(conf.db_path,
+                                       conf.db_default_file)
+    prjs = projects_index.get_projects_raw()
     for pid, repos in prjs.items():
         logger.info("Start indexing project id %s ..." % pid)
-        for repo in repos:
-            r = indexer.RepoIndexer(repo['name'],
+        for rid, repo in repos.items():
+            r = indexer.RepoIndexer(rid,
                                     repo['uri'],
                                     parsers=repo['parsers'],
                                     config=args.config)
