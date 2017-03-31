@@ -1,86 +1,86 @@
 import os
+import yaml
+import shutil
 import tempfile
+from jsonschema import validate
 from unittest import TestCase
 
-from repoxplorer.index.projects import Projects
+from repoxplorer.index import projects
 
 
 class TestProjects(TestCase):
 
     def setUp(self):
-        self.to_delete = []
+        self.dbs = []
 
     def tearDown(self):
-        map(lambda x: os.unlink(x),
-            self.to_delete)
+        for db in self.dbs:
+            if os.path.isdir(db):
+                shutil.rmtree(db)
 
-    def create_projects_yaml(self, data):
-        d, path = tempfile.mkstemp()
-        os.write(d, data)
-        os.close(d)
-        self.to_delete.append(path)
-        return path
+    def create_db(self, files):
+        db = tempfile.mkdtemp()
+        self.dbs.append(db)
+        for filename, content in files.items():
+            file(os.path.join(db, filename), 'w+').write(content)
+        return db
 
-    def test_projects_data_init(self):
-        projects_yaml = """
----
-templates:
-- name: default
-  branches:
-  - master
-  uri: http://gb.com/ok/%(name)s
-  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
+    def test_project_templates_schema(self):
+        validate(yaml.load(projects.project_templates_example),
+                 yaml.load(projects.project_templates_schema))
 
-projects:
-  Barbican:
-  - name: barbican
-    template: default
-    tags:
-      - server
-      - security
-  - name: python-barbicanclient
-    template: default
-    tags:
-      - client
-      - security
-"""
-        path = self.create_projects_yaml(projects_yaml)
-        p = Projects(projects_file_path=path)
-        self.assertIn("Barbican", p.projects)
-        self.assertEqual(len(p.projects['Barbican']), 2)
-        self.assertTrue(len(p.tags['security']), 2)
-        self.assertTrue(len(p.tags['client']), 1)
-        self.assertTrue(len(p.tags['server']), 1)
-        self.assertTrue(len(p.tags.keys()), 3)
+    def test_projects_schema(self):
+        validate(yaml.load(projects.projects_example),
+                 yaml.load(projects.projects_schema))
 
-        projects_yaml = """
-templates:
-- name: default
-  branches:
-   - master
-  uri: http://gb.com/ok/%(name)s
-  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
-  tags:
-    - default_org
+    def test_projects_get(self):
+        f1 = """
+        project-templates:
+          mytemplate:
+            uri: https://bitbucket.com/%(name)s
+            branches:
+            - master
+            gitweb: https://bitbucket.com/%(name)s/commit/%%(sha)s
 
-projects:
-  Barbican:
-  - name: barbican
-    template: default
-    uri: http://test.com/ok/%(name)s
-    gitweb: http://test.com/ok/%(name)s/commit/%%(sha)s
-  - name: python-barbicanclient
-    template: default
-"""
-        path = self.create_projects_yaml(projects_yaml)
-        p = Projects(projects_file_path=path)
-        self.assertIn("Barbican", p.projects)
-        self.assertEqual(len(p.projects['Barbican']), 2)
-        mp1 = [m for m in p.get_projects()['Barbican']
-               if m['name'] == 'barbican'][0]
-        mp2 = [m for m in p.get_projects()['Barbican']
-               if m['name'] == 'python-barbicanclient'][0]
-        self.assertEqual(mp1['uri'], 'http://test.com/ok/barbican')
-        self.assertEqual(mp2['uri'], 'http://gb.com/ok/python-barbicanclient')
-        self.assertTrue(len(p.tags['default_org']), 1)
-        self.assertTrue(len(p.tags.keys()), 1)
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: mytemplate
+            openstack/python-barbicanclient:
+              template: mytemplate
+          Swift:
+            openstack/swift:
+              template: default
+            openstack/python-swiftclient:
+              template: default
+        """
+
+        default = """
+        project-templates:
+          default:
+            uri: https://github.com/%(name)s
+            branches:
+            - master
+            - stable/newton
+            - stable/ocata
+            gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: default
+            openstack/python-barbicanclient:
+              template: default
+          Nova:
+            openstack/nova:
+              template: default
+            openstack/python-novaclient:
+              template: default
+        """
+        files = {'f1.yaml': f1, 'default.yaml': default}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = os.path.join(db,
+                                                        'default.yaml')
+        p = projects.Projects(db_path=db)
+        ret = p.get_projects()
+        print ret
