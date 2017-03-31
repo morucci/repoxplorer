@@ -159,27 +159,27 @@ Edit /etc/repoxplorer/projects.yaml to add projects you want to index.
 
 ```YAML
 ---
-templates:
-- name: default
-  uri: https://github.com/openstack/%(name)s
-  branches:
-  - master
-  - stable/mitaka
-  - stable/newton
-  - stable/ocata
-  gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
+    - master
+    - stable/mitaka
+    - stable/newton
+    - stable/ocata
+    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
 
 projects:
   Barbican:
-  - name: barbican
-    template: default
-  - name: python-barbicanclient
-    template: default
+    barbican:
+      template: default
+    python-barbicanclient:
+      template: default
   Swift:
-  - name: swift
-    template: default
-  - name: python-swiftclient
-    template: default
+    swift:
+      template: default
+    python-swiftclient:
+      template: default
 ```
 
 After a change in this file you can start the Git indexer manually or
@@ -187,22 +187,29 @@ let the indexer daemon reads the file (every minute) and handles changes.
 
 #### Advanced configuration
 
-The branches key of a Git repository definition permits to defines which
+The branches key of a template definition permits to defines which
 branches to index. This key expects a list of branches name.
 
-A list of tags can be given to each Git repositories. This tag notion
+A list of tags can be given to each Git repositories. This tag concept
 should not be considered as Git tags but only as a way to mark
 Git repositories. For example tags like 'documentation', 'librairies',
-packaging, ...) could be considered.
+packaging, ...) could be considered. Tags defined at repositories level
+will be appended to those defined at the template level.
 
 ```YAML
-projects:
-  MyProject:
-  - name: myproject
+project-templates:
+  default:
     uri: https://github.com/openstack/%(name)s
     branches:
-      - master
+    - master
     tags:
+    - openstack
+
+projects:
+  MyProject:
+    myrepo:
+      templates: default
+      tags:
       - language:python
 ```
 
@@ -212,15 +219,19 @@ Release dates with %m/%d/%Y format can be defined and will be merged with
 detected Git tags dates.
 
 ```YAML
-projects:
-  MyProject:
-  - name: myproject
+project-templates:
+  default:
     uri: https://github.com/openstack/%(name)s
     branches:
       - master
     releases:
       - name: 2.0
         date: 12/20/2016
+
+projects:
+  MyProject:
+    myrepo:
+      template: default
 ```
 
 It is also possible to define metadata parsers. Please refer to
@@ -275,14 +286,14 @@ and the first one will be used as the key the second one as
 the value.
 
 ```YAML
-templates:
-- name: default
-  uri: https://github.com/openstack/%(name)s
-  branches:
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
     - master
-  gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
-  parsers:
-  - .*(blueprint) ([^ .]+).*
+    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+    parsers:
+    - .*(blueprint) ([^ .]+).*
 ```
 Custom capturing regexs must be defined prior to the indexation
 of the Git repository it apply.

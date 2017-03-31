@@ -1,86 +1,314 @@
 import os
+import yaml
+import shutil
 import tempfile
+from jsonschema import validate
 from unittest import TestCase
 
-from repoxplorer.index.projects import Projects
+from repoxplorer.index import projects
 
 
 class TestProjects(TestCase):
 
     def setUp(self):
-        self.to_delete = []
+        self.dbs = []
 
     def tearDown(self):
-        map(lambda x: os.unlink(x),
-            self.to_delete)
+        for db in self.dbs:
+            if os.path.isdir(db):
+                shutil.rmtree(db)
 
-    def create_projects_yaml(self, data):
-        d, path = tempfile.mkstemp()
-        os.write(d, data)
-        os.close(d)
-        self.to_delete.append(path)
-        return path
+    def create_db(self, files):
+        db = tempfile.mkdtemp()
+        self.dbs.append(db)
+        for filename, content in files.items():
+            file(os.path.join(db, filename), 'w+').write(content)
+        return db
 
-    def test_projects_data_init(self):
-        projects_yaml = """
----
-templates:
-- name: default
-  branches:
-  - master
-  uri: http://gb.com/ok/%(name)s
-  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
+    def test_project_templates_schema(self):
+        validate(yaml.load(projects.project_templates_example),
+                 yaml.load(projects.project_templates_schema))
 
-projects:
-  Barbican:
-  - name: barbican
-    template: default
-    tags:
-      - server
-      - security
-  - name: python-barbicanclient
-    template: default
-    tags:
-      - client
-      - security
-"""
-        path = self.create_projects_yaml(projects_yaml)
-        p = Projects(projects_file_path=path)
-        self.assertIn("Barbican", p.projects)
-        self.assertEqual(len(p.projects['Barbican']), 2)
-        self.assertTrue(len(p.tags['security']), 2)
-        self.assertTrue(len(p.tags['client']), 1)
-        self.assertTrue(len(p.tags['server']), 1)
-        self.assertTrue(len(p.tags.keys()), 3)
+    def test_projects_schema(self):
+        validate(yaml.load(projects.projects_example),
+                 yaml.load(projects.projects_schema))
 
-        projects_yaml = """
-templates:
-- name: default
-  branches:
-   - master
-  uri: http://gb.com/ok/%(name)s
-  gitweb: http://gb.com/ok/%(name)s/commit/%%(sha)s
-  tags:
-    - default_org
+    def test_get_projects_raw(self):
+        f1 = """
+        project-templates:
+          mytemplate:
+            uri: https://bitbucket.com/%(name)s
+            branches:
+            - master
+            gitweb: https://bitbucket.com/%(name)s/commit/%%(sha)s
+            releases:
+            - name: 1.0
+              date: 12/20/2016
+            - name: 2.0
+              date: 12/31/2016
 
-projects:
-  Barbican:
-  - name: barbican
-    template: default
-    uri: http://test.com/ok/%(name)s
-    gitweb: http://test.com/ok/%(name)s/commit/%%(sha)s
-  - name: python-barbicanclient
-    template: default
-"""
-        path = self.create_projects_yaml(projects_yaml)
-        p = Projects(projects_file_path=path)
-        self.assertIn("Barbican", p.projects)
-        self.assertEqual(len(p.projects['Barbican']), 2)
-        mp1 = [m for m in p.get_projects()['Barbican']
-               if m['name'] == 'barbican'][0]
-        mp2 = [m for m in p.get_projects()['Barbican']
-               if m['name'] == 'python-barbicanclient'][0]
-        self.assertEqual(mp1['uri'], 'http://test.com/ok/barbican')
-        self.assertEqual(mp2['uri'], 'http://gb.com/ok/python-barbicanclient')
-        self.assertTrue(len(p.tags['default_org']), 1)
-        self.assertTrue(len(p.tags.keys()), 1)
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: mytemplate
+            openstack/python-barbicanclient:
+              template: mytemplate
+          Swift:
+            openstack/swift:
+              template: default
+            openstack/python-swiftclient:
+              template: default
+        """
+
+        default = """
+        project-templates:
+          default:
+            uri: https://github.com/%(name)s
+            branches:
+            - master
+            - stable/newton
+            - stable/ocata
+            gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+            tags:
+            - openstack
+            - language:python
+            - type:cloud
+            parsers:
+            - .*(blueprint) ([^ .]+).*
+
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: default
+            openstack/python-barbicanclient:
+              template: default
+          Nova:
+            openstack/nova:
+              template: default
+              tags:
+              - openstack:core
+            openstack/python-novaclient:
+              template: default
+        """
+        files = {'f1.yaml': f1, 'default.yaml': default}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = os.path.join(db,
+                                                        'default.yaml')
+        p = projects.Projects(db_path=db)
+        ret = p.get_projects_raw()
+        expected_ret = {
+            'Nova': {
+                'openstack/python-novaclient': {
+                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'branches': ['master', 'stable/newton', 'stable/ocata'],
+                    'parsers': ['.*(blueprint) ([^ .]+).*'],
+                    'gitweb': 'https://github.com/openstack/openstack/'
+                              'python-novaclient/commit/%(sha)s',
+                    'releases': [],
+                    'uri': 'https://github.com/openstack/python-novaclient'},
+                'openstack/nova': {
+                    'tags': ['openstack', 'language:python',
+                             'type:cloud', 'openstack:core'],
+                    'branches': ['master', 'stable/newton', 'stable/ocata'],
+                    'parsers': ['.*(blueprint) ([^ .]+).*'],
+                    'gitweb': 'https://github.com/openstack/openstack/'
+                              'nova/commit/%(sha)s',
+                    'releases': [],
+                    'uri': 'https://github.com/openstack/nova'}},
+            'Swift': {
+                'openstack/swift': {
+                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'branches': ['master', 'stable/newton', 'stable/ocata'],
+                    'parsers': ['.*(blueprint) ([^ .]+).*'],
+                    'gitweb': 'https://github.com/openstack/openstack/'
+                              'swift/commit/%(sha)s',
+                    'releases': [],
+                    'uri': 'https://github.com/openstack/swift'},
+                'openstack/python-swiftclient': {
+                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'branches': ['master', 'stable/newton', 'stable/ocata'],
+                    'parsers': ['.*(blueprint) ([^ .]+).*'],
+                    'gitweb': 'https://github.com/openstack/openstack/'
+                              'python-swiftclient/commit/%(sha)s',
+                    'releases': [],
+                    'uri': 'https://github.com/openstack/python-swiftclient'}},
+            'Barbican': {
+                'openstack/barbican': {
+                    'branches': ['master'],
+                    'parsers': [],
+                    'gitweb': 'https://bitbucket.com/openstack/'
+                              'barbican/commit/%(sha)s',
+                    'uri': 'https://bitbucket.com/openstack/barbican',
+                    'tags': [],
+                    'releases': [
+                        {'name': 1.0, 'date': 1482188400.0},
+                        {'name': 2.0, 'date': 1483138800.0}]},
+                'openstack/python-barbicanclient': {
+                    'branches': ['master'],
+                    'parsers': [],
+                    'gitweb': 'https://bitbucket.com/openstack/'
+                              'python-barbicanclient/commit/%(sha)s',
+                    'uri': 'https://bitbucket.com/openstack/'
+                           'python-barbicanclient',
+                    'tags': [],
+                    'releases': [
+                        {'name': 1.0, 'date': 1482188400.0},
+                        {'name': 2.0, 'date': 1483138800.0}]}}}
+        self.assertDictEqual(expected_ret, ret)
+
+    def test_projects_validate(self):
+        f1 = """
+        project-templates:
+          default:
+            uri: https://github.com/%(name)s
+            branches:
+            - master
+            gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+        """
+
+        f2 = """
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: mytemplate
+        """
+        files = {'f1.yaml': f1, 'f2.yaml': f2}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        issues = p.validate()
+        self.assertIn("Project ID 'Barbican' Repo ID 'openstack/barbican' "
+                      "references an unknown template mytemplate",
+                      issues)
+        self.assertEqual(len(issues), 1)
+
+        f1 = """
+        project-templates:
+          default:
+            uri: https://github.com/%(name)s
+            branches:
+            - master
+            gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+            releases:
+            - name: "1.0"
+              date: wrong
+        """
+
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        issues = p.validate()
+        self.assertIn('Wrong date format wrong defined in template default',
+                      issues)
+        self.assertEqual(len(issues), 1)
+
+        f1 = """
+        project-templates:
+          default:
+            uri: https://github.com/%(name)s
+            gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+        """
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        issues = p.validate()
+        self.assertIn("'branches' is a required property",
+                      issues)
+        self.assertEqual(len(issues), 1)
+
+        f1 = """
+        projects:
+          Barbican:
+            openstack/barbican:
+              uri: https://github.com/%(name)s
+              template: default
+        """
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        issues = p.validate()
+        self.assertIn("Additional properties are not allowed"
+                      " ('uri' was unexpected)",
+                      issues)
+        self.assertEqual(len(issues), 1)
+
+    def test_get_projects(self):
+        f1 = """
+        project-templates:
+          default:
+            uri: https://bitbucket.com/%(name)s
+            branches:
+            - master
+            - ocata
+            gitweb: https://bitbucket.com/%(name)s/commit/%%(sha)s
+
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: default
+            openstack/python-barbicanclient:
+              template: default
+          Swift:
+            openstack/swift:
+              template: default
+            openstack/python-swiftclient:
+              template: default
+        """
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        self.assertEqual(len(p.get_projects()['Swift']), 4)
+        self.assertEqual(len(p.get_projects()['Barbican']), 4)
+
+    def test_get_tags(self):
+        f1 = """
+        project-templates:
+          default:
+            uri: https://bitbucket.com/%(name)s
+            branches:
+            - master
+            - ocata
+            gitweb: https://bitbucket.com/%(name)s/commit/%%(sha)s
+            tags:
+            - openstack
+            - cloud
+
+        projects:
+          Barbican:
+            openstack/barbican:
+              template: default
+              tags:
+              - credentials
+              - server
+            openstack/python-barbicanclient:
+              template: default
+              tags:
+              - credentials
+              - client
+          Swift:
+            openstack/swift:
+              template: default
+              tags:
+              - storage
+              - server
+            openstack/python-swiftclient:
+              template: default
+              tags:
+              - storage
+              - client
+        """
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        projects.conf['db_default_file'] = None
+        p = projects.Projects(db_path=db)
+        tags = p.get_tags()
+        self.assertEqual(len(tags['credentials']), 4)
+        self.assertEqual(len(tags['storage']), 4)
+        self.assertEqual(len(tags.keys()), 6)
+        for tag in ('openstack', 'cloud', 'client', 'server',
+                    'credentials', 'storage'):
+            self.assertIn(tag, tags.keys())
