@@ -254,11 +254,11 @@ Edit /etc/repoxplorer/idents.yaml
 identities:
   0000-0000:
     name: John Doe
-    default-email: john.doe@server
+    default-email: john.doe@server.com
     emails:
-      john.doe@server:
+      john.doe@server.com:
         groups: {}
-      jdoe@server:
+      jdoe@server.com:
         groups: {}
 ```
 

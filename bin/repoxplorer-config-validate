@@ -1,0 +1,52 @@
+#!/usr/bin/python
+
+# Copyright 2016,2017 Fabien Boucher
+# Copyright 2016,2017 Red Hat
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import imp
+import sys
+import argparse
+
+from repoxplorer.index import projects
+from repoxplorer.index import contributors
+
+config = '%s/local/share/repoxplorer/config.py' % sys.prefix
+
+parser = argparse.ArgumentParser(description='RepoXplorer config validator')
+parser.add_argument(
+    '--config', default=config,
+    help='Path to the repoXplorer configuration file')
+
+args = parser.parse_args()
+
+
+def validate():
+    projects_index = projects.Projects(conf.db_path)
+    issues = projects_index.validate()
+    contributors_index = contributors.Contributors(conf.db_path)
+    issues.extend(contributors_index.validate())
+    for issue in issues:
+        print issue
+    return len(issues)
+
+
+if __name__ == "__main__":
+    conf = imp.load_source('config', args.config)
+    errs = validate()
+    if errs:
+        print "Corrupted configuration exit !"
+        sys.exit(errs)
+    else:
+        print "Configuration OK."
