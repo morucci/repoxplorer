@@ -239,8 +239,10 @@ class Contributors(object):
         return self.groups
 
     def validate(self):
-        self.validate_idents()
-        self.validate_groups()
+        validation_issues = []
+        validation_issues.extend(self.validate_idents())
+        validation_issues.extend(self.validate_groups())
+        return validation_issues
 
     def get_ident_by_email(self, email):
         idents = self.get_idents()
