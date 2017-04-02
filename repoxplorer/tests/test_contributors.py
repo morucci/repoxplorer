@@ -23,6 +23,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import contributors
+from repoxplorer import index
 
 
 class TestContributors(TestCase):
@@ -109,8 +110,8 @@ identities:
 """
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'default.yaml': default}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = os.path.join(db,
-                                                            'default.yaml')
+        index.conf['db_default_file'] = os.path.join(db,
+                                                     'default.yaml')
         p = contributors.Contributors(db_path=db)
         ret = p.get_idents()
         self.assertDictEqual(
@@ -216,9 +217,9 @@ identities:
 
         files = {'f1.yaml': f1, 'f2.yaml': f2}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_idents()
+        validation_logs = p._validate_idents()
         self.assertEqual(len(validation_logs), 0)
 
         f3 = """
@@ -233,9 +234,9 @@ identities:
 
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'f3.yaml': f3}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_idents()
+        validation_logs = p._validate_idents()
         self.assertEqual(validation_logs[0],
                          "'isthisanemail?' is not of type 'object'")
         self.assertEqual(len(validation_logs), 1)
@@ -253,9 +254,9 @@ identities:
 
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'f3.yaml': f3}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_idents()
+        validation_logs = p._validate_idents()
         self.assertEqual(validation_logs[0],
                          "Identity IDs [1234-1237,] are duplicated")
         self.assertEqual(len(validation_logs), 1)
@@ -273,9 +274,9 @@ identities:
 
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'f3.yaml': f3}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_idents()
+        validation_logs = p._validate_idents()
         self.assertEqual(validation_logs[0],
                          "Identity 1234-1238 default an unknown default-email")
         self.assertEqual(len(validation_logs), 1)
@@ -305,9 +306,9 @@ groups:
 
         files = {'f1.yaml': f1, 'f2.yaml': f2}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_groups()
+        validation_logs = p._validate_groups()
         self.assertEqual(len(validation_logs), 0)
 
         f3 = """
@@ -319,9 +320,9 @@ groups:
 """
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'f3.yaml': f3}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_groups()
+        validation_logs = p._validate_groups()
         self.assertEqual(validation_logs[0],
                          "'wrong format' is not of type 'object'")
         self.assertEqual(len(validation_logs), 1)
@@ -338,9 +339,9 @@ groups:
 """
         files = {'f1.yaml': f1, 'f2.yaml': f2, 'f3.yaml': f3}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = contributors.Contributors(db_path=db)
-        validation_logs = p.validate_groups()
+        validation_logs = p._validate_groups()
         self.assertEqual(validation_logs[0],
                          "Group IDs [acme-11,] are duplicated")
         self.assertEqual(len(validation_logs), 1)
@@ -374,8 +375,8 @@ groups:
 """
         files = {'f1.yaml': f1, 'default.yaml': default}
         db = self.create_db(files)
-        contributors.conf['db_default_file'] = os.path.join(db,
-                                                            'default.yaml')
+        index.conf['db_default_file'] = os.path.join(db,
+                                                     'default.yaml')
         p = contributors.Contributors(db_path=db)
         ret = p.get_groups()
         self.assertDictEqual(
@@ -396,7 +397,7 @@ groups:
              })
 
     def test_get_ident_by_email(self):
-        with patch.object(contributors.YAMLBackend, 'load_db'):
+        with patch.object(index.YAMLBackend, 'load_db'):
             with patch.object(contributors.Contributors, 'get_idents') as gi:
                 gi.return_value = {
                     '1234-1235': {
@@ -421,7 +422,7 @@ groups:
                 self.assertEqual(cid, 'shimajiro@domain.com')
 
     def test_get_ident_by_id(self):
-        with patch.object(contributors.YAMLBackend, 'load_db'):
+        with patch.object(index.YAMLBackend, 'load_db'):
             with patch.object(contributors.Contributors, 'get_idents') as gi:
                 gi.return_value = {
                     '1234-1235': {

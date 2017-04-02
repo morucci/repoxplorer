@@ -13,17 +13,14 @@
 #  limitations under the License.
 
 
-import yaml
 import copy
 import pytz
 import logging
 
-from pecan import conf
 
+from repoxplorer.index import YAMLDefinition
 from datetime import datetime
-from jsonschema import validate as schema_validate
 
-from repoxplorer.index.yamlbackend import YAMLBackend
 
 logger = logging.getLogger(__name__)
 
@@ -149,17 +146,11 @@ projects:
 """
 
 
-class Projects(object):
+class Projects(YAMLDefinition):
     """ This class manages definition of projects
     """
     def __init__(self, db_path=None, db_default_file=None):
-        self.projects = {}
-        self.yback = YAMLBackend(
-            db_path or conf.db_path,
-            db_default_file=db_default_file or conf.get('db_default_file'))
-        self.yback.load_db()
-        self.default_data, self.data = self.yback.get_data()
-        self._merge()
+        YAMLDefinition.__init__(self, db_path, db_default_file)
         self.enriched = False
         self.gitweb_lookup = {}
 
@@ -221,25 +212,6 @@ class Projects(object):
                     su = '%s:%s' % (repo['uri'], rid)
                     self.gitweb_lookup[su] = repo['gitweb']
         self.enriched = True
-
-    def _check_basic(self, key, schema, identifier):
-        """ Verify schema and no data duplicated
-        """
-        issues = []
-        ids = set()
-        for d in self.data:
-            data = d.get(key, {})
-            try:
-                schema_validate({key: data},
-                                yaml.load(schema))
-            except Exception, e:
-                issues.append(e.message)
-            duplicated = set(data.keys()) & ids
-            if duplicated:
-                issues.append("%s IDs [%s,] are duplicated" % (
-                              identifier, ",".join(duplicated)))
-            ids.update(set(data.keys()))
-        return ids, issues
 
     def _validate_templates(self):
         """ Validate self.data consistencies for templates

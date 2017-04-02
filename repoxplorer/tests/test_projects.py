@@ -6,6 +6,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import projects
+from repoxplorer import index
 
 
 class TestProjects(TestCase):
@@ -93,8 +94,8 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1, 'default.yaml': default}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = os.path.join(db,
-                                                        'default.yaml')
+        index.conf['db_default_file'] = os.path.join(db,
+                                                     'default.yaml')
         p = projects.Projects(db_path=db)
         ret = p.get_projects_raw()
         expected_ret = {
@@ -175,7 +176,7 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1, 'f2.yaml': f2}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         issues = p.validate()
         self.assertIn("Project ID 'Barbican' Repo ID 'openstack/barbican' "
@@ -197,7 +198,7 @@ class TestProjects(TestCase):
 
         files = {'f1.yaml': f1}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         issues = p.validate()
         self.assertIn('Wrong date format wrong defined in template default',
@@ -212,7 +213,7 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         issues = p.validate()
         self.assertIn("'branches' is a required property",
@@ -228,7 +229,7 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         issues = p.validate()
         self.assertIn("Additional properties are not allowed"
@@ -260,7 +261,7 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         self.assertEqual(len(p.get_projects()['Swift']), 4)
         self.assertEqual(len(p.get_projects()['Barbican']), 4)
@@ -304,7 +305,7 @@ class TestProjects(TestCase):
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
-        projects.conf['db_default_file'] = None
+        index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         tags = p.get_tags()
         self.assertEqual(len(tags['credentials']), 4)

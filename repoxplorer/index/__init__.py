@@ -14,10 +14,14 @@
 
 
 import time
+import yaml
 
 from pecan import conf
 
 from elasticsearch import client
+from jsonschema import validate as schema_validate
+
+from repoxplorer.index.yamlbackend import YAMLBackend
 
 
 class Connector(object):
@@ -38,3 +42,32 @@ class Connector(object):
             self.ic.create(index=self.index)
             # Give some time to have the index fully created
             time.sleep(1)
+
+
+class YAMLDefinition(object):
+    def __init__(self, db_path=None, db_default_file=None):
+        self.yback = YAMLBackend(
+            db_path or conf.db_path,
+            db_default_file=db_default_file or conf.get('db_default_file'))
+        self.yback.load_db()
+        self.default_data, self.data = self.yback.get_data()
+        self._merge()
+
+    def _check_basic(self, key, schema, identifier):
+        """ Verify schema and no data duplicated
+        """
+        issues = []
+        ids = set()
+        for d in self.data:
+            data = d.get(key, {})
+            try:
+                schema_validate({key: data},
+                                yaml.load(schema))
+            except Exception, e:
+                issues.append(e.message)
+            duplicated = set(data.keys()) & ids
+            if duplicated:
+                issues.append("%s IDs [%s,] are duplicated" % (
+                              identifier, ",".join(duplicated)))
+            ids.update(set(data.keys()))
+        return ids, issues

@@ -14,15 +14,10 @@
 #  limitations under the License.
 
 
-import yaml
 import copy
 import logging
 
-from pecan import conf
-
-from jsonschema import validate as schema_validate
-
-from repoxplorer.index.yamlbackend import YAMLBackend
+from repoxplorer.index import YAMLDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -155,18 +150,12 @@ groups:
 """
 
 
-class Contributors(object):
+class Contributors(YAMLDefinition):
     """ This class manages definition of contributors as
     individual and group level
     """
     def __init__(self, db_path=None, db_default_file=None):
-        self.contributors = {}
-        self.yback = YAMLBackend(
-            db_path or conf.db_path,
-            db_default_file=db_default_file or conf.get('db_default_file'))
-        self.yback.load_db()
-        self.default_data, self.data = self.yback.get_data()
-        self._merge()
+        YAMLDefinition.__init__(self, db_path, db_default_file)
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -188,48 +177,29 @@ class Contributors(object):
         self.idents.update(merged_idents)
         self.groups.update(merged_groups)
 
-    def validate_idents(self):
+    def _validate_idents(self):
         """ Validate self.data consistencies for identities
         """
-        issues = []
-        ident_ids = set()
+        _, issues = self._check_basic('identities',
+                                      contributors_schema,
+                                      'Identity')
+        if issues:
+            return issues
+        # Check uncovered by the schema validator
         for d in self.data:
             idents = d.get('identities', {})
-            try:
-                schema_validate({'identities': idents},
-                                yaml.load(contributors_schema))
-            except Exception, e:
-                issues.append(e.message)
-                # Schema is wrong pass the rest of the check
-                continue
-            duplicated = set(idents.keys()) & ident_ids
-            if duplicated:
-                issues.append("Identity IDs [%s,] are duplicated" % (
-                              ",".join(duplicated)))
-            ident_ids.update(set(idents.keys()))
             for iid, id_data in idents.items():
                 if (id_data['default-email'] not in id_data['emails'].keys()):
                     issues.append("Identity %s default an unknown "
                                   "default-email" % iid)
         return issues
 
-    def validate_groups(self):
+    def _validate_groups(self):
         """ Validate self.data consistencies for groups
         """
-        issues = []
-        group_ids = set()
-        for d in self.data:
-            groups = d.get('groups', {})
-            try:
-                schema_validate({'groups': groups},
-                                yaml.load(groups_schema))
-            except Exception, e:
-                issues.append(e.message)
-            duplicated = set(groups.keys()) & group_ids
-            if duplicated:
-                issues.append("Group IDs [%s,] are duplicated" % (
-                              ",".join(duplicated)))
-            group_ids.update(set(groups.keys()))
+        _, issues = self._check_basic('groups',
+                                      groups_schema,
+                                      'Group')
         return issues
 
     def get_idents(self):
@@ -240,8 +210,8 @@ class Contributors(object):
 
     def validate(self):
         validation_issues = []
-        validation_issues.extend(self.validate_idents())
-        validation_issues.extend(self.validate_groups())
+        validation_issues.extend(self._validate_idents())
+        validation_issues.extend(self._validate_groups())
         return validation_issues
 
     def get_ident_by_email(self, email):
