@@ -14,11 +14,11 @@
 
 
 import copy
-import pytz
 import logging
 
 
 from repoxplorer.index import YAMLDefinition
+from repoxplorer.index import date2epoch
 from datetime import datetime
 
 
@@ -202,11 +202,7 @@ class Projects(YAMLDefinition):
                     repo['releases'] = []
                 # Transform date to epoch
                 for release in repo['releases']:
-                    d = datetime.strptime(release['date'], "%m/%d/%Y")
-                    d = d.replace(tzinfo=pytz.utc)
-                    epoch = (d - datetime(1970, 1, 1,
-                                          tzinfo=pytz.utc)).total_seconds()
-                    release['date'] = epoch
+                    release['date'] = date2epoch(release['date'])
                 # Init a lookup table for gitweb links
                 if 'gitweb' in repo:
                     su = '%s:%s' % (repo['uri'], rid)

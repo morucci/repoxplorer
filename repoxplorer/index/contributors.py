@@ -18,6 +18,9 @@ import copy
 import logging
 
 from repoxplorer.index import YAMLDefinition
+from repoxplorer.index import date2epoch
+from datetime import datetime
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +83,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 2016/01/01
-            end-date: 2016/09/01
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -138,8 +141,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 2016/01/01
-        end-date: 2016/09/01
+        begin-date: 01/01/2016
+        end-date: 09/01/2016
       test2@acme.com:
   acme-11:
     description: The group 11 of acme
@@ -156,6 +159,8 @@ class Contributors(YAMLDefinition):
     """
     def __init__(self, db_path=None, db_default_file=None):
         YAMLDefinition.__init__(self, db_path, db_default_file)
+        self.enriched_groups = False
+        self.enriched_idents = False
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -177,6 +182,41 @@ class Contributors(YAMLDefinition):
         self.idents.update(merged_idents)
         self.groups.update(merged_groups)
 
+    def _enrich_groups(self):
+        """ Here we convert provided date to epoch and
+        groups are also populated by by idents defining
+        an ownership to a group
+        """
+        def add_to_group(group, email, details):
+            if group not in self.groups.keys():
+                return
+            self.groups[group]['emails'][email] = details
+        for gid, groups in self.groups.items():
+            for email, data in groups['emails'].items():
+                if not data:
+                    continue
+                for key in ('begin-date', 'end-date'):
+                    if key in data:
+                        data[key] = date2epoch(data[key])
+        for iid, id_data in self.idents.items():
+            for email, email_data in id_data['emails'].items():
+                for group, details in email_data.get('groups', {}).items():
+                    add_to_group(group, email, details)
+        self.enriched_groups = True
+
+    def _enrich_idents(self):
+        """ Here we convert provided date to epoch
+        """
+        for iid, id_data in self.idents.items():
+            for email, email_data in id_data['emails'].items():
+                for group, data in email_data.get('groups', {}).items():
+                    if not data:
+                        continue
+                    for key in ('begin-date', 'end-date'):
+                        if key in data:
+                            data[key] = date2epoch(data[key])
+        self.enriched_idents = True
+
     def _validate_idents(self):
         """ Validate self.data consistencies for identities
         """
@@ -186,12 +226,33 @@ class Contributors(YAMLDefinition):
         if issues:
             return issues
         # Check uncovered by the schema validator
+        known_groups = self.groups.keys()
         for d in self.data:
             idents = d.get('identities', {})
             for iid, id_data in idents.items():
                 if (id_data['default-email'] not in id_data['emails'].keys()):
                     issues.append("Identity %s default an unknown "
                                   "default-email" % iid)
+                _groups = [g.get('groups', {}).keys() for g in
+                           id_data['emails'].values()]
+                groups = set()
+                for gs in _groups:
+                    groups.update(set(gs))
+                if not groups.issubset(set(known_groups)):
+                    issues.append("Identity %s declares membership to "
+                                  "an unknown group" % iid)
+                for email, email_data in id_data['emails'].items():
+                    for group, data in email_data.get('groups', {}).items():
+                        if not data:
+                            continue
+                        try:
+                            for key in ('begin-date', 'end-date'):
+                                if key in data:
+                                    datetime.strptime(data[key], "%m/%d/%Y")
+                        except Exception:
+                            issues.append("Identity %s declares group %s "
+                                          "membership invalid date %s" % (
+                                              iid, group, data))
         return issues
 
     def _validate_groups(self):
@@ -200,18 +261,39 @@ class Contributors(YAMLDefinition):
         _, issues = self._check_basic('groups',
                                       groups_schema,
                                       'Group')
+        if issues:
+            return issues
+        # Check uncovered by the schema validator
+        for gid, groups in self.groups.items():
+            for email, data in groups['emails'].items():
+                if not data:
+                    continue
+                try:
+                    for key in ('begin-date', 'end-date'):
+                        if key in data:
+                            datetime.strptime(data[key], "%m/%d/%Y")
+                except Exception:
+                    issues.append("Group %s declares email %s "
+                                  "membership invalid date %s" % (
+                                      gid, email, data))
         return issues
 
     def get_idents(self):
+        if not self.enriched_idents:
+            self._enrich_idents()
         return self.idents
 
     def get_groups(self):
+        if not self.enriched_idents:
+            self._enrich_idents()
+        if not self.enriched_groups:
+            self._enrich_groups()
         return self.groups
 
     def validate(self):
         validation_issues = []
-        validation_issues.extend(self._validate_idents())
         validation_issues.extend(self._validate_groups())
+        validation_issues.extend(self._validate_idents())
         return validation_issues
 
     def get_ident_by_email(self, email):

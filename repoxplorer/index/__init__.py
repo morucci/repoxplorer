@@ -13,15 +13,25 @@
 #  limitations under the License.
 
 
-import time
 import yaml
+import time
+import pytz
 
 from pecan import conf
 
+from datetime import datetime
 from elasticsearch import client
 from jsonschema import validate as schema_validate
 
 from repoxplorer.index.yamlbackend import YAMLBackend
+
+
+def date2epoch(date):
+    d = datetime.strptime(date, "%m/%d/%Y")
+    d = d.replace(tzinfo=pytz.utc)
+    epoch = (d - datetime(1970, 1, 1,
+                          tzinfo=pytz.utc)).total_seconds()
+    return epoch
 
 
 class Connector(object):

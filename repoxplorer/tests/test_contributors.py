@@ -30,6 +30,7 @@ class TestContributors(TestCase):
 
     def setUp(self):
         self.dbs = []
+        self.maxDiff = None
 
     def tearDown(self):
         for db in self.dbs:
@@ -62,8 +63,8 @@ identities:
       ampanman@baikinman.io:
         groups:
           amp:
-            begin-date: 2010/01/01
-            end-date: 2020/09/01
+            begin-date: 01/01/2010
+            end-date: 09/01/2020
 """
         f2 = """
 ---
@@ -75,8 +76,8 @@ identities:
       bill.doe@domain.com:
         groups:
           acme-12:
-            begin-date: 2016/01/01
-            end-date: 2016/09/01
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
 """
 
         default = """
@@ -89,8 +90,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 2016/01/01
-            end-date: 2016/09/01
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -131,8 +132,8 @@ identities:
                          'groups': {
                              'acme-12': None,
                              'acme-10': {
-                                 'end-date': '2016/09/01',
-                                 'begin-date': '2016/01/01'},
+                                 'end-date': 1472688000.0,
+                                 'begin-date': 1451606400.0},
                              'acme-11': None
                          }},
                      'jodoe@domain.com': {
@@ -146,8 +147,8 @@ identities:
                      'bill.doe@domain.com': {
                          'groups': {
                              'acme-12': {
-                                 'end-date': '2016/09/01',
-                                 'begin-date': '2016/01/01'
+                                 'end-date': 1472688000.0,
+                                 'begin-date': 1451606400.0
                              }
                          }
                      }
@@ -159,8 +160,8 @@ identities:
                      'ampanman@baikinman.io': {
                          'groups': {
                              'amp': {
-                                 'end-date': '2020/09/01',
-                                 'begin-date': '2010/01/01'
+                                 'end-date': 1598918400.0,
+                                 'begin-date': 1262304000.0
                              }
                          }
                      }
@@ -178,8 +179,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 2016/01/01
-            end-date: 2016/09/01
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -190,6 +191,17 @@ identities:
     emails:
       jane.doe@domain.com: {}
       jadoe@domain.com: {}
+
+groups:
+  acme-10:
+    description: The group 10 of acme
+    emails: {}
+  acme-11:
+    description: The group 11 of acme
+    emails: {}
+  acme-12:
+    description: The group 12 of acme
+    emails: {}
 """
         f2 = """
 ---
@@ -201,8 +213,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 2016/01/01
-            end-date: 2016/09/01
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -289,8 +301,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 2016/01/01
-        end-date: 2016/09/01
+        begin-date: 01/01/2016
+        end-date: 09/01/2016
       test2@acme.com:
 """
         f2 = """
@@ -354,8 +366,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 2016/01/01
-        end-date: 2016/09/01
+        begin-date: 01/01/2016
+        end-date: 09/01/2016
       test2@acme.com:
 """
         default = """
@@ -384,8 +396,8 @@ groups:
             {'acme-10': {
                 'emails': {
                     'test@acme.com': {
-                        'begin-date': '2016/01/01',
-                        'end-date': '2016/09/01'},
+                        'begin-date': 1451606400.0,
+                        'end-date': 1472688000.0},
                     'test2@acme.com': None},
                 'description': 'The group 10 of acme'},
              'acme-11': {
@@ -395,6 +407,81 @@ groups:
                      'test2@acme.com': None},
                  'description': 'The group 11 of acme'}
              })
+
+    def test_groups_get_enriched(self):
+        f1 = """
+---
+identities:
+  1234-1234:
+    name: John Doe
+    default-email: john.doe@domain.com
+    emails:
+      john.doe@domain.com:
+        groups:
+          acme-10:
+            begin-date: 01/01/2016
+            end-date: 09/01/2016
+          acme-11:
+          acme-12:
+      jodoe@domain.com:
+        groups: {}
+  1234-1235:
+    name: Jane Doe
+    default-email: jadoe@domain.com
+    emails:
+      jane.doe@domain.com:
+        groups:
+          acme-10:
+            begin-date: 01/01/2015
+            end-date: 09/01/2015
+      jadoe@domain.com:
+        groups:
+          acme-12:
+            begin-date: 01/01/2015
+            end-date: 05/01/2015
+
+groups:
+  acme-10:
+    description: The group 10 of acme
+    emails: {}
+  acme-11:
+    description: The group 11 of acme
+    emails:
+      ampanman@baikinman.com:
+  acme-12:
+    description: The group 12 of acme
+    emails:
+      ampanman@baikinman.com:
+"""
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        index.conf['db_default_file'] = None
+        p = contributors.Contributors(db_path=db)
+        ret = p.get_groups()
+        expected_ret = {
+            'acme-12': {
+                'description': 'The group 12 of acme',
+                'emails': {
+                    'john.doe@domain.com': None,
+                    'jadoe@domain.com': {
+                        'end-date': 1430438400.0,
+                        'begin-date': 1420070400.0},
+                    'ampanman@baikinman.com': None}},
+            'acme-11': {
+                'description': 'The group 11 of acme',
+                'emails': {
+                    'john.doe@domain.com': None,
+                    'ampanman@baikinman.com': None}},
+            'acme-10': {
+                'description': 'The group 10 of acme',
+                'emails': {
+                    'john.doe@domain.com': {
+                        'end-date': 1472688000.0,
+                        'begin-date': 1451606400.0},
+                    'jane.doe@domain.com': {
+                        'end-date': 1441065600.0,
+                        'begin-date': 1420070400.0}}}}
+        self.assertDictEqual(ret, expected_ret)
 
     def test_get_ident_by_email(self):
         with patch.object(index.YAMLBackend, 'load_db'):
