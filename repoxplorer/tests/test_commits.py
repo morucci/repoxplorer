@@ -172,6 +172,41 @@ class TestCommits(TestCase):
                    'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret[1], 4)
 
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {
+                       'begin-date': 1410461004,
+                       'end-date': 1410491006},
+                   'n.suke@joker.org': {
+                       'begin-date': 1410456011}})
+        self.assertEqual(ret[1], 2)
+
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {
+                       'begin-date': 1410461004,
+                       'end-date': 1410491006},
+                   'n.suke@joker.org': {
+                       'begin-date': 1410456011}},
+            fromdate=1410461004,
+            todate=1410461006,)
+        self.assertEqual(ret[1], 1)
+
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {
+                       'begin-date': 1410461004,
+                       'end-date': 1410491006},
+                   'n.suke@joker.org': {
+                       'begin-date': 1410456009}})
+        self.assertEqual(ret[1], 3)
+
+        ret = self.c.get_commits(
+            repos=['https://github.com/nakata/monkey.git:monkey:master'],
+            mails={'jean.bon@joker.org': {
+                       'begin-date': 1410461004,
+                       'end-date': 1410491006},
+                   'n.suke@joker.org': {
+                       'begin-date': 1410456009}})
+        self.assertEqual(ret[1], 1)
+
     def test_get_commits_based_on_merge_info(self):
         ret = self.c.get_commits(mails=['keiko.a@joker.org'],
                                  merge_commit=False)

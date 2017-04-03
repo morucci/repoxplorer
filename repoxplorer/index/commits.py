@@ -136,6 +136,9 @@ class Commits(object):
     def get_filter(self, mails, repos, metadata):
         """ Compute the search filter
         """
+        if isinstance(mails, list):
+            mails = dict([(mail, None) for mail in mails])
+
         filter = {
             "bool": {
                 "must": [],
@@ -148,10 +151,21 @@ class Commits(object):
                 "should": []
             }
         }
-        for mail in mails:
-            must_mail_clause["bool"]["should"].append(
-                {"term": {"author_email": mail}}
-            )
+
+        for mail, date_bounces in mails.items():
+            must = {"bool": {"must": []}}
+            must["bool"]["must"].append({"term": {"author_email": mail}})
+            if date_bounces:
+                date_clause = {
+                    "range": {
+                        "committer_date": {
+                            "gte": date_bounces.get('begin-date'),
+                            "lt": date_bounces.get('end-date')
+                        }
+                    }
+                }
+                must["bool"]["must"].append(date_clause)
+            must_mail_clause["bool"]["should"].append(must)
         filter["bool"]["must"].append(must_mail_clause)
 
         for repo in repos:
