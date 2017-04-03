@@ -190,6 +190,17 @@ identities:
     emails:
       jane.doe@domain.com: {}
       jadoe@domain.com: {}
+
+groups:
+  acme-10:
+    description: The group 10 of acme
+    emails: {}
+  acme-11:
+    description: The group 11 of acme
+    emails: {}
+  acme-12:
+    description: The group 12 of acme
+    emails: {}
 """
         f2 = """
 ---
@@ -395,6 +406,81 @@ groups:
                      'test2@acme.com': None},
                  'description': 'The group 11 of acme'}
              })
+
+    def test_groups_get_enriched(self):
+        f1 = """
+---
+identities:
+  1234-1234:
+    name: John Doe
+    default-email: john.doe@domain.com
+    emails:
+      john.doe@domain.com:
+        groups:
+          acme-10:
+            begin-date: 2016/01/01
+            end-date: 2016/09/01
+          acme-11:
+          acme-12:
+      jodoe@domain.com:
+        groups: {}
+  1234-1235:
+    name: Jane Doe
+    default-email: jadoe@domain.com
+    emails:
+      jane.doe@domain.com:
+        groups:
+          acme-10:
+            begin-date: 2015/01/01
+            end-date: 2015/09/01
+      jadoe@domain.com:
+        groups:
+          acme-12:
+            begin-date: 2015/01/01
+            end-date: 2015/05/01
+
+groups:
+  acme-10:
+    description: The group 10 of acme
+    emails: {}
+  acme-11:
+    description: The group 11 of acme
+    emails:
+      ampanman@baikinman.com:
+  acme-12:
+    description: The group 12 of acme
+    emails:
+      ampanman@baikinman.com:
+"""
+        files = {'f1.yaml': f1}
+        db = self.create_db(files)
+        index.conf['db_default_file'] = None
+        p = contributors.Contributors(db_path=db)
+        ret = p.get_groups()
+        expected_ret = {
+            'acme-12': {
+                'description': 'The group 12 of acme',
+                'emails': {
+                    'john.doe@domain.com': None,
+                    'jadoe@domain.com': {
+                        'end-date': '2015/05/01',
+                        'begin-date': '2015/01/01'},
+                    'ampanman@baikinman.com': None}},
+            'acme-11': {
+                'description': 'The group 11 of acme',
+                'emails': {
+                    'john.doe@domain.com': None,
+                    'ampanman@baikinman.com': None}},
+            'acme-10': {
+                'description': 'The group 10 of acme',
+                'emails': {
+                    'john.doe@domain.com': {
+                        'end-date': '2016/09/01',
+                        'begin-date': '2016/01/01'},
+                    'jane.doe@domain.com': {
+                        'end-date': '2015/09/01',
+                        'begin-date': '2015/01/01'}}}}
+        self.assertDictEqual(ret, expected_ret)
 
     def test_get_ident_by_email(self):
         with patch.object(index.YAMLBackend, 'load_db'):

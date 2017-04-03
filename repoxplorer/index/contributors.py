@@ -156,6 +156,7 @@ class Contributors(YAMLDefinition):
     """
     def __init__(self, db_path=None, db_default_file=None):
         YAMLDefinition.__init__(self, db_path, db_default_file)
+        self.enriched = False
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -177,6 +178,17 @@ class Contributors(YAMLDefinition):
         self.idents.update(merged_idents)
         self.groups.update(merged_groups)
 
+    def _enrich_groups(self):
+        def add_to_group(group, email, details):
+            if group not in self.groups.keys():
+                return
+            self.groups[group]['emails'][email] = details
+        for iid, id_data in self.idents.items():
+            for email, email_data in id_data['emails'].items():
+                for group, details in email_data.get('groups', {}).items():
+                    add_to_group(group, email, details)
+        self.enriched = True
+
     def _validate_idents(self):
         """ Validate self.data consistencies for identities
         """
@@ -186,12 +198,21 @@ class Contributors(YAMLDefinition):
         if issues:
             return issues
         # Check uncovered by the schema validator
+        known_groups = self.groups.keys()
         for d in self.data:
             idents = d.get('identities', {})
             for iid, id_data in idents.items():
                 if (id_data['default-email'] not in id_data['emails'].keys()):
                     issues.append("Identity %s default an unknown "
                                   "default-email" % iid)
+                _groups = [g.get('groups', {}).keys() for g in
+                           id_data['emails'].values()]
+                groups = set()
+                for gs in _groups:
+                    groups.update(set(gs))
+                if not groups.issubset(set(known_groups)):
+                    issues.append("Identity %s declares membership to "
+                                  "an unknown group" % iid)
         return issues
 
     def _validate_groups(self):
@@ -206,12 +227,14 @@ class Contributors(YAMLDefinition):
         return self.idents
 
     def get_groups(self):
+        if not self.enriched:
+            self._enrich_groups()
         return self.groups
 
     def validate(self):
         validation_issues = []
-        validation_issues.extend(self._validate_idents())
         validation_issues.extend(self._validate_groups())
+        validation_issues.extend(self._validate_idents())
         return validation_issues
 
     def get_ident_by_email(self, email):
