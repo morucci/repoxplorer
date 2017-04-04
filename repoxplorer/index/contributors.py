@@ -301,7 +301,7 @@ class Contributors(YAMLDefinition):
         selected = filter(lambda ident: email in ident[1].get('emails', []),
                           idents.items())
         if selected:
-            return selected[0]
+            return copy.deepcopy(selected[0])
         else:
             # Return a default ident
             return email, {'name': None,
@@ -310,4 +310,4 @@ class Contributors(YAMLDefinition):
 
     def get_ident_by_id(self, id):
         idents = self.get_idents()
-        return id, idents.get(id)
+        return id, copy.deepcopy(idents.get(id))
