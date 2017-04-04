@@ -41,7 +41,7 @@ xorkey = conf.get('xorkey') or 'default'
 
 class RootController(object):
 
-    groups = groups.GroupsController()
+    api_groups = groups.GroupsController()
 
     @expose(template='index.html')
     def index(self):
@@ -50,6 +50,10 @@ class RootController(object):
         tags = projects_index.get_tags()
         return {'projects': projects,
                 'tags': tags.keys()}
+
+    @expose(template='groups.html')
+    def groups(self):
+        return {}
 
     @expose('json')
     def projects(self):
