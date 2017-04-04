@@ -26,6 +26,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from repoxplorer.controllers import utils
+from repoxplorer.controllers import groups
 from repoxplorer import index
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
@@ -39,6 +40,8 @@ xorkey = conf.get('xorkey') or 'default'
 
 
 class RootController(object):
+
+    groups = groups.GroupsController()
 
     @expose(template='index.html')
     def index(self):

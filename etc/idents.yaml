@@ -5,6 +5,8 @@ identities:
     default-email: john.doe@server.com
     emails:
       john.doe@server.com:
-        groups: {}
+        groups:
+          barbican-ptl:
       jdoe@server.com:
-        groups: {}
+        groups:
+          barbican-ptl:

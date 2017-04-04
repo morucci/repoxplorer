@@ -23,6 +23,7 @@ from repoxplorer.controllers import root
 from repoxplorer.controllers import utils
 
 from mock import patch
+from contextlib import nested
 
 from pecan import conf
 
@@ -226,3 +227,78 @@ class TestRootController(FunctionalTest):
             response = self.app.get('/projects.json?')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
+
+
+class TestGroupsController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = None
+        cls.gi_by_email_data = {
+            "ampanman@baikinman.io":
+                ("0000-0000", {
+                    "name": "Ampanman",
+                    "default-email": "ampanman@baikinman.io",
+                    "emails": {
+                        "ampanman@baikinman.io": {
+                            "groups": {
+                                "grp2": {
+                                    "begin-date": 1420070400.0,
+                                    "end-date": 1441065600.0}}}}})}
+        cls.gi_by_email = lambda _, email: cls.gi_by_email_data.get(email) or (
+            email, {'name': None,
+                    'default-email': email,
+                    'emails': {}})
+        cls.groups = {
+            "grp1": {
+                "description": "The group 1",
+                "emails": {
+                    "john.doe@server.com": {},
+                    "jane.doe@server.com": {}}},
+            "grp2": {
+                "description": "The group 2",
+                "emails": {
+                    "john.doe@server.com": {},
+                    "ampanman@baikinman.io": {}}}}
+        cls.gca = {"john.doe@server.com": "John Doe",
+                   "jane.doe@server.com": "Jane Doe"}
+
+    def test_get_groups(self):
+        patches = [patch.object(root.groups.Contributors,
+                                'get_groups'),
+                   patch.object(root.groups.Contributors,
+                                'get_ident_by_email'),
+                   patch.object(root.groups.Commits,
+                                'get_commits_author_name_by_emails')]
+        with nested(*patches) as (gg, gi_by_email, gca):
+            gg.return_value = self.groups
+            gi_by_email.side_effect = self.gi_by_email
+            gca.return_value = self.gca
+            response = self.app.get('/groups/')
+            assert response.status_int == 200
+            expected_ret = {
+                u'grp2': {
+                    u'description': u'The group 2',
+                    u'members': {
+                        u'DgoOD1sIGwElFQQHGhEWSwUOGA==': {
+                            u'name': u'John Doe',
+                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'membership_bounces': []},
+                        u'VFVWUVhcRFRV': {
+                            u'name': u'Ampanman',
+                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                            u'membership_bounces': [
+                                {u'end-date': 1441065600.0,
+                                 u'begin-date': 1420070400.0}]}}},
+                u'grp1': {
+                    u'description': u'The group 1',
+                    u'members': {
+                        u'DgQIBFsIGwElFQQHGhEWSwUOGA==': {
+                            u'name': u'Jane Doe',
+                            u'gravatar': u'98685715b08980dac8b2379097c332f4',
+                            u'membership_bounces': []},
+                        u'DgoOD1sIGwElFQQHGhEWSwUOGA==': {
+                            u'name': u'John Doe',
+                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'membership_bounces': []}}}}
+            self.assertDictEqual(response.json, expected_ret)
