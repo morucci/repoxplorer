@@ -133,7 +133,7 @@ class Commits(object):
         bulk(self.es, gen(sha_list))
         self.es.indices.refresh(index=self.index)
 
-    def get_filter(self, mails, repos, metadata):
+    def get_filter(self, mails, repos, metadata, mails_neg=False):
         """ Compute the search filter
         """
         if isinstance(mails, list):
@@ -148,7 +148,8 @@ class Commits(object):
 
         must_mail_clause = {
             "bool": {
-                "should": []
+                "should": [],
+                "must_not": []
             }
         }
 
@@ -165,7 +166,10 @@ class Commits(object):
                     }
                 }
                 must["bool"]["must"].append(date_clause)
-            must_mail_clause["bool"]["should"].append(must)
+            if mails_neg:
+                must_mail_clause["bool"]["must_not"].append(must)
+            else:
+                must_mail_clause["bool"]["should"].append(must)
         filter["bool"]["must"].append(must_mail_clause)
 
         for repo in repos:
@@ -200,7 +204,7 @@ class Commits(object):
     def get_commits(self, mails=[], repos=[],
                     fromdate=None, todate=None, start=0, limit=100,
                     sort='desc', scan=False, merge_commit=None,
-                    metadata=[]):
+                    metadata=[], mails_neg=False):
         """ Return the list of commits for authors and/or repos.
         """
 
@@ -212,7 +216,7 @@ class Commits(object):
                 'is required to run a request')
 
         body = {
-            "filter": self.get_filter(mails, repos, metadata),
+            "filter": self.get_filter(mails, repos, metadata, mails_neg),
         }
 
         # If None both are return. If you expect to skip merge commits
@@ -249,7 +253,8 @@ class Commits(object):
 
     def get_commits_amount(self, mails=[], repos=[],
                            fromdate=None, todate=None,
-                           merge_commit=None, metadata=[]):
+                           merge_commit=None, metadata=[],
+                           mails_neg=False):
         """ Return the amount of commits for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -260,7 +265,8 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, repos, metadata),
+                    "filter": self.get_filter(mails, repos,
+                                              metadata, mails_neg),
                 }
             }
         }
@@ -292,7 +298,8 @@ class Commits(object):
 
     def get_field_stats(self, field, mails=[], repos=[],
                         fromdate=None, todate=None,
-                        merge_commit=None, metadata=[]):
+                        merge_commit=None, metadata=[],
+                        mails_neg=False):
         """ Return the stats about the specified field for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -303,7 +310,8 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, repos, metadata),
+                    "filter": self.get_filter(mails, repos,
+                                              metadata, mails_neg),
                 }
             },
             "aggs": {
@@ -338,7 +346,8 @@ class Commits(object):
 
     def get_authors(self, mails=[], repos=[],
                     fromdate=None, todate=None,
-                    merge_commit=None, metadata=[]):
+                    merge_commit=None, metadata=[],
+                    mails_neg=False):
         """ Return the author emails (removed duplicated) also
         this return the amount of hits for a given unique
         author_email. The hits value is the amount of commits
@@ -349,7 +358,8 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, repos, metadata),
+                    "filter": self.get_filter(mails, repos,
+                                              metadata, mails_neg),
                 }
             },
             "aggs": {
@@ -447,7 +457,8 @@ class Commits(object):
 
     def get_top_field_by_lines(self, field, mails=[], repos=[],
                                fromdate=None, todate=None,
-                               merge_commit=None, metadata=[]):
+                               merge_commit=None, metadata=[],
+                               mails_neg=False):
         """ Return the ranking of author emails by modidified lines
         of codes
         """
@@ -459,7 +470,8 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, repos, metadata),
+                    "filter": self.get_filter(mails, repos,
+                                              metadata, mails_neg),
                 }
             },
             "aggs": {
@@ -505,7 +517,7 @@ class Commits(object):
 
     def get_metadata_keys(self, mails=[], repos=[],
                           fromdate=None, todate=None,
-                          merge_commit=None):
+                          merge_commit=None, mails_neg=False):
         """ Return the metadata keys found inside
         the filtered commits. The returned dictionnary contains
         keys associated via the amount of hits.
@@ -520,7 +532,8 @@ class Commits(object):
 
         ret = self.get_commits(mails, repos,
                                fromdate, todate,
-                               merge_commit=merge_commit, scan=True)
+                               merge_commit=merge_commit, scan=True,
+                               mails_neg=mails_neg)
         keys = [c['_source'].keys() for c in ret]
         map(storekey, [i for i in itertools.chain(*keys) if
                        i not in PROPERTIES])
@@ -528,7 +541,7 @@ class Commits(object):
 
     def get_metadata_key_values(self, key, mails=[], repos=[],
                                 fromdate=None, todate=None,
-                                merge_commit=None):
+                                merge_commit=None, mails_neg=False):
         """ Return for a metadata key the values found inside
         the filtered commits.
         """
@@ -537,7 +550,8 @@ class Commits(object):
         ret = self.get_commits(mails, repos,
                                fromdate, todate,
                                merge_commit=merge_commit,
-                               metadata=((key, None),), scan=True)
+                               metadata=((key, None),), scan=True,
+                               mails_neg=mails_neg)
         for c in ret:
             values |= set(c['_source'][key])
         values = list(values)
@@ -546,7 +560,8 @@ class Commits(object):
 
     def get_repos(self, mails=[], repos=[],
                   fromdate=None, todate=None,
-                  merge_commit=None, metadata={}):
+                  merge_commit=None, metadata={},
+                  mails_neg=False):
         """ Return the repos (removed duplicated) also
         this return the amount of hits. The hits value is
         the amount of commit for an uniq repo.
@@ -559,7 +574,8 @@ class Commits(object):
         body = {
             "query": {
                 "filtered": {
-                    "filter": self.get_filter(mails, repos, metadata),
+                    "filter": self.get_filter(mails, repos,
+                                              metadata, mails_neg),
                 }
             },
             "aggs": {
@@ -598,14 +614,17 @@ class Commits(object):
 
     def get_commits_time_delta(self, mails=[], repos=[],
                                fromdate=None, todate=None,
-                               merge_commit=None, metadata=[]):
+                               merge_commit=None, metadata=[],
+                               mails_neg=False):
         first = self.get_commits(mails, repos, start=0, limit=1, sort='asc',
                                  fromdate=fromdate, todate=todate,
-                                 merge_commit=merge_commit, metadata=metadata)
+                                 merge_commit=merge_commit, metadata=metadata,
+                                 mails_neg=mails_neg)
         first = first[2][0]['committer_date']
         last = self.get_commits(mails, repos, start=0, limit=1, sort='desc',
                                 fromdate=fromdate, todate=todate,
-                                merge_commit=merge_commit, metadata=metadata)
+                                merge_commit=merge_commit, metadata=metadata,
+                                mails_neg=mails_neg)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
         duration = duration.total_seconds()
@@ -613,7 +632,8 @@ class Commits(object):
 
     def get_commits_histo(self, mails=[], repos=[],
                           fromdate=None, todate=None,
-                          merge_commit=None, metadata=[]):
+                          merge_commit=None, metadata=[],
+                          mails_neg=False):
         """ Return the histogram of contrib for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -621,11 +641,12 @@ class Commits(object):
         if not mails and not repos:
             raise Exception('At least a author email or repo is required')
 
-        qfilter = self.get_filter(mails, repos, metadata)
+        qfilter = self.get_filter(mails, repos, metadata, mails_neg)
         duration = self.get_commits_time_delta(mails, repos,
                                                fromdate=fromdate,
                                                todate=todate,
-                                               metadata=metadata)[2]
+                                               metadata=metadata,
+                                               mails_neg=mails_neg)[2]
 
         # Set resolution by day if duration <= 3 months
         if (duration / (24 * 3600 * 31)) <= 3:
