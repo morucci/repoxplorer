@@ -274,7 +274,7 @@ class TestGroupsController(FunctionalTest):
             gg.return_value = self.groups
             gi_by_email.side_effect = self.gi_by_email
             gca.return_value = self.gca
-            response = self.app.get('/groups/')
+            response = self.app.get('/api_groups/')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {

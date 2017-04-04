@@ -35,6 +35,37 @@ function install_date_pickers() {
   $( "#todatepicker" ).datepicker('setDate', dto);
 }
 
+function groups_page_init() {
+  $.getJSON("api_groups.json")
+   .done(
+    function(data) {
+     $("#groups-table").empty()
+     $("#groups-table").append("<table class=\"table table-striped\">");
+     var theader = "<tr>"
+     theader += "<th>Group name</th>"
+     theader += "<th>Group description</th>"
+     theader += "<th>Group members</th>"
+     $("#groups-table table").append(theader);
+     $.each(data, function(gid, gdata) {
+      var elm = "<tr>"
+      elm += "<td>" + gid + "</td>"
+      elm += "<td>" + gdata['description'] + "</td>"
+      elm += "<td>"
+      $.each(gdata['members'], function(cid, cdata) {
+        elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
+           cdata['gravatar'] + "?s=20&d=wavatar'></span><span style='padding-right: 5px'>" +
+           "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>"
+      })
+      elm += "</td>"
+      $("#groups-table table").append(elm);
+     })
+     $("#groups-table").append("</table>");
+    })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+}
 
 function contributor_page_init(cid) {
  install_date_pickers();
