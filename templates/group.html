@@ -1,14 +1,14 @@
 <%inherit file="layout.html" />
 
 <%def name="title()">
-  [${name}] - Contributor page
+  [${name}] - Group page
 </%def>
 
 <div class="row-fluid">
 
  <div class="col-md-12">
   <div class="jumbotron">
-   <h2><a href=contributor.html?cid=${cid}>${name}</a>'s contributor details</h2>
+   <h2><a href=group.html?gid=${gid}>${name}</a>'s group details</h2>
   </div>
  </div>
 
@@ -19,15 +19,13 @@
  <div class="col-md-4">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Contributor infos (based on selected filters)</b></h3>
+    <h3 class="panel-title text-left"><b>Group infos (based on selected filters)</b></h3>
    </div>
    <div class="panel-body container-fluid">
-    <div id="gravatar" class="col-md-4">
-     <div><img src="https://www.gravatar.com/avatar/${gravatar}?s=150&d=wavatar" title="${name}"></div>
-    </div>
-    <div id="infos" class="col-md-8">
-     <div><b>Full Name:</b> ${name}</div>
+    <div id="infos" class="col-md-12">
+     <div><b>Description:</b> ${description}</div>
      % if not empty:
+     <div><b>Amount of members:</b> ${members_amount}</div>
      <div><b>Known emails:</b> ${known_emails_amount}</div>
      <div><b>Amount of commits:</b> ${commits_amount}</div>
      <div><b>Amount of line modifieds:</b> ${line_modifieds_amount}</div>
@@ -173,7 +171,7 @@
  <div class="col-md-12">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Contributor commits</b><i> (Limited to 100 pages)</i></h3>
+    <h3 class="panel-title text-left"><b>Group commits</b><i> (Limited to 100 pages)</i></h3>
    </div>
    <div id="commits-table">
    </div>
@@ -191,19 +189,19 @@
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
  gen_histo(histo);
- contributor_page_init('${cid}');
- install_paginator(undefined, undefined, '${cid}', undefined, '${commits_amount}');
- get_commits(undefined, undefined, '${cid}', undefined, undefined);
+ group_page_init('${gid}');
+ install_paginator(undefined, undefined, undefined, '${gid}', '${commits_amount}');
+ get_commits(undefined, undefined, undefined, '${gid}', undefined);
 </script>
 % else:
 <div class="row-fluid">
  <div class="col-md-12">
   <div class="alert alert-warning text-center">
-   <strong>This contributor hasn't any commit or the filter you setup returned nothing.</strong>
+   <strong>This group hasn't any commit or the filter you setup returned nothing.</strong>
   </div>
  </div>
 </div>
 <script type="text/javascript">
- contributor_page_init('${cid}');
+ group_page_init('${gid}');
 </script>
 % endif

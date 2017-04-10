@@ -5,6 +5,8 @@ features:
   - Definitions of projects, groups, idents, project-templates can
     done in multiple files (ending with .yaml).
   - Add repoxplorer-config-validate command to check definitions
+  - Add a groups listing page
+  - Add a group stats page
 upgrade:
   - Old idents.yaml file format is deprecated and need to be refactored manually
   - Old projects.yaml file format is deprecated and need to be refactored manually

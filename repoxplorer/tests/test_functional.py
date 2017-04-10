@@ -91,6 +91,12 @@ class TestRootController(FunctionalTest):
             {'uri': 'https://github.com/nakata/monkey.git',
              'name': 'monkey',
              'branch': 'master'}]}
+        cls.groups = {
+            "grp1": {
+                "description": "The group 1",
+                "emails": {
+                    "j.paul@joker.org": {},
+                    "j.marc@joker2.org": {}}}}
         cls.tags = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
@@ -121,6 +127,15 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/project.html?pid=test')
+        assert response.status_int == 200
+
+    def test_get_group_page(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            with patch.object(root.groups.Contributors, 'get_groups') as g:
+                root.indexname = 'repoxplorertest'
+                m.return_value = self.projects
+                g.return_value = self.groups
+                response = self.app.get('/group.html?gid=grp1')
         assert response.status_int == 200
 
     def test_get_contributor_page(self):
@@ -274,7 +289,7 @@ class TestGroupsController(FunctionalTest):
             gg.return_value = self.groups
             gi_by_email.side_effect = self.gi_by_email
             gca.return_value = self.gca
-            response = self.app.get('/groups/')
+            response = self.app.get('/api_groups/')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {

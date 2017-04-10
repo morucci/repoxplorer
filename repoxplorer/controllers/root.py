@@ -15,7 +15,6 @@
 
 
 import json
-import copy
 import hashlib
 
 from pecan import expose
@@ -23,7 +22,6 @@ from pecan import abort
 from pecan import conf
 
 from datetime import datetime
-from datetime import timedelta
 
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
@@ -41,7 +39,7 @@ xorkey = conf.get('xorkey') or 'default'
 
 class RootController(object):
 
-    groups = groups.GroupsController()
+    api_groups = groups.GroupsController()
 
     @expose(template='index.html')
     def index(self):
@@ -50,6 +48,10 @@ class RootController(object):
         tags = projects_index.get_tags()
         return {'projects': projects,
                 'tags': tags.keys()}
+
+    @expose(template='groups.html')
+    def groups(self):
+        return {}
 
     @expose('json')
     def projects(self):
@@ -94,6 +96,7 @@ class RootController(object):
                 dto, "%m/%d/%Y").strftime('%s')
         c = Commits(index.Connector(index=indexname))
         idents = Contributors()
+        projects = Projects()
         iid, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
@@ -117,9 +120,9 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        commits_amount = c.get_commits_amount(**query_kwargs)
+        infos = utils.get_generic_infos(c, query_kwargs)
 
-        if not commits_amount:
+        if not infos['commits_amount']:
             # No commit found
             return {'name': name,
                     'gravatar': hashlib.md5(
@@ -128,78 +131,116 @@ class RootController(object):
                     'period': period,
                     'empty': True}
 
-        projects = Projects().get_projects()
-        c_repos = c.get_repos(**query_kwargs)[1]
-        lm_repos = c.get_top_repos_by_lines(**query_kwargs)[1]
-        c_projects = utils.get_projects_from_references(projects, c_repos)
+        top_projects = utils.top_projects_sanitize(
+            c, projects, query_kwargs, inc_repos_detail)
 
-        repos_contributed = {}
-        repos_contributed_modified = {}
-        if inc_repos_detail:
-            repos_contributed = [
-                (":".join(p.split(':')[-2:]), ca) for
-                p, ca in c_repos.items()]
-            repos_contributed_modified = [
-                (":".join(p.split(':')[-2:]), int(lm)) for
-                p, lm in lm_repos.items()]
-        else:
-            for pname in c_projects:
-                p_repos = projects[pname]
-                p_filter = utils.get_references_filter(p_repos, None)
-                _query_kwargs = copy.deepcopy(query_kwargs)
-                _query_kwargs['repos'] = p_filter
-                repos_contributed[pname] = c.get_commits_amount(
-                    **_query_kwargs)
-                repos_contributed_modified[pname] = int(
-                    c.get_line_modifieds_stats(**_query_kwargs)[1]['sum'])
+        sorted_repos_contributed = top_projects[0]
+        sorted_repos_contributed_modified = top_projects[1]
+        c_projects = top_projects[2]
+        c_repos = top_projects[3]
 
-            repos_contributed = [
-                (p, ca) for
-                p, ca in repos_contributed.items()]
-            repos_contributed_modified = [
-                (p, lm) for
-                p, lm in repos_contributed_modified.items()]
-
-        sorted_repos_contributed = sorted(
-            repos_contributed,
-            key=lambda i: i[1],
-            reverse=True)
-
-        sorted_repos_contributed_modified = sorted(
-            repos_contributed_modified,
-            key=lambda i: i[1],
-            reverse=True)
-
-        ttl_average = c.get_ttl_stats(**query_kwargs)[1]['avg']
-        ttl_average = timedelta(
-            seconds=int(ttl_average)) - timedelta(seconds=0)
-
-        first, last, duration = c.get_commits_time_delta(**query_kwargs)
-
-        histo = c.get_commits_histo(**query_kwargs)
-        histo = [{'date': d['key_as_string'],
-                  'value': d['doc_count']} for d in histo[1]]
-
-        line_modifieds_amount = int(c.get_line_modifieds_stats(
-            **query_kwargs)[1]['sum'])
+        histo = utils.get_commits_histo(c, query_kwargs)
 
         return {'name': name,
                 'gravatar': hashlib.md5(ident['default-email']).hexdigest(),
                 'histo': json.dumps(histo),
-                'commits_amount': commits_amount,
-                'line_modifieds_amount': line_modifieds_amount,
+                'commits_amount': infos['commits_amount'],
+                'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
                 'repos': sorted_repos_contributed,
                 'repos_line_mdfds': sorted_repos_contributed_modified,
                 'projects_amount': len(c_projects),
                 'repos_amount': len(c_repos),
                 'known_emails_amount': len(mails),
-                'first': datetime.fromtimestamp(first),
-                'last': datetime.fromtimestamp(last),
-                'duration': (datetime.fromtimestamp(duration) -
+                'first': datetime.fromtimestamp(infos['first']),
+                'last': datetime.fromtimestamp(infos['last']),
+                'duration': (datetime.fromtimestamp(infos['duration']) -
                              datetime.fromtimestamp(0)),
-                'ttl_average': ttl_average,
+                'ttl_average': infos['ttl_average'],
                 'cid': utils.encrypt(xorkey, cid),
+                'empty': False}
+
+    @expose(template='group.html')
+    def group(self, gid, dfrom=None, dto=None,
+              inc_merge_commit=None,
+              inc_repos_detail=None):
+        if inc_merge_commit != 'on':
+            include_merge_commit = False
+        else:
+            # The None value will return all whatever
+            # the commit is a merge one or not
+            include_merge_commit = None
+        if dfrom:
+            dfrom = datetime.strptime(
+                dfrom, "%m/%d/%Y").strftime('%s')
+        if dto:
+            dto = datetime.strptime(
+                dto, "%m/%d/%Y").strftime('%s')
+        c = Commits(index.Connector(index=indexname))
+        idents = Contributors()
+        projects = Projects()
+        gid, group = idents.get_group_by_id(gid)
+        if not group:
+            abort(404,
+                  detail="The group has not been found")
+        mails = group['emails']
+        description = group['description']
+        members = {}
+        for email in mails:
+            iid, ident = idents.get_ident_by_email(email)
+            members[iid] = ident
+
+        query_kwargs = {
+            'fromdate': dfrom,
+            'todate': dto,
+            'mails': mails,
+            'merge_commit': include_merge_commit,
+        }
+
+        if dfrom is None or dto is None:
+            period = (None, None)
+        else:
+            period = (datetime.fromtimestamp(float(dfrom)),
+                      datetime.fromtimestamp(float(dto)))
+
+        infos = utils.get_generic_infos(c, query_kwargs)
+
+        if not infos['commits_amount']:
+            # No commit found
+            return {'name': gid,
+                    'description': description,
+                    'gid': gid,
+                    'period': period,
+                    'empty': True}
+
+        top_projects = utils.top_projects_sanitize(
+            c, projects, query_kwargs, inc_repos_detail)
+
+        sorted_repos_contributed = top_projects[0]
+        sorted_repos_contributed_modified = top_projects[1]
+        c_projects = top_projects[2]
+        c_repos = top_projects[3]
+
+        histo = utils.get_commits_histo(c, query_kwargs)
+
+        return {'name': gid,
+                'description': description,
+                'histo': json.dumps(histo),
+                'members_amount': len(members.keys()),
+                'commits_amount': infos['commits_amount'],
+                'line_modifieds_amount': infos['line_modifieds_amount'],
+                'period': period,
+                'repos': sorted_repos_contributed,
+                'repos_line_mdfds': sorted_repos_contributed_modified,
+                'projects_amount': len(c_projects),
+                'repos_amount': len(c_repos),
+                'known_emails_amount': len(mails),
+                'first': datetime.fromtimestamp(infos['first']),
+                'last': datetime.fromtimestamp(infos['last']),
+                'duration': (datetime.fromtimestamp(infos['duration']) -
+                             datetime.fromtimestamp(0)),
+                'ttl_average': infos['ttl_average'],
+                'gid': gid,
                 'empty': False}
 
     @expose(template='project.html')
@@ -248,15 +289,15 @@ class RootController(object):
             'metadata': metadata,
         }
 
-        commits_amount = c.get_commits_amount(**query_kwargs)
-
         if dfrom is None or dto is None:
             period = (None, None)
         else:
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        if not commits_amount:
+        infos = utils.get_generic_infos(c, query_kwargs)
+
+        if not infos['commits_amount']:
             # No commit found
             return {'pid': pid,
                     'tid': tid,
@@ -264,10 +305,6 @@ class RootController(object):
                     'repos': repos,
                     'inc_repos': inc_repos,
                     'empty': True}
-
-        histo = c.get_commits_histo(**query_kwargs)
-        histo = [{'date': d['key_as_string'],
-                  'value': d['doc_count']} for d in histo[1]]
 
         top_authors = c.get_authors(**query_kwargs)
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
@@ -280,11 +317,7 @@ class RootController(object):
         top_authors_modified = utils.top_authors_sanitize(
             idents, top_authors_modified, c, top=25)
 
-        first, last, duration = c.get_commits_time_delta(**query_kwargs)
-
-        ttl_average = c.get_ttl_stats(**query_kwargs)[1]['avg']
-        ttl_average = timedelta(
-            seconds=int(ttl_average)) - timedelta(seconds=0)
+        histo = utils.get_commits_histo(c, query_kwargs)
 
         return {'pid': pid,
                 'tid': tid,
@@ -292,19 +325,19 @@ class RootController(object):
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
                 'authors_amount': authors_amount,
-                'commits_amount': commits_amount,
-                'first': datetime.fromtimestamp(first),
-                'last': datetime.fromtimestamp(last),
-                'duration': (datetime.fromtimestamp(duration) -
-                             datetime.fromtimestamp(0)),
+                'commits_amount': infos['commits_amount'],
                 'repos': repos,
                 'inc_repos': inc_repos,
                 'period': period,
-                'ttl_average': ttl_average,
+                'first': datetime.fromtimestamp(infos['first']),
+                'last': datetime.fromtimestamp(infos['last']),
+                'duration': (datetime.fromtimestamp(infos['duration']) -
+                             datetime.fromtimestamp(0)),
+                'ttl_average': infos['ttl_average'],
                 'empty': False}
 
     @expose('json')
-    def metadata(self, key=None, pid=None, tid=None, cid=None,
+    def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
                  inc_repos=None):
         c = Commits(index.Connector(index=indexname))
@@ -312,7 +345,7 @@ class RootController(object):
         idents = Contributors()
         p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
-            pid, tid, cid, dfrom, dto, inc_repos,
+            pid, tid, cid, gid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
         if not key:
@@ -331,7 +364,7 @@ class RootController(object):
         projects_index = Projects()
         p_filter, _, dfrom, dto, _ = utils.resolv_filters(
             projects_index, None,
-            pid, tid, None, dfrom, dto, inc_repos, None)
+            pid, tid, None, None, dfrom, dto, inc_repos, None)
         p_filter = [":".join(r.split(':')[:-1]) for r in p_filter]
         ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
         # TODO: if tid is given we can include user defined releases
@@ -352,7 +385,8 @@ class RootController(object):
         return ret
 
     @expose('json')
-    def commits(self, pid=None, tid=None, cid=None, start=0, limit=10,
+    def commits(self, pid=None, tid=None, cid=None, gid=None,
+                start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
                 inc_repos=None, metadata=""):
         c = Commits(index.Connector(index=indexname))
@@ -371,7 +405,7 @@ class RootController(object):
 
         p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
-            pid, tid, cid, dfrom, dto, inc_repos,
+            pid, tid, cid, gid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
         resp = c.get_commits(repos=p_filter, mails=mails,

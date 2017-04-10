@@ -311,3 +311,7 @@ class Contributors(YAMLDefinition):
     def get_ident_by_id(self, id):
         idents = self.get_idents()
         return id, copy.deepcopy(idents.get(id))
+
+    def get_group_by_id(self, id):
+        groups = self.get_groups()
+        return id, copy.deepcopy(groups.get(id))

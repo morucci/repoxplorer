@@ -526,3 +526,23 @@ groups:
                 cid, cdata = c.get_ident_by_id('1234-1235')
                 self.assertEqual(cid, '1234-1235')
                 self.assertEqual(cdata['name'], 'Jane Doe')
+
+    def test_get_group_by_id(self):
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(contributors.Contributors, 'get_groups') as gg:
+                gg.return_value = {
+                    'acme-11': {
+                        'description': 'The group 11 of acme',
+                        'emails': {
+                            'john.doe@domain.com': None,
+                            'ampanman@baikinman.com': None}}}
+                c = contributors.Contributors(db_path="db_path")
+
+                gid, gdata = c.get_group_by_id('zzz')
+                self.assertEqual(gid, 'zzz')
+                self.assertEqual(gdata, None)
+
+                gid, gdata = c.get_group_by_id('acme-11')
+                self.assertEqual(gid, 'acme-11')
+                self.assertEqual(gdata['description'],
+                                 'The group 11 of acme')

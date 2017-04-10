@@ -35,6 +35,37 @@ function install_date_pickers() {
   $( "#todatepicker" ).datepicker('setDate', dto);
 }
 
+function groups_page_init() {
+  $.getJSON("api_groups.json")
+   .done(
+    function(data) {
+     $("#groups-table").empty()
+     $("#groups-table").append("<table class=\"table table-striped\">");
+     var theader = "<tr>"
+     theader += "<th>Group name</th>"
+     theader += "<th>Group description</th>"
+     theader += "<th>Group members</th>"
+     $("#groups-table table").append(theader);
+     $.each(data, function(gid, gdata) {
+      var elm = "<tr>"
+      elm += "<td><a href=group.html?gid=" + gid + ">" + gid + "</a></td>"
+      elm += "<td>" + gdata['description'] + "</td>"
+      elm += "<td>"
+      $.each(gdata['members'], function(cid, cdata) {
+        elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
+           cdata['gravatar'] + "?s=20&d=wavatar'></span><span style='padding-right: 5px'>" +
+           "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>"
+      })
+      elm += "</td>"
+      $("#groups-table table").append(elm);
+     })
+     $("#groups-table").append("</table>");
+    })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+}
 
 function contributor_page_init(cid) {
  install_date_pickers();
@@ -95,6 +126,81 @@ function contributor_page_init(cid) {
 
  $("#filter").click(function(){
   var newlocation = "contributor.html?cid=" + cid
+  if ($('#fromdatepicker').val() != '') {
+    newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
+  }
+  if ($('#todatepicker').val() != '') {
+    newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
+  }
+  if ($('#inc_merge_commit').prop('checked')) {
+      newlocation = newlocation + "&inc_merge_commit=on"
+  }
+  if ($('#inc_repos_detail').prop('checked')) {
+      newlocation = newlocation + "&inc_repos_detail=on"
+  }
+  window.location = newlocation
+ });
+}
+
+function group_page_init(gid) {
+ install_date_pickers();
+
+ if (getUrlParameter('inc_merge_commit') == 'on') {
+    $('#inc_merge_commit').prop('checked', true)
+ }
+ if (getUrlParameter('inc_repos_detail') == 'on') {
+    $('#inc_repos_detail').prop('checked', true)
+ }
+
+ $("#releasesmodal").on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget)
+  pickupdatetarget = button.data('datetarget')
+
+  $.getJSON("projects.json")
+   .done(
+    function(data) {
+     $('#projects')
+      .find('option')
+      .remove()
+      .end()
+     $('#releases')
+      .find('option')
+      .remove()
+      .end()
+     $('#projects').append($('<option>', {
+      text: 'Select a project',
+      value: '',
+     }))
+     $.each(data['projects'], function(i, o) {
+       $('#projects').append($('<option>', {
+        text: i,
+        value: i,
+       }))
+      })
+     })
+   .fail(
+    function(err) {
+     console.log(err)
+    })
+ })
+
+ $('#projects').on('change', function() {
+  $('#releases')
+   .find('option')
+   .remove()
+   .end()
+  if (this.value === '') {return 1}
+  get_releases(this.value)
+ })
+
+ $("#selectrelease").click(function(){
+  var rdate = $('#releases').val();
+  if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+  if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+ });
+
+ $("#filter").click(function(){
+  var newlocation = "group.html?gid=" + gid
   if ($('#fromdatepicker').val() != '') {
     newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
   }
@@ -300,7 +406,7 @@ function get_metadata_keys(pid, tid, cid) {
    })
 }
 
-function get_commits(pid, tid, cid, page) {
+function get_commits(pid, tid, cid, gid, page) {
  if (page === undefined) {
    page = 0;
  }
@@ -312,6 +418,7 @@ function get_commits(pid, tid, cid, page) {
  args['pid'] = pid
  args['tid'] = tid
  args['cid'] = cid
+ args['gid'] = gid
  args['start'] = page
  args['dfrom'] = getUrlParameter('dfrom')
  args['dto'] = getUrlParameter('dto')
@@ -375,7 +482,7 @@ function check_fragment() {
         $("#pagination").pagination('selectPage', page);
 };
 
-function install_paginator(pid, tid, cid, items_amount) {
+function install_paginator(pid, tid, cid, gid, items_amount) {
  if (items_amount >= 1000) {
    // Limit the amount of pages to 100
    // User should use the calendar filter to dig in the results
@@ -390,7 +497,7 @@ function install_paginator(pid, tid, cid, items_amount) {
          onPageClick: function(pageNumber, ev) {
            // This check prevent get_commits to be called twice
            if (ev != undefined) {
-             get_commits(pid, tid, cid, (pageNumber - 1) * 10)
+             get_commits(pid, tid, cid, gid, (pageNumber - 1) * 10)
            }
          }
      });

@@ -264,14 +264,14 @@
  gen_histo(histo);
  % if pid:
  project_page_init('${pid}', undefined);
- install_paginator('${pid}', undefined, undefined, '${commits_amount}');
- get_metadata_keys('${pid}', undefined, undefined, undefined);
- get_commits('${pid}', undefined, undefined, undefined);
+ install_paginator('${pid}', undefined, undefined, undefined, '${commits_amount}');
+ get_metadata_keys('${pid}', undefined, undefined);
+ get_commits('${pid}', undefined, undefined, undefined, undefined);
  get_releases('${pid}', undefined);
  % elif tid:
  project_page_init(undefined, '${tid}');
- install_paginator(undefined, '${tid}', undefined, '${commits_amount}');
- get_metadata_keys(undefined, '${tid}', undefined, undefined);
+ install_paginator(undefined, '${tid}', undefined, undefined, '${commits_amount}');
+ get_metadata_keys(undefined, '${tid}', undefined);
  get_commits(undefined, '${tid}', undefined, undefined);
  get_releases(undefined, '${tid}');
  % endif
