@@ -287,10 +287,11 @@ class RootController(object):
                 _, group = idents.get_group_by_id(gid)
                 mails_to_exclude.update(group['emails'])
 
+        projects_index = Projects()
         if pid:
-            repos = Projects().get_projects()[pid]
+            repos = projects_index.get_projects()[pid]
         else:
-            repos = Projects().get_repos_by_tag(tid)
+            repos = projects_index.get_tags()[tid]
 
         p_filter = utils.get_references_filter(repos, inc_repos)
 

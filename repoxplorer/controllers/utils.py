@@ -78,7 +78,7 @@ def resolv_filters(projects_index, idents, pid,
         project = projects_index.get_projects()[pid]
         p_filter = get_references_filter(project, inc_repos)
     elif tid:
-        project = projects_index.get_repos_by_tag(tid)
+        project = projects_index.get_tags()[tid]
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []
