@@ -7,6 +7,8 @@ features:
   - Add repoxplorer-config-validate command to check definitions
   - Add a groups listing page
   - Add a group stats page
+  - bin/helpers/github/repoxplorer-github-organization has been renamed and now
+    support the new format of projects definition
 upgrade:
   - Old idents.yaml file format is deprecated and need to be refactored manually
   - Old projects.yaml file format is deprecated and need to be refactored manually
