@@ -31,7 +31,7 @@ def date2epoch(date):
     d = d.replace(tzinfo=pytz.utc)
     epoch = (d - datetime(1970, 1, 1,
                           tzinfo=pytz.utc)).total_seconds()
-    return epoch
+    return int(epoch)
 
 
 class Connector(object):

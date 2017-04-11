@@ -35,6 +35,10 @@ function install_date_pickers() {
   $( "#todatepicker" ).datepicker('setDate', dto);
 }
 
+function get_groups() {
+ return $.getJSON("api_groups.json")
+}
+
 function groups_page_init() {
   $.getJSON("api_groups.json")
    .done(
@@ -231,6 +235,7 @@ function project_page_init(projectid, tagid) {
      $('#repositories').val(selected)
  }
 
+
  if (getUrlParameter('metadata')) {
      selected_metadata = getUrlParameter('metadata').split(',')
      $.each(selected_metadata, function(i, v) {
@@ -257,11 +262,39 @@ function project_page_init(projectid, tagid) {
   if ($('#repositories').val() != undefined) {
     newlocation = newlocation + "&inc_repos=" + encodeURIComponent($('#repositories').val())
   }
+  if ($('#groups').val() != undefined) {
+    newlocation = newlocation + "&exc_groups=" + encodeURIComponent($('#groups').val())
+  }
   if (selected_metadata.length > 0) {
     newlocation = newlocation + "&metadata=" + encodeURIComponent(selected_metadata.toString())
   }
   window.location = newlocation
  });
+
+ // Fill the groups selector
+ var defer = get_groups()
+ defer.done(
+   function(data) {
+       $('#groups')
+        .find('option')
+        .remove()
+        .end()
+       $.each(data, function(i, v) {
+        $('#groups').append($('<option>', {
+         text: i,
+         value: i,
+        }))})
+        if (getUrlParameter('exc_groups')) {
+         excluded_groups = getUrlParameter('exc_groups').split(',')
+         $('#groups').val(excluded_groups)
+        }
+       }
+   )
+      .fail(
+   function(err) {
+       console.log(err)
+       }
+   )
 
  $("#add-to-filter").click(function(){
    metadata = $('#metadata').val()
@@ -425,6 +458,7 @@ function get_commits(pid, tid, cid, gid, page) {
  args['inc_merge_commit'] = inc_merge_commit,
  args['inc_repos'] = getUrlParameter('inc_repos')
  args['metadata'] = getUrlParameter('metadata')
+ args['exc_groups'] = getUrlParameter('exc_groups')
 
  $.getJSON("commits.json", args).done(function(data) {
    $("#commits-table").empty()

@@ -245,24 +245,28 @@ class RootController(object):
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
-                inc_merge_commit=None, inc_repos=None, metadata=None):
+                inc_merge_commit=None, inc_repos=None, metadata=None,
+                exc_groups=None):
         if not pid and not tid:
             abort(404,
                   detail="tag ID or project ID is mandatory")
         if pid and tid:
             abort(404,
                   detail="tag ID and project ID can't be requested together")
+
         if inc_merge_commit != 'on':
             include_merge_commit = False
         else:
             # The None value will return all whatever
             # the commit is a merge one or not
             include_merge_commit = None
+
         if dfrom:
             dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
         if dto:
             dto = datetime.strptime(dto, "%m/%d/%Y").strftime('%s')
         _metadata = []
+
         if metadata:
             metadata_splitted = metadata.split(',')
             for meta in metadata_splitted:
@@ -274,16 +278,27 @@ class RootController(object):
                     continue
                 _metadata.append((key, value))
         metadata = _metadata
-        c = Commits(index.Connector(index=indexname))
+
+        mails_to_exclude = {}
+        if exc_groups:
+            groups_splitted = exc_groups.split(',')
+            idents = Contributors()
+            for gid in groups_splitted:
+                _, group = idents.get_group_by_id(gid)
+                mails_to_exclude.update(group['emails'])
+
         if pid:
             repos = Projects().get_projects()[pid]
         else:
             repos = Projects().get_repos_by_tag(tid)
+
         p_filter = utils.get_references_filter(repos, inc_repos)
 
         query_kwargs = {
             'repos': p_filter,
             'fromdate': dfrom,
+            'mails': mails_to_exclude,
+            'mails_neg': True,
             'todate': dto,
             'merge_commit': include_merge_commit,
             'metadata': metadata,
@@ -294,6 +309,8 @@ class RootController(object):
         else:
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
+
+        c = Commits(index.Connector(index=indexname))
 
         infos = utils.get_generic_infos(c, query_kwargs)
 
@@ -388,10 +405,11 @@ class RootController(object):
     def commits(self, pid=None, tid=None, cid=None, gid=None,
                 start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata=""):
+                inc_repos=None, metadata="", exc_groups=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Contributors()
+
         _metadata = []
         metadata_splitted = metadata.split(',')
         for meta in metadata_splitted:
@@ -403,16 +421,30 @@ class RootController(object):
                 continue
             _metadata.append((key, value))
 
+        mails_to_exclude = {}
+        mails_neg = False
+        if exc_groups:
+            mails_neg = True
+            groups_splitted = exc_groups.split(',')
+            idents = Contributors()
+            for gid in groups_splitted:
+                _, group = idents.get_group_by_id(gid)
+                mails_to_exclude.update(group['emails'])
+
         p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, gid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
+        if mails_neg:
+            mails = mails_to_exclude
+
         resp = c.get_commits(repos=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit,
                              merge_commit=inc_merge_commit,
-                             metadata=_metadata)
+                             metadata=_metadata,
+                             mails_neg=mails_neg)
         for cmt in resp[2]:
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())
