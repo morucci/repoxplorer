@@ -1,7 +1,5 @@
-# UUID Group Name
-global:Registered-Users	Registered Users
-3e9524ec5161dc0bc28a7343d1c54bb9ae4d6d35	Administrators
-global:Anonymous-Users	Anonymous Users
+# UUID                                  	Group Name
+#
 adb2bebc6d8339e6b591ad698e3e0976fcc78400	repoxplorer-core
 e5cd39d95fe9a90e9e304ffcff689c0972c8d9eb	repoxplorer-ptl
-9562193e1f1647ee1c2004b4fb7996e84ae7e717	Non-Interactive Users
+global:Registered-Users                 	Registered Users
