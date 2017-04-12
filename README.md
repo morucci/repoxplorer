@@ -145,6 +145,21 @@ sudo systemctl status repoxplorer
 sudo journalctl -f
 ```
 
+## Quickstart helpers
+
+### Index a Github organization
+
+RepoXplorer comes with an helper to create a yaml file for
+repoXplorer from a Github organization. The created file can
+then be moved to the configuration directory of repoXplorer.
+
+```
+repoxplorer-github-organization --org <orgname>
+mv <orgname>.yaml $install-prefix/local/share/repoxplorer/
+# or
+mv <orgname>.yaml /etc/repoxplorer/
+```
+
 ## Configuration
 
 If RepoXplorer has been installed via its setup.py then

@@ -47,7 +47,7 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[a-zA-Z0-9_-]+$:
+      ^[a-zA-Z0-9_/\.-]+$:
         type: object
         additionalProperties: false
         required:
@@ -110,11 +110,11 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[a-zA-Z0-9_/-]+$:
+      ^[a-zA-Z0-9_/\.-]+$:
         type: object
         additionalProperties: false
         patternProperties:
-          ^[a-zA-Z0-9_/-]+$:
+          ^[a-zA-Z0-9_/\.-]+$:
             type: object
             additionalProperties: false
             required:
