@@ -19,7 +19,7 @@ its data backend.
 
 ## How to install
 
-Last release is RepoXplorer [0.7.2](https://github.com/morucci/repoxplorer/releases/tag/0.7.2).
+Last release is RepoXplorer [0.8.0](https://github.com/morucci/repoxplorer/releases/tag/0.8.0).
 
 ### All In One Docker container
 
@@ -58,7 +58,7 @@ sudo systemctl start elasticsearch
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install https://github.com/morucci/repoxplorer/releases/download/0.7.2/repoxplorer-0.7.2-1.el7.centos.noarch.rpm
+sudo yum install https://github.com/morucci/repoxplorer/releases/download/0.8.0/repoxplorer-0.8.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
