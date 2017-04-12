@@ -47,7 +47,7 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[a-zA-Z0-9_/\.-]+$:
+      ^[a-zA-Z0-9_/\. -]+$:
         type: object
         additionalProperties: false
         required:
@@ -110,7 +110,7 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[a-zA-Z0-9_/\.-]+$:
+      ^[a-zA-Z0-9_/\. -]+$:
         type: object
         additionalProperties: false
         patternProperties:
@@ -195,6 +195,7 @@ class Projects(YAMLDefinition):
                 if 'tags' not in repo:
                     repo['tags'] = []
                 repo['tags'].extend(tags)
+                repo['tags'] = list(set(repo['tags']))
                 # Apply default values
                 if 'parsers' not in repo:
                     repo['parsers'] = []

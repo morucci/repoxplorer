@@ -9,6 +9,8 @@ features:
   - Add a group stats page
   - bin/helpers/github/repoxplorer-github-organization has been renamed and now
     support the new format of projects definition
+  - bin/helpers/github/repoxplorer-openstack has been renamed and now
+    support the new format of projects definition
 upgrade:
   - Old idents.yaml file format is deprecated and need to be refactored manually
   - Old projects.yaml file format is deprecated and need to be refactored manually
