@@ -75,6 +75,11 @@ def get_diff_stats(r, obj):
             parent_tree = None
         current_tree = obj.tree
         patch_content = BytesIO()
+        # This will be slow under the hood as dulwich.patch
+        # uses the python difflib.
+        # TODO(fbo) reimplement write_tree_diff + write_object_diff
+        # to subprocess git-diff instead of calling unified_diff
+        # that is based on difflib
         patch.write_tree_diff(patch_content, r.object_store,
                               parent_tree, current_tree)
         patch_content.seek(0)

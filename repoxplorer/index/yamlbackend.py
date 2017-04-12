@@ -44,7 +44,7 @@ class YAMLBackend(object):
             return f.endswith('.yaml') or f.endswith('.yml')
 
         def load(path):
-            logger.info("Reading %s ..." % path)
+            logger.debug("Reading %s ..." % path)
             try:
                 data = yaml.safe_load(file(path))
             except:
