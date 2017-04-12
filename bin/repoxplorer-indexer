@@ -100,10 +100,16 @@ if __name__ == "__main__":
     logging.config.dictConfig(conf.indexer_logging)
     if args.forever:
         while True:
-            process()
+            try:
+                process()
+            except Exception, e:
+                logger.info("Unexcepted error occured: %s", e)
             if args.forever:
                 logger.info(
                     "Waiting the loop delay (%s/s)" % conf.indexer_loop_delay)
                 time.sleep(conf.indexer_loop_delay)
     else:
-        process()
+        try:
+            process()
+        except Exception, e:
+            logger.info("Unexcepted error occured: %s", e)

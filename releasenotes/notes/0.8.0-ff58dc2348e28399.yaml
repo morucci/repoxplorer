@@ -14,3 +14,5 @@ features:
 upgrade:
   - Old idents.yaml file format is deprecated and need to be refactored manually
   - Old projects.yaml file format is deprecated and need to be refactored manually
+fixes:
+  - Prevent the repoxplorer-indexer to crash when an unexpected error occur
