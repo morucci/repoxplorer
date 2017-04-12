@@ -2,6 +2,51 @@
 Release Notes
 =============
 
+0.8.0
+=====
+
+New Features
+------------
+
+- Better YAML structure to define identities and groups
+
+- Better YAML structure to define projects and project-templates
+
+- Definitions of projects, groups, idents, project-templates can done in multiple files (ending with .yaml).
+
+- Add repoxplorer-config-validate command to check definitions
+
+- Add a groups listing page
+
+- Add a group stats page
+
+- bin/helpers/github/repoxplorer-github-organization has been renamed and now support the new format of projects definition
+
+- bin/helpers/github/repoxplorer-openstack has been renamed and now support the new format of projects definition
+
+
+Upgrade Notes
+-------------
+
+- Old idents.yaml file format is deprecated and need to be refactored manually
+
+- Old projects.yaml file format is deprecated and need to be refactored manually
+
+
+Bug Fixes
+---------
+
+- Fix release date format in projects.yaml file. The format is now %m/%d/%Y.
+
+- Prevent the repoxplorer-indexer to crash when an unexpected error occur
+
+
+Other Notes
+-----------
+
+- Rename tools used to create projects.yaml from a github org and from OpenStack governance file.
+
+
 0.7.2
 =====
 
