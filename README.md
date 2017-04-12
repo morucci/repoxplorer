@@ -313,6 +313,15 @@ project-templates:
 Custom capturing regexs must be defined prior to the indexation
 of the Git repository it apply.
 
+### Validate the configuration
+
+The command *repoxplorer-config-validate* can be used to check
+that yaml definition files follow the right format.
+
+```Shell
+repoxplorer-config-validate
+```
+
 ## Use the commits.json REST endpoint to query the internal DB
 
 This endpoint is used by the UI to fetch commits listing according
