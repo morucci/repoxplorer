@@ -73,8 +73,6 @@ class TestProjects(TestCase):
             gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
             tags:
             - openstack
-            - language:python
-            - type:cloud
             parsers:
             - .*(blueprint) ([^ .]+).*
 
@@ -87,8 +85,6 @@ class TestProjects(TestCase):
           Nova:
             openstack/nova:
               template: default
-              tags:
-              - openstack:core
             openstack/python-novaclient:
               template: default
         """
@@ -101,7 +97,7 @@ class TestProjects(TestCase):
         expected_ret = {
             'Nova': {
                 'openstack/python-novaclient': {
-                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'tags': ['openstack'],
                     'branches': ['master', 'stable/newton', 'stable/ocata'],
                     'parsers': ['.*(blueprint) ([^ .]+).*'],
                     'gitweb': 'https://github.com/openstack/openstack/'
@@ -109,8 +105,7 @@ class TestProjects(TestCase):
                     'releases': [],
                     'uri': 'https://github.com/openstack/python-novaclient'},
                 'openstack/nova': {
-                    'tags': ['openstack', 'language:python',
-                             'type:cloud', 'openstack:core'],
+                    'tags': ['openstack'],
                     'branches': ['master', 'stable/newton', 'stable/ocata'],
                     'parsers': ['.*(blueprint) ([^ .]+).*'],
                     'gitweb': 'https://github.com/openstack/openstack/'
@@ -119,7 +114,7 @@ class TestProjects(TestCase):
                     'uri': 'https://github.com/openstack/nova'}},
             'Swift': {
                 'openstack/swift': {
-                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'tags': ['openstack'],
                     'branches': ['master', 'stable/newton', 'stable/ocata'],
                     'parsers': ['.*(blueprint) ([^ .]+).*'],
                     'gitweb': 'https://github.com/openstack/openstack/'
@@ -127,7 +122,7 @@ class TestProjects(TestCase):
                     'releases': [],
                     'uri': 'https://github.com/openstack/swift'},
                 'openstack/python-swiftclient': {
-                    'tags': ['openstack', 'language:python', 'type:cloud'],
+                    'tags': ['openstack'],
                     'branches': ['master', 'stable/newton', 'stable/ocata'],
                     'parsers': ['.*(blueprint) ([^ .]+).*'],
                     'gitweb': 'https://github.com/openstack/openstack/'
