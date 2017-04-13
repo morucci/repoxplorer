@@ -1,6 +1,6 @@
 Name:           repoxplorer
-Version:        0.7.2
-Release:        2%{?dist}
+Version:        0.8.0
+Release:        1%{?dist}
 Summary:        RepoXplorer is a stats and charts utility for GIT repositories
 
 License:        ASL 2.0
@@ -9,9 +9,8 @@ Source0:        https://github.com/morucci/%{name}/archive/%{version}.tar.gz
 
 Source1:        %{name}.service
 Source2:        %{name}-webui.service
-Source3:        projects.yaml
-Source4:        idents.yaml
-Source5:        config.py
+Source3:        index.yaml
+Source4:        config.py
 
 BuildArch:      noarch
 
@@ -22,6 +21,8 @@ Requires:       python-dulwich
 Requires:       python-urllib3
 Requires:       python-elasticsearch
 Requires:       uwsgi-plugin-python
+Requires:       python-jsonschema
+Requires:       pytz
 
 BuildRequires:  systemd
 Buildrequires:  python2-devel
@@ -49,16 +50,14 @@ mkdir -p %{buildroot}/%{_var}/lib/repoxplorer
 mkdir -p %{buildroot}/%{_var}/log/repoxplorer
 mv %{buildroot}/usr/local/share/repoxplorer %{buildroot}/%{_datadir}/
 rm %{buildroot}/usr/bin/el-*.sh
-rm %{buildroot}/%{_datadir}/repoxplorer/projects.yaml
-rm %{buildroot}/%{_datadir}/repoxplorer/idents.yaml
+rm %{buildroot}/%{_datadir}/repoxplorer/*.yaml
 rm %{buildroot}/%{_datadir}/repoxplorer/config.*
 rm %{buildroot}/%{_datadir}/repoxplorer/repoxplorer.service
 rm %{buildroot}/%{_datadir}/repoxplorer/repoxplorer-webui.service
 install -p -D -m 644 %{SOURCE1} %{buildroot}/%{_unitdir}/%{name}.service
 install -p -D -m 644 %{SOURCE2} %{buildroot}/%{_unitdir}/%{name}-webui.service
-install -p -D -m 644 %{SOURCE3} %{buildroot}/%{_sysconfdir}/%{name}/projects.yaml
-install -p -D -m 644 %{SOURCE4} %{buildroot}/%{_sysconfdir}/%{name}/idents.yaml
-install -p -D -m 644 %{SOURCE5} %{buildroot}/%{_sysconfdir}/%{name}/config.py
+install -p -D -m 644 %{SOURCE3} %{buildroot}/%{_sysconfdir}/%{name}/index.yaml
+install -p -D -m 644 %{SOURCE4} %{buildroot}/%{_sysconfdir}/%{name}/config.py
 
 %check
 #%{__python2} setup.py nosetests
@@ -92,10 +91,13 @@ exit 0
 %attr(-, repoxplorer, repoxplorer) %{_var}/log/repoxplorer
 
 %changelog
+* Wed Apr 12 2017 Fabien Boucher <fboucher@redhat.com> - 0.8.0-1
+- Bump to 0.8.0
+
 * Wed Mar 15 2017 Fabien Boucher <fboucher@redhat.com> - 0.7.2-2
 - Extends static-map search dirs to be compatible with Software Factory
 
-* Sun Mar 11 2017 Fabien Boucher <fboucher@redhat.com> - 0.7.2-1
+* Sat Mar 11 2017 Fabien Boucher <fboucher@redhat.com> - 0.7.2-1
 - Bump to 0.7.2
 
 * Mon Mar 06 2017 Fabien Boucher <fboucher@redhat.com> - 0.7.1-1

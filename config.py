@@ -65,9 +65,10 @@ app = {
 }
 
 # Additional RepoXplorer configurations
-projects_file_path = '/etc/repoxplorer/projects.yaml'
-idents_file_path = '/etc/repoxplorer/idents.yaml'
+db_default_file = None
+db_path = '/etc/repoxplorer/'
 git_store = '/var/lib/repoxplorer/git_store'
+xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'

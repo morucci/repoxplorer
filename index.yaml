@@ -1,0 +1,32 @@
+project-templates:
+  default:
+    uri: https://github.com/acme/%(name)s
+    branches:
+    - master
+    gitweb: https://github.com/acme/%(name)s/commit/%%(sha)s
+
+projects: {}
+
+identities:
+  0000-0000:
+    name: John Doe
+    default-email: john.doe@server.com
+    emails:
+      john.doe@server.com:
+        groups:
+          acme-dev:
+      jdoe@server.com:
+        groups:
+          acme-dev:
+  0000-0001:
+    name: Jane Doe
+    default-email: jane.doe@server.com
+    emails:
+      jane.doe@server.com:
+        groups:
+          acme-dev:
+
+groups:
+  acme-dev:
+    description: Developers of the Acme organization
+    emails: {}
