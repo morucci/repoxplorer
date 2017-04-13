@@ -221,8 +221,8 @@ project-templates:
     - openstack
 
 projects:
-  MyProject:
-    myrepo:
+  Barbican:
+    barbican:
       templates: default
       tags:
       - language:python
@@ -244,8 +244,8 @@ project-templates:
         date: 12/20/2016
 
 projects:
-  MyProject:
-    myrepo:
+  Barbican:
+    barbican:
       template: default
 ```
 
@@ -272,10 +272,50 @@ identities:
     default-email: john.doe@server.com
     emails:
       john.doe@server.com:
-        groups: {}
+        groups:
+          barbican-ptl:
+            begin-date: 12/31/2016
+            end-date: 12/31/2017
       jdoe@server.com:
         groups: {}
 ```
+
+Group's membership can be defined via the groups key. The group must has
+been defined ([Define groups of authors](#define-groups-of-authors)).
+Membership bounces can be given via *begin-date* and *end-date* to declare
+a group's membership between given dates.
+
+When an identity announce a group's membership that's not necessary to
+define it again at groups level.
+
+### Define groups of authors
+
+You may want to define groups of authors and be able to compute
+stats for groups you defined. To do that you have to define groups like below.
+
+Edit /etc/repoxplorer/groups.yaml
+
+```YAML
+---
+groups:
+  barbican-ptl:
+    description: Project team leaders of Barbican project
+    emails:
+      john.doe@server.com:
+      jane.doe@server.com:
+        begin-date: 12/31/2015
+        end-date: 12/31/2016
+  barbican-core:
+    description: Project team leaders of Barbican project
+    emails: {}
+```
+
+Group's membership is defined via an author email. Bounces can be defined
+via *begin-date* and *end-date* to declare a group's membership between given dates.
+
+If an identity has been defined with emails part of a defined group then
+date bounces will overwrite those defined at the groups level.
+
 
 ### Metadata automatic indexation
 
@@ -316,7 +356,9 @@ of the Git repository it apply.
 ### Validate the configuration
 
 The command *repoxplorer-config-validate* can be used to check
-that yaml definition files follow the right format.
+that yaml definition files follow the right format. Please use
+the --config option to target /etc/repoxplorer/config.py
+when repoXplorer has been installed via the RPM package.
 
 ```Shell
 repoxplorer-config-validate

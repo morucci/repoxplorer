@@ -36,11 +36,11 @@ function install_date_pickers() {
 }
 
 function get_groups() {
- return $.getJSON("api_groups.json")
+ return $.getJSON("api_groups/")
 }
 
 function groups_page_init() {
-  $.getJSON("api_groups.json")
+  $.getJSON("api_groups/")
    .done(
     function(data) {
      $("#groups-table").empty()
