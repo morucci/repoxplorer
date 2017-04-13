@@ -316,7 +316,9 @@ of the Git repository it apply.
 ### Validate the configuration
 
 The command *repoxplorer-config-validate* can be used to check
-that yaml definition files follow the right format.
+that yaml definition files follow the right format. Please use
+the --config option to target /etc/repoxplorer/config.py
+when repoXplorer has been installed via the RPM package.
 
 ```Shell
 repoxplorer-config-validate
