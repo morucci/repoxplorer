@@ -221,8 +221,8 @@ project-templates:
     - openstack
 
 projects:
-  MyProject:
-    myrepo:
+  Barbican:
+    barbican:
       templates: default
       tags:
       - language:python
@@ -244,8 +244,8 @@ project-templates:
         date: 12/20/2016
 
 projects:
-  MyProject:
-    myrepo:
+  Barbican:
+    barbican:
       template: default
 ```
 
@@ -316,7 +316,9 @@ of the Git repository it apply.
 ### Validate the configuration
 
 The command *repoxplorer-config-validate* can be used to check
-that yaml definition files follow the right format.
+that yaml definition files follow the right format. Please use
+the --config option to target /etc/repoxplorer/config.py
+when repoXplorer has been installed via the RPM package.
 
 ```Shell
 repoxplorer-config-validate
