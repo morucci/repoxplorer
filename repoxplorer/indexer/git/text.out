@@ -1,0 +1,32 @@
+commit 015c87543a01badf896df66e299a1b48e4aefbf7
+tree 51346a7fefeff8172f901f8870f06878a7a99a33
+parent 148e6f44e32ffcb06e483c1a720d4539c5956e8d
+author Fabien Boucher <fboucher@redhat.com> 1492079089 +0200
+committer Fabien Boucher <fboucher@redhat.com> 1492079089 +0200
+
+    fix: Some small fixes of issues discovered after packaging
+    
+    doc:
+    - indicate to use the --config option for the validator
+    - add missing section about group definition
+    
+    etc: remove useless logging.conf file
+    api: group api calls avoid redirect
+    
+    Change-Id: I115a55e5d05f4618249d4914d8fb07c04aacef67
+
+48	6	README.md
+0	34	etc/logging.conf
+2	2	public/javascript/repoxplorer.js
+
+commit 148e6f44e32ffcb06e483c1a720d4539c5956e8d
+tree e8501551d2ab3514a34eb826ed31183e69375bb6
+parent 30cf0dc8e274ad456cde35766270fd1211ff22da
+author Fabien Boucher <fboucher@redhat.com> 1492012517 +0200
+committer Fabien Boucher <fboucher@redhat.com> 1492012517 +0200
+
+    Update chnagelog for 0.8.0
+    
+    Change-Id: I8858e375a282f6fd502a3eebfd8bebfe6488868c
+
+45	0	CHANGELOG.md
