@@ -115,13 +115,13 @@ class TestRepoIndexer(TestCase):
     def test_init(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1')
         pi.set_branch('master')
-        self.assertEqual(pi.repo_id, 'file:///tmp/p1:p1:master')
+        self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
 
     def test_index(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
                                  con=self.con)
-        pi.cmt_list_generator = \
+        pi.run_workers = \
             lambda sha_list, _: [c for c in repo_commits
                                  if c['sha'] in sha_list]
 
@@ -199,7 +199,7 @@ class TestRepoIndexer(TestCase):
         # Index p2 a fork of p1
         pi2 = indexer.RepoIndexer('p2', 'file:///tmp/p2',
                                   con=self.con)
-        pi2.cmt_list_generator = \
+        pi2.run_workers = \
             lambda sha_list, _: [c for c in repo2_commits
                                  if c['sha'] in sha_list]
         repo2_commits = [
@@ -261,13 +261,13 @@ class TestRepoIndexer(TestCase):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
                                  con=self.con)
         with mock.patch.object(indexer, 'run') as run:
-            run.return_value = ['123\trefs/tags/t1\n124\trefs/tags/t2\n']
+            run.return_value = "123\trefs/tags/t1\n124\trefs/tags/t2\n"
             pi.get_refs()
             pi.get_tags()
             self.assertListEqual(
                 pi.tags, [['123', 'refs/tags/t1'], ['124', 'refs/tags/t2']])
 
-        pi.cmt_list_generator = \
+        pi.run_workers = \
             lambda sha_list, _: [c for c in repo_commits
                                  if c['sha'] in sha_list]
 
