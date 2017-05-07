@@ -48,7 +48,7 @@ def process():
                                        conf.db_default_file)
     prjs = projects_index.get_projects_raw()
     for pid, repos in prjs.items():
-        logger.info("Start indexing project id %s ..." % pid)
+        logger.info("Start indexing project %s" % pid)
         for rid, repo in repos.items():
             r = indexer.RepoIndexer(rid,
                                     repo['uri'],
@@ -71,12 +71,12 @@ def process():
                         "requested branch %s" % (r.base_id, branch))
                     continue
                 r.set_branch(branch)
-                logger.info("Index repository branch %s" % r.repo_id)
+                logger.info("Start indexing repository branch %s" % r.ref_id)
                 try:
                     r.git_fetch_branch()
                 except Exception, e:
                     logger.warning("Unable to fetch repository "
-                                   "branch %s: %s" % (r.repo_id, e))
+                                   "branch %s: %s" % (r.ref_id, e))
                     continue
                 try:
                     r.git_get_commit_obj()
@@ -85,7 +85,7 @@ def process():
                     r.index(args.extract_workers)
                 except Exception, e:
                     logger.warning("Unable to index repository "
-                                   "branch %s: %s" % (r.repo_id, e))
+                                   "branch %s: %s" % (r.ref_id, e))
                     logger.exception("Exception is:")
                     continue
             try:
@@ -95,6 +95,7 @@ def process():
                                "%s: %s" % (r.base_id, e))
                 continue
 
+
 if __name__ == "__main__":
     conf = imp.load_source('config', args.config)
     logging.config.dictConfig(conf.indexer_logging)
@@ -102,8 +103,8 @@ if __name__ == "__main__":
         while True:
             try:
                 process()
-            except Exception, e:
-                logger.info("Unexcepted error occured: %s", e)
+            except Exception:
+                logger.exception("Unexcepted error occured")
             if args.forever:
                 logger.info(
                     "Waiting the loop delay (%s/s)" % conf.indexer_loop_delay)
@@ -111,5 +112,5 @@ if __name__ == "__main__":
     else:
         try:
             process()
-        except Exception, e:
-            logger.info("Unexcepted error occured: %s", e)
+        except Exception:
+            logger.exception("Unexcepted error occured")

@@ -12,89 +12,36 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
 import os
 import re
 import copy
 import logging
-import contextlib
 import subprocess
 import multiprocessing as mp
 
-from io import BytesIO
-
-from pecan import configuration
 from pecan import conf
-
-from dulwich import repo
-from dulwich import patch
+from pecan import configuration
 
 from repoxplorer import index
+from repoxplorer.index.tags import Tags
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
-from repoxplorer.index.tags import Tags
-
-
-RE_SOURCE_FILENAME = re.compile(
-    r'^--- (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?')
-RE_TARGET_FILENAME = re.compile(
-    r'^\+\+\+ (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?')
-METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 
 logger = logging.getLogger(__name__)
 
-
-@contextlib.contextmanager
-def cdir(path):
-    prev_cwd = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(prev_cwd)
+METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 
 
-def run(cmd):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               shell=True)
-    out = process.communicate()
+def run(cmd, path):
+    process = subprocess.Popen(cmd,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               cwd=path)
+    out, err = process.communicate()
     if process.returncode != 0:
+        logger.debug(err)
         raise Exception('%s exited with code %s' % (cmd, process.returncode))
     return out
-
-
-def get_diff_stats(r, obj):
-    parents = len(obj.parents)
-    if parents <= 1:
-        parent = getattr(obj, 'parents', None)
-        if parent:
-            parent = parent[0]
-            parent_tree = r.object_store[parent].tree
-        else:
-            parent_tree = None
-        current_tree = obj.tree
-        patch_content = BytesIO()
-        # This will be slow under the hood as dulwich.patch
-        # uses the python difflib.
-        # TODO(fbo) reimplement write_tree_diff + write_object_diff
-        # to subprocess git-diff instead of calling unified_diff
-        # that is based on difflib
-        patch.write_tree_diff(patch_content, r.object_store,
-                              parent_tree, current_tree)
-        patch_content.seek(0)
-        content = patch_content.readlines()
-        modified = 0
-        for line in content:
-            if RE_SOURCE_FILENAME.match(line):
-                continue
-            if RE_TARGET_FILENAME.match(line):
-                continue
-            if line[0] == '+' or line[0] == '-':
-                modified += 1
-        return modified, False
-    if parents > 1:
-        return 0, True
 
 
 def parse_commit_line(line, re):
@@ -126,42 +73,142 @@ def parse_commit_msg(msg, extra_parsers=None):
     return subject, metadatas
 
 
-def extract_cmts(args):
-    sha_list, path, repo_name, extra_parsers = args
-    name = repo_name.split(':')[-2]
-    cmts = []
-    logger.debug("%s: Worker start extracting %s commits" % (
-        name, len(sha_list)))
-    r = repo.Repo(path)
-    for c, sha in enumerate(sha_list):
-        if c % 500 == 0:
-            logger.info("%s: Worker %s remains %s commits to extract" % (
-                name, mp.current_process(), len(sha_list) - c))
-        obj = r.object_store[sha]
-        source = {}
-        source[u'author_date'] = obj.author_time
-        source[u'committer_date'] = obj.commit_time
-        source[u'ttl'] = int(obj.commit_time - obj.author_time)
-        source[u'sha'] = obj.id
-        source[u'author_email'] = obj.author.split(
-            '<')[1].rstrip('>')
-        source[u'committer_email'] = obj.committer.split(
-            '<')[1].rstrip('>')
-        source[u'author_name'] = obj.author.split(
-            '<')[0].rstrip().decode('utf-8', errors="replace")
-        source[u'committer_name'] = obj.committer.split(
-            '<')[0].rstrip().decode('utf-8', errors="replace")
-        subject, metadatas = parse_commit_msg(obj.message, extra_parsers)
-        source[u'commit_msg'] = subject
-        for metadata in metadatas:
-            if metadata[0] not in source:
-                source[metadata[0]] = []
-            source[metadata[0]].append(metadata[1])
-        modified, merge_commit = get_diff_stats(r, obj)
-        source[u'line_modifieds'] = modified
-        source[u'merge_commit'] = merge_commit
-        source[u'repos'] = [repo_name, ]
-        cmts.append(source)
+def get_all_shas(path):
+    out = run(['git', 'log', '--format=format:%H'], path)
+    shas = out.splitlines()
+    return shas
+
+
+def get_commits_desc(path, shas):
+    cmd = ['git', 'show', '--format=raw', '--numstat']
+    cmd.extend(shas)
+    out = run(cmd, path)
+    return out.splitlines()
+
+
+def parse_commit(input, offset, extra_parsers=None):
+    cmt = {}
+    cmt['sha'] = input[offset].split()[-1]
+    # input[offset + 1] is the tree hash
+    # input[offset + 2] is the parent hash
+    offset += 2
+    parents = 0
+    if not input[offset].startswith('parent'):
+        # No parent so first commit of the chain
+        pass
+    else:
+        while True:
+            if input[offset].startswith('parent'):
+                offset += 1
+                parents += 1
+            else:
+                break
+    if parents > 1:
+        cmt['merge_commit'] = True
+    else:
+        cmt['merge_commit'] = False
+    for i, field in ((0, "author"), (1, "committer")):
+        m = re.match("%s (.*) <(.*)> (.*) (.*)" % field,
+                     input[offset+i])
+        cmt['%s_name' % field] = m.groups()[0].decode('utf-8',
+                                                      errors="replace")
+        cmt['%s_email' % field] = m.groups()[1]
+        cmt['%s_email_domain' % field] = m.groups()[1].split('@')[-1]
+        cmt['%s_date' % field] = int(m.groups()[2])
+        cmt['%s_date_tz' % field] = m.groups()[3]
+    cmt['ttl'] = cmt['committer_date'] - cmt['author_date']
+    if input[offset + 2] == 'gpgsig -----BEGIN PGP SIGNATURE-----':
+        cmt['signed'] = True
+        offset += 3
+        i = 0
+        while True:
+            if input[offset + i] == ' -----END PGP SIGNATURE-----':
+                break
+            i += 1
+        offset += i + 2
+    else:
+        cmt['signed'] = False
+        offset += 3
+    i = 0
+    while True:
+        if len(input[offset + i]) and input[offset + i][0] != ' ':
+            # Commit msg lines starts with a space char
+            break
+        i += 1
+    cmt['commit_msg_full'] = "\n".join(
+        [l.strip() for l in input[offset:offset+i]])
+    subject, metadatas = parse_commit_msg(
+        cmt['commit_msg_full'], extra_parsers)
+    cmt['commit_msg'] = subject
+    for metadata in metadatas:
+        if metadata[0] not in cmt:
+            cmt[metadata[0]] = []
+        cmt[metadata[0]].append(metadata[1])
+    offset += i
+    i = 0
+    cmt['line_modifieds'] = 0
+    cmt['files_stats'] = {}
+    while True:
+        try:
+            input[offset + i]
+        except IndexError:
+            # EOF
+            break
+        if input[offset + i].startswith('commit'):
+            # Next commit
+            break
+        if (len(input[offset + i]) and input[offset + i][0] != ' ' and not
+                cmt['merge_commit']):
+            m = re.match("(.*)\t(.*)\t(.*)", input[offset + i])
+            if m.groups()[0] != '-':
+                # '-' means binary file - so skip it
+                l_added = int(m.groups()[0])
+                l_removed = int(m.groups()[1])
+                file = m.groups()[2]
+                cmt['files_stats'][file] = {
+                    'lines_added': l_added,
+                    'lines_removed': l_removed}
+                cmt['line_modifieds'] += l_added + l_removed
+        i += 1
+    return cmt, offset + i
+
+
+def process_commits_desc_output(input, ref_id, extra_parsers=None):
+    ret = []
+    offset = 0
+    while True:
+        try:
+            input[offset]
+        except IndexError:
+            break
+        try:
+            cmt, offset = parse_commit(input, offset, extra_parsers)
+        except Exception:
+            logger.warning("A chunk of commits failed to be parsed. Skip.")
+            logger.warning("Skip it !")
+            logger.debug("Output of the failed chunk at the offset %s" % (
+                offset))
+            logger.debug("\n".join(input[offset:offset+100]))
+            logger.exception("Issue was:")
+        cmt['repos'] = [ref_id, ]
+        # Remove atm un-supported fields
+        del cmt["author_date_tz"]
+        del cmt["committer_date_tz"]
+        del cmt["author_email_domain"]
+        del cmt["committer_email_domain"]
+        del cmt["files_stats"]
+        del cmt["signed"]
+        del cmt["commit_msg_full"]
+        ret.append(cmt)
+    return ret
+
+
+def process_commits(options):
+    path, ref_id, shas = options
+    logger.info("Worker %s started to extract %s commits" % (
+        mp.current_process(), len(shas)))
+    buf = get_commits_desc(path, shas)
+    cmts = process_commits_desc_output(buf, ref_id)
     return cmts
 
 
@@ -192,63 +239,74 @@ class RepoIndexer():
             os.makedirs(self.local)
 
     def __str__(self):
-        return 'Git indexer of %s' % self.repo_id
+        return 'Git indexer of %s' % self.ref_id
 
     def set_branch(self, branch):
         self.branch = branch
-        # TODO(fbo): should be renamed branch_id
-        self.repo_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
+        self.ref_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
 
     def git_init(self):
         logger.debug("Git init for %s:%s in %s" % (
             self.uri, self.name, self.local))
-        with cdir(self.local):
-            run("git init .")
-            if "origin" not in run("git remote -v")[0]:
-                run("git remote add origin %s" % self.uri)
+        run(["git", "init", "."], self.local)
+        if "origin" not in run(["git", "remote", "-v"], self.local):
+            run(["git", "remote", "add", "origin", self.uri], self.local)
 
     def git_fetch_branch(self):
         logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
                                          self.branch))
-        with cdir(self.local):
-            run("git fetch origin %s" % self.branch)
-            self.head = run("git rev-parse FETCH_HEAD")[0].strip()
-        self.repo = repo.Repo(self.local)
+        run(["git", "fetch", "origin", self.branch], self.local)
+        run(["git", "checkout", self.branch], self.local)
 
     def get_refs(self):
-        with cdir(self.local):
-            _refs = run("git ls-remote origin")[0].split('\n')
-            del _refs[-1]
-            self.refs = []
-            for r in _refs:
-                self.refs.append(r.split('\t'))
+        refs = run(["git", "ls-remote",
+                   "origin"], self.local).splitlines()
+        self.refs = []
+        for r in refs:
+            self.refs.append(r.split('\t'))
 
     def get_heads(self):
-        self.heads = filter(lambda x: x[1].startswith('refs/heads/'),
-                            self.refs)
+        self.heads = filter(
+            lambda x: x[1].startswith('refs/heads/'), self.refs)
 
     def get_tags(self):
-        self.tags = filter(lambda x: x[1].startswith('refs/tags/'),
-                           self.refs)
+        self.tags = filter(
+            lambda x: x[1].startswith('refs/tags/'), self.refs)
 
     def git_get_commit_obj(self):
-        commits = {}
-        to_consume = [self.head]
-        while to_consume:
-            n = to_consume.pop()
-            nexts = self.repo.get_parents(n)
-            commits[n] = None
-            for n in nexts:
-                if n not in commits.keys():
-                    to_consume.append(n)
-        self.commits = commits.keys()
+        self.commits = get_all_shas(self.local)
+
+    def run_workers(self, shas, workers):
+        BULK_CHUNK = 1000
+        to_process = []
+        if workers == 0:
+            # Default value (auto)
+            workers = mp.cpu_count() - 1 or 1
+        while True:
+            try:
+                shas[BULK_CHUNK]
+                to_process.append(shas[:BULK_CHUNK])
+                del shas[:BULK_CHUNK]
+            except IndexError:
+                # Add the rest
+                to_process.append(shas)
+                break
+        options = [(self.local, self.ref_id, stp) for stp in to_process]
+        worker_pool = mp.Pool(workers)
+        extracted = worker_pool.map(process_commits, options)
+        worker_pool.terminate()
+        worker_pool.join()
+        ret = []
+        for r in extracted:
+            ret.extend(r)
+        return ret
 
     def get_current_commit_indexed(self):
         """ Fetch from the index commits mentionned for this repo
         and branch.
         """
         self.already_indexed = [c['_id'] for c in
-                                self.c.get_commits(repos=[self.repo_id],
+                                self.c.get_commits(repos=[self.ref_id],
                                                    scan=True)]
         logger.debug(
             "%s: In the DB - repo history is composed of %s commits." % (
@@ -271,34 +329,6 @@ class RepoIndexer():
             "%s: Indexer will dereference %s commits." % (
                 self.name,
                 len(self.to_delete)))
-
-    def cmt_list_generator(self, sha_list, workers):
-        if workers == 0:
-            # Default value (auto)
-            workers = mp.cpu_count() - 1 or 1
-        elif workers == 1:
-            return extract_cmts((sha_list, self.local,
-                                 self.repo_id, self.parsers))
-        logger.debug("%s: Start commits extract with %s workers" % (
-            self.name, workers))
-        worker_pool = mp.Pool(workers)
-        sets = []
-        set_length = len(sha_list) / workers
-        for _ in xrange(workers - 1):
-            sets.append((sha_list[:set_length], self.local,
-                         self.repo_id, self.parsers))
-            del sha_list[:set_length]
-        sets.append((sha_list, self.local,
-                     self.repo_id, self.parsers))
-        extracted_sets = worker_pool.map(extract_cmts, sets)
-        # TODO(fbo): Seems an issue exists here as childs should terminate
-        # by themself
-        worker_pool.terminate()
-        worker_pool.join()
-        ret = []
-        for r in extracted_sets:
-            ret.extend(r)
-        return ret
 
     def index_tags(self):
         def c_tid(t):
@@ -355,6 +385,7 @@ class RepoIndexer():
                 self.parsers.append(re.compile(parser))
             logger.debug("%s: Prepared %s regex parsers for commit msgs" % (
                 self.name, len(self.parsers)))
+
         # check whether a commit should be completly deleted or
         # updated by removing the repo from the repos field
         if self.to_delete:
@@ -389,14 +420,17 @@ class RepoIndexer():
                          c in res['docs'] if c['found'] is True]
             to_create = [c['_id'] for
                          c in res['docs'] if c['found'] is False]
+
             logger.info("%s: %s commits will be created ..." % (
                 self.name, len(to_create)))
+            # Here we use sub processes workers to speedup
+            # getting commits stats
             self.c.add_commits(
-                self.cmt_list_generator(to_create, extract_workers))
+                self.run_workers(to_create, extract_workers))
 
             logger.info(
                 "%s: %s commits already indexed and need to be updated" % (
                     self.name, len(to_update)))
             for c in to_update:
-                c['repos'].append(self.repo_id)
+                c['repos'].append(self.ref_id)
             self.c.update_commits(to_update)
