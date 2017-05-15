@@ -30,6 +30,8 @@ from repoxplorer.index.commits import PROPERTIES
 logger = logging.getLogger(__name__)
 
 METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
+AUTHOR_RE = re.compile('author (.*) <(.*)> (.*) (.*)')
+COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
 
 
 def run(cmd, path):
@@ -107,9 +109,9 @@ def parse_commit(input, offset, extra_parsers=None):
         cmt['merge_commit'] = True
     else:
         cmt['merge_commit'] = False
-    for i, field in ((0, "author"), (1, "committer")):
-        m = re.match("%s (.*) <(.*)> (.*) (.*)" % field,
-                     input[offset+i])
+    for i, r, field in ((0, AUTHOR_RE, 'author'),
+                        (1, COMMITTER_RE, 'committer')):
+        m = re.match(r, input[offset+i])
         cmt['%s_name' % field] = m.groups()[0].decode('utf-8',
                                                       errors="replace")
         cmt['%s_email' % field] = m.groups()[1]
