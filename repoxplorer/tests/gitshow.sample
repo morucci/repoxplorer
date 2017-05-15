@@ -1,0 +1,91 @@
+commit 1ef6088bb6678b78993672ffdec93c7c99a0405d
+tree 4a09e8fa7bc448ae2dba5bda4af45b92ebd86bbd
+parent 0e58c2fd54a50362138849a20bced510480dac8d
+author Author A <author.a@test> 1493424649 -0400
+committer Author A <author.a@test> 1493425136 -0400
+gpgsig -----BEGIN PGP SIGNATURE-----
+ 
+ iQIzBAABCgAdFiEEItfJ0pcfUYWn/MzM/RKg8hTJ4XcFAlkD2/IACgkQ/RKg8hTJ
+ 4XcpbRAA2NhbpeBEHsIcYMr2clvOie3AYFt1VaU7UDPuivQpx3SPsTqutt4gqG8p
+ 91v951uaXqdAbBcRH4xSktOA4aYs+eNhKABs8Iw7khlN4IV4GwnUmeD40UsJedri
+ iUaxSjv7S+q5mhCgJeYvP3Ln7Vhm0ojO/fQKAnXqaAPQoI04yehdr2++NYXcsWuT
+ lcVaUi3PMz0i70pAx+U7ltr2te3jwvb4vzYv4Phuf7WEPx8DJFN+8jee/KO0kz+j
+ xE49sRcCm5BYla5HSLnB3C8Dee2BYTPDWYwwXQrWWBzdlJX8S0SHyKkbF7U4y80N
+ xDrNXFu4TUjOLpTJNoEjqZsO6QpBg6QUtebXqa3L+uPNqNtHqxWrGl/odUq4d2CF
+ URRfJv3a0FH9aRu+05wzdJPariyf1okNn/tpjjpgLw8lxxOqGJNPQtA8IDBfbWRb
+ 4igwZEu0ONrHa5PlglKIDTCMlzt3KL6xksR5tgiQyEJ6y5fIacMpliiAzljySB+K
+ Mur9A8Mwo5w/4qaQzHmAleqGRD1U4in9rspJAP3nygh+yfg7AC3ysBR2GcVQJsPY
+ vU5sNZcTJLu1tQiD37g8vtVgMU1eUTNRFOfG+mqKDUltTBMdBk/j677XnOqq8VjE
+ Sxcsca2dfRNwRyfPF/XGdEQF2nXxKeKdV1WBJlK3iRqdlgTVis8=
+ =vS+Q
+ -----END PGP SIGNATURE-----
+
+    Make playbook and task in topic singular
+    
+    The topic names need to be consistent between event types to ensure
+    people can properly use wildcards to filter the messages on just the
+    things they care about. However playbook and task were inconsistent in
+    topics from between different methods in the callback plugin. This
+    commit fixes that by making sure we always use 'playbook' and 'task',
+    not 'playbooks' or 'tasks'.
+    
+    Change-Id: I3e6240560ad562e8f41f7e314ef7a4b0b1178e32
+
+5	5	modules/openstack_project/files/puppetmaster/mqtt.py
+
+commit 0e58c2fd54a50362138849a20bced510480dac8d
+tree 01ee7e6331e400a12468b9651bf7083a9892d3bd
+parent 7c9af152dd5e99215c6f7e721be3331a2b00f43f
+parent 2bf2adb27175c68891712e4641b1874dfbe2c63a
+author Jenkins <jenkins@review.openstack.org> 1493423272 +0000
+committer Gerrit Code Review <review@openstack.org> 1493423272 +0000
+
+    Merge "Cast the playbook uuid as a string"
+
+1	1	modules/openstack_project/files/puppetmaster/mqtt.py
+
+commit fb7d2712a907f8f01b817889e88abaf0dad6a109
+tree d052472f2a252ab0ec74df38889f37f70a15c074
+parent ad24b90f0891bdb7891bf8f13493472cf3885a9c
+parent 123bdfbb16a00e8e3abea9d84c72cdbe580e5046
+author Jenkins <jenkins@review.openstack.org> 1493413511 +0000
+committer Gerrit Code Review <review@openstack.org> 1493413511 +0000
+
+    Merge "Add subunit gearman worker mqtt info to firehose docs"
+
+10	10	doc/source/firehose.rst
+35	0	doc/source/firehose_schema.rst
+
+commit d9fda5b81f6c8d64fda2ca2c08246492e800292f
+tree 6540793b0a0348c00e8f1bd8fc52f024db95bea3
+parent 8cb34d026e9c290b83c52301d82b2011406fc7d8
+author Author A <author.a@test> 1491593068 -0400
+committer Author B <author.b@test> 1493244209 +0000
+
+    Add firehose schema docs
+    
+    This commit starts a new page for documenting the firehose schema. Right
+    now it only includes the schema for gerrit events, but it will be
+    expanded in future patches to include the other services reporting.
+    Hopefully this will serve as a better guide for people to actually being
+    able to consume events from firehose.
+    
+    Change-Id: I2157f702c87f32055ba2fad842a05e31539bc857
+
+1	0	doc/source/firehose.rst
+59	0	doc/source/firehose_schema.rst
+1	0	doc/source/systems.rst
+
+commit 8cb34d026e9c290b83c52301d82b2011406fc7d8
+tree 06ca044790deff0e862ea1748f8ac5d6bd62bb9c
+author Author C <author.c@test> 1493240029 -0700
+committer Author C <author.c@test> 1493240029 -0700
+
+    Fix use of _ that should be - in mqtt-ca_certs
+    
+    This typo in the subunit2sql worker config was preventing it from
+    running properly. Fix it.
+    
+    Change-Id: I4155bdd80523b73fdc69f45d6120e8eec986dda7
+
+1	1	modules/openstack_project/templates/logstash/jenkins-subunit-worker.yaml.erb

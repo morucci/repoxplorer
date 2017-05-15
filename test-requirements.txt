@@ -1,8 +1,9 @@
-elasticsearch>=2.0.0,<3.0.0
 flake8
 nose
 mock
+coverage
 pecan
+elasticsearch>=2.0.0,<3.0.0
 PyYAML
 pycrypto
 jsonschema

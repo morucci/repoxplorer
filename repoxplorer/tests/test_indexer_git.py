@@ -13,6 +13,9 @@ from repoxplorer.indexer.git import indexer
 
 class TestExtractCmtFunctions(TestCase):
 
+    def setUp(self):
+        self.maxDiff = None
+
     def test_parse_commit_msg(self):
         msg = """cmt subject
 
@@ -90,13 +93,79 @@ http://metavalue
         self.assertIn((u'bug', u'bz16'), metadatas)
         self.assertTrue(len(metadatas) == 2)
 
-    def test_get_diff_stats(self):
-        # TODO(fbo)
-        pass
-
-    def test_extracts_cmts(self):
-        # TODO(fbo)
-        pass
+    def test_parse_commit_desc_output(self):
+        cd = os.path.dirname(os.path.realpath(__file__))
+        raw = file(
+            os.path.join(cd, 'gitshow.sample')).read().splitlines()
+        output = indexer.process_commits_desc_output(
+            raw, 'file:///gitshow.sample')
+        expected = [
+            {'ttl': 487,
+             'line_modifieds': 10,
+             'commit_msg': u'Make playbook and task in topic singular',
+             'sha': '1ef6088bb6678b78993672ffdec93c7c99a0405d',
+             'repos': ['file:///gitshow.sample'],
+             'merge_commit': False,
+             'committer_date': 1493425136,
+             'author_date': 1493424649,
+             'committer_email': 'author.a@test',
+             u'Change-Id': [
+                 u'I3e6240560ad562e8f41f7e314ef7a4b0b1178e32'],
+             'author_name': u'Author A',
+             'committer_name': u'Author A',
+             'author_email': 'author.a@test'},
+            {'ttl': 0,
+             'line_modifieds': 0,
+             'commit_msg': u'Merge "Cast the playbook uuid as a string"',
+             'sha': '0e58c2fd54a50362138849a20bced510480dac8d',
+             'repos': ['file:///gitshow.sample'],
+             'merge_commit': True,
+             'committer_date': 1493423272,
+             'author_date': 1493423272,
+             'committer_email': 'review@openstack.org',
+             'author_name': u'Jenkins',
+             'committer_name': u'Gerrit Code Review',
+             'author_email': 'jenkins@review.openstack.org'},
+            {'ttl': 0,
+             'line_modifieds': 0,
+             'commit_msg': u'Merge "Add subunit gearman worker '
+             'mqtt info to firehose docs"',
+             'sha': 'fb7d2712a907f8f01b817889e88abaf0dad6a109',
+             'repos': ['file:///gitshow.sample'],
+             'merge_commit': True,
+             'committer_date': 1493413511,
+             'author_date': 1493413511,
+             'committer_email': 'review@openstack.org',
+             'author_name': u'Jenkins',
+             'committer_name': u'Gerrit Code Review',
+             'author_email': 'jenkins@review.openstack.org'},
+            {'ttl': 1651141,
+             'line_modifieds': 61,
+             'commit_msg': u'Add firehose schema docs',
+             'sha': 'd9fda5b81f6c8d64fda2ca2c08246492e800292f',
+             'repos': ['file:///gitshow.sample'],
+             'merge_commit': False,
+             'committer_date': 1493244209,
+             'author_date': 1491593068,
+             'committer_email': 'author.b@test',
+             u'Change-Id': [u'I2157f702c87f32055ba2fad842a05e31539bc857'],
+             'author_name': u'Author A',
+             'committer_name': u'Author B',
+             'author_email': 'author.a@test'},
+            {'ttl': 0,
+             'line_modifieds': 2,
+             'commit_msg': u'Fix use of _ that should be - in mqtt-ca_certs',
+             'sha': '8cb34d026e9c290b83c52301d82b2011406fc7d8',
+             'repos': ['file:///gitshow.sample'],
+             'merge_commit': False,
+             'committer_date': 1493240029,
+             'author_date': 1493240029,
+             'committer_email': 'author.c@test',
+             u'Change-Id': [u'I4155bdd80523b73fdc69f45d6120e8eec986dda7'],
+             'author_name': u'Author C',
+             'committer_name': u'Author C',
+             'author_email': 'author.c@test'}]
+        self.assertListEqual(output, expected)
 
 
 class TestRepoIndexer(TestCase):
