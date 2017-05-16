@@ -8,7 +8,7 @@ classic Git stat tools do not handle that.
 
 RepoXplorer let's you describe how a project is composed and then computes
 stats across them. RepoXplorer provides a Web user interface based on Bootstrap
-and Jquery to let a user access data easily. It relies on ElasticSearch for
+and JQuery to let a user access data easily. It relies on ElasticSearch for
 its data backend.
 
 ## A visual overview of the user interface
@@ -42,7 +42,7 @@ Install ElasticSearch 2.x for CentOS via rpm:
 
 ```Shell
 sudo rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-cat << EOF | sudo tee /etc/yum.repo.d/elasticsearch.repo
+cat << EOF | sudo tee /etc/yum.repos.d/elasticsearch.repo
 [elasticsearch-2.x]
 name=Elasticsearch repository for 2.x packages
 baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
