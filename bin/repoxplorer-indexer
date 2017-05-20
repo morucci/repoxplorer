@@ -39,6 +39,9 @@ parser.add_argument(
 parser.add_argument(
     '--config', default=config,
     help='Path to the repoXplorer configuration file')
+parser.add_argument(
+    '--project', type=str, default=None,
+    help='Specify the project to index')
 
 args = parser.parse_args()
 
@@ -48,6 +51,8 @@ def process():
                                        conf.db_default_file)
     prjs = projects_index.get_projects_raw()
     for pid, repos in prjs.items():
+        if args.project and args.project != pid:
+            continue
         logger.info("Start indexing project %s" % pid)
         for rid, repo in repos.items():
             r = indexer.RepoIndexer(rid,
