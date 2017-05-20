@@ -50,9 +50,9 @@ def parse_commit_line(line, re):
     reserved_metadata_keys = PROPERTIES.keys()
     m = re.match(line)
     if m:
-        key = m.groups()[0].decode('utf-8', errors="replace")
+        key = m.groups()[0]
         if key not in reserved_metadata_keys:
-            value = m.groups()[1].decode('utf-8', errors="replace")
+            value = m.groups()[1]
             # Remove space before and after the string and remove
             # the \# that will cause trouble when metadata are queried
             # via the URL arguments
@@ -66,7 +66,7 @@ def parse_commit_msg(msg, extra_parsers=None):
         for p in extra_parsers:
             parsers.append(p)
     lines = msg.split('\n')
-    subject = lines[0].decode('utf-8', errors="replace")
+    subject = lines[0]
     for line in lines[1:]:
         for parser in parsers:
             metadata = parse_commit_line(line, parser)

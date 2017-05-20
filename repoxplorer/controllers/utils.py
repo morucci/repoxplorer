@@ -26,7 +26,8 @@ xorkey = conf.get('xorkey') or 'default'
 
 def encrypt(key, plaintext):
     cipher = XOR.new(key)
-    return base64.b64encode(cipher.encrypt(plaintext))
+    return base64.b64encode(
+        cipher.encrypt(plaintext.encode('utf-8')))
 
 
 def decrypt(key, ciphertext):
@@ -122,7 +123,7 @@ def top_authors_sanitize(idents, top_authors, commits, top=100000):
         top_authors_s.append(
             {'cid': encrypt(xorkey, v[2]),
              'email': email,
-             'gravatar': hashlib.md5(email).hexdigest(),
+             'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest(),
              'amount': int(v[0]),
              'name': v[1]})
     top_authors_s_sorted = sorted(top_authors_s,
