@@ -164,7 +164,21 @@ http://metavalue
              u'Change-Id': [u'I4155bdd80523b73fdc69f45d6120e8eec986dda7'],
              'author_name': u'Author C',
              'committer_name': u'Author C',
-             'author_email': 'author.c@test'}]
+             'author_email': 'author.c@test'},
+            {'author_date': 1493240029,
+             'author_email': u'author.c@test',
+             'author_name': u'Author C',
+             'commit_msg': u'Merge pull request #13155 from '
+             'coolljt0725/fix_validate_tag_name',
+             'committer_date': 1493240029,
+             'committer_email': u'author.c@test',
+             'committer_name': u'Author C',
+             'line_modifieds': 0,
+             'merge_commit': True,
+             'repos': ['file:///gitshow.sample'],
+             'sha': '8e1cc08e799a83ace198ee7a3c6f9169635e7f46',
+             'ttl': 0}]
+
         self.assertListEqual(output, expected)
 
 

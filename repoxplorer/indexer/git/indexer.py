@@ -88,6 +88,10 @@ def get_commits_desc(path, shas):
     return out.splitlines()
 
 
+def _decode(s):
+    return s.decode('utf-8', errors="replace")
+
+
 def parse_commit(input, offset, extra_parsers=None):
     cmt = {}
     cmt['sha'] = input[offset].split()[-1]
@@ -112,10 +116,9 @@ def parse_commit(input, offset, extra_parsers=None):
     for i, r, field in ((0, AUTHOR_RE, 'author'),
                         (1, COMMITTER_RE, 'committer')):
         m = re.match(r, input[offset+i])
-        cmt['%s_name' % field] = m.groups()[0].decode('utf-8',
-                                                      errors="replace")
-        cmt['%s_email' % field] = m.groups()[1]
-        cmt['%s_email_domain' % field] = m.groups()[1].split('@')[-1]
+        cmt['%s_name' % field] = _decode(m.groups()[0])
+        cmt['%s_email' % field] = _decode(m.groups()[1])
+        cmt['%s_email_domain' % field] = _decode(m.groups()[1].split('@')[-1])
         cmt['%s_date' % field] = int(m.groups()[2])
         cmt['%s_date_tz' % field] = m.groups()[3]
     cmt['ttl'] = cmt['committer_date'] - cmt['author_date']
@@ -133,12 +136,16 @@ def parse_commit(input, offset, extra_parsers=None):
         offset += 3
     i = 0
     while True:
+        try:
+            input[offset + i]
+        except IndexError:
+            break
         if len(input[offset + i]) and input[offset + i][0] != ' ':
             # Commit msg lines starts with a space char
             break
         i += 1
-    cmt['commit_msg_full'] = "\n".join(
-        [l.strip() for l in input[offset:offset+i]])
+    cmt['commit_msg_full'] = _decode("\n".join(
+        [l.strip() for l in input[offset:offset+i]]))
     subject, metadatas = parse_commit_msg(
         cmt['commit_msg_full'], extra_parsers)
     cmt['commit_msg'] = subject

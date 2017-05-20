@@ -21,14 +21,14 @@ gpgsig -----BEGIN PGP SIGNATURE-----
  -----END PGP SIGNATURE-----
 
     Make playbook and task in topic singular
-    
+
     The topic names need to be consistent between event types to ensure
     people can properly use wildcards to filter the messages on just the
     things they care about. However playbook and task were inconsistent in
     topics from between different methods in the callback plugin. This
     commit fixes that by making sure we always use 'playbook' and 'task',
     not 'playbooks' or 'tasks'.
-    
+
     Change-Id: I3e6240560ad562e8f41f7e314ef7a4b0b1178e32
 
 5	5	modules/openstack_project/files/puppetmaster/mqtt.py
@@ -89,3 +89,15 @@ committer Author C <author.c@test> 1493240029 -0700
     Change-Id: I4155bdd80523b73fdc69f45d6120e8eec986dda7
 
 1	1	modules/openstack_project/templates/logstash/jenkins-subunit-worker.yaml.erb
+
+commit 8e1cc08e799a83ace198ee7a3c6f9169635e7f46
+tree b66305787d63c93c778b41ca49ff12ff30d856b7
+parent ae272bb6f3a23b3f393ee4f6fd133cc407d2090d
+parent be272bb6f3a23b3f393ee4f6fd133cc407d2090d
+author Author C <author.c@test> 1493240029 -0700
+committer Author C <author.c@test> 1493240029 -0700
+
+    Merge pull request #13155 from coolljt0725/fix_validate_tag_name
+
+    Fix validate tag name. Fix #13149
+
