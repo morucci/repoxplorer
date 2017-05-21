@@ -122,6 +122,8 @@ def parse_commit(input, offset, extra_parsers=None):
         cmt['%s_date' % field] = int(m.groups()[2])
         cmt['%s_date_tz' % field] = m.groups()[3]
     cmt['ttl'] = cmt['committer_date'] - cmt['author_date']
+    # Avoid weird negative TTL (personal computers may not be sync on NTP)
+    cmt['ttl'] = cmt['ttl'] if cmt['ttl'] >= 0 else 0
     if input[offset + 2] == 'gpgsig -----BEGIN PGP SIGNATURE-----':
         cmt['signed'] = True
         offset += 3
