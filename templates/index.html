@@ -5,17 +5,17 @@
 </%def>
 
 <div class="row-fluid">
-
  <div class="col-md-12">
   <div class="jumbotron">
-   <h3>Listing of projects, GIT repositories, and tags referenced in the database. You can click on them in order to display details.</h3>
+   <h3>Listing of projects referenced in the database. You can click on them to display details.</h3>
   </div>
  </div>
+</div>
 
 <div class="row-fluid">
-
  <div class="col-md-12">
-
+  <% ntags = len(tags) %>
+  % if ntags > 0:
   <div class="panel panel-default">
    <div class="panel-heading">
     <h3 class="panel-title text-left"><b>Tags list</b></h3>
@@ -28,39 +28,49 @@
      </h4>
    </div>
   </div>
-
-  <div class="panel panel-default">
-   <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Projects list</b></h3>
-   </div>
-   <table class="table">
-    <tr>
-     <th class="col-md-3">Project names</th>
-     <th class="col-md-5">Repository refs</th>
-     <th class="col-md-4">Tags</th>
-    <tr>
-     % for project, repolist in projects.items():
-     <tr>
-      <td><a href="project.html?pid=${project}"><b>${project}</b></a></td>
-      <td>
-       % for repo in repolist:
-        <p><a href="project.html?pid=${project}&inc_repos=${repo['name']}:${repo['branch']}">${repo['uri']}:${repo['branch']}</a></p>
-       % endfor
-      </td>
-      <td>
-       % for repo in repolist:
-        <p>
-        % for tag in repo['tags']:
-        <a href="project.html?tid=${tag}">${tag}</a>
-        % endfor
-        </p>
-       % endfor
-      </td>
-     <tr>
-     % endfor
-   </table>
-  </div>
-
+  % endif
  </div>
-
 </div>
+
+<div class="row-fluid">
+ % for project, repolist in projects.items():
+ <div class="col-md-2">
+ <div class="panel panel-default">
+     <div class="panel-heading">
+         <% nrefs = len(repolist) %>
+         <h3 class="panel-title">
+             <a href="project.html?pid=${project}"><b>${project}</b></a> - <a href="#refsmodal${project}" data-toggle="modal">(${nrefs} refs)</a>
+         </h3>
+     </div>
+     <div class="modal fade" id="refsmodal${project}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+         <div class="modal-dialog" role="document">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                     <h4 class="modal-title">${project} project refs</h4>
+                 </div>
+                 <div class="modal-body">
+                     <table class="table">
+                         <tr>
+                             <th class="col-md-6">refs</th>
+                             <th class="col-md-6">tags</th>
+                         </tr>
+                         % for repo in repolist:
+                         <tr>
+                             <td><a href="project.html?pid=${project}&inc_repos=${repo['name']}:${repo['branch']}">${repo['uri']}:${repo['branch']}</a></td>
+                             <td>
+                             % for tag in repo['tags']:
+                                 <a href="project.html?tid=${tag}">${tag}</a>
+                             % endfor
+                             </td>
+                         </tr>
+                         % endfor
+                     </table>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ </div>
+ % endfor
+ </div>
