@@ -35,6 +35,7 @@ from repoxplorer.index.tags import Tags
 
 indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
+index_custom_html = conf.get('index_custom_html', '')
 
 
 class RootController(object):
@@ -43,16 +44,13 @@ class RootController(object):
 
     @expose(template='index.html')
     def index(self):
-        projects_index = Projects()
-        projects = projects_index.get_projects()
-        tags = projects_index.get_tags()
-        return {'projects': projects,
-                'tags': tags.keys()}
+        return {'customtext': index_custom_html}
 
     @expose(template='groups.html')
     def groups(self):
         return {}
 
+    @expose(template='projects.html')
     @expose('json')
     def projects(self):
         projects_index = Projects()

@@ -75,6 +75,7 @@ elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
 indexer_loop_delay = 60
+index_custom_html = ""
 
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
