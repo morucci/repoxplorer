@@ -58,7 +58,7 @@ sudo systemctl start elasticsearch
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/0.8.0/repoxplorer-0.8.0-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/0.8.0/repoxplorer-0.8.0-2.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
@@ -76,6 +76,7 @@ then follow the [Configuration section](#configuration).
 ### Install in a python virtualenv
 
 ```Shell
+yum install -y python-virtualenv libffi-devel openssl-devel python-devel
 virtualenv ~/repoxplorer
 . ~/repoxplorer/bin/activate
 pip install -r requirements.txt
