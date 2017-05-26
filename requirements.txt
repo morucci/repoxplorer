@@ -1,8 +1,9 @@
-pecan
-elasticsearch>=2.0.0,<3.0.0
 PyYAML
-uWSGI
+elasticsearch>=2.0.0,<3.0.0
 github3.py
-pycrypto
 jsonschema
+pecan
+pycrypto
 pytz
+requests
+uWSGI
