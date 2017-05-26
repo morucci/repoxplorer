@@ -26,6 +26,7 @@ from datetime import datetime
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
 from repoxplorer import index
+from repoxplorer import version
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
@@ -35,7 +36,7 @@ from repoxplorer.index.tags import Tags
 
 indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
-
+rx_version = version.get_version()
 
 class RootController(object):
 
@@ -47,7 +48,8 @@ class RootController(object):
         projects = projects_index.get_projects()
         tags = projects_index.get_tags()
         return {'projects': projects,
-                'tags': tags.keys()}
+                'tags': tags.keys(),
+                'version': rx_version}
 
     @expose(template='groups.html')
     def groups(self):
@@ -59,7 +61,8 @@ class RootController(object):
         projects = projects_index.get_projects()
         tags = projects_index.get_tags()
         return {'projects': projects,
-                'tags': tags.keys()}
+                'tags': tags.keys(),
+                'version': rx_version}
 
     @expose(template='contributors.html')
     def contributors(self, search=""):
@@ -75,7 +78,8 @@ class RootController(object):
                 'total_contributors': total_contributors,
                 'total_hits': len(conts),
                 'max_result': max_result,
-                'search': search}
+                'search': search,
+                'version': rx_version}
 
     @expose(template='contributor.html')
     def contributor(self, cid, dfrom=None, dto=None,
@@ -129,7 +133,8 @@ class RootController(object):
                         ident['default-email']).hexdigest(),
                     'cid': utils.encrypt(xorkey, cid),
                     'period': period,
-                    'empty': True}
+                    'empty': True,
+                    'version': rx_version}
 
         top_projects = utils.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail)
@@ -158,7 +163,8 @@ class RootController(object):
                              datetime.fromtimestamp(0)),
                 'ttl_average': infos['ttl_average'],
                 'cid': utils.encrypt(xorkey, cid),
-                'empty': False}
+                'empty': False,
+                'version': rx_version}
 
     @expose(template='group.html')
     def group(self, gid, dfrom=None, dto=None,
@@ -211,7 +217,8 @@ class RootController(object):
                     'description': description,
                     'gid': gid,
                     'period': period,
-                    'empty': True}
+                    'empty': True,
+                    'version': rx_version}
 
         top_projects = utils.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail)
@@ -241,7 +248,8 @@ class RootController(object):
                              datetime.fromtimestamp(0)),
                 'ttl_average': infos['ttl_average'],
                 'gid': gid,
-                'empty': False}
+                'empty': False,
+                'version': rx_version}
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
@@ -322,7 +330,8 @@ class RootController(object):
                     'period': period,
                     'repos': repos,
                     'inc_repos': inc_repos,
-                    'empty': True}
+                    'empty': True,
+                    'version': True}
 
         top_authors = c.get_authors(**query_kwargs)
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
@@ -352,7 +361,8 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(infos['duration']) -
                              datetime.fromtimestamp(0)),
                 'ttl_average': infos['ttl_average'],
-                'empty': False}
+                'empty': False,
+                'version': rx_version}
 
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
