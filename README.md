@@ -35,7 +35,7 @@ Here is the process to follow:
 First install the EPEL7 repository.
 
 ```Shell
-sudo yum install epel-release
+sudo yum install -y epel-release
 ```
 
 Install ElasticSearch 2.x for CentOS via rpm:
@@ -50,7 +50,7 @@ gpgcheck=1
 gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
 enabled=1
 EOF
-sudo yum install elasticsearch java-1.8.0-openjdk
+sudo yum install -y elasticsearch java-1.8.0-openjdk
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
@@ -58,7 +58,7 @@ sudo systemctl start elasticsearch
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install https://github.com/morucci/repoxplorer/releases/download/0.8.0/repoxplorer-0.8.0-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/0.8.0/repoxplorer-0.8.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
