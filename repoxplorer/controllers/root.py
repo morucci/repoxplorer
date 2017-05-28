@@ -22,6 +22,7 @@ from pecan import abort
 from pecan import conf
 
 from datetime import datetime
+from collections import OrderedDict
 
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
@@ -58,6 +59,8 @@ class RootController(object):
     def projects(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
+        projects = OrderedDict(
+            sorted(projects.items(), key=lambda t: t[0]))
         tags = projects_index.get_tags()
         return {'projects': projects,
                 'tags': tags.keys(),
