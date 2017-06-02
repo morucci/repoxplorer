@@ -20,6 +20,7 @@ from Crypto.Cipher import XOR
 from pecan import conf
 from datetime import datetime
 from datetime import timedelta
+from collections import OrderedDict
 
 xorkey = conf.get('xorkey') or 'default'
 
@@ -105,6 +106,20 @@ def resolv_filters(projects_index, idents, pid,
         inc_merge_commit = False
 
     return p_filter, mails, dfrom, dto, inc_merge_commit
+
+
+def search_authors_sanitize(idents, authors):
+    result = {}
+    for email, name in authors.items():
+        iid, ident = idents.get_ident_by_email(email)
+        email = ident['default-email']
+        name = ident['name'] or name
+        result[encrypt(xorkey, iid)] = {
+            'name': name,
+            'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest()}
+    result = OrderedDict(
+        sorted(result.items(), key=lambda t: t[0]))
+    return result
 
 
 def top_authors_sanitize(idents, top_authors, commits, top=100000):

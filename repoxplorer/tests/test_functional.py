@@ -243,6 +243,16 @@ class TestRootController(FunctionalTest):
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
 
+    def test_search_authors(self):
+        root.indexname = 'repoxplorertest'
+        response = self.app.get('/search_authors.json?query=marc')
+        print response.json
+        cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
+        expected = {
+            cid: {u'name': 'Jean Marc',
+                  u'gravatar': u'185968ce180f4118a5334f0d2fdb5cbf'}}
+        self.assertDictEqual(response.json, expected)
+
 
 class TestGroupsController(FunctionalTest):
 

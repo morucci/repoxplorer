@@ -83,6 +83,22 @@ class RootController(object):
                 'search': search,
                 'version': rx_version}
 
+    @expose('json')
+    def search_authors(self, query=""):
+        c = Commits(index.Connector(index=indexname))
+        ret = c.es.search(
+            index=c.index, doc_type=c.dbname,
+            q=query, df="author_name", size=10000,
+            default_operator="AND",
+            _source_include=["author_name", "author_email"])
+        ret = ret['hits']['hits']
+        if not len(ret):
+            return {}
+        idents = Contributors()
+        ret = dict([(d['_source']['author_email'],
+                     d['_source']['author_name']) for d in ret])
+        return utils.search_authors_sanitize(idents, ret)
+
     @expose(template='contributor.html')
     def contributor(self, cid, dfrom=None, dto=None,
                     inc_merge_commit=None,
