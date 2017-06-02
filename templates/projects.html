@@ -33,44 +33,49 @@
 </div>
 
 <div class="row-fluid">
- % for project, repolist in projects.items():
- <div class="col-md-2">
- <div class="panel panel-default">
-     <div class="panel-heading">
-         <% nrefs = len(repolist) %>
-         <h3 class="panel-title">
-             <a href="project.html?pid=${project}"><b>${project}</b></a> - <a href="#refsmodal${project}" data-toggle="modal">(${nrefs} refs)</a>
-         </h3>
-     </div>
-     <div class="modal fade" id="refsmodal${project}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-         <div class="modal-dialog" role="document">
-             <div class="modal-content">
-                 <div class="modal-header">
-                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                     <h4 class="modal-title">${project} project refs</h4>
-                 </div>
-                 <div class="modal-body">
-                     <table class="table">
-                         <tr>
-                             <th class="col-md-6">refs</th>
-                             <th class="col-md-6">tags</th>
-                         </tr>
-                         % for repo in repolist:
-                         <tr>
-                             <td><a href="project.html?pid=${project}&inc_repos=${repo['name']}:${repo['branch']}">${repo['uri']}:${repo['branch']}</a></td>
-                             <td>
-                             % for tag in repo['tags']:
-                                 <a href="project.html?tid=${tag}">${tag}</a>
-                             % endfor
-                             </td>
-                         </tr>
-                         % endfor
-                     </table>
-                 </div>
-             </div>
+    <div class="col-md-12">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 form form-inline">
+            <div class="form-group" id="projects-filter-form">
+                <label for="projects-filter-input">Filter projects</label>
+                <input id="projects-filter-input" class="form-control" type="text">
+            </div>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <div class="col-md-12"><hr></div>
+</div>
+
+
+<div class="row-fluid">
+ <%
+ filtered = {}
+ for project, refslist in projects.items():
+    filtered[project] = {}
+    for ref in refslist:
+        filtered[project].setdefault(ref['name'], [])
+        filtered[project][ref['name']].append(ref['branch'])
+ %>
+ % for project, repos in filtered.items():
+     % for repo, branches in repos.items():
+     <div class="col-md-2" id="project-panel-${project}-${repo}">
+     <div data-repoid="${project}-${repo}" class="panel panel-default">
+         <div class="panel-heading">
+             <h3 class="panel-title">
+                 <%
+                 inc_repos=""
+                 for branch in branches:
+                     inc_repos += "%s:%s," % (repo, branch)
+                 inc_repos = inc_repos.rstrip(',')
+                 %>
+                 <a href="project.html?pid=${project}"><b>${project}</b></a><b>/</b><a href="project.html?pid=${project}&inc_repos=${inc_repos}">${repo}</a>
+             </h3>
          </div>
      </div>
- </div>
- </div>
+     </div>
+     % endfor
  % endfor
  </div>
+ <script type="text/javascript">
+  projects_page_init();
+ </script>

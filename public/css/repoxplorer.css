@@ -1,5 +1,13 @@
 .jumbotron {
- padding-top: 0.1%;
- padding-bottom: 0.1%;
- padding-left: 0.5%;
+    padding-top: 0.1%;
+    padding-bottom: 0.1%;
+    padding-left: 0.5%;
+}
+
+#projects-filter-form {
+    width: 100%;
+}
+
+#projects-filter-input {
+    width: 80%;
 }

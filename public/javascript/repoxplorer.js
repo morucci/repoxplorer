@@ -39,6 +39,31 @@ function get_groups() {
  return $.getJSON("api_groups/")
 }
 
+function projects_page_init() {
+    lastfilter = "";
+    $('#projects-filter-input').keyup(function(event) {
+        if ($('#projects-filter-input').val() != lastfilter) {
+            inp=$('#projects-filter-input').val()
+            $("div[id^=project-panel-]").each(function(i, el) {
+                $(this).hide()
+            })
+            if (inp != '') {
+                $("div[data-repoid*="+inp+"]").each(function(i, el) {
+                    repoid=$(this).data("repoid")
+                    if (repoid.toLowerCase().indexOf(inp.toLowerCase()) > -1) {
+                        $('#project-panel-'+repoid).show()
+                    }
+                })
+            } else {
+                $("div:hidden").each(function(i, el) {
+                    $(this).show()
+                })
+            }
+        }
+        lastfilter = $('#projects-filter-input').val()
+    })
+}
+
 function groups_page_init() {
   $.getJSON("api_groups/")
    .done(
