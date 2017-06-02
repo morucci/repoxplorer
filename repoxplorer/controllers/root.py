@@ -67,21 +67,8 @@ class RootController(object):
                 'version': rx_version}
 
     @expose(template='contributors.html')
-    def contributors(self, search=""):
-        idents = Contributors()
-        max_result = 50
-        c = Commits(index.Connector(index=indexname))
-        raw_conts = c.get_authors(merge_commit=False)
-        conts = utils.top_authors_sanitize(idents, raw_conts, c)
-        total_contributors = len(conts)
-        conts = [co for co in conts
-                 if co['name'].lower().find(search.lower()) >= 0]
-        return {'contributors': conts[:max_result],
-                'total_contributors': total_contributors,
-                'total_hits': len(conts),
-                'max_result': max_result,
-                'search': search,
-                'version': rx_version}
+    def contributors(self):
+        return {'version': rx_version}
 
     @expose('json')
     def search_authors(self, query=""):

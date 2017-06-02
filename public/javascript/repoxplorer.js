@@ -351,11 +351,42 @@ function project_page_init(projectid, tagid) {
 }
 
 function contributors_page_init() {
- $("#search-form").submit(function(event) {
-  var newlocation = "contributors.html?search=" + $("#search-txt").val()
-  event.preventDefault()
-  window.location = newlocation
- });
+    function fill_resultinfos(ret) {
+        var size = Object.keys(ret).length
+        $("#resultinfos").empty()
+        $("#resultinfos").append(" - " + size + " results")
+    }
+    function fill_result(ret) {
+        $("#search-results").empty()
+        $.each(ret, function(k, v) {
+            var box = '<div class="col-md-2"><div class="panel panel-default">' +
+                '<div class="panel-heading"><h3 class="panel-title">' +
+                '<span style="padding-right: 5px"><img src="https://www.gravatar.com/avatar/' +
+                v.gravatar + '?s=20&d=wavatar"></span>' +
+                '<span><a href=contributor.html?cid=' +
+                k + '>' + v.name + '</a></span></h3>' +
+                '</div></div></div>'
+            $("#search-results").append(box)
+        })
+    }
+    $('#search-txt').bind("enterKey",function(e){
+        var args = {}
+        args['query'] = $("#search-txt").val()
+        $.getJSON("search_authors.json", args)
+            .done(
+                function(data) {
+                    fill_resultinfos(data)
+                    fill_result(data)
+                })
+            .fail(
+                function(err) {
+                })
+    });
+    $('#search-txt').keyup(function(e){
+      if(e.keyCode == 13) {
+        $(this).trigger("enterKey");
+    }
+    });
 }
 
 function get_releases(pid, tid) {

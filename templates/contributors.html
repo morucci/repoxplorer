@@ -11,42 +11,25 @@
    <h3>Enter the author name to search. You can click on a result in order to display details.</h3>
   </div>
  </div>
+</div>
 
 <div class="row-fluid">
-
  <div class="col-md-12">
-  <form class="form-inline" id="search-form">
+  <div class="col-md-4"></div>
+  <div class="col-md-4">
    <div class="form-group">
-    <label for="search-txt">Search contributors</label>
+       <label for="search-txt">Search commit's authors <span id="resultinfos"></span></label>
     <input type="text" class="form-control" id="search-txt">
    </div>
-   <button id="search-btn" type="submit" class="btn btn-default">Search</button>
-  </form>
- </div>
-
- <div class="col-md-12">
-
-  <div class="panel panel-default">
-   <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Search results for query "${search}" - hits: ${total_hits}/${total_contributors} (page limited to ${max_result}) </b></h3>
-   </div>
-   <table class="table">
-    <tr>
-     <th class="col-md-6">Contributor names</th>
-     <th class="col-md-6">Commit amounts</th>
-    </tr>
-       % for cont in contributors:
-       <tr>
-        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${cont['gravatar']}?s=25&d=wavatar" title="${cont['name']}"></span><span><a href="contributor.html?cid=${cont['cid']}"><b>${cont['name']}</b></a></span></td>
-        <td>${cont['amount']}</td>
-       </tr>
-       % endfor
-   </table>
   </div>
-
+  <div class="col-md-4"></div>
  </div>
-
 </div>
+
+<div class="row-fluid">
+  <div id="search-results"></div>
+</div>
+
 <script type="text/javascript">
  contributors_page_init();
 </script>
