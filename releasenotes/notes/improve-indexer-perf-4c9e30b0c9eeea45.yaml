@@ -1,4 +1,0 @@
----
-other:
-  - Remove Dulwish dependency and only be based on Git binary
-  - Far better performance when parsing and indexing Git repos
