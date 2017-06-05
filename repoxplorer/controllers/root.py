@@ -16,6 +16,7 @@
 
 import json
 import hashlib
+import itertools
 
 from pecan import expose
 from pecan import abort
@@ -47,7 +48,14 @@ class RootController(object):
 
     @expose(template='index.html')
     def index(self):
+        projects_index = Projects()
+        projects = projects_index.get_projects()
+        num_projects = len(projects)
+        num_repos = len(set([ref['name'] for ref in
+                             itertools.chain(*projects.values())]))
         return {'customtext': index_custom_html,
+                'projects': num_projects,
+                'repos': num_repos,
                 'version': rx_version}
 
     @expose(template='groups.html')
