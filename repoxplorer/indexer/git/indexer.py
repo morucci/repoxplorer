@@ -132,10 +132,15 @@ def parse_commit(input, offset, extra_parsers=None):
             if input[offset + i] == ' -----END PGP SIGNATURE-----':
                 break
             i += 1
-        offset += i + 2
+        offset += i + 1
     else:
         cmt['signed'] = False
-        offset += 3
+        offset += 2
+    while len(input[offset]):
+        # Consuming the rest of headers until the empty line
+        offset += 1
+    offset += 1
+    # Now we start to consume the commit message
     i = 0
     while True:
         try:
@@ -156,6 +161,7 @@ def parse_commit(input, offset, extra_parsers=None):
             cmt[metadata[0]] = []
         cmt[metadata[0]].append(metadata[1])
     offset += i
+    # Now we start to consume the stats fields
     i = 0
     cmt['line_modifieds'] = 0
     cmt['files_stats'] = {}

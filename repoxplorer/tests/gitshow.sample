@@ -90,6 +90,19 @@ committer Author C <author.c@test> 1493240029 -0700
 
 1	1	modules/openstack_project/templates/logstash/jenkins-subunit-worker.yaml.erb
 
+commit 88364beba125cc8e6e314885db1c909b3d526340
+tree 7216d778a004570112903d36fdf9895288e1aad3
+parent 920bd292ea4cd3157a62c5deaaae0ea56740afa2
+author Author C <author.c@test> 1493240029 -0700
+committer Author C <author.c@test> 1493240029 -0700
+HG:extra histedit_source:c73fdac7f898c02211ccadfc1b24a1e55e54e6c9%2C383797830f6c21649c53cb112e29ea34c4021804
+HG:extra source:83ee8628972f4de30e4f10c2c75f3d8dec4eca03
+
+    Add type declarations for Windows API calls as found in jaraco.windows 3.6.1. Fixes #758.
+
+19	0	paramiko/_winapi.py
+2	0	sites/www/changelog.rst
+
 commit 8e1cc08e799a83ace198ee7a3c6f9169635e7f46
 tree b66305787d63c93c778b41ca49ff12ff30d856b7
 parent ae272bb6f3a23b3f393ee4f6fd133cc407d2090d
