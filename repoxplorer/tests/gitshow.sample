@@ -103,6 +103,17 @@ HG:extra source:83ee8628972f4de30e4f10c2c75f3d8dec4eca03
 19	0	paramiko/_winapi.py
 2	0	sites/www/changelog.rst
 
+commit f5d7eb5b623b625062cf0d3d8d552ee0ea9000dd
+tree c2f0679439901d9e167be239c93b4a9211f08415
+parent 5bca9f6aaf14129d5582e1b4ad6adc11253ebe4e
+author Author C <author.c@test> 1493240029 -0700
+committer Author C <author.c@test> 1493240029 -0700
+
+    windows linefeed was breaking /usr/bin/env from executing correctly :/s/
+//g
+
+1	1	SickBeard.py
+
 commit 8e1cc08e799a83ace198ee7a3c6f9169635e7f46
 tree b66305787d63c93c778b41ca49ff12ff30d856b7
 parent ae272bb6f3a23b3f393ee4f6fd133cc407d2090d

@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 AUTHOR_RE = re.compile('author (.*) <(.*)> (.*) (.*)')
 COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
+STATSL_RE = re.compile('(.*)\t(.*)\t(.*)')
 
 
 def run(cmd, path):
@@ -147,9 +148,12 @@ def parse_commit(input, offset, extra_parsers=None):
             input[offset + i]
         except IndexError:
             break
-        if len(input[offset + i]) and input[offset + i][0] != ' ':
-            # Commit msg lines starts with a space char
-            break
+        if len(input[offset + i]):
+            # Commit msg lines starts with a space char but I seen
+            # exceptions so check if a stat line match
+            m = STATSL_RE.match(input[offset + i])
+            if m:
+                break
         i += 1
     cmt['commit_msg_full'] = _decode("\n".join(
         [l.strip() for l in input[offset:offset+i]]))
@@ -176,7 +180,7 @@ def parse_commit(input, offset, extra_parsers=None):
             break
         if (len(input[offset + i]) and input[offset + i][0] != ' ' and not
                 cmt['merge_commit']):
-            m = re.match("(.*)\t(.*)\t(.*)", input[offset + i])
+            m = STATSL_RE.match(input[offset + i])
             if m.groups()[0] != '-':
                 # '-' means binary file - so skip it
                 l_added = int(m.groups()[0])
