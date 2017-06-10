@@ -126,6 +126,11 @@ properties:
                 type: array
                 items:
                   type: string
+              branches:
+                type: array
+                items:
+                  type: string
+                  minItems: 1
 """
 
 projects_example = """
@@ -141,6 +146,8 @@ projects:
   Swift:
     openstack/swift:
       template: default
+      branches:
+      - dev
     openstack/python-swiftclient:
       template: default
 """
@@ -184,6 +191,10 @@ class Projects(YAMLDefinition):
                 tags = []
                 if 'tags' in repo and repo['tags']:
                     tags = copy.copy(repo['tags'])
+                # Save branches mentioned for a repo
+                branches = None
+                if 'branches' in repo:
+                    branches = copy.copy(repo['branches'])
                 # Apply the template
                 repo.update(copy.deepcopy(
                     self.templates[repo['template']]))
@@ -196,6 +207,9 @@ class Projects(YAMLDefinition):
                     repo['tags'] = []
                 repo['tags'].extend(tags)
                 repo['tags'] = list(set(repo['tags']))
+                # Restore defined branches at repo level
+                if branches:
+                    repo['branches'] = branches
                 # Apply default values
                 if 'parsers' not in repo:
                     repo['parsers'] = []

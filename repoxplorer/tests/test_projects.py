@@ -253,13 +253,20 @@ class TestProjects(TestCase):
               template: default
             openstack/python-swiftclient:
               template: default
+              branches:
+              - master
+              - 1.0-dev
+              - 2.0-dev
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
-        self.assertEqual(len(p.get_projects()['Swift']), 4)
+        self.assertEqual(len(p.get_projects()['Swift']), 5)
         self.assertEqual(len(p.get_projects()['Barbican']), 4)
+        branches = [ref['branch'] for ref in p.get_projects()["Swift"] if
+                    ref['name'] == 'openstack/python-swiftclient']
+        self.assertListEqual(branches, ['master', '1.0-dev', '2.0-dev'])
 
     def test_get_tags(self):
         f1 = """

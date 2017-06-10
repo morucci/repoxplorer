@@ -229,6 +229,27 @@ projects:
       - language:python
 ```
 
+If a repository's branch(es) are not similar to the one(s) defined in the
+template then you can overwrite them.
+
+```YAML
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
+    - master
+
+projects:
+  Barbican:
+    barbican:
+      templates: default
+      branches:
+      - devel
+      - stable/1.0.x
+    python-barbicanclient:
+      templates: default
+```
+
 A list of releases can be defined. It is useful when you want to define
 release dates across all repositories defined in a project.
 Release dates with %m/%d/%Y format can be defined and will be merged with

@@ -8,6 +8,8 @@ refactoring:
     new search_authors endpoint.
 features:
   - Add a welcome page where a custom HTML string can be embedded.
+  - Now branches can be defined at repository level and not only at
+    project-template level.
 other:
   - Display the repoXplorer version in the UI.
   - Remove Dulwish dependency and only be based on Git binary
