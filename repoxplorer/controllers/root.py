@@ -455,6 +455,7 @@ class RootController(object):
                 _, group = idents.get_group_by_id(gid)
                 mails_to_exclude.update(group['emails'])
 
+        projects_index._enrich_projects()
         p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, gid, dfrom, dto, inc_repos,
