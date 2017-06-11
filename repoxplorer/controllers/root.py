@@ -177,6 +177,7 @@ class RootController(object):
                 'ttl_average': infos['ttl_average'],
                 'cid': utils.encrypt(xorkey, cid),
                 'empty': False,
+                'inc_repos_detail': inc_repos_detail,
                 'version': rx_version}
 
     @expose(template='group.html')

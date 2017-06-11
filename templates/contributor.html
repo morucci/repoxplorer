@@ -130,7 +130,11 @@
        % for n, p in enumerate(repos, start=1):
        <tr>
         <td>${n}</td>
-        <td>${p[0]}</td>
+        % if not inc_repos_detail:
+          <td><a href="project.html?pid=${p[0]}">${p[0]}</a></td>
+        % else:
+          <td>${p[0]}</td>
+        % endif
         <td>${p[1]}</td>
        <tr>
        % endfor
@@ -158,7 +162,11 @@
        % for n, p in enumerate(repos_line_mdfds, start=1):
        <tr>
         <td>${n}</td>
-        <td>${p[0]}</td>
+        % if not inc_repos_detail:
+          <td><a href="project.html?pid=${p[0]}">${p[0]}</a></td>
+        % else:
+          <td>${p[0]}</td>
+        % endif
         <td>${p[1]}</td>
        <tr>
        % endfor
