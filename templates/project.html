@@ -37,9 +37,9 @@
     <div id="infos">
      % if not empty:
      <% repos_len = len(repos) %>
-     <div><b>Amount of repository refs:</b> ${repos_len}</div>
-     <div><b>Amount of commits:</b> ${commits_amount}</div>
-     <div><b>Amount of authors:</b> ${authors_amount}</div>
+     <div><b>Repository refs:</b> ${repos_len}</div>
+     <div><b>Commits:</b> ${commits_amount}</div>
+     <div><b>Authors:</b> ${authors_amount}</div>
      <div><b>Activity duration:</b> ${duration}</div>
      <div><b>Date of first commits:</b> ${first}</div>
      <div><b>Date of last commits:</b> ${last}</div>
@@ -142,7 +142,7 @@
  <div class="col-md-6">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 25 authors by commit amount</b></h3>
+    <h3 class="panel-title text-left"><b>Top 25 authors by commit</b></h3>
    </div>
    <div class="panel-body">
     <div id="topauthors_gravatar">
@@ -195,7 +195,7 @@
  <div class="col-md-6">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 25 authors by amount of line modifieds</b></h3>
+    <h3 class="panel-title text-left"><b>Top 25 authors by line modifieds</b></h3>
    </div>
    <div class="panel-body">
     <div id="topauthors_m_gravatar">
