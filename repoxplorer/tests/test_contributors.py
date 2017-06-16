@@ -23,6 +23,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import contributors
+from repoxplorer.index import users
 from repoxplorer import index
 
 
@@ -546,3 +547,64 @@ groups:
                 self.assertEqual(gid, 'acme-11')
                 self.assertEqual(gdata['description'],
                                  'The group 11 of acme')
+
+    def test_get_group_by_id_with_users_backend(self):
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(contributors.Contributors,
+                              'get_groups') as gg:
+                with patch.object(users.Groups,
+                                  'get_all') as ga:
+                    gg.return_value = {
+                        'acme-11': {
+                            'description': 'The group 11 of acme',
+                            'emails': {
+                                'john.doe@domain.com': None,
+                                'ampanman@baikinman.com': None}},
+                        'acme-12': {
+                            'description': 'The group 12 of acme',
+                            'emails': {
+                                'john.doe@domain.com': None,
+                                'ampanman@baikinman.com': None}}}
+                    ga.return_value = {
+                        'ugroup1': {
+                            'gid': 'ugroup1',
+                            'description': 'ugroup',
+                            'emails': [{'email': 'tokin@domain1'},
+                                       {'email': 'kokin@domain2',
+                                        'start-date': '01/01/2016',
+                                        'end-date': '09/01/2016'}]
+                        },
+                        'acme-12': {
+                            'gid': 'acme-12',
+                            'description': 'acme-12 desc',
+                            'emails': [{'email': 'tokin@domain1'},
+                                       {'email': 'kokin@domain2',
+                                        'start-date': '01/01/2016',
+                                        'end-date': '09/01/2016'}]
+                        }
+                    }
+                    c = contributors.Contributors(db_path="db_path")
+
+                    # Is not a known contributor or user
+                    gid, gdata = c.get_group_by_id('zzz')
+                    self.assertEqual(gid, 'zzz')
+                    self.assertEqual(gdata, None)
+
+                    # Is known and defined in the YAML backend
+                    gid, gdata = c.get_group_by_id('acme-11')
+                    self.assertEqual(gid, 'acme-11')
+                    self.assertEqual(gdata['description'],
+                                     'The group 11 of acme')
+
+                    # Is known and defined in the EL backend
+                    gid, gdata = c.get_group_by_id('ugroup1')
+                    self.assertEqual(gid, 'ugroup1')
+                    self.assertEqual(gdata['description'],
+                                     'ugroup')
+
+                    # Is known and defined in both backend
+                    # YAML backend takes precedence
+                    gid, gdata = c.get_group_by_id('acme-12')
+                    self.assertEqual(gid, 'acme-12')
+                    self.assertEqual(gdata['description'],
+                                     'The group 12 of acme')

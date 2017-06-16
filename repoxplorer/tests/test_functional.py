@@ -246,7 +246,6 @@ class TestRootController(FunctionalTest):
     def test_search_authors(self):
         root.indexname = 'repoxplorertest'
         response = self.app.get('/search_authors.json?query=marc')
-        print response.json
         cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
         expected = {
             cid: {u'name': 'Jean Marc',
