@@ -246,7 +246,6 @@ class TestRootController(FunctionalTest):
     def test_search_authors(self):
         root.indexname = 'repoxplorertest'
         response = self.app.get('/search_authors.json?query=marc')
-        print response.json
         cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
         expected = {
             cid: {u'name': 'Jean Marc',
@@ -327,3 +326,108 @@ class TestGroupsController(FunctionalTest):
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
                             u'membership_bounces': []}}}}
             self.assertDictEqual(response.json, expected_ret)
+
+
+class TestUsersController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = None
+        root.users.indexname = 'repoxplorertest'
+        root.users.endpoint_active = True
+        root.users.admin_token = '12345'
+
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+
+    def tearDown(self):
+        self.con.ic.delete(index=self.con.index)
+        FunctionalTest.tearDown(self)
+
+    def test_users_crud_admin(self):
+        headers = {
+            'REMOTE_USER': 'admin',
+            'ADMIN_TOKEN': '12345'}
+        # User should not exist
+        response = self.app.get(
+            '/users/1', headers=headers, status="*")
+        self.assertEqual(response.status_int, 404)
+
+        # Push user details
+        data = {
+            'uid': '1',
+            'name': 'saboten',
+            'default-email': 'saboten@domain1',
+            'emails': [
+                {'email': 'saboten@domain1',
+                 'groups': [
+                     {'group': 'ugroup2',
+                      'start-date': '01/01/2016',
+                      'end-date': '09/01/2016'}
+                 ]}
+            ]}
+        response = self.app.put_json(
+            '/users/1', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 201)
+
+        # Get User details
+        response = self.app.get(
+            '/users/1', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, data)
+
+        # Update user details
+        data['name'] = 'sabosan'
+        response = self.app.post_json(
+            '/users/1', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+
+        # Get User details
+        response = self.app.get(
+            '/users/1', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, data)
+
+    def test_users_c_admin_wrong_token(self):
+        data = {
+            'uid': '1',
+            'name': 'saboten',
+            'default-email': 'saboten@domain1',
+            'emails': []}
+        headers = {
+            'REMOTE_USER': 'admin',
+            'ADMIN_TOKEN': 'WRONG'}
+        response = self.app.put_json(
+            '/users/1', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 401)
+
+    def test_users_crud_user(self):
+        # First set a user as admin
+        data = {
+            'uid': 'saboten',
+            'name': 'Cactus Saboten',
+            'default-email': 'saboten@domain1',
+            'emails': []}
+        headers = {
+            'REMOTE_USER': 'admin',
+            'ADMIN_TOKEN': '12345'}
+        self.app.put_json(
+            '/users/saboten', data, headers=headers, status="*")
+        headers = {'REMOTE_USER': 'saboten'}
+        response = self.app.get(
+            '/users/saboten', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, data)
+        data['default-email'] = 'saboten@domain2'
+        response = self.app.post_json(
+            '/users/saboten', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        headers = {'REMOTE_USER': 'tokin'}
+        response = self.app.get(
+            '/users/saboten', headers=headers, status="*")
+        self.assertEqual(response.status_int, 401)
+        data['default-email'] = 'saboten@domain1'
+        response = self.app.post_json(
+            '/users/saboten', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 401)

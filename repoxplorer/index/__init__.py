@@ -35,7 +35,7 @@ def date2epoch(date):
 
 
 class Connector(object):
-    def __init__(self, host=None, port=None, index=None):
+    def __init__(self, host=None, port=None, index=None, index_suffix=None):
         self.host = (host or
                      getattr(conf, 'elasticsearch_host', None) or
                      'localhost')
@@ -45,6 +45,8 @@ class Connector(object):
         self.index = (index or
                       getattr(conf, 'elasticsearch_index', None) or
                       'repoxplorer')
+        if index_suffix:
+            self.index += "-%s" % index_suffix
         self.es = client.Elasticsearch([{"host": self.host,
                                          "port": self.port}])
         self.ic = client.IndicesClient(self.es)
