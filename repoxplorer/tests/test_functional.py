@@ -246,7 +246,6 @@ class TestRootController(FunctionalTest):
     def test_search_authors(self):
         root.indexname = 'repoxplorertest'
         response = self.app.get('/search_authors.json?query=marc')
-        print response.json
         cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
         expected = {
             cid: {u'name': 'Jean Marc',
@@ -327,3 +326,54 @@ class TestGroupsController(FunctionalTest):
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
                             u'membership_bounces': []}}}}
             self.assertDictEqual(response.json, expected_ret)
+
+
+class TestUsersController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = None
+        cls.con = index.Connector(index='repoxplorertest')
+        root.users.indexname = 'repoxplorertest'
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_users_crud(self):
+        # User should not exist
+        response = self.app.get('/users/1', status="*")
+        assert response.status_int == 404
+
+        # Push user details
+        data = {
+            'uid': '1',
+            'name': 'saboten',
+            'default-email': 'saboten@domain1',
+            'emails': [
+                {'email': 'saboten@domain1',
+                 'groups': [
+                     {'group': 'ugroup2',
+                      'start-date': '01/01/2016',
+                      'end-date': '09/01/2016'}
+                 ]}
+            ]}
+        response = self.app.put_json(
+            '/users/1', data, status="*")
+        assert response.status_int == 201
+
+        # Get User details
+        response = self.app.get('/users/1', status="*")
+        assert response.status_int == 200
+        self.assertDictEqual(response.json, data)
+
+        # Update user details
+        data['name'] = 'sabosan'
+        response = self.app.post_json(
+            '/users/1', data, status="*")
+        assert response.status_int == 200
+
+        # Get User details
+        response = self.app.get('/users/1', status="*")
+        assert response.status_int == 200
+        self.assertDictEqual(response.json, data)
