@@ -17,8 +17,10 @@
 import copy
 import logging
 
+from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
+from repoxplorer.index import users
 from datetime import datetime
 
 
@@ -161,6 +163,10 @@ class Contributors(YAMLDefinition):
         YAMLDefinition.__init__(self, db_path, db_default_file)
         self.enriched_groups = False
         self.enriched_idents = False
+        self._users = users.Users(
+            index.Connector(index_suffix='users'))
+        self._groups = users.Groups(
+            index.Connector(index_suffix='users'))
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -283,6 +289,23 @@ class Contributors(YAMLDefinition):
             self._enrich_idents()
         return self.idents
 
+    def backend_get_groups(self):
+        groups = self._groups.get_all()
+        # Transform the data structure to be compatible
+        mgroups = {}
+        for gid, data in groups.items():
+            mgroups[gid] = {}
+            mgroups[gid]['description'] = data['description']
+            mgroups[gid]['emails'] = {}
+            for email in data['emails']:
+                mgroups[gid]['emails'][email['email']] = {}
+                for k in ('start-date', 'end-date'):
+                    if k in email:
+                        mgroups[gid]['emails'][email['email']] = email[k]
+                if not mgroups[gid]['emails'][email['email']]:
+                    mgroups[gid]['emails'][email['email']] = None
+        return mgroups
+
     def get_groups(self):
         if not self.enriched_idents:
             self._enrich_idents()
@@ -314,4 +337,8 @@ class Contributors(YAMLDefinition):
 
     def get_group_by_id(self, id):
         groups = self.get_groups()
-        return id, copy.deepcopy(groups.get(id))
+        # Query the EL groups backend and update the
+        # returned data struct by the YAML flat one
+        el_groups = self.backend_get_groups()
+        el_groups.update(groups)
+        return id, copy.deepcopy(el_groups.get(id))
