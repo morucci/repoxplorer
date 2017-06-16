@@ -23,6 +23,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import contributors
+from repoxplorer.index import users
 from repoxplorer import index
 
 
@@ -114,7 +115,7 @@ identities:
         index.conf['db_default_file'] = os.path.join(db,
                                                      'default.yaml')
         p = contributors.Contributors(db_path=db)
-        ret = p.get_idents()
+        ret = p._get_idents()
         self.assertDictEqual(
             ret,
             {'1234-1235': {
@@ -485,7 +486,7 @@ groups:
 
     def test_get_ident_by_email(self):
         with patch.object(index.YAMLBackend, 'load_db'):
-            with patch.object(contributors.Contributors, 'get_idents') as gi:
+            with patch.object(contributors.Contributors, '_get_idents') as gi:
                 gi.return_value = {
                     '1234-1235': {
                         'name': 'Jane Doe',
@@ -508,9 +509,64 @@ groups:
                      'emails': {'shimajiro@domain.com': {}}})
                 self.assertEqual(cid, 'shimajiro@domain.com')
 
+    def test_get_ident_by_email_with_user_backend(self):
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(contributors.Contributors, '_get_idents') as gi:
+                with patch.object(users.Users,
+                                  'get_ident_by_email') as egi:
+                    gi.return_value = {
+                        '1234-1235': {
+                            'name': 'Jane Doe',
+                            'default-email': 'jane.doe@domain.com',
+                            'emails': {
+                                'jane.doe@domain.com': {},
+                                'jadoe@domain.com': {}}}}
+                    egi.return_value = {
+                        'uid': '1234-1235',
+                        'name': 'Cactus Saboten',
+                        'default-email': 'jadoe@domain.com',
+                        'emails': [
+                            {'email': 'jadoe@domain.com'},
+                            {'email': 'saboten@domain2',
+                             'groups': [
+                                 {'group': 'ugroup2',
+                                  'start-date': '01/01/2016',
+                                  'end-date': '09/01/2016'}]}],
+                        'last_cnx': 1410456005}
+
+                    c = contributors.Contributors(db_path="db_path")
+
+                    # Both the YAML and EL backend returned data
+                    # so the YAML backend match takes precendence
+                    cid, cdata = c.get_ident_by_email('jadoe@domain.com')
+                    self.assertDictEqual(
+                        cdata,
+                        {'name': 'Jane Doe',
+                         'default-email': 'jane.doe@domain.com',
+                         'emails': {'jadoe@domain.com': {},
+                                    'jane.doe@domain.com': {}}})
+
+                    # YAML backend does not return any ident so
+                    # the EL backend match is returned
+                    gi.return_value = {}
+                    cid, cdata = c.get_ident_by_email('jadoe@domain.com')
+                    self.assertDictEqual(
+                        cdata,
+                        {'name': 'Cactus Saboten',
+                         'emails': {
+                             'saboten@domain2': {
+                                 'groups': {
+                                     'ugroup2': {
+                                         'end-date': '09/01/2016',
+                                         'start-date': '01/01/2016'}
+                                 }
+                             },
+                             'jadoe@domain.com': {'groups': {}}},
+                         'default-email': 'jadoe@domain.com'})
+
     def test_get_ident_by_id(self):
         with patch.object(index.YAMLBackend, 'load_db'):
-            with patch.object(contributors.Contributors, 'get_idents') as gi:
+            with patch.object(contributors.Contributors, '_get_idents') as gi:
                 gi.return_value = {
                     '1234-1235': {
                         'name': 'Jane Doe',
@@ -526,6 +582,43 @@ groups:
                 cid, cdata = c.get_ident_by_id('1234-1235')
                 self.assertEqual(cid, '1234-1235')
                 self.assertEqual(cdata['name'], 'Jane Doe')
+
+    def test_get_ident_by_id_with_user_backend(self):
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(contributors.Contributors, '_get_idents') as gi:
+                with patch.object(users.Users,
+                                  'get_ident_by_id') as egi:
+                    gi.return_value = {
+                        '1234-1235': {
+                            'name': 'Jane Doe',
+                            'emails': {
+                                'jane.doe@domain.com': {},
+                                'jadoe@domain.com': {}}}}
+                    egi.return_value = {
+                        'uid': '1234-1235',
+                        'name': 'Cactus Saboten',
+                        'default-email': 'jadoe@domain.com',
+                        'emails': [
+                            {'email': 'jadoe@domain.com'},
+                            {'email': 'saboten@domain2',
+                             'groups': [
+                                 {'group': 'ugroup2',
+                                  'start-date': '01/01/2016',
+                                  'end-date': '09/01/2016'}]}],
+                        'last_cnx': 1410456005}
+
+                    c = contributors.Contributors(db_path="db_path")
+
+                    cid, cdata = c.get_ident_by_id('1234-1235')
+                    self.assertEqual(cid, '1234-1235')
+                    self.assertEqual(cdata['name'], 'Jane Doe')
+
+                    # YAML backend does not return any ident so
+                    # the EL backend match is returned
+                    gi.return_value = {}
+                    cid, cdata = c.get_ident_by_id('1234-1235')
+                    self.assertEqual(cid, '1234-1235')
+                    self.assertEqual(cdata['name'], 'Cactus Saboten')
 
     def test_get_group_by_id(self):
         with patch.object(index.YAMLBackend, 'load_db'):
@@ -546,3 +639,64 @@ groups:
                 self.assertEqual(gid, 'acme-11')
                 self.assertEqual(gdata['description'],
                                  'The group 11 of acme')
+
+    def test_get_group_by_id_with_users_backend(self):
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(contributors.Contributors,
+                              'get_groups') as gg:
+                with patch.object(users.Groups,
+                                  'get_all') as ga:
+                    gg.return_value = {
+                        'acme-11': {
+                            'description': 'The group 11 of acme',
+                            'emails': {
+                                'john.doe@domain.com': None,
+                                'ampanman@baikinman.com': None}},
+                        'acme-12': {
+                            'description': 'The group 12 of acme',
+                            'emails': {
+                                'john.doe@domain.com': None,
+                                'ampanman@baikinman.com': None}}}
+                    ga.return_value = {
+                        'ugroup1': {
+                            'gid': 'ugroup1',
+                            'description': 'ugroup',
+                            'emails': [{'email': 'tokin@domain1'},
+                                       {'email': 'kokin@domain2',
+                                        'start-date': '01/01/2016',
+                                        'end-date': '09/01/2016'}]
+                        },
+                        'acme-12': {
+                            'gid': 'acme-12',
+                            'description': 'acme-12 desc',
+                            'emails': [{'email': 'tokin@domain1'},
+                                       {'email': 'kokin@domain2',
+                                        'start-date': '01/01/2016',
+                                        'end-date': '09/01/2016'}]
+                        }
+                    }
+                    c = contributors.Contributors(db_path="db_path")
+
+                    # Is not a known from both backend
+                    gid, gdata = c.get_group_by_id('zzz')
+                    self.assertEqual(gid, 'zzz')
+                    self.assertEqual(gdata, None)
+
+                    # Is known and defined in the YAML backend
+                    gid, gdata = c.get_group_by_id('acme-11')
+                    self.assertEqual(gid, 'acme-11')
+                    self.assertEqual(gdata['description'],
+                                     'The group 11 of acme')
+
+                    # Is known and defined in the EL backend
+                    gid, gdata = c.get_group_by_id('ugroup1')
+                    self.assertEqual(gid, 'ugroup1')
+                    self.assertEqual(gdata['description'],
+                                     'ugroup')
+
+                    # Is known and defined in both backend
+                    # YAML backend takes precedence
+                    gid, gdata = c.get_group_by_id('acme-12')
+                    self.assertEqual(gid, 'acme-12')
+                    self.assertEqual(gdata['description'],
+                                     'The group 12 of acme')

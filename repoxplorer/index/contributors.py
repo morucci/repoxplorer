@@ -17,8 +17,10 @@
 import copy
 import logging
 
+from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
+from repoxplorer.index import users
 from datetime import datetime
 
 
@@ -161,6 +163,10 @@ class Contributors(YAMLDefinition):
         YAMLDefinition.__init__(self, db_path, db_default_file)
         self.enriched_groups = False
         self.enriched_idents = False
+        self._users = users.Users(
+            index.Connector(index_suffix='users'))
+        self._groups = users.Groups(
+            index.Connector(index_suffix='users'))
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -278,10 +284,27 @@ class Contributors(YAMLDefinition):
                                       gid, email, data))
         return issues
 
-    def get_idents(self):
+    def _get_idents(self):
         if not self.enriched_idents:
             self._enrich_idents()
         return self.idents
+
+    def backend_get_groups(self):
+        groups = self._groups.get_all()
+        # Transform the data structure to be compatible
+        mgroups = {}
+        for gid, data in groups.items():
+            mgroups[gid] = {}
+            mgroups[gid]['description'] = data['description']
+            mgroups[gid]['emails'] = {}
+            for email in data['emails']:
+                mgroups[gid]['emails'][email['email']] = {}
+                for k in ('start-date', 'end-date'):
+                    if k in email:
+                        mgroups[gid]['emails'][email['email']] = email[k]
+                if not mgroups[gid]['emails'][email['email']]:
+                    mgroups[gid]['emails'][email['email']] = None
+        return mgroups
 
     def get_groups(self):
         if not self.enriched_idents:
@@ -296,12 +319,39 @@ class Contributors(YAMLDefinition):
         validation_issues.extend(self._validate_idents())
         return validation_issues
 
+    def backend_convert_ident(self, ident):
+        # Transform the data structure to be compatible
+        data = {}
+        data['name'] = ident['name']
+        data['default-email'] = ident['default-email']
+        data['emails'] = {}
+        for email in ident['emails']:
+            groups = {}
+            data['emails'][email['email']] = {'groups': groups}
+            if 'groups' in email.keys():
+                for group in email['groups']:
+                    groups[group['group']] = {}
+                    for elm in ('start-date', 'end-date'):
+                        if elm in group.keys():
+                            groups[group['group']][elm] = group[elm]
+        return ident['uid'], data
+
     def get_ident_by_email(self, email):
-        idents = self.get_idents()
+        el_ident = self._users.get_ident_by_email(email)
+        if 'uid' in el_ident:
+            el_ident = self.backend_convert_ident(el_ident)
+        idents = self._get_idents()
         selected = filter(lambda ident: email in ident[1].get('emails', []),
                           idents.items())
-        if selected:
+        if selected and el_ident:
+            ident = copy.deepcopy(selected[0])
+            ret = copy.deepcopy(el_ident)
+            ret[1].update(ident[1])
+            return ret
+        elif selected:
             return copy.deepcopy(selected[0])
+        elif el_ident:
+            return el_ident
         else:
             # Return a default ident
             return email, {'name': None,
@@ -309,9 +359,24 @@ class Contributors(YAMLDefinition):
                            'emails': {email: {}}}
 
     def get_ident_by_id(self, id):
-        idents = self.get_idents()
-        return id, copy.deepcopy(idents.get(id))
+        el_ident = self._users.get_ident_by_id(id)
+        ident = self._get_idents().get(id)
+        if ident and el_ident:
+            ret = copy.deepcopy(el_ident)
+            ret.update(ident)
+            return id, ret
+        elif ident:
+            return id, copy.deepcopy(ident)
+        elif el_ident:
+            return id, el_ident
+        else:
+            # Return a default ident
+            return id, None
 
     def get_group_by_id(self, id):
         groups = self.get_groups()
-        return id, copy.deepcopy(groups.get(id))
+        # Query the EL groups backend and update the
+        # returned data struct by the YAML flat one
+        el_groups = self.backend_get_groups()
+        el_groups.update(groups)
+        return id, copy.deepcopy(el_groups.get(id))
