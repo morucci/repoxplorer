@@ -1,15 +1,14 @@
 # RepoXplorer
 
 RepoXplorer is a stats and charts utility for Git repositories. Its main
-purpose is to ease the visualization of stats for projects composed of one
+purpose is to ease visualization of statistics for projects composed of one
 or multiple Git repositories. Indeed lot of projects are splitted and have
-a Git repository by components (server, client, library A, ...) and most of
-classic Git stat tools do not handle that.
+a Git repository by component (server, client, library A, ...) but unfortunately
+most of the existing Git statistic tools does not handle that.
 
 RepoXplorer let's you describe how a project is composed and then computes
-stats across them. RepoXplorer provides a Web user interface based on Bootstrap
-and JQuery to let a user access data easily. It relies on ElasticSearch for
-its data backend.
+stats across them. RepoXplorer provides a Web UI to browse statistics easily.
+RepoXplorer relies on ElasticSearch for its data backend.
 
 ## A visual overview of the user interface
 
@@ -20,25 +19,16 @@ its data backend.
 ## How to install
 
 Last release is RepoXplorer [0.8.0](https://github.com/morucci/repoxplorer/releases/tag/0.8.0).
+The installation process described here is for CentOS 7 only.
 
 ### All In One Docker container
 
-Comming soon.
+Coming soon.
 
-### RPM installation for CentOS 7
+### ElasticSearch installation
 
-RepoXplorer has been packaged for CentOS 7 with EPEL7 repository activated. It is
-not in the official EPEL7 repositories but rpm and src.rpm are available.
-
-Here is the process to follow:
-
-First install the EPEL7 repository.
-
-```Shell
-sudo yum install -y epel-release
-```
-
-Install ElasticSearch 2.x for CentOS via rpm:
+repoXplorer relies on ElasticSearch. Below is the installation steps for
+ElasticSearch 2.x:
 
 ```Shell
 sudo rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
@@ -53,6 +43,19 @@ EOF
 sudo yum install -y elasticsearch java-1.8.0-openjdk
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
+```
+
+### RPM installation of repoXplorer
+
+RepoXplorer has been packaged for CentOS 7 with the EPEL7 repository activated. It is
+not in the official EPEL7 repositories but a RPM is available.
+
+Here is the process to follow:
+
+First install the EPEL7 repository.
+
+```Shell
+sudo yum install -y epel-release
 ```
 
 Finally install RepoXplorer:
@@ -73,34 +76,34 @@ Then open a Web browser to access http://localhost:51000
 projects.yaml and idents.yaml are available in /etc/repoxplorer. Please
 then follow the [Configuration section](#configuration).
 
-### Install in a python virtualenv
+### Install repoXplorer in a python virtualenv
+
+This is method to follow if you want to try the last master version.
 
 ```Shell
-yum install -y python-virtualenv libffi-devel openssl-devel python-devel
+yum install -y python-virtualenv libffi-devel openssl-devel python-devel git gcc
+mkdir git && cd git
+git clone https://github.com/morucci/repoxplorer.git
+cd repoxplorer
 virtualenv ~/repoxplorer
 . ~/repoxplorer/bin/activate
+pip install -U pip
 pip install -r requirements.txt
 python setup.py install
 ./bin/repoxplorer-fetch-web-assets
 ```
 
-An Elasticsearch instance is needed and repoXplorer will try to access it
-default at 127.0.0.1.
-
-Here, we use a "ready to use" Docker container for Elasticsearch.
-But you should definitely use a regular installation of ElasticSearch.
-
-```Shell
-~/repoxplorer/bin/el-start.sh
-```
-
 Start the RepoXplorer web UI.
 
 ```Shell
-uwsgi --http-socket :51000 --pecan /home/<user>/repoxplorer/local/share/repoxplorer/config.py \
- --static-map /css=/home/<user>/repoxplorer/local/share/repoxplorer/public/css \
- --static-map /javascript=/home/<user>/repoxplorer/local/share/repoxplorer/public/javascript \
- --static-map /images=/home/<user>/repoxplorer/local/share/repoxplorer/public/images
+cat > ~/start-ui.sh << EOF
+uwsgi --http-socket :51000 --pecan ~/repoxplorer/local/share/repoxplorer/config.py \
+ --static-map /css=$HOME/repoxplorer/local/share/repoxplorer/public/css \
+ --static-map /javascript=$HOME/repoxplorer/local/share/repoxplorer/public/javascript \
+ --static-map /images=$HOME/repoxplorer/local/share/repoxplorer/public/images
+EOF
+chmod +x ~/start-ui.sh
+~/start-ui.sh
 ```
 
 Then open a Web browser to access http://localhost:51000
@@ -156,20 +159,20 @@ then be moved to the configuration directory of repoXplorer.
 
 ```
 repoxplorer-github-organization --org <orgname>
-mv <orgname>.yaml $install-prefix/local/share/repoxplorer/
+mv <orgname>.yaml ~/repoxplorer/local/share/repoxplorer/
 # or
 mv <orgname>.yaml /etc/repoxplorer/
 ```
 
 ## Configuration
 
-If RepoXplorer has been installed via its setup.py then
-replace /etc/repoxplorer to $install-prefix/local/share/repoxplorer/.
+If RepoXplorer has been installed in a virtualenv then
+replace /etc/repoxplorer to ~/repoxplorer/local/share/repoxplorer/.
 
 ### How to index a list of Git hosted projects
 
 Below is an example of projects.yaml, note that Barbican and Swift projects
-are composed of two Git repositories, the server and the client.
+are composed of two Git repositories, a server and a client.
 
 Edit /etc/repoxplorer/projects.yaml to add projects you want to index.
 
