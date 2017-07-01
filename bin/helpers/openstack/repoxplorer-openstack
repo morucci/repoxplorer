@@ -41,7 +41,8 @@ args = parser.parse_args()
 if __name__ == "__main__":
     templates = {
         'openstack': {
-            "branches": ["master", ],
+            "branches": ["master", "stable/newton",
+                         "stable/ocata", "stable/mitaka"],
             "uri": "https://github.com/%(name)s",
             "gitweb": "https://github.com/%(name)s/commit/%%(sha)s",
             "parsers": ['.*(blueprint) ([^ .]+).*']}
@@ -66,7 +67,7 @@ if __name__ == "__main__":
                     projects[name][repo]['template'] = "openstack"
                     projects[name][repo]['tags'] = copy.copy(
                         detail.get('tags', []))
-                    projects[name][repo]['tags'].append("openstack")
+                    # projects[name][repo]['tags'].append("openstack")
 
     path = 'openstack.yaml'
     if args.output_path:
