@@ -58,8 +58,13 @@
  %>
  % for project, repos in filtered.items():
      % for repo, branches in repos.items():
-     <div class="col-md-2" id="project-panel-${project}-${repo}">
-     <div data-repoid="${project}-${repo}" class="panel panel-default">
+      <%
+        eproject = project.replace(" ", "-")
+        eproject = eproject.replace("/", "-")
+        erepo = repo.replace("/", "-")
+      %>
+     <div class="col-md-2" id="project-panel-${eproject}-${erepo}">
+     <div data-repoid="${eproject}-${erepo}" class="panel panel-default">
          <div class="panel-heading">
              <h3 class="panel-title">
                  <%
