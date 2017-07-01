@@ -253,6 +253,7 @@ class RepoIndexer():
             self.parsers = []
         else:
             self.parsers = parsers
+        self.parsers_compiled = False
         self.local = os.path.join(conf.git_store,
                                   self.name,
                                   self.uri.replace('/', '_'))
@@ -400,12 +401,15 @@ class RepoIndexer():
     def index(self, extract_workers=1):
         # Compile the parsers
         if self.parsers:
-            raw_parsers = copy.deepcopy(self.parsers)
-            self.parsers = []
-            for parser in raw_parsers:
-                self.parsers.append(re.compile(parser))
-            logger.debug("%s: Prepared %s regex parsers for commit msgs" % (
-                self.name, len(self.parsers)))
+            if not self.parsers_compiled:
+                raw_parsers = copy.deepcopy(self.parsers)
+                self.parsers = []
+                for parser in raw_parsers:
+                    self.parsers.append(re.compile(parser))
+                logger.debug(
+                    "%s: Prepared %s regex parsers for commit msgs" % (
+                        self.name, len(self.parsers)))
+                self.parsers_compiled = True
 
         # check whether a commit should be completly deleted or
         # updated by removing the repo from the repos field
