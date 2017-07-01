@@ -1,5 +1,7 @@
 ---
-groups:
-  barbican-ptl:
-    description: Project team leaders of Barbican project
-    emails: {}
+#groups:
+#  barbican-ptl:
+#    description: Project team leaders of Barbican project
+#    emails: {}
+
+groups: {}
