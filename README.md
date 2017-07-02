@@ -41,6 +41,7 @@ gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
 enabled=1
 EOF
 sudo yum install -y elasticsearch java-1.8.0-openjdk
+sudo sed -i s/.*ES_HEAP_SIZE=.*/ES_HEAP_SIZE=2g/ /etc/sysconfig/elasticsearch
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
