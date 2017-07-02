@@ -83,6 +83,11 @@ def get_all_shas(path):
 
 
 def get_commits_desc(path, shas):
+    if not shas:
+        # Return an empty buf if not sha given
+        # We do not whant git show return stat
+        # of the tip of the branch
+        return []
     cmd = ['git', 'show', '--format=raw', '--numstat']
     cmd.extend(shas)
     out = run(cmd, path)
