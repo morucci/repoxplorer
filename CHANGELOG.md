@@ -2,6 +2,27 @@
 Release Notes
 =============
 
+0.9.0
+=====
+
+New Features
+------------
+
+- Add a welcome page where a custom HTML string can be embedded.
+
+- Now branches can be defined at repository level and not only at project-template level.
+
+
+Other Notes
+-----------
+
+- Display the repoXplorer version in the UI.
+
+- Remove Dulwish dependency and only be based on Git binary
+
+- Far better performance when parsing and indexing Git repos
+
+
 0.8.0
 =====
 
@@ -110,4 +131,5 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
+
 
