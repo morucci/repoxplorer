@@ -100,8 +100,8 @@ def install_archive(name, path, basepath):
             )
         for f in glob.glob(os.path.join(os.path.dirname(path),
                            "jquery-ui-1.12.1", "images", "*")):
-            shutil.move(f, os.path.join(basepath,
-                                        'images', os.path.basename(f)))
+            shutil.move(f, os.path.join(basepath, "css",
+                                        "images", os.path.basename(f)))
         shutil.rmtree(os.path.join(os.path.dirname(path), "jquery-ui-1.12.1"))
         os.unlink(path)
     elif name == "bootstrap":
@@ -143,7 +143,7 @@ args = parser.parse_args()
 td = tempfile.mkdtemp()
 print "Assets will be installed in %s ..." % args.path
 print "Fetch/Deflate assets in a temp directory %s ..." % td
-for d in ('css', 'javascript', 'images', 'fonts'):
+for d in ('css', 'css/images', 'javascript', 'fonts'):
     os.mkdir(os.path.join(td, d))
 for name, url in archives.items():
     print "Fetch and Install %s ..." % name

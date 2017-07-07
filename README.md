@@ -100,8 +100,7 @@ Start the RepoXplorer web UI.
 cat > ~/start-ui.sh << EOF
 uwsgi --http-socket :51000 --pecan ~/repoxplorer/local/share/repoxplorer/config.py \
  --static-map /css=$HOME/repoxplorer/local/share/repoxplorer/public/css \
- --static-map /javascript=$HOME/repoxplorer/local/share/repoxplorer/public/javascript \
- --static-map /images=$HOME/repoxplorer/local/share/repoxplorer/public/images
+ --static-map /javascript=$HOME/repoxplorer/local/share/repoxplorer/public/javascript
 EOF
 chmod +x ~/start-ui.sh
 ~/start-ui.sh
