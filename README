@@ -1,0 +1,3 @@
+docker build -t repoxplorer .
+curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/etc/projects.yaml
+docker run -dti -p 51000:51000 -v $(pwd)/projects.yaml:/etc/repoxplorer/index.yaml repoxplorer

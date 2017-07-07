@@ -1,0 +1,25 @@
+---
+#project-templates:
+#  default:
+#    uri: https://github.com/openstack/%(name)s
+#    branches:
+#    - master
+#    - stable/mitaka
+#    - stable/newton
+#    - stable/ocata
+#    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+#
+#projects:
+#  Barbican:
+#    barbican:
+#      template: default
+#    python-barbicanclient:
+#      template: default
+#  Swift:
+#    swift:
+#      template: default
+#    python-swiftclient:
+#      template: default
+
+project-templates: {}
+projects: {}
