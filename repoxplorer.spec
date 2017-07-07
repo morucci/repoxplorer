@@ -1,6 +1,6 @@
 Name:           repoxplorer
 Version:        0.9.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        RepoXplorer is a stats and charts utility for GIT repositories
 
 License:        ASL 2.0
@@ -23,6 +23,7 @@ Requires:       python-requests
 Requires:       uwsgi-plugin-python
 Requires:       python-jsonschema
 Requires:       pytz
+Requires:       git
 
 BuildRequires:  systemd
 Buildrequires:  python2-devel
@@ -94,6 +95,9 @@ exit 0
 %attr(-, repoxplorer, repoxplorer) %{_var}/log/repoxplorer
 
 %changelog
+* Fri Jul 07 2017 Fabien Boucher <fboucher@redhat.com> - 0.9.0-2
+- Add the missing git dependency
+
 * Fri Jul 07 2017 Fabien Boucher <fboucher@redhat.com> - 0.9.0-1
 - Bump to 0.9.0
 
