@@ -1,3 +1,22 @@
+# Container build
 docker build -t repoxplorer .
-curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/etc/projects.yaml
-docker run -dti -p 51000:51000 -v $(pwd)/projects.yaml:/etc/repoxplorer/index.yaml repoxplorer
+
+# Prepare env for configuration and set default repos to index
+mkdir conf
+cat << EOF | tee ./conf/projects.yaml
+project-templates: {}
+projects: {}
+identities: {}
+groups: {}
+EOF
+chcon -Rt svirt_sandbox_file_t ./conf
+
+# Run the container
+docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer
+
+# Access the UI
+firefox http://localhost:51000
+
+# Check the indexer logs
+docker ps # get the <container-id>
+docker exec -ti <container-id> tail -f /var/log/repoxplorer/repoxplorer-indexer-debug.log
