@@ -23,7 +23,8 @@ The installation process described here is for CentOS 7 only.
 
 ### All In One Docker container
 
-Coming soon.
+A repoXplorer Docker image exists. Check it out there [repoXplorer docker image](https://hub.docker.com/r/morucci/repoxplorer/).
+This is a all-in-one container that bundles ElasticSearch + repoXplorer ready to use.
 
 ### ElasticSearch installation
 
