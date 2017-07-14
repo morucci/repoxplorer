@@ -457,9 +457,10 @@ git review # propose your changes on Gerrit
 
 ### Run tests
 
-Tests require an ElasticSearch instance.
+Unittests require a local ElasticSearch server accessible on the default port 9200/tcp.
+RepoXplorer is tested with ElasticSearch 2.x. No specific configuration is needed.
+Unittests use specific indexes destroyed and re-created at each run.
 
 ```Shell
-./bin/el-start.sh
 tox
 ```
