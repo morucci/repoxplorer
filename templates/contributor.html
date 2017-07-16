@@ -198,7 +198,7 @@
 
 <script type="text/javascript">
  var histo = jQuery.parseJSON('${histo}');
- gen_histo(histo);
+ gen_histo(histo, 'history');
  contributor_page_init('${cid}');
  install_paginator(undefined, undefined, '${cid}', undefined, '${commits_amount}');
  get_commits(undefined, undefined, '${cid}', undefined, undefined);

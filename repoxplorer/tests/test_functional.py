@@ -459,9 +459,8 @@ class TestHistoController(FunctionalTest):
             response = self.app.get('/histo/authors?pid=test')
         assert response.status_int == 200
         expected_ret = [
-            {u'doc_count': 2,
-             u'key': 1410393600000,
-             u'key_as_string': u'2014-09-11',
+            {u'value': 2,
+             u'date': u'2014-09-11',
              u'authors_email': [
                  u'n.suke@joker.org',
                  u'j.paul@joker.org']}

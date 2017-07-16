@@ -164,7 +164,11 @@ def histo_authors_sanitize(idents, histo):
             _, ident = idents.get_ident_by_email(author)
             author_emails.add(ident['default-email'])
         bucket['authors_email'] = list(author_emails)
-        bucket['doc_count'] = len(bucket['authors_email'])
+        bucket['value'] = len(bucket['authors_email'])
+        bucket['date'] = bucket['key_as_string']
+        del bucket['doc_count']
+        del bucket['key_as_string']
+        del bucket['key']
 
 
 def get_generic_infos(commits_index, query_kwargs):
