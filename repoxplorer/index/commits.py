@@ -630,6 +630,17 @@ class Commits(object):
         duration = duration.total_seconds()
         return first, last, duration
 
+    def set_histo_granularity(self, duration):
+        # Set resolution by day if duration <= 3 months
+        if (duration / (24 * 3600 * 31)) <= 3:
+            res = 'day'
+        # Set resolution by month if duration <= 10 years
+        elif (duration / (24 * 3600 * 31 * 12)) <= 10:
+            res = 'month'
+        else:
+            res = 'year'
+        return res
+
     def get_commits_histo(self, mails=[], repos=[],
                           fromdate=None, todate=None,
                           merge_commit=None, metadata=[],
@@ -648,14 +659,7 @@ class Commits(object):
                                                metadata=metadata,
                                                mails_neg=mails_neg)[2]
 
-        # Set resolution by day if duration <= 3 months
-        if (duration / (24 * 3600 * 31)) <= 3:
-            res = 'day'
-        # Set resolution by month if duration <= 10 years
-        elif (duration / (24 * 3600 * 31 * 12)) <= 10:
-            res = 'month'
-        else:
-            res = 'year'
+        res = self.set_histo_granularity(duration)
 
         body = {
             "query": {
@@ -694,3 +698,80 @@ class Commits(object):
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["commits"]["buckets"]
+
+    def get_authors_histo(self, mails=[], repos=[],
+                          fromdate=None, todate=None,
+                          merge_commit=None, metadata=[],
+                          mails_neg=False):
+        """ Return the histogram of authors for authors and/or repos.
+        """
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        if not mails and not repos:
+            raise Exception('At least a author email or repo is required')
+
+        qfilter = self.get_filter(mails, repos, metadata, mails_neg)
+        duration = self.get_commits_time_delta(mails, repos,
+                                               fromdate=fromdate,
+                                               todate=todate,
+                                               metadata=metadata,
+                                               mails_neg=mails_neg)[2]
+
+        res = self.set_histo_granularity(duration)
+
+        body = {
+            "query": {
+                "filtered": {
+                    "filter": qfilter,
+                }
+            },
+            "aggs": {
+                "commits": {
+                    "date_histogram": {
+                        "field": "committer_date",
+                        "interval": res,
+                        "format": "yyyy-MM-dd",
+                    },
+                    "aggs": {
+                        "authors_email": {
+                            "terms": {
+                                "field": "author_email",
+                                "size": 2 ^ 31
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            {
+                "range": {
+                    "committer_date": {
+                        "gte": fromdate,
+                        "lt": todate,
+                    }
+                }
+            }
+        )
+
+        if merge_commit is not None:
+            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}})
+
+        params['body'] = body
+        params['size'] = 0
+        res = self.es.search(**params)
+        took = res['took']
+        res = res["aggregations"]["commits"]["buckets"]
+        for bucket in res:
+            bucket['authors_email'] = [
+                b['key'] for b in bucket['authors_email']['buckets']]
+            bucket['doc_count'] = len(bucket['authors_email'])
+        return took, res
+
+
+if __name__ == "__main__":
+    from repoxplorer import index
+    con = index.Connector()
+    c = Commits(con)
