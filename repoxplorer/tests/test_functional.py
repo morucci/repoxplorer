@@ -458,7 +458,7 @@ class TestHistoController(FunctionalTest):
             m.return_value = self.projects
             response = self.app.get('/histo/authors?pid=test')
         assert response.status_int == 200
-        self.assertEqual(response.json[0]['doc_count'], 2)
-        self.assertEqual(response.json[0]['key_as_string'], '2014-09-11')
+        self.assertEqual(response.json[0]['value'], 2)
+        self.assertEqual(response.json[0]['date'], '2014-09-11')
         self.assertIn('n.suke@joker.org', response.json[0]['authors_email'])
         self.assertIn('j.paul@joker.org', response.json[0]['authors_email'])
