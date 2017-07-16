@@ -1,5 +1,5 @@
-function gen_histo(histo) {
-  var svg_histo = dimple.newSvg("#history", '100%', 250);
+function gen_histo(histo, id) {
+  var svg_histo = dimple.newSvg("#"+id, '100%', 250);
   var chart_histo = new dimple.chart(svg_histo, histo);
   chart_histo.addCategoryAxis("x", "date");
   chart_histo.addMeasureAxis("y", "value");
@@ -37,6 +37,24 @@ function install_date_pickers() {
 
 function get_groups() {
  return $.getJSON("api_groups/")
+}
+
+function get_authors_histo(pid, tid, cid, gid) {
+    if ($('#inc_merge_commit').prop('checked')) {
+        var inc_merge_commit = 'on'
+    }
+    var args = {}
+    args['pid'] = pid
+    args['tid'] = tid
+    args['cid'] = cid
+    args['gid'] = gid
+    args['dfrom'] = getUrlParameter('dfrom')
+    args['dto'] = getUrlParameter('dto')
+    args['inc_merge_commit'] = inc_merge_commit,
+    args['inc_repos'] = getUrlParameter('inc_repos')
+    args['metadata'] = getUrlParameter('metadata')
+    args['exc_groups'] = getUrlParameter('exc_groups')
+    return $.getJSON("histo/authors", args)
 }
 
 function projects_page_init() {
@@ -320,6 +338,16 @@ function project_page_init(projectid, tagid) {
        console.log(err)
        }
    )
+
+    // Fill the histo author selector
+    var defer2 = get_authors_histo(projectid, undefined, undefined, undefined);
+    defer2
+        .done(function(data) {
+            gen_histo(data, 'history_author')
+        })
+        .fail(function(err) {
+            console.log(err)
+        })
 
  $("#add-to-filter").click(function(){
    metadata = $('#metadata').val()
