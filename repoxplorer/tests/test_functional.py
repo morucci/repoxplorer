@@ -29,6 +29,56 @@ from pecan import conf
 
 xorkey = conf.get('xorkey') or 'default'
 
+COMMITS = [
+    {
+        'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
+        'author_date': 1410456005,
+        'committer_date': 1410456005,
+        'ttl': 0,
+        'author_name': 'Nakata Daisuke',
+        'committer_name': 'Nakata Daisuke',
+        'author_email': 'n.suke@joker.org',
+        'committer_email': 'n.suke@joker.org',
+        'repos': [
+            'https://github.com/nakata/monkey.git:monkey:master', ],
+        'line_modifieds': 10,
+        'merge_commit': False,
+        'commit_msg': 'Add init method',
+        'implement': ['feature 35', ],
+    },
+    {
+        'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
+        'author_date': 1410456005,
+        'committer_date': 1410456005,
+        'ttl': 0,
+        'author_name': 'Jean Paul',
+        'committer_name': 'Jean Paul',
+        'author_email': 'j.paul@joker.org',
+        'committer_email': 'j.paul@joker.org',
+        'repos': [
+            'https://github.com/nakata/monkey.git:monkey:master', ],
+        'line_modifieds': 10,
+        'merge_commit': False,
+        'commit_msg': 'Add feature 36',
+        'implement': ['feature 36', ],
+        'close-bug': ['18', ],
+    },
+    {
+        'sha': '3597334f2cb10772950c97ddf2f6cc17b1846',
+        'author_date': 1410456005,
+        'committer_date': 1410456005,
+        'ttl': 0,
+        'author_name': 'Jean Marc',
+        'committer_name': 'Jean Marc',
+        'author_email': 'j.marc@joker2.org',
+        'committer_email': 'j.marc@joker2.org',
+        'repos': [
+            'https://github.com/nakata/monkey.git:monkey:master', ],
+        'line_modifieds': 0,
+        'merge_commit': True,
+        'commit_msg': 'Merge: something',
+    }]
+
 
 class TestRootController(FunctionalTest):
 
@@ -37,55 +87,7 @@ class TestRootController(FunctionalTest):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
         cls.t = Tags(cls.con)
-        cls.commits = [
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
-                'author_date': 1410456005,
-                'committer_date': 1410456005,
-                'ttl': 0,
-                'author_name': 'Nakata Daisuke',
-                'committer_name': 'Nakata Daisuke',
-                'author_email': 'n.suke@joker.org',
-                'committer_email': 'n.suke@joker.org',
-                'repos': [
-                    'https://github.com/nakata/monkey.git:monkey:master', ],
-                'line_modifieds': 10,
-                'merge_commit': False,
-                'commit_msg': 'Add init method',
-                'implement': ['feature 35', ],
-            },
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
-                'author_date': 1410456005,
-                'committer_date': 1410456005,
-                'ttl': 0,
-                'author_name': 'Jean Paul',
-                'committer_name': 'Jean Paul',
-                'author_email': 'j.paul@joker.org',
-                'committer_email': 'j.paul@joker.org',
-                'repos': [
-                    'https://github.com/nakata/monkey.git:monkey:master', ],
-                'line_modifieds': 10,
-                'merge_commit': False,
-                'commit_msg': 'Add feature 36',
-                'implement': ['feature 36', ],
-                'close-bug': ['18', ],
-            },
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b1846',
-                'author_date': 1410456005,
-                'committer_date': 1410456005,
-                'ttl': 0,
-                'author_name': 'Jean Marc',
-                'committer_name': 'Jean Marc',
-                'author_email': 'j.marc@joker2.org',
-                'committer_email': 'j.marc@joker2.org',
-                'repos': [
-                    'https://github.com/nakata/monkey.git:monkey:master', ],
-                'line_modifieds': 0,
-                'merge_commit': True,
-                'commit_msg': 'Merge: something',
-            }]
+        cls.commits = COMMITS
         cls.c.add_commits(cls.commits)
         cls.projects = {'test': [
             {'uri': 'https://github.com/nakata/monkey.git',
@@ -431,3 +433,37 @@ class TestUsersController(FunctionalTest):
         response = self.app.post_json(
             '/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
+
+
+class TestHistoController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.projects = {'test': [
+            {'uri': 'https://github.com/nakata/monkey.git',
+             'name': 'monkey',
+             'branch': 'master'}]}
+        cls.c = Commits(cls.con)
+        cls.commits = COMMITS
+        cls.c.add_commits(cls.commits)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_authors_histo(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.histo.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/histo/authors?pid=test')
+        assert response.status_int == 200
+        expected_ret = [
+            {u'doc_count': 2,
+             u'key': 1410393600000,
+             u'key_as_string': u'2014-09-11',
+             u'authors_email': [
+                 u'n.suke@joker.org',
+                 u'j.paul@joker.org']}
+        ]
+        self.assertListEqual(response.json, expected_ret)
