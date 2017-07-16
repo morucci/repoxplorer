@@ -99,7 +99,8 @@ Start the RepoXplorer web UI.
 
 ```Shell
 cat > ~/start-ui.sh << EOF
-uwsgi --http-socket :51000 --pecan ~/repoxplorer/local/share/repoxplorer/config.py \
+uwsgi --plugin python --http-socket :51000 --pecan \
+ ~/repoxplorer/local/share/repoxplorer/config.py \
  --static-map /css=$HOME/repoxplorer/local/share/repoxplorer/public/css \
  --static-map /javascript=$HOME/repoxplorer/local/share/repoxplorer/public/javascript
 EOF
