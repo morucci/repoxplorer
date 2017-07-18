@@ -319,6 +319,17 @@ class TestCommits(TestCase):
                                          u'doc_count': 1,
                                          u'key_as_string': u'2014-09-12'})
 
+    def test_get_authors_histo(self):
+        ret = self.c.get_authors_histo(
+            repos=['https://github.com/nakata/monkey.git:monkey:master'])
+        self.assertDictEqual(ret[1][0],
+                             {u'authors_email': [
+                                 u'jean.bon@joker.org',
+                                 u'n.suke@joker.org'],
+                              u'key': 1410393600000,
+                              u'doc_count': 2,
+                              u'key_as_string': u'2014-09-11'})
+
     def test_get_top_authors_by_lines(self):
         ret = self.c.get_top_authors_by_lines(
             repos=['https://github.com/nakata/monkey.git:monkey:master'])
