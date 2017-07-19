@@ -39,7 +39,7 @@ function get_groups() {
  return $.getJSON("api_groups/")
 }
 
-function get_authors_histo(pid, tid, cid, gid) {
+function get_histo(pid, tid, cid, gid, type) {
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on'
     }
@@ -54,7 +54,8 @@ function get_authors_histo(pid, tid, cid, gid) {
     args['inc_repos'] = getUrlParameter('inc_repos')
     args['metadata'] = getUrlParameter('metadata')
     args['exc_groups'] = getUrlParameter('exc_groups')
-    return $.getJSON("histo/authors", args)
+    console.log(args)
+    return $.getJSON("histo/" + type, args)
 }
 
 function projects_page_init() {
@@ -165,6 +166,17 @@ function contributor_page_init(cid) {
   get_releases(this.value)
  })
 
+    // Fill the histo commits selector
+    var c_h_deferred = get_histo(undefined, undefined, cid, undefined, 'commits');
+    c_h_deferred
+        .done(function(data) {
+            gen_histo(data, 'history')
+        })
+        .fail(function(err) {
+            console.log(err)
+        })
+
+
  $("#selectrelease").click(function(){
   var rdate = $('#releases').val();
   if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
@@ -239,6 +251,16 @@ function group_page_init(gid) {
   if (this.value === '') {return 1}
   get_releases(this.value)
  })
+
+    // Fill the histo commits selector
+    var c_h_deferred = get_histo(undefined, undefined, undefined, gid, 'commits');
+    c_h_deferred
+        .done(function(data) {
+            gen_histo(data, 'history')
+        })
+        .fail(function(err) {
+            console.log(err)
+        })
 
  $("#selectrelease").click(function(){
   var rdate = $('#releases').val();
@@ -338,10 +360,19 @@ function project_page_init(projectid, tagid) {
        console.log(err)
        }
    )
+    // Fill the histo commits selector
+    var defer2 = get_histo(projectid, tagid, undefined, undefined, 'commits');
+    defer2
+        .done(function(data) {
+            gen_histo(data, 'history')
+        })
+        .fail(function(err) {
+            console.log(err)
+        })
 
     // Fill the histo author selector
-    var defer2 = get_authors_histo(projectid, undefined, undefined, undefined);
-    defer2
+    var defer3 = get_histo(projectid, tagid, undefined, undefined, 'authors');
+    defer3
         .done(function(data) {
             gen_histo(data, 'history_author')
         })

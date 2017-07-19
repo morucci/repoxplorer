@@ -157,20 +157,6 @@ def top_authors_sanitize(idents, top_authors, commits, top=100000):
     return top_authors_s_sorted
 
 
-def histo_authors_sanitize(idents, histo):
-    for bucket in histo:
-        author_emails = set()
-        for author in bucket['authors_email']:
-            _, ident = idents.get_ident_by_email(author)
-            author_emails.add(ident['default-email'])
-        bucket['authors_email'] = list(author_emails)
-        bucket['value'] = len(bucket['authors_email'])
-        bucket['date'] = bucket['key_as_string']
-        del bucket['doc_count']
-        del bucket['key_as_string']
-        del bucket['key']
-
-
 def get_generic_infos(commits_index, query_kwargs):
     infos = {}
     infos['commits_amount'] = commits_index.get_commits_amount(**query_kwargs)
