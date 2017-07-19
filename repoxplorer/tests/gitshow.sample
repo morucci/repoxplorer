@@ -75,6 +75,7 @@ committer Author B <author.b@test> 1493244209 +0000
 1	0	doc/source/firehose.rst
 59	0	doc/source/firehose_schema.rst
 1	0	doc/source/systems.rst
+3	0	doc/source/{arch.rst => components.rst}
 
 commit 8cb34d026e9c290b83c52301d82b2011406fc7d8
 tree 06ca044790deff0e862ea1748f8ac5d6bd62bb9c

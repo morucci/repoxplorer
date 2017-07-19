@@ -33,6 +33,7 @@ METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 AUTHOR_RE = re.compile('author (.*) <(.*)> (.*) (.*)')
 COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
 STATSL_RE = re.compile('(.*)\t(.*)\t(.*)')
+FILE_RENAME_RE = re.compile("(.*){(.*)\s=>\s(.*)}(.*)")
 
 
 def run(cmd, path):
@@ -174,6 +175,7 @@ def parse_commit(input, offset, extra_parsers=None):
     i = 0
     cmt['line_modifieds'] = 0
     cmt['files_stats'] = {}
+    cmt['files_list'] = set()
     while True:
         try:
             input[offset + i]
@@ -191,11 +193,17 @@ def parse_commit(input, offset, extra_parsers=None):
                 l_added = int(m.groups()[0])
                 l_removed = int(m.groups()[1])
                 file = m.groups()[2]
+                file = FILE_RENAME_RE.sub(r'\1\3\4', file)
+                cmt['files_list'].add(file)
+                pe = file.split('/')
+                for pei in xrange(1, len(pe)+1):
+                    cmt['files_list'].add('/'.join(pe[0:pei]))
                 cmt['files_stats'][file] = {
                     'lines_added': l_added,
                     'lines_removed': l_removed}
                 cmt['line_modifieds'] += l_added + l_removed
         i += 1
+    cmt['files_list'] = sorted(list(cmt['files_list']))
     return cmt, offset + i
 
 

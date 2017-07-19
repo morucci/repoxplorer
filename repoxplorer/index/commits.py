@@ -37,6 +37,7 @@ PROPERTIES = {
     "line_modifieds": {"type": "integer", "index": "not_analyzed"},
     "merge_commit": {"type": "boolean"},
     "commit_msg": {"type": "string"},
+    "files_list": {"type": "string", "index": "not_analyzed"},
 }
 
 DYNAMIC_TEMPLATES = [
