@@ -462,3 +462,13 @@ class TestHistoController(FunctionalTest):
         self.assertEqual(response.json[0]['date'], '2014-09-11')
         self.assertIn('n.suke@joker.org', response.json[0]['authors_email'])
         self.assertIn('j.paul@joker.org', response.json[0]['authors_email'])
+
+    def test_get_commits_histo(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.histo.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/histo/commits?pid=test')
+        assert response.status_int == 200
+        self.assertListEqual(
+            response.json,
+            [{u'date': u'2014-09-11', u'value': 2}])

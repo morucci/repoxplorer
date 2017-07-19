@@ -14,7 +14,6 @@
 #  limitations under the License.
 
 
-import json
 import hashlib
 import itertools
 
@@ -162,11 +161,8 @@ class RootController(object):
         c_projects = top_projects[2]
         c_repos = top_projects[3]
 
-        histo = utils.get_commits_histo(c, query_kwargs)
-
         return {'name': name,
                 'gravatar': hashlib.md5(ident['default-email']).hexdigest(),
-                'histo': json.dumps(histo),
                 'commits_amount': infos['commits_amount'],
                 'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
@@ -247,11 +243,8 @@ class RootController(object):
         c_projects = top_projects[2]
         c_repos = top_projects[3]
 
-        histo = utils.get_commits_histo(c, query_kwargs)
-
         return {'name': gid,
                 'description': description,
-                'histo': json.dumps(histo),
                 'members_amount': len(members.keys()),
                 'commits_amount': infos['commits_amount'],
                 'line_modifieds_amount': infos['line_modifieds_amount'],
@@ -363,11 +356,8 @@ class RootController(object):
         top_authors_modified = utils.top_authors_sanitize(
             idents, top_authors_modified, c, top=25)
 
-        histo = utils.get_commits_histo(c, query_kwargs)
-
         return {'pid': pid,
                 'tid': tid,
-                'histo': json.dumps(histo),
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
                 'authors_amount': authors_amount,

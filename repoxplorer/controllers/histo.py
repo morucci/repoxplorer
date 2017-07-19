@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from pecan import conf
 from pecan import abort
 from pecan import expose
 
@@ -24,22 +25,14 @@ from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
 indexname = 'repoxplorer'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class HistoController(object):
 
-    @expose('json')
-    def authors(self, pid=None, tid=None, cid=None, gid=None,
-                start=0, limit=10, htype='authors_count',
-                dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata="", exc_groups=None):
-
-        if not pid and not tid:
-            abort(404,
-                  detail="tag ID or project ID is mandatory")
-        if pid and tid:
-            abort(404,
-                  detail="tag ID and project ID can't be requested together")
+    def build_query(self, pid, tid, cid, gid, dfrom, dto,
+                    inc_merge_commit, inc_repos,
+                    metadata, exc_groups, idents):
 
         if inc_merge_commit != 'on':
             include_merge_commit = False
@@ -66,8 +59,6 @@ class HistoController(object):
                 _metadata.append((key, value))
         metadata = _metadata
 
-        idents = Contributors()
-
         mails_to_exclude = {}
 
         if exc_groups:
@@ -77,25 +68,86 @@ class HistoController(object):
                 mails_to_exclude.update(group['emails'])
 
         projects_index = Projects()
+        repos = []
+
+        query_kwargs = {}
+
         if pid:
             repos = projects_index.get_projects()[pid]
-        else:
+            query_kwargs.update(
+                {'mails': mails_to_exclude,
+                 'mails_neg': True})
+        elif tid:
             repos = projects_index.get_tags()[tid]
+        elif gid:
+            gid, group = idents.get_group_by_id(gid)
+            if not group:
+                abort(404,
+                      detail="The group has not been found")
+            mails = group['emails']
+            query_kwargs.update({'mails': mails})
+        elif cid:
+            cid = utils.decrypt(xorkey, cid)
+            iid, ident = idents.get_ident_by_id(cid)
+            if not ident:
+                # No ident has been declared for that contributor
+                iid, ident = idents.get_ident_by_email(cid)
+            mails = ident['emails']
+            query_kwargs.update({'mails': mails})
 
         p_filter = utils.get_references_filter(repos, inc_repos)
 
-        query_kwargs = {
+        query_kwargs.update({
             'repos': p_filter,
             'fromdate': dfrom,
-            'mails': mails_to_exclude,
-            'mails_neg': True,
             'todate': dto,
             'merge_commit': include_merge_commit,
             'metadata': metadata,
-        }
+        })
+
+        return query_kwargs
+
+    @expose('json')
+    def authors(self, pid=None, tid=None, cid=None, gid=None,
+                dfrom=None, dto=None, inc_merge_commit=None,
+                inc_repos=None, metadata="", exc_groups=None):
+
+        idents = Contributors()
+
+        query_kwargs = self.build_query(
+            pid, tid, cid, gid, dfrom, dto, inc_merge_commit, inc_repos,
+            metadata, exc_groups, idents)
+        print query_kwargs
 
         c = Commits(index.Connector(index=indexname))
         ret = c.get_authors_histo(**query_kwargs)[1]
-        utils.histo_authors_sanitize(idents, ret)
+        for bucket in ret:
+            author_emails = set()
+            for author in bucket['authors_email']:
+                _, ident = idents.get_ident_by_email(author)
+                author_emails.add(ident['default-email'])
+            bucket['authors_email'] = list(author_emails)
+            bucket['value'] = len(bucket['authors_email'])
+            bucket['date'] = bucket['key_as_string']
+            del bucket['doc_count']
+            del bucket['key_as_string']
+            del bucket['key']
 
+        return ret
+
+    @expose('json')
+    def commits(self, pid=None, tid=None, cid=None, gid=None,
+                dfrom=None, dto=None, inc_merge_commit=None,
+                inc_repos=None, metadata="", exc_groups=None):
+
+        idents = Contributors()
+
+        query_kwargs = self.build_query(
+            pid, tid, cid, gid, dfrom, dto, inc_merge_commit, inc_repos,
+            metadata, exc_groups, idents)
+
+        c = Commits(index.Connector(index=indexname))
+        ret = c.get_commits_histo(**query_kwargs)
+        ret = [{'date': d['key_as_string'],
+                'value': d['doc_count']} for d in ret[1]]
         return ret
