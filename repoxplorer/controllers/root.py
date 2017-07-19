@@ -28,6 +28,7 @@ from collections import OrderedDict
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
+from repoxplorer.controllers import histo
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -48,6 +49,7 @@ class RootController(object):
     # TODO: rename it cgroups endpoint
     api_groups = groups.GroupsController()
     users = users.UsersController()
+    histo = histo.HistoController()
 
     @expose(template='index.html')
     def index(self):
