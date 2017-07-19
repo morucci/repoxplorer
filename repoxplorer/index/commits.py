@@ -736,7 +736,7 @@ class Commits(object):
                         "authors_email": {
                             "terms": {
                                 "field": "author_email",
-                                "size": 2 ^ 31
+                                "size": 2 ** 16
                             },
                         }
                     }
