@@ -67,6 +67,10 @@ properties:
             type: array
             items:
               type: string
+          paths:
+            type: array
+            items:
+              type: string
           parsers:
             type: array
             items:
@@ -99,6 +103,8 @@ templates:
     - openstack
     - language:python
     - type:cloud
+    paths:
+    - project/tests/
 """
 
 projects_schema = """
@@ -122,6 +128,10 @@ properties:
             properties:
               template:
                 type: string
+              paths:
+                type: array
+                items:
+                  type: string
               tags:
                 type: array
                 items:
@@ -143,6 +153,8 @@ projects:
       tags:
       - client
       - language:python
+      paths:
+      - project/tests/
   Swift:
     openstack/swift:
       template: default
@@ -192,9 +204,13 @@ class Projects(YAMLDefinition):
                 if 'tags' in repo and repo['tags']:
                     tags = copy.copy(repo['tags'])
                 # Save branches mentioned for a repo
-                branches = None
+                branches = []
                 if 'branches' in repo:
                     branches = copy.copy(repo['branches'])
+                # Save paths mentioned for a repo
+                paths = []
+                if 'paths' in repo:
+                    paths = copy.copy(repo['paths'])
                 # Apply the template
                 repo.update(copy.deepcopy(
                     self.templates[repo['template']]))
@@ -210,6 +226,9 @@ class Projects(YAMLDefinition):
                 # Restore defined branches at repo level
                 if branches:
                     repo['branches'] = branches
+                # Restore defined paths at repo level
+                if paths:
+                    repo['paths'] = paths
                 # Apply default values
                 if 'parsers' not in repo:
                     repo['parsers'] = []
