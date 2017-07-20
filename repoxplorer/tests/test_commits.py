@@ -25,7 +25,12 @@ class TestCommits(TestCase):
                 'line_modifieds': 10,
                 'merge_commit': False,
                 'commit_msg': 'Add init method',
-                'implement-partial-epic': ['Great Feature', ]
+                'implement-partial-epic': ['Great Feature', ],
+                'files_list': [
+                    'ichi/',
+                    'ichi/ni/kuruma.sh',
+                    'ichi/ni/san/',
+                    'ichi/ni/san/tamago.txt'],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b185',
@@ -41,6 +46,7 @@ class TestCommits(TestCase):
                 'line_modifieds': 100,
                 'merge_commit': True,
                 'commit_msg': 'Merge "Fix sanity unittest"',
+                'files_list': [],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b186',
@@ -57,6 +63,11 @@ class TestCommits(TestCase):
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 19',
                 'implement-feature': ['19', ],
+                'files_list': [
+                    'monkey/',
+                    'monkey/__init__.py',
+                    'ichi/',
+                    'ichi/ni/hikoki.asm'],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b187',
@@ -73,7 +84,8 @@ class TestCommits(TestCase):
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 20',
                 'implement-feature': ['20', ],
-                'implement-partial-epic': ['Great Feature', ]
+                'implement-partial-epic': ['Great Feature', ],
+                'files_list': [],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b188',
@@ -90,6 +102,7 @@ class TestCommits(TestCase):
                 'line_modifieds': 400,
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 21',
+                'files_list': [],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b189',
@@ -105,6 +118,7 @@ class TestCommits(TestCase):
                 'line_modifieds': 400,
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 22',
+                'files_list': [],
             },
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b190',
@@ -120,6 +134,7 @@ class TestCommits(TestCase):
                 'line_modifieds': 400,
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 23',
+                'files_list': [],
             }
         ]
         cls.c.add_commits(cls.commits)
@@ -213,6 +228,38 @@ class TestCommits(TestCase):
         self.assertEqual(ret[1], 1)
         self.assertEqual(ret[2][0]['sha'],
                          '3597334f2cb10772950c97ddf2f6cc17b188')
+
+        ret = self.c.get_commits(
+            repos={
+                'https://github.com/nakata/monkey.git:monkey:master': [
+                    'ichi/ni/san/']})
+        self.assertEqual(ret[1], 1)
+
+        ret = self.c.get_commits(
+            repos={
+                'https://github.com/nakata/monkey.git:monkey:master': [
+                    'ichi/ni/san/',
+                    'monkey/']})
+        self.assertEqual(ret[1], 2)
+
+        ret = self.c.get_commits(
+            repos={
+                'https://github.com/nakata/monkey.git:monkey:master': [
+                    'ichi/ni/san/',
+                    'monkey/',
+                    'dame/']})
+        self.assertEqual(ret[1], 2)
+
+        ret = self.c.get_commits(
+            repos={
+                'https://github.com/nakata/monkey.git:monkey:master': [
+                    'dame/']})
+        self.assertEqual(ret[1], 0)
+
+        ret = self.c.get_commits(
+            repos={
+                'https://github.com/nakata/monkey.git:monkey:master': []})
+        self.assertEqual(ret[1], 3)
 
     def test_get_commits_based_on_merge_info(self):
         ret = self.c.get_commits(mails=['keiko.a@joker.org'],
