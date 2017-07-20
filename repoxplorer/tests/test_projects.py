@@ -85,6 +85,8 @@ class TestProjects(TestCase):
           Nova:
             openstack/nova:
               template: default
+              paths:
+              - tests/
             openstack/python-novaclient:
               template: default
         """
@@ -111,6 +113,7 @@ class TestProjects(TestCase):
                     'gitweb': 'https://github.com/openstack/openstack/'
                               'nova/commit/%(sha)s',
                     'releases': [],
+                    'paths': ['tests/'],
                     'uri': 'https://github.com/openstack/nova'}},
             'Swift': {
                 'openstack/swift': {

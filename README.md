@@ -276,6 +276,32 @@ projects:
       template: default
 ```
 
+A list of paths can be given under the *paths* key. When defined for
+project repository definition then only commits that include a file
+changed under one of the list of paths will match during statistic
+computation. If you want to define a special project *Barbian-Tests*
+that is limited to tests directory then:
+
+```YAML
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
+      - master
+
+projects:
+  Barbican:
+    barbican:
+      template: default
+      paths:
+      - barbican/tests/
+      - barbican/functional-tests/
+    python-barbicanclient:
+      templates: default
+      paths:
+      - barbicanclient/tests/
+```
+
 It is also possible to define metadata parsers. Please refer to
 the [Metadata automatic indexation section](#metadata-automatic-indexation).
 

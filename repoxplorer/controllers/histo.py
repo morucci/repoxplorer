@@ -79,6 +79,9 @@ class HistoController(object):
                  'mails_neg': True})
         elif tid:
             repos = projects_index.get_tags()[tid]
+            query_kwargs.update(
+                {'mails': mails_to_exclude,
+                 'mails_neg': True})
         elif gid:
             gid, group = idents.get_group_by_id(gid)
             if not group:
@@ -117,7 +120,6 @@ class HistoController(object):
         query_kwargs = self.build_query(
             pid, tid, cid, gid, dfrom, dto, inc_merge_commit, inc_repos,
             metadata, exc_groups, idents)
-        print query_kwargs
 
         c = Commits(index.Connector(index=indexname))
         ret = c.get_authors_histo(**query_kwargs)[1]
