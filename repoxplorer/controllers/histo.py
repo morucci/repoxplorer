@@ -73,12 +73,18 @@ class HistoController(object):
         query_kwargs = {}
 
         if pid:
-            repos = projects_index.get_projects()[pid]
+            repos = projects_index.get_projects().get(pid)
+            if not repos:
+                abort(404,
+                      detail="The project has not been found")
             query_kwargs.update(
                 {'mails': mails_to_exclude,
                  'mails_neg': True})
         elif tid:
-            repos = projects_index.get_tags()[tid]
+            repos = projects_index.get_tags().get(tid)
+            if not repos:
+                abort(404,
+                      detail="The project has not been found")
             query_kwargs.update(
                 {'mails': mails_to_exclude,
                  'mails_neg': True})
@@ -122,6 +128,8 @@ class HistoController(object):
             metadata, exc_groups, idents)
 
         c = Commits(index.Connector(index=indexname))
+        if not c.get_commits_amount(**query_kwargs):
+            return []
         ret = c.get_authors_histo(**query_kwargs)[1]
         for bucket in ret:
             author_emails = set()
@@ -149,6 +157,8 @@ class HistoController(object):
             metadata, exc_groups, idents)
 
         c = Commits(index.Connector(index=indexname))
+        if not c.get_commits_amount(**query_kwargs):
+            return []
         ret = c.get_commits_histo(**query_kwargs)
         ret = [{'date': d['key_as_string'],
                 'value': d['doc_count']} for d in ret[1]]

@@ -463,6 +463,12 @@ class TestHistoController(FunctionalTest):
         self.assertIn('n.suke@joker.org', response.json[0]['authors_email'])
         self.assertIn('j.paul@joker.org', response.json[0]['authors_email'])
 
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.histo.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/histo/authors?pid=unknown', status="*")
+        assert response.status_int == 404
+
     def test_get_commits_histo(self):
         with patch.object(root.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
