@@ -208,14 +208,14 @@ def top_projects_sanitize(commits_index, projects_index,
                 **_query_kwargs)
             repos_contributed_modified[pname] = int(
                 commits_index.get_line_modifieds_stats(
-                    **_query_kwargs)[1]['sum'])
+                    **_query_kwargs)[1]['sum'] or 0)
 
         repos_contributed = [
             (p, ca) for
-            p, ca in repos_contributed.items()]
+            p, ca in repos_contributed.items() if ca]
         repos_contributed_modified = [
             (p, lm) for
-            p, lm in repos_contributed_modified.items()]
+            p, lm in repos_contributed_modified.items() if lm]
 
     sorted_repos_contributed = sorted(
         repos_contributed,
