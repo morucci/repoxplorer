@@ -125,7 +125,15 @@ class RootController(object):
         mails = ident['emails']
         name = ident['name']
         if not name:
-            raw_names = c.get_commits_author_name_by_emails([cid])
+            if not name:
+                raw_names = c.get_commits_author_name_by_emails([cid])
+                if cid not in raw_names:
+                    # TODO: get_commits_author_name_by_emails must
+                    # support look by committer email too
+                    name = 'Unamed'
+                else:
+                    name = raw_names[cid]
+
             name = raw_names[cid]
 
         query_kwargs = {
