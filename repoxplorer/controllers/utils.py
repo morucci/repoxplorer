@@ -18,6 +18,7 @@ import base64
 import hashlib
 from Crypto.Cipher import XOR
 from pecan import conf
+from pecan import abort
 from datetime import datetime
 from datetime import timedelta
 from collections import OrderedDict
@@ -66,8 +67,11 @@ def get_mail_filter(idents, cid=None, gid=None):
             ident = idents.get_ident_by_email(cid)
         return ident[1]['emails']
     elif gid:
-        group = idents.get_group_by_id(gid)
-        return group[1]['emails']
+        gid, group = idents.get_group_by_id(gid)
+        if not group:
+            abort(404,
+                  detail="The group has not been found")
+        return group['emails']
     else:
         return {}
 
@@ -77,10 +81,16 @@ def resolv_filters(projects_index, idents, pid,
                    inc_merge_commit):
 
     if pid:
-        project = projects_index.get_projects()[pid]
+        project = projects_index.get_projects().get(pid)
+        if not project:
+            abort(404,
+                  detail="The project has not been found")
         p_filter = get_references_filter(project, inc_repos)
     elif tid:
-        project = projects_index.get_tags()[tid]
+        project = projects_index.get_tags().get(tid)
+        if not project:
+            abort(404,
+                  detail="The project has not been found")
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []
