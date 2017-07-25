@@ -61,7 +61,9 @@ class HistoController(object):
 
         mails_to_exclude = {}
 
+        mails_neg = False
         if exc_groups:
+            mails_neg = True
             groups_splitted = exc_groups.split(',')
             for gid in groups_splitted:
                 _, group = idents.get_group_by_id(gid)
@@ -79,16 +81,17 @@ class HistoController(object):
                       detail="The project has not been found")
             query_kwargs.update(
                 {'mails': mails_to_exclude,
-                 'mails_neg': True})
+                 'mails_neg': mails_neg})
         elif tid:
             repos = projects_index.get_tags().get(tid)
             if not repos:
                 abort(404,
-                      detail="The project has not been found")
+                      detail="The tag has not been found")
             query_kwargs.update(
                 {'mails': mails_to_exclude,
-                 'mails_neg': True})
-        elif gid:
+                 'mails_neg': mails_neg})
+
+        if gid:
             gid, group = idents.get_group_by_id(gid)
             if not group:
                 abort(404,

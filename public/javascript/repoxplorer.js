@@ -114,90 +114,125 @@ function groups_page_init() {
     })
 }
 
-function contributor_page_init(cid) {
- install_date_pickers();
+function contributor_page_init(commits_amount) {
 
- if (getUrlParameter('inc_merge_commit') == 'on') {
-    $('#inc_merge_commit').prop('checked', true)
- }
- if (getUrlParameter('inc_repos_detail') == 'on') {
-    $('#inc_repos_detail').prop('checked', true)
- }
+    install_date_pickers();
 
- $("#releasesmodal").on('show.bs.modal', function (event) {
-  var button = $(event.relatedTarget)
-  pickupdatetarget = button.data('datetarget')
+    cid = getUrlParameter('cid');
+    pid = getUrlParameter('pid');
 
-  $.getJSON("projects.json")
-   .done(
-    function(data) {
-     $('#projects')
-      .find('option')
-      .remove()
-      .end()
-     $('#releases')
-      .find('option')
-      .remove()
-      .end()
-     $('#projects').append($('<option>', {
-      text: 'Select a project',
-      value: '',
-     }))
-     $.each(data['projects'], function(i, o) {
-       $('#projects').append($('<option>', {
-        text: i,
-        value: i,
-       }))
-      })
-     })
-   .fail(
-    function(err) {
-     console.log(err)
-    })
- })
+    if (getUrlParameter('inc_merge_commit') == 'on') {
+        $('#inc_merge_commit').prop('checked', true);
+    }
+    if (getUrlParameter('inc_repos_detail') == 'on') {
+        $('#inc_repos_detail').prop('checked', true);
+    }
 
- $('#projects').on('change', function() {
-  $('#releases')
-   .find('option')
-   .remove()
-   .end()
-  if (this.value === '') {return 1}
-  get_releases(this.value)
- })
+    $.getJSON("projects.json")
+        .done(
+            function(data) {
+                $('#projects-filter')
+                    .find('option')
+                    .remove()
+                    .end();
+                $('#projects-filter').append($('<option>', {
+                    text: 'Select a project',
+                    value: ''
+                }));
+                $.each(data['projects'], function(i, o) {
+                    $('#projects-filter').append($('<option>', {
+                        text: i,
+                        value: i
+                    }));
+                });
+                if (getUrlParameter('pid')) {
+                    $('#projects-filter').val(getUrlParameter('pid'));
+                }
+            })
+        .fail(
+            function(err) {
+                console.log(err);
+            });
+
+    $("#releasesmodal").on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        pickupdatetarget = button.data('datetarget');
+
+        $.getJSON("projects.json")
+            .done(
+                function(data) {
+                    $('#projects')
+                        .find('option')
+                        .remove()
+                        .end();
+                    $('#releases')
+                        .find('option')
+                        .remove()
+                        .end();
+                    $('#projects').append($('<option>', {
+                        text: 'Select a project',
+                        value: ''
+                    }));
+                    $.each(data['projects'], function(i, o) {
+                        $('#projects').append($('<option>', {
+                            text: i,
+                            value: i
+                        }));
+                    });
+                })
+            .fail(
+                function(err) {
+                    console.log(err);
+                });
+    }),
+
+    $('#projects').on('change', function() {
+        $('#releases')
+            .find('option')
+            .remove()
+            .end();
+        if (this.value === '') {return 1;}
+        get_releases(this.value);
+    });
 
     // Fill the histo commits selector
-    var c_h_deferred = get_histo(undefined, undefined, cid, undefined, 'commits');
+    var c_h_deferred = get_histo(pid, undefined, cid, undefined, 'commits');
     c_h_deferred
         .done(function(data) {
-            gen_histo(data, 'history')
+            gen_histo(data, 'history');
         })
         .fail(function(err) {
-            console.log(err)
-        })
+            console.log(err);
+        });
 
+    install_paginator(pid, undefined, cid, undefined, commits_amount);
+    get_commits(pid, undefined, cid, undefined, undefined),
 
- $("#selectrelease").click(function(){
-  var rdate = $('#releases').val();
-  if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
-  if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
- });
+    $("#selectrelease").click(function(){
+        var rdate = $('#releases').val();
+        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+    });
 
- $("#filter").click(function(){
-  var newlocation = "contributor.html?cid=" + cid
-  if ($('#fromdatepicker').val() != '') {
-    newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val())
-  }
-  if ($('#todatepicker').val() != '') {
-    newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val())
-  }
-  if ($('#inc_merge_commit').prop('checked')) {
-      newlocation = newlocation + "&inc_merge_commit=on"
-  }
-  if ($('#inc_repos_detail').prop('checked')) {
-      newlocation = newlocation + "&inc_repos_detail=on"
-  }
-  window.location = newlocation
- });
+    $("#filter").click(function(){
+        var newlocation = "contributor.html?cid=" + cid;
+        if ($('#fromdatepicker').val() != '') {
+            newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val());
+        }
+        if ($('#todatepicker').val() != '') {
+            newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val());
+        }
+        if ($('#inc_merge_commit').prop('checked')) {
+            newlocation = newlocation + "&inc_merge_commit=on";
+        }
+        if ($('#inc_repos_detail').prop('checked')) {
+            newlocation = newlocation + "&inc_repos_detail=on";
+        }
+        if ($('#projects-filter').val() != undefined) {
+            newlocation = newlocation + "&pid=" + encodeURIComponent($('#projects-filter').val());
+        }
+        window.location = newlocation;
+    });
 }
 
 function group_page_init(gid) {

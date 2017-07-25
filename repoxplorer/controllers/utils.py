@@ -29,12 +29,12 @@ xorkey = conf.get('xorkey') or 'default'
 def encrypt(key, plaintext):
     cipher = XOR.new(key)
     return base64.b64encode(
-        cipher.encrypt(plaintext.encode('utf-8')))
+        cipher.encrypt(plaintext.encode('utf-8'))).replace('=', '-')
 
 
 def decrypt(key, ciphertext):
     cipher = XOR.new(key)
-    return cipher.decrypt(base64.b64decode(ciphertext))
+    return cipher.decrypt(base64.b64decode(ciphertext.replace('-', '=')))
 
 
 def get_projects_from_references(projects, c_references):

@@ -306,7 +306,7 @@ class TestGroupsController(FunctionalTest):
                 u'grp2': {
                     u'description': u'The group 2',
                     u'members': {
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA==': {
+                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
                             u'membership_bounces': []},
@@ -319,11 +319,11 @@ class TestGroupsController(FunctionalTest):
                 u'grp1': {
                     u'description': u'The group 1',
                     u'members': {
-                        u'DgQIBFsIGwElFQQHGhEWSwUOGA==': {
+                        u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'Jane Doe',
                             u'gravatar': u'98685715b08980dac8b2379097c332f4',
                             u'membership_bounces': []},
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA==': {
+                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
                             u'membership_bounces': []}}}}

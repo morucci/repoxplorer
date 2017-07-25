@@ -145,7 +145,6 @@ class Commits(object):
         filter = {
             "bool": {
                 "must": [],
-                "should": [],
                 }
             }
 
@@ -175,22 +174,27 @@ class Commits(object):
                 must_mail_clause["bool"]["should"].append(must)
         filter["bool"]["must"].append(must_mail_clause)
 
+        must_project_clause = {
+             "bool": {
+                 "should": []
+             }
+        }
         for repo, paths in repos.items():
-            should_repo_clause = {
-                "bool": {
-                    "must": [],
-                    "should": []
-                }
-            }
-            should_repo_clause["bool"]["must"].append(
-                {"term": {"repos": repo}}
+            repo_clause = {"bool": {"must": []}}
+            repo_clause["bool"]["must"].append(
+                {"bool": {
+                    "must": [{"term": {"repos": repo}}],
+                    "should": [],
+                }}
             )
             if paths:
                 for path in paths:
-                    should_repo_clause["bool"]["should"].append(
-                        {"term": {"files_list": path}}
-                    )
-            filter["bool"]["should"].append(should_repo_clause)
+                    repo_clause["bool"]["must"][0]["bool"]["should"].append(
+                            {"term": {"files_list": path}})
+
+            must_project_clause["bool"]["should"].append(repo_clause)
+
+        filter["bool"]["must"].append(must_project_clause)
 
         must_metadata_clause = {
             "bool": {
