@@ -235,8 +235,12 @@ function contributor_page_init(commits_amount) {
     });
 }
 
-function group_page_init(gid) {
+function group_page_init(commits_amount) {
+
     install_date_pickers();
+
+    gid = getUrlParameter('gid');
+    pid = getUrlParameter('pid');
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -244,6 +248,32 @@ function group_page_init(gid) {
     if (getUrlParameter('inc_repos_detail') == 'on') {
         $('#inc_repos_detail').prop('checked', true);
     }
+
+    $.getJSON("projects.json")
+        .done(
+            function(data) {
+                $('#projects-filter')
+                    .find('option')
+                    .remove()
+                    .end();
+                $('#projects-filter').append($('<option>', {
+                    text: 'Select a project',
+                    value: ''
+                }));
+                $.each(data['projects'], function(i, o) {
+                    $('#projects-filter').append($('<option>', {
+                        text: i,
+                        value: i
+                    }));
+                });
+                if (getUrlParameter('pid')) {
+                    $('#projects-filter').val(getUrlParameter('pid'));
+                }
+            })
+        .fail(
+            function(err) {
+                console.log(err);
+            });
 
     $("#releasesmodal").on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
@@ -287,7 +317,7 @@ function group_page_init(gid) {
     })
 
     // Fill the histo commits selector
-    var c_h_deferred = get_histo(undefined, undefined, undefined, gid, 'commits');
+    var c_h_deferred = get_histo(pid, undefined, undefined, gid, 'commits');
     c_h_deferred
         .done(function(data) {
             gen_histo(data, 'history');
@@ -295,6 +325,9 @@ function group_page_init(gid) {
         .fail(function(err) {
             console.log(err);
         });
+
+    install_paginator(pid, undefined, undefined, gid, commits_amount);
+    get_commits(pid, undefined, undefined, gid, undefined),
 
     $("#selectrelease").click(function(){
         var rdate = $('#releases').val();
@@ -315,6 +348,9 @@ function group_page_init(gid) {
         }
         if ($('#inc_repos_detail').prop('checked')) {
             newlocation = newlocation + "&inc_repos_detail=on";
+        }
+        if ($('#projects-filter').val() != undefined) {
+            newlocation = newlocation + "&pid=" + encodeURIComponent($('#projects-filter').val());
         }
         window.location = newlocation;
     });

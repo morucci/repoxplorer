@@ -84,6 +84,9 @@
       </div>
      </div>
      <div class="col-md-6 form-group">
+      <label for="projects-filter">Filter on a project</label>
+      <select id='projects-filter' class="form-control">
+      </select>
      </div>
     </div>
     <div><input id="filter" type="button" value="Apply filter" class="btn pull-right" /></div>
@@ -187,9 +190,7 @@
 </div>
 
 <script type="text/javascript">
- group_page_init('${gid}');
- install_paginator(undefined, undefined, undefined, '${gid}', '${commits_amount}');
- get_commits(undefined, undefined, undefined, '${gid}', undefined);
+ group_page_init('${commits_amount}');
 </script>
 % else:
 <div class="row-fluid">
@@ -200,6 +201,6 @@
  </div>
 </div>
 <script type="text/javascript">
- group_page_init('${gid}');
+ group_page_init();
 </script>
 % endif

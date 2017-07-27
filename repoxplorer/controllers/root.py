@@ -198,7 +198,7 @@ class RootController(object):
                 'version': rx_version}
 
     @expose(template='group.html')
-    def group(self, gid, dfrom=None, dto=None,
+    def group(self, gid, pid=None, dfrom=None, dto=None,
               inc_merge_commit=None,
               inc_repos_detail=None):
         if inc_merge_commit != 'on':
@@ -227,11 +227,18 @@ class RootController(object):
             iid, ident = idents.get_ident_by_email(email)
             members[iid] = ident
 
+        p_filter = {}
+        if pid:
+            projects_index = Projects()
+            repos = projects_index.get_projects()[pid]
+            p_filter = utils.get_references_filter(repos)
+
         query_kwargs = {
             'fromdate': dfrom,
             'todate': dto,
             'mails': mails,
             'merge_commit': include_merge_commit,
+            'repos': p_filter,
         }
 
         if dfrom is None or dto is None:
