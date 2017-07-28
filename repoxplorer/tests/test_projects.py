@@ -6,6 +6,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import projects
+from repoxplorer.index import yamlbackend
 from repoxplorer import index
 
 
@@ -28,11 +29,13 @@ class TestProjects(TestCase):
         return db
 
     def test_project_templates_schema(self):
-        validate(yaml.load(projects.project_templates_example),
+        validate(yaml.load(projects.project_templates_example,
+                           Loader=yamlbackend.NoDatesSafeLoader),
                  yaml.load(projects.project_templates_schema))
 
     def test_projects_schema(self):
-        validate(yaml.load(projects.projects_example),
+        validate(yaml.load(projects.projects_example,
+                           Loader=yamlbackend.NoDatesSafeLoader),
                  yaml.load(projects.projects_schema))
 
     def test_get_projects_raw(self):
@@ -45,9 +48,9 @@ class TestProjects(TestCase):
             gitweb: https://bitbucket.com/%(name)s/commit/%%(sha)s
             releases:
             - name: 1.0
-              date: 12/20/2016
+              date: 2016-12-20
             - name: 2.0
-              date: 12/31/2016
+              date: 2016-12-31
 
         projects:
           Barbican:

@@ -257,7 +257,7 @@ projects:
 
 A list of releases can be defined. It is useful when you want to define
 release dates across all repositories defined in a project.
-Release dates with %m/%d/%Y format can be defined and will be merged with
+Release dates with %Y-%m-%d format can be defined and will be merged with
 detected Git tags dates.
 
 ```YAML
@@ -268,7 +268,7 @@ project-templates:
       - master
     releases:
       - name: 2.0
-        date: 12/20/2016
+        date: 2016-12-20
 
 projects:
   Barbican:
@@ -327,8 +327,8 @@ identities:
       john.doe@server.com:
         groups:
           barbican-ptl:
-            begin-date: 12/31/2016
-            end-date: 12/31/2017
+            begin-date: 2016-12-31
+            end-date: 2017-12-31
       jdoe@server.com:
         groups: {}
 ```
@@ -336,7 +336,7 @@ identities:
 Group's membership can be defined via the groups key. The group must has
 been defined ([Define groups of authors](#define-groups-of-authors)).
 Membership bounces can be given via *begin-date* and *end-date* to declare
-a group's membership between given dates.
+a group's membership between given dates (%Y-%m-%d).
 
 When an identity announce a group's membership that's not necessary to
 define it again at groups level.
@@ -356,15 +356,16 @@ groups:
     emails:
       john.doe@server.com:
       jane.doe@server.com:
-        begin-date: 12/31/2015
-        end-date: 12/31/2016
+        begin-date: 2015-12-31
+        end-date: 2016-12-31
   barbican-core:
     description: Project team leaders of Barbican project
     emails: {}
 ```
 
 Group's membership is defined via an author email. Bounces can be defined
-via *begin-date* and *end-date* to declare a group's membership between given dates.
+via *begin-date* and *end-date* to declare a group's membership between
+given dates (%Y-%m-%d).
 
 If an identity has been defined with emails part of a defined group then
 date bounces will overwrite those defined at the groups level.

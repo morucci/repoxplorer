@@ -16,10 +16,10 @@
 import yaml
 import time
 import pytz
+import datetime
 
 from pecan import conf
 
-from datetime import datetime
 from elasticsearch import client
 from jsonschema import validate as schema_validate
 
@@ -27,10 +27,10 @@ from repoxplorer.index.yamlbackend import YAMLBackend
 
 
 def date2epoch(date):
-    d = datetime.strptime(date, "%m/%d/%Y")
+    d = datetime.datetime.strptime(date, "%Y-%m-%d")
     d = d.replace(tzinfo=pytz.utc)
-    epoch = (d - datetime(1970, 1, 1,
-                          tzinfo=pytz.utc)).total_seconds()
+    epoch = (d - datetime.datetime(1970, 1, 1,
+                                   tzinfo=pytz.utc)).total_seconds()
     return int(epoch)
 
 

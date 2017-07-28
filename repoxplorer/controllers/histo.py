@@ -117,7 +117,6 @@ class HistoController(object):
             'metadata': metadata,
         })
 
-        print query_kwargs
         return query_kwargs
 
     @expose('json')

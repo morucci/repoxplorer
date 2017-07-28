@@ -96,9 +96,9 @@ templates:
     - .*(blueprint) ([^ .]+).*
     releases:
     - name: 1.0
-      date: 12/20/2016
+      date: 2016-12-20
     - name: 2.0
-      date: 12/31/2016
+      date: 2016-12-31
     tags:
     - openstack
     - language:python
@@ -258,7 +258,7 @@ class Projects(YAMLDefinition):
                 if 'releases' in templates:
                     for r in templates['releases']:
                         try:
-                            datetime.strptime(r['date'], "%m/%d/%Y")
+                            datetime.strptime(r['date'], "%Y-%m-%d")
                         except Exception:
                             issues.append("Wrong date format %s defined "
                                           "in template %s" % (r['date'], tid))

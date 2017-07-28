@@ -23,6 +23,7 @@ from jsonschema import validate
 from unittest import TestCase
 
 from repoxplorer.index import contributors
+from repoxplorer.index import yamlbackend
 from repoxplorer.index import users
 from repoxplorer import index
 
@@ -46,11 +47,13 @@ class TestContributors(TestCase):
         return db
 
     def test_contributors_schema(self):
-        validate(yaml.load(contributors.contributors_example),
+        validate(yaml.load(contributors.contributors_example,
+                           Loader=yamlbackend.NoDatesSafeLoader),
                  yaml.load(contributors.contributors_schema))
 
     def test_groups_schema(self):
-        validate(yaml.load(contributors.groups_example),
+        validate(yaml.load(contributors.groups_example,
+                           Loader=yamlbackend.NoDatesSafeLoader),
                  yaml.load(contributors.groups_schema))
 
     def test_contributors_get(self):
@@ -64,8 +67,8 @@ identities:
       ampanman@baikinman.io:
         groups:
           amp:
-            begin-date: 01/01/2010
-            end-date: 09/01/2020
+            begin-date: 2010-01-01
+            end-date: 2020-01-09
 """
         f2 = """
 ---
@@ -77,8 +80,8 @@ identities:
       bill.doe@domain.com:
         groups:
           acme-12:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
 """
 
         default = """
@@ -91,8 +94,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -133,7 +136,7 @@ identities:
                          'groups': {
                              'acme-12': None,
                              'acme-10': {
-                                 'end-date': 1472688000.0,
+                                 'end-date': 1452297600.0,
                                  'begin-date': 1451606400.0},
                              'acme-11': None
                          }},
@@ -148,7 +151,7 @@ identities:
                      'bill.doe@domain.com': {
                          'groups': {
                              'acme-12': {
-                                 'end-date': 1472688000.0,
+                                 'end-date': 1452297600.0,
                                  'begin-date': 1451606400.0
                              }
                          }
@@ -161,7 +164,7 @@ identities:
                      'ampanman@baikinman.io': {
                          'groups': {
                              'amp': {
-                                 'end-date': 1598918400.0,
+                                 'end-date': 1578528000.0,
                                  'begin-date': 1262304000.0
                              }
                          }
@@ -180,8 +183,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -214,8 +217,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -302,8 +305,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 01/01/2016
-        end-date: 09/01/2016
+        begin-date: 2016-01-01
+        end-date: 2016-01-09
       test2@acme.com:
 """
         f2 = """
@@ -367,8 +370,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 01/01/2016
-        end-date: 09/01/2016
+        begin-date: 2016-01-01
+        end-date: 2016-01-09
       test2@acme.com:
 """
         default = """
@@ -398,7 +401,7 @@ groups:
                 'emails': {
                     'test@acme.com': {
                         'begin-date': 1451606400.0,
-                        'end-date': 1472688000.0},
+                        'end-date': 1452297600.0},
                     'test2@acme.com': None},
                 'description': 'The group 10 of acme'},
              'acme-11': {
@@ -420,8 +423,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -433,13 +436,13 @@ identities:
       jane.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2015
-            end-date: 09/01/2015
+            begin-date: 2015-01-01
+            end-date: 2015-01-09
       jadoe@domain.com:
         groups:
           acme-12:
-            begin-date: 01/01/2015
-            end-date: 05/01/2015
+            begin-date: 2015-01-01
+            end-date: 2015-01-05
 
 groups:
   acme-10:
@@ -465,7 +468,7 @@ groups:
                 'emails': {
                     'john.doe@domain.com': None,
                     'jadoe@domain.com': {
-                        'end-date': 1430438400.0,
+                        'end-date': 1420416000.0,
                         'begin-date': 1420070400.0},
                     'ampanman@baikinman.com': None}},
             'acme-11': {
@@ -477,10 +480,10 @@ groups:
                 'description': 'The group 10 of acme',
                 'emails': {
                     'john.doe@domain.com': {
-                        'end-date': 1472688000.0,
+                        'end-date': 1452297600.0,
                         'begin-date': 1451606400.0},
                     'jane.doe@domain.com': {
-                        'end-date': 1441065600.0,
+                        'end-date': 1420761600.0,
                         'begin-date': 1420070400.0}}}}
         self.assertDictEqual(ret, expected_ret)
 
@@ -530,8 +533,8 @@ groups:
                             {'email': 'saboten@domain2',
                              'groups': [
                                  {'group': 'ugroup2',
-                                  'start-date': '01/01/2016',
-                                  'end-date': '09/01/2016'}]}],
+                                  'start-date': '2016-01-01',
+                                  'end-date': '2016-01-09'}]}],
                         'last_cnx': 1410456005}
 
                     c = contributors.Contributors(db_path="db_path")
@@ -557,8 +560,8 @@ groups:
                              'saboten@domain2': {
                                  'groups': {
                                      'ugroup2': {
-                                         'end-date': '09/01/2016',
-                                         'start-date': '01/01/2016'}
+                                         'end-date': '2016-01-09',
+                                         'start-date': '2016-01-01'}
                                  }
                              },
                              'jadoe@domain.com': {'groups': {}}},
@@ -603,8 +606,8 @@ groups:
                             {'email': 'saboten@domain2',
                              'groups': [
                                  {'group': 'ugroup2',
-                                  'start-date': '01/01/2016',
-                                  'end-date': '09/01/2016'}]}],
+                                  'start-date': '2016-01-01',
+                                  'end-date': '2016-01-09'}]}],
                         'last_cnx': 1410456005}
 
                     c = contributors.Contributors(db_path="db_path")
@@ -663,16 +666,16 @@ groups:
                             'description': 'ugroup',
                             'emails': [{'email': 'tokin@domain1'},
                                        {'email': 'kokin@domain2',
-                                        'start-date': '01/01/2016',
-                                        'end-date': '09/01/2016'}]
+                                        'start-date': '2016-01-01',
+                                        'end-date': '2016-01-09'}]
                         },
                         'acme-12': {
                             'gid': 'acme-12',
                             'description': 'acme-12 desc',
                             'emails': [{'email': 'tokin@domain1'},
                                        {'email': 'kokin@domain2',
-                                        'start-date': '01/01/2016',
-                                        'end-date': '09/01/2016'}]
+                                        'start-date': '2016-01-01',
+                                        'end-date': '2016-01-09'}]
                         }
                     }
                     c = contributors.Contributors(db_path="db_path")

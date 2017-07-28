@@ -20,6 +20,27 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
+class NoDatesSafeLoader(yaml.SafeLoader):
+    @classmethod
+    def remove_implicit_resolver(cls, tag_to_remove):
+        """
+        We want to load datetimes as strings, not dates, because we
+        go on to serialise as json which doesn't have the advanced types
+        of yaml, and leads to incompatibilities down the track.
+        """
+        if 'yaml_implicit_resolvers' not in cls.__dict__:
+            cls.yaml_implicit_resolvers = cls.yaml_implicit_resolvers.copy()
+
+            for first_letter, mappings in cls.yaml_implicit_resolvers.items():
+                cls.yaml_implicit_resolvers[first_letter] = [
+                    (tag, regexp)
+                    for tag, regexp in mappings
+                    if tag != tag_to_remove]
+
+
+NoDatesSafeLoader.remove_implicit_resolver('tag:yaml.org,2002:timestamp')
+
+
 class YAMLDBException(Exception):
     pass
 
@@ -46,7 +67,7 @@ class YAMLBackend(object):
         def load(path):
             logger.debug("Reading %s ..." % path)
             try:
-                data = yaml.safe_load(file(path))
+                data = yaml.load(file(path), Loader=NoDatesSafeLoader)
             except:
                 raise YAMLDBException(
                     "YAML format corrupted in file %s" % (path))

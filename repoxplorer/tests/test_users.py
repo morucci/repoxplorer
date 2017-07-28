@@ -36,8 +36,8 @@ class TestUsers(TestCase):
                 {'email': 'saboten@domain2',
                  'groups': [
                      {'group': 'ugroup1',
-                      'start-date': '01/01/2016',
-                      'end-date': '09/01/2016'}],
+                      'start-date': '2016-01-01',
+                      'end-date': '2016-01-09'}],
                  }],
             'last_cnx': 1410456005}
 
@@ -98,8 +98,8 @@ class TestGroups(TestCase):
                 {'email': 'saboten@domain2',
                  'groups': [
                      {'group': 'ugroup1',
-                      'start-date': '01/01/2016',
-                      'end-date': '09/01/2016'}],
+                      'start-date': '2016-01-01',
+                      'end-date': '2016-01-09'}],
                  }],
             'last_cnx': 1410456005}
         self.cu.create(self.user)
@@ -108,8 +108,8 @@ class TestGroups(TestCase):
             'description': 'ugroup',
             'emails': [{'email': 'tokin@domain1'},
                        {'email': 'kokin@domain2',
-                        'start-date': '01/01/2016',
-                        'end-date': '09/01/2016'}]}
+                        'start-date': '2016-01-01',
+                        'end-date': '2016-01-09'}]}
 
     def tearDown(self):
         self.con.ic.delete(index=self.con.index)
@@ -122,11 +122,11 @@ class TestGroups(TestCase):
             u'description': u'ugroup',
             u'emails': [
                 {u'email': u'tokin@domain1'},
-                {u'start-date': u'01/01/2016',
-                 u'end-date': u'09/01/2016',
+                {u'start-date': u'2016-01-01',
+                 u'end-date': u'2016-01-09',
                  u'email': u'kokin@domain2'},
-                {u'start-date': u'01/01/2016',
-                 u'end-date': u'09/01/2016',
+                {u'start-date': u'2016-01-01',
+                 u'end-date': u'2016-01-09',
                  'email': u'saboten@domain2'}],
             u'gid': u'ugroup1'}
         self.assertDictEqual(ret, expected)
@@ -142,8 +142,8 @@ class TestGroups(TestCase):
             u'emails': [
                 {u'email': u'gokin@domain3'},
                 {'email': u'saboten@domain2',
-                 u'start-date': u'01/01/2016',
-                 u'end-date': u'09/01/2016'}],
+                 u'start-date': u'2016-01-01',
+                 u'end-date': u'2016-01-09'}],
             u'gid': u'ugroup1'}
         self.assertDictEqual(ret, expected)
 

@@ -85,8 +85,8 @@ identities:
       john.doe@domain.com:
         groups:
           acme-10:
-            begin-date: 01/01/2016
-            end-date: 09/01/2016
+            begin-date: 2016-01-01
+            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -143,8 +143,8 @@ groups:
     description: The group 10 of acme
     emails:
       test@acme.com:
-        begin-date: 01/01/2016
-        end-date: 09/01/2016
+        begin-date: 2016-01-01
+        end-date: 2016-01-01
       test2@acme.com:
   acme-11:
     description: The group 11 of acme
@@ -254,7 +254,7 @@ class Contributors(YAMLDefinition):
                         try:
                             for key in ('begin-date', 'end-date'):
                                 if key in data:
-                                    datetime.strptime(data[key], "%m/%d/%Y")
+                                    datetime.strptime(data[key], "%Y-%m-%d")
                         except Exception:
                             issues.append("Identity %s declares group %s "
                                           "membership invalid date %s" % (
@@ -277,7 +277,7 @@ class Contributors(YAMLDefinition):
                 try:
                     for key in ('begin-date', 'end-date'):
                         if key in data:
-                            datetime.strptime(data[key], "%m/%d/%Y")
+                            datetime.strptime(data[key], "%Y-%m-%d")
                 except Exception:
                     issues.append("Group %s declares email %s "
                                   "membership invalid date %s" % (
