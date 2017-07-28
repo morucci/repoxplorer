@@ -1,0 +1,4 @@
+---
+features:
+  - Partial group membership date bounces can be now defined (eg. just begin-date) when still membership.
+
