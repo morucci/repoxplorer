@@ -204,6 +204,8 @@ class Contributors(YAMLDefinition):
                 for key in ('begin-date', 'end-date'):
                     if key in data:
                         data[key] = date2epoch(data[key])
+                    else:
+                        data[key] = None
         for iid, id_data in self.idents.items():
             for email, email_data in id_data['emails'].items():
                 for group, details in email_data.get('groups', {}).items():
@@ -221,6 +223,8 @@ class Contributors(YAMLDefinition):
                     for key in ('begin-date', 'end-date'):
                         if key in data:
                             data[key] = date2epoch(data[key])
+                        else:
+                            data[key] = None
         self.enriched_idents = True
 
     def _validate_idents(self):

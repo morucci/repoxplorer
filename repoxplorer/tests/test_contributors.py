@@ -95,7 +95,6 @@ identities:
         groups:
           acme-10:
             begin-date: 2016-01-01
-            end-date: 2016-01-09
           acme-11:
           acme-12:
       jodoe@domain.com:
@@ -136,7 +135,7 @@ identities:
                          'groups': {
                              'acme-12': None,
                              'acme-10': {
-                                 'end-date': 1452297600.0,
+                                 'end-date': None,
                                  'begin-date': 1451606400.0},
                              'acme-11': None
                          }},
