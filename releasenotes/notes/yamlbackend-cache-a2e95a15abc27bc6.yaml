@@ -1,0 +1,3 @@
+---
+features:
+  - The YAML backend use cache files to speedup loading large YAML definitions.
