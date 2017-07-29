@@ -14,8 +14,11 @@
 # under the License.
 
 import os
-import logging
 import yaml
+import cPickle
+import logging
+
+from Crypto.Hash import SHA
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +59,9 @@ class YAMLBackend(object):
             default_file.
         """
         self.db_path = db_path
+
         self.db_default_file = db_default_file
+
         self.default_data = None
         self.data = []
 
@@ -65,16 +70,31 @@ class YAMLBackend(object):
             return f.endswith('.yaml') or f.endswith('.yml')
 
         def load(path):
-            logger.debug("Reading %s ..." % path)
-            try:
-                data = yaml.load(file(path), Loader=NoDatesSafeLoader)
-            except:
-                raise YAMLDBException(
-                    "YAML format corrupted in file %s" % (path))
+            data = None
+            logger.debug("Check cache for %s ..." % path)
+            cached_hash_path = path + '.hash'
+            cached_data_path = path + '.cached'
+            hash = SHA.new(file(path).read()).hexdigest()
+            if (os.path.isfile(cached_hash_path) and
+                    os.path.isfile(cached_data_path)):
+                cached_hash = cPickle.load(file(cached_hash_path))
+                if cached_hash == hash:
+                    logger.debug("Reading %s from cache ..." % path)
+                    data = cPickle.load(file(cached_data_path))
+            if not data:
+                try:
+                    logger.debug("Reading %s from file ..." % path)
+                    data = yaml.load(file(path), Loader=NoDatesSafeLoader)
+                    cPickle.dump(data, file(cached_data_path, 'w'))
+                    cPickle.dump(hash, file(cached_hash_path, 'w'))
+                except Exception, e:
+                    raise YAMLDBException(
+                        "YAML format corrupted in file %s (%s)" % (path, e))
             return data
 
         if self.db_default_file:
             self.default_data = load(self.db_default_file)
+
         yamlfiles = [f for f in os.listdir(self.db_path) if check_ext(f)]
         for f in yamlfiles:
             path = os.path.join(self.db_path, f)
