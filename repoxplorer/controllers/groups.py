@@ -32,11 +32,11 @@ xorkey = conf.get('xorkey') or 'default'
 class GroupsController(object):
 
     @expose('json')
-    def index(self, prefix=None, nameonly=False):
+    def index(self, prefix=None, nameonly='false'):
         ci = Commits(index.Connector(index=indexname))
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
-        if nameonly:
+        if nameonly == 'true':
             ret = dict([(k, None) for k in groups.keys()])
             if prefix:
                 ret = dict([(k, None) for k in ret.keys() if

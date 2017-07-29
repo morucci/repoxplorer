@@ -35,8 +35,11 @@ function install_date_pickers() {
     $( "#todatepicker" ).datepicker('setDate', dto);
 }
 
-function get_groups() {
-    return $.getJSON("api_groups/");
+function get_groups(nameonly, prefix) {
+    var args = {};
+    args['nameonly'] = nameonly;
+    args['prefix'] = prefix;
+    return $.getJSON("api_groups/", args);
 }
 
 function get_histo(pid, tid, cid, gid, type) {
@@ -55,6 +58,19 @@ function get_histo(pid, tid, cid, gid, type) {
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
     return $.getJSON("histo/" + type, args);
+}
+
+function create_alpha_index(groups) {
+    r = {};
+    for (group in groups) {
+        i = group[0].toLowerCase();
+        if (r[i]) {
+            r[i]++;
+        } else {
+            r[i] = 1;
+        }
+    }
+    return r;
 }
 
 function projects_page_init() {
@@ -83,7 +99,26 @@ function projects_page_init() {
 }
 
 function groups_page_init() {
-    $.getJSON("api_groups/")
+    var prefix = getUrlParameter('prefix');
+    if (prefix === undefined) {
+        prefix = 'a';
+    }
+    var ggn_d = get_groups(true);
+    ggn_d
+        .done(function(data) {
+            index = create_alpha_index(data);
+            $("#groups-index").empty();
+            $.each(index, function(i, m) {
+                $("#groups-index").append(
+                    "<span><a href='groups.html?prefix=" + i + "'>" + i + "(" + m + ") " + "</a></span>");
+            });
+            console.log(index);
+        })
+        .fail(function(err) {
+            console.log(err);
+        });
+    var gg_d = get_groups(false, prefix);
+    gg_d
         .done(
             function(data) {
                 $("#groups-table").empty();
@@ -95,7 +130,7 @@ function groups_page_init() {
                 $("#groups-table table").append(theader);
                 $.each(data, function(gid, gdata) {
                     var elm = "<tr>";
-                    elm += "<td><a href=group.html?gid=" + gid + ">" + gid + "</a></td>";
+                    elm += "<td><a href=group.html?gid=" + encodeURIComponent(gid) + ">" + gid + "</a></td>";
                     elm += "<td>" + gdata['description'] + "</td>";
                     elm += "<td>";
                     $.each(gdata['members'], function(cid, cdata) {
@@ -408,7 +443,7 @@ function project_page_init(projectid, tagid) {
     });
 
     // Fill the groups selector
-    var defer = get_groups();
+    var defer = get_groups(true);
     defer.done(
         function(data) {
             $('#groups')
@@ -533,16 +568,16 @@ function get_releases(pid, tid) {
         .done(
             function(data) {
                 data.sort(function(a, b){
-                    if(a.date < b.date){ return 1}
-                    if(a.date > b.date){ return -1}
+                    if(a.date < b.date){ return 1;}
+                    if(a.date > b.date){ return -1;}
                     return 0;
                 });
                 $.each(data, function(i, o) {
                     rdate = new Date(1000 * o.date);
                     rdate = moment(rdate);
                     $('#releases').append($('<option>', {
-                        text: rdate.format("MM/DD/YYYY") + " - " + o.name + " - " + o.repo,
-                        value: rdate.format("MM/DD/YYYY")
+                        text: rdate.format("YYYY-MM-DD") + " - " + o.name + " - " + o.repo,
+                        value: rdate.format("YYYY-MM-DD")
                     }));
                 });
             })
