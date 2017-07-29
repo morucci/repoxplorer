@@ -25,7 +25,6 @@ from repoxplorer.controllers import utils
 from repoxplorer.index.contributors import Contributors
 from repoxplorer.index.commits import Commits
 
-
 indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
@@ -33,25 +32,27 @@ xorkey = conf.get('xorkey') or 'default'
 class GroupsController(object):
 
     @expose('json')
-    def index(self):
+    def index(self, prefix=None, nameonly=False):
         ci = Commits(index.Connector(index=indexname))
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
+        if nameonly:
+            ret = dict([(k, None) for k in groups.keys()])
+            if prefix:
+                ret = dict([(k, None) for k in ret.keys() if
+                            k.lower().startswith(prefix)])
+            return ret
         ret_groups = {}
         for group, data in groups.items():
+            if prefix and not group.lower().startswith(prefix):
+                continue
             rg = {'members': {}, 'description': data['description']}
-            for email in data['emails']:
+            for email, bounces in data['emails'].items():
                 id, member = contributors_index.get_ident_by_email(email)
                 member = copy.deepcopy(member)
                 member['gravatar'] = hashlib.md5(
                     member['default-email']).hexdigest()
-                member['membership_bounces'] = []
-                for e, groups in member['emails'].items():
-                    grps = groups.get('groups')
-                    if grps:
-                        bounces = grps.get(group)
-                        if bounces:
-                            member['membership_bounces'].append(bounces)
+                member['bounces'] = bounces
                 del member['emails']
                 if not member['name']:
                     # Try to find it among commits

@@ -268,9 +268,12 @@ class TestGroupsController(FunctionalTest):
                     "emails": {
                         "ampanman@baikinman.io": {
                             "groups": {
-                                "grp2": {
-                                    "begin-date": 1420070400.0,
-                                    "end-date": 1441065600.0}}}}})}
+                                "grp2": {}
+                            }
+                        }
+                    }
+                })
+        }
         cls.gi_by_email = lambda _, email: cls.gi_by_email_data.get(email) or (
             email, {'name': None,
                     'default-email': email,
@@ -280,7 +283,8 @@ class TestGroupsController(FunctionalTest):
                 "description": "The group 1",
                 "emails": {
                     "john.doe@server.com": {},
-                    "jane.doe@server.com": {}}},
+                    "jane.doe@server.com": {
+                        'end-date': '2016-01-01'}}},
             "grp2": {
                 "description": "The group 2",
                 "emails": {
@@ -309,24 +313,53 @@ class TestGroupsController(FunctionalTest):
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            u'membership_bounces': []},
+                            u'bounces': {}},
                         u'VFVWUVhcRFRV': {
                             u'name': u'Ampanman',
                             u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            u'membership_bounces': [
-                                {u'end-date': 1441065600.0,
-                                 u'begin-date': 1420070400.0}]}}},
+                            u'bounces': {}}
+                    }
+                },
                 u'grp1': {
                     u'description': u'The group 1',
                     u'members': {
                         u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'Jane Doe',
                             u'gravatar': u'98685715b08980dac8b2379097c332f4',
-                            u'membership_bounces': []},
+                            u'bounces': {
+                                'end-date': '2016-01-01'}},
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            u'membership_bounces': []}}}}
+                            u'bounces': {}}
+                    }
+                }
+            }
+            self.assertDictEqual(response.json, expected_ret)
+            response = self.app.get('/api_groups/?nameonly=true')
+            assert response.status_int == 200
+            expected_ret = {
+                u'grp2': None,
+                u'grp1': None,
+            }
+            self.assertDictEqual(response.json, expected_ret)
+            response = self.app.get('/api_groups/?prefix=grp2')
+            assert response.status_int == 200
+            expected_ret = {
+                u'grp2': {
+                    u'description': u'The group 2',
+                    u'members': {
+                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                            u'name': u'John Doe',
+                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'bounces': {}},
+                        u'VFVWUVhcRFRV': {
+                            u'name': u'Ampanman',
+                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                            u'bounces': {}}
+                    }
+                }
+            }
             self.assertDictEqual(response.json, expected_ret)
 
 
