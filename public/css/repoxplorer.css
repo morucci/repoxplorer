@@ -4,6 +4,10 @@
     padding-left: 0.5%;
 }
 
+#groups-index {
+    font-size: 150%;
+}
+
 #projects-filter-form {
     width: 100%;
 }

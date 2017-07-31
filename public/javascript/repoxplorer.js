@@ -109,8 +109,9 @@ function groups_page_init() {
             index = create_alpha_index(data);
             $("#groups-index").empty();
             $.each(index, function(i, m) {
+                p = i.toUpperCase();
                 $("#groups-index").append(
-                    "<span><a href='groups.html?prefix=" + i + "'>" + i + "(" + m + ") " + "</a></span>");
+                    "<span id='groups-index'><a href='groups.html?prefix=" + i + "'><b>" + p + " </b></a></span>");
             });
             console.log(index);
         })
