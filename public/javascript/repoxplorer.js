@@ -62,6 +62,7 @@ function get_histo(pid, tid, cid, gid, type) {
 
 function create_alpha_index(groups) {
     r = {};
+    sr = [];
     for (group in groups) {
         i = group[0].toLowerCase();
         if (r[i]) {
@@ -70,7 +71,11 @@ function create_alpha_index(groups) {
             r[i] = 1;
         }
     }
-    return r;
+    for (k in r) {
+        sr.push(k);
+    }
+    sr.sort();
+    return [r, sr];
 }
 
 function projects_page_init() {
@@ -106,14 +111,15 @@ function groups_page_init() {
     var ggn_d = get_groups(true);
     ggn_d
         .done(function(data) {
-            index = create_alpha_index(data);
+            ret = create_alpha_index(data);
+            index = ret[0];
+            sindex = ret[1];
             $("#groups-index").empty();
-            $.each(index, function(i, m) {
-                p = i.toUpperCase();
+            $.each(sindex, function(i, v) {
+                p = v.toUpperCase();
                 $("#groups-index").append(
-                    "<span id='groups-index'><a href='groups.html?prefix=" + i + "'><b>" + p + " </b></a></span>");
+                    "<span id='groups-index'><a href='groups.html?prefix=" + v + "'><b>" + p + " </b></a></span>");
             });
-            console.log(index);
         })
         .fail(function(err) {
             console.log(err);
@@ -129,12 +135,17 @@ function groups_page_init() {
                 theader += "<th>Group description</th>";
                 theader += "<th>Group members</th>";
                 $("#groups-table table").append(theader);
+                groups = [];
                 $.each(data, function(gid, gdata) {
+                    groups.push(gid);
+                });
+                groups.sort();
+                $.each(groups, function(i, gid) {
                     var elm = "<tr>";
                     elm += "<td><a href=group.html?gid=" + encodeURIComponent(gid) + ">" + gid + "</a></td>";
-                    elm += "<td>" + gdata['description'] + "</td>";
+                    elm += "<td>" + data[gid]['description'] + "</td>";
                     elm += "<td>";
-                    $.each(gdata['members'], function(cid, cdata) {
+                    $.each(data[gid]['members'], function(cid, cdata) {
                         elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                             cdata['gravatar'] + "?s=20&d=wavatar'></span><span style='padding-right: 5px'>" +
                             "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>";
@@ -175,10 +186,15 @@ function contributor_page_init(commits_amount) {
                     text: 'Select a project',
                     value: ''
                 }));
+                names = [];
                 $.each(data['projects'], function(i, o) {
+                    names.push(i);
+                });
+                names.sort();
+                $.each(names, function(i, v) {
                     $('#projects-filter').append($('<option>', {
-                        text: i,
-                        value: i
+                        text: v,
+                        value: v
                     }));
                 });
                 if (getUrlParameter('pid')) {
@@ -296,10 +312,15 @@ function group_page_init(commits_amount) {
                     text: 'Select a project',
                     value: ''
                 }));
+                names = [];
                 $.each(data['projects'], function(i, o) {
+                    names.push(i);
+                });
+                names.sort();
+                $.each(names, function(i, v) {
                     $('#projects-filter').append($('<option>', {
-                        text: i,
-                        value: i
+                        text: v,
+                        value: v
                     }));
                 });
                 if (getUrlParameter('pid')) {
@@ -451,10 +472,15 @@ function project_page_init(projectid, tagid) {
                 .find('option')
                 .remove()
                 .end();
-            $.each(data, function(i, v) {
+            groups = [];
+            $.each(data, function(k, v) {
+                groups.push(k);
+            });
+            groups.sort();
+            $.each(groups, function(i, k) {
                 $('#groups').append($('<option>', {
-                    text: i,
-                    value: i
+                    text: k,
+                    value: k
                 }));
             });
             if (getUrlParameter('exc_groups')) {
