@@ -95,12 +95,15 @@ def resolv_filters(projects_index, idents, pid,
     else:
         p_filter = []
 
+    mails = []
+    domains = []
     if cid or gid:
         if cid:
             cid = decrypt(xorkey, cid)
         mails = get_mail_filter(idents, cid, gid)
-    else:
-        mails = []
+        if gid:
+            _, group = idents.get_group_by_id(gid)
+            domains.extend(group.get('domains', []))
 
     if dfrom:
         dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
@@ -115,7 +118,7 @@ def resolv_filters(projects_index, idents, pid,
     else:
         inc_merge_commit = False
 
-    return p_filter, mails, dfrom, dto, inc_merge_commit
+    return p_filter, mails, dfrom, dto, inc_merge_commit, domains
 
 
 def search_authors_sanitize(idents, authors):

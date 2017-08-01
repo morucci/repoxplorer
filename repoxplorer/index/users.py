@@ -146,6 +146,7 @@ class Groups(object):
     PROPERTIES = {
         "gid": {"type": "string", "index": "not_analyzed"},
         "description": {"type": "string", "index": "not_analyzed"},
+        "domains": {"type": "string", "index": "not_analyzed"},
         "emails": {
             "type": "nested",
             "properties": {

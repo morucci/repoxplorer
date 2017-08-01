@@ -129,6 +129,11 @@ properties:
         properties:
           description:
             type: string
+          domains:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
           emails:
             type: object
             additionalProperties: false
@@ -146,6 +151,9 @@ groups:
         begin-date: 2016-01-01
         end-date: 2016-01-01
       test2@acme.com:
+    domains:
+      - acme10.org
+      - acme.org
   acme-11:
     description: The group 11 of acme
     emails:

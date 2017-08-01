@@ -228,7 +228,6 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
         # Remove atm un-supported fields
         del cmt["author_date_tz"]
         del cmt["committer_date_tz"]
-        del cmt["author_email_domain"]
         del cmt["committer_email_domain"]
         del cmt["files_stats"]
         del cmt["signed"]

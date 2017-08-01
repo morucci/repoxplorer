@@ -221,6 +221,7 @@ class RootController(object):
             abort(404,
                   detail="The group has not been found")
         mails = group['emails']
+        domains = group.get('domains', [])
         description = group['description']
         members = {}
         for email in mails:
@@ -237,6 +238,7 @@ class RootController(object):
             'fromdate': dfrom,
             'todate': dto,
             'mails': mails,
+            'domains': domains,
             'merge_commit': include_merge_commit,
             'repos': p_filter,
         }
@@ -323,12 +325,14 @@ class RootController(object):
         metadata = _metadata
 
         mails_to_exclude = {}
+        domains_to_exclude = []
         if exc_groups:
             groups_splitted = exc_groups.split(',')
             idents = Contributors()
             for gid in groups_splitted:
                 _, group = idents.get_group_by_id(gid)
                 mails_to_exclude.update(group['emails'])
+                domains_to_exclude.extend(group.get('domains', []))
 
         projects_index = Projects()
         if pid:
@@ -342,6 +346,7 @@ class RootController(object):
             'repos': p_filter,
             'fromdate': dfrom,
             'mails': mails_to_exclude,
+            'domains': domains_to_exclude,
             'mails_neg': True,
             'todate': dto,
             'merge_commit': include_merge_commit,
@@ -396,6 +401,7 @@ class RootController(object):
                 'empty': False,
                 'version': rx_version}
 
+    # TODO(fbo): support mail_neg here
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
@@ -403,18 +409,21 @@ class RootController(object):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Contributors()
-        p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
+        (p_filter, mails, dfrom, dto,
+         inc_merge_commit, domains) = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, gid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
         if not key:
             keys = c.get_metadata_keys(
-                mails, p_filter, dfrom, dto, inc_merge_commit)
+                mails, p_filter, dfrom, dto,
+                inc_merge_commit, domains=domains)
             return keys
         else:
             vals = c.get_metadata_key_values(
-                key, mails, p_filter, dfrom, dto, inc_merge_commit)
+                key, mails, p_filter, dfrom, dto,
+                inc_merge_commit, domains=domains)
             return vals
 
     @expose('json')
@@ -422,7 +431,7 @@ class RootController(object):
              dfrom=None, dto=None, inc_repos=None):
         t = Tags(index.Connector(index=indexname))
         projects_index = Projects()
-        p_filter, _, dfrom, dto, _ = utils.resolv_filters(
+        p_filter, _, dfrom, dto, _, domains = utils.resolv_filters(
             projects_index, None,
             pid, tid, None, None, dfrom, dto, inc_repos, None)
         p_filter = [":".join(r.split(':')[:-1]) for r in p_filter]
@@ -464,31 +473,37 @@ class RootController(object):
                 continue
             _metadata.append((key, value))
 
-        mails_to_exclude = {}
         mails_neg = False
+
         if exc_groups:
+            mails_to_exclude = {}
+            domains_to_exclude = []
             mails_neg = True
             groups_splitted = exc_groups.split(',')
             idents = Contributors()
             for gid in groups_splitted:
                 _, group = idents.get_group_by_id(gid)
                 mails_to_exclude.update(group['emails'])
+                domains_to_exclude.extend(group.get('domains', []))
 
         projects_index._enrich_projects()
-        p_filter, mails, dfrom, dto, inc_merge_commit = utils.resolv_filters(
+        (p_filter, mails, dfrom, dto,
+         inc_merge_commit, domains) = utils.resolv_filters(
             projects_index, idents,
             pid, tid, cid, gid, dfrom, dto, inc_repos,
             inc_merge_commit)
 
         if mails_neg:
             mails = mails_to_exclude
+            domains = domains_to_exclude
 
         resp = c.get_commits(repos=p_filter, mails=mails,
                              fromdate=dfrom, todate=dto,
                              start=start, limit=limit,
                              merge_commit=inc_merge_commit,
                              metadata=_metadata,
-                             mails_neg=mails_neg)
+                             mails_neg=mails_neg,
+                             domains=domains)
         for cmt in resp[2]:
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())
