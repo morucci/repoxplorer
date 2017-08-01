@@ -302,6 +302,9 @@ identities:
 groups:
   acme-10:
     description: The group 10 of acme
+    domains:
+      - dom1.org
+      - dom2.org
     emails:
       test@acme.com:
         begin-date: 2016-01-01
@@ -387,6 +390,8 @@ groups:
       test@acme.com:
       test2@acme.com:
       test3@acme.com:
+    domains:
+      - dom1.org
 """
         files = {'f1.yaml': f1, 'default.yaml': default}
         db = self.create_db(files)
@@ -408,6 +413,7 @@ groups:
                      'test3@acme.com': None,
                      'test@acme.com': None,
                      'test2@acme.com': None},
+                 'domains': ['dom1.org'],
                  'description': 'The group 11 of acme'}
              })
 
@@ -455,6 +461,8 @@ groups:
     description: The group 12 of acme
     emails:
       ampanman@baikinman.com:
+    domains:
+      - acme12.org
 """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
@@ -464,6 +472,7 @@ groups:
         expected_ret = {
             'acme-12': {
                 'description': 'The group 12 of acme',
+                'domains': ['acme12.org'],
                 'emails': {
                     'john.doe@domain.com': None,
                     'jadoe@domain.com': {

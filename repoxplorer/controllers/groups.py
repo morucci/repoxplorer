@@ -46,7 +46,9 @@ class GroupsController(object):
         for group, data in groups.items():
             if prefix and not group.lower().startswith(prefix):
                 continue
-            rg = {'members': {}, 'description': data['description']}
+            rg = {'members': {},
+                  'description': data['description'],
+                  'domains': data.get('domains', [])}
             for email, bounces in data['emails'].items():
                 id, member = contributors_index.get_ident_by_email(email)
                 member = copy.deepcopy(member)

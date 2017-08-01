@@ -19,6 +19,7 @@ class TestCommits(TestCase):
                 'author_name': 'Nakata Daisuke',
                 'committer_name': 'Nakata Daisuke',
                 'author_email': 'n.suke@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'n.suke@joker.org',
                 'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
@@ -39,8 +40,9 @@ class TestCommits(TestCase):
                 'ttl': 0,
                 'author_name': 'Keiko Amura',
                 'committer_name': 'Keiko Amura',
-                'author_email': 'keiko.a@joker.org',
-                'committer_email': 'keiko.a@joker.org',
+                'author_email': 'keiko.a@hanabi.org',
+                'author_email_domain': 'hanabi.org',
+                'committer_email': 'keiko.a@hanabi.org',
                 'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master', ],
                 'line_modifieds': 100,
@@ -56,6 +58,7 @@ class TestCommits(TestCase):
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'jean.bon@joker.org',
                 'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
@@ -77,6 +80,7 @@ class TestCommits(TestCase):
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'jean.bon@joker.org',
                 'repos': [
                     'https://github.com/nakata/monkey.git:monkey:master', ],
@@ -95,6 +99,7 @@ class TestCommits(TestCase):
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'jean.bon@joker.org',
                 'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:master',
@@ -112,6 +117,7 @@ class TestCommits(TestCase):
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'jean.bon@joker.org',
                 'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
@@ -128,6 +134,7 @@ class TestCommits(TestCase):
                 'author_name': 'Jean Bon',
                 'committer_name': 'Jean Bon',
                 'author_email': 'jean.bon@joker.org',
+                'author_email_domain': 'joker.org',
                 'committer_email': 'jean.bon@joker.org',
                 'repos': [
                     'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
@@ -261,16 +268,51 @@ class TestCommits(TestCase):
                 'https://github.com/nakata/monkey.git:monkey:master': []})
         self.assertEqual(ret[1], 3)
 
+        ret = self.c.get_commits(
+            domains=['joker.org'])
+        self.assertEqual(ret[1], 6)
+
+        ret = self.c.get_commits(
+            domains=['hanabi.org'])
+        self.assertEqual(ret[1], 1)
+
+        ret = self.c.get_commits(
+            domains=['hanabi.org', 'joker.org'])
+        self.assertEqual(ret[1], 7)
+
+        ret = self.c.get_commits(
+            domains=['notexists.org', 'notfound.org'])
+        self.assertEqual(ret[1], 0)
+
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {}},
+            domains=['hanabi.org'])
+        self.assertEqual(ret[1], 6)
+
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {},
+                   'n.suke@joker.org': {}},
+            domains=['hanabi.org'])
+        self.assertEqual(ret[1], 7)
+
+        ret = self.c.get_commits(
+            mails={'jean.bon@joker.org': {}},
+            domains=['hanabi.org'],
+            mails_neg=True)
+        self.assertEqual(ret[1], 1)
+        self.assertEqual(ret[2][0]['author_email'],
+                         'n.suke@joker.org')
+
     def test_get_commits_based_on_merge_info(self):
-        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+        ret = self.c.get_commits(mails=['keiko.a@hanabi.org'],
                                  merge_commit=False)
         self.assertEqual(ret[1], 0)
-        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+        ret = self.c.get_commits(mails=['keiko.a@hanabi.org'],
                                  merge_commit=True)
         self.assertEqual(ret[1], 1)
         # When merge_commit at None either merge commit or not
         # are returned
-        ret = self.c.get_commits(mails=['keiko.a@joker.org'],
+        ret = self.c.get_commits(mails=['keiko.a@hanabi.org'],
                                  merge_commit=None)
         self.assertEqual(ret[1], 1)
 
@@ -312,7 +354,7 @@ class TestCommits(TestCase):
         self.assertEqual(ret, 3)
 
         ret = self.c.get_commits_amount(
-            ['jean.bon@joker.org', 'keiko.a@joker.org'],
+            ['jean.bon@joker.org', 'keiko.a@hanabi.org'],
             repos=['https://github.com/nakata/monkey.git:monkey:master',
                    'https://github.com/amura/kotatsu.git:kotatsu:master'])
         self.assertEqual(ret, 4)
@@ -393,15 +435,15 @@ class TestCommits(TestCase):
 
     def test_get_authors(self):
         ret = self.c.get_authors()
-        self.assertDictEqual(ret[1], {u'keiko.a@joker.org': 1,
+        self.assertDictEqual(ret[1], {u'keiko.a@hanabi.org': 1,
                                       u'jean.bon@joker.org': 5,
                                       u'n.suke@joker.org': 1})
 
     def test_get_commits_author_name_by_emails(self):
         ret = self.c.get_commits_author_name_by_emails(
-            ['keiko.a@joker.org', 'jean.bon@joker.org'])
+            ['keiko.a@hanabi.org', 'jean.bon@joker.org'])
         self.assertDictEqual(ret, {u'jean.bon@joker.org': u'Jean Bon',
-                                   u'keiko.a@joker.org': u'Keiko Amura'})
+                                   u'keiko.a@hanabi.org': u'Keiko Amura'})
 
     def test_get_commits_with_metadata_constraint(self):
         metadata = [('implement-feature', '19')]

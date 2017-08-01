@@ -97,7 +97,9 @@ class HistoController(object):
                 abort(404,
                       detail="The group has not been found")
             mails = group['emails']
+            domains = group.get('domains', [])
             query_kwargs.update({'mails': mails})
+            query_kwargs.update({'domains': domains})
         elif cid:
             cid = utils.decrypt(xorkey, cid)
             iid, ident = idents.get_ident_by_id(cid)

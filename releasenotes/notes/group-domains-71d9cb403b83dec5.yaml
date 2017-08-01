@@ -1,0 +1,8 @@
+---
+features:
+  - A group definition can maps a list of mail domains to implicitly
+    group commits of from specific author's mail domains.
+upgrade:
+  - The database schema has been modified to include author mail domain and
+    commit modified path. The database should be wiped and re-indexed after the
+    upgrade.

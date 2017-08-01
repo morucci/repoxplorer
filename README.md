@@ -361,6 +361,12 @@ groups:
   barbican-core:
     description: Project team leaders of Barbican project
     emails: {}
+  acme:
+    description: ACME corp group
+    emails: {}
+    domains:
+      - acme.com
+      - acme.org
 ```
 
 Group's membership is defined via an author email. Bounces can be defined
@@ -369,6 +375,9 @@ given dates (%Y-%m-%d).
 
 If an identity has been defined with emails part of a defined group then
 date bounces will overwrite those defined at the groups level.
+
+To define a group that implicitly include commits of authors from
+specific domains use the *domains* key to list domains.
 
 
 ### Metadata automatic indexation

@@ -106,6 +106,7 @@ class TestGroups(TestCase):
         self.group = {
             'gid': 'ugroup1',
             'description': 'ugroup',
+            'domains': ['ugroup.org', 'ugroup.com'],
             'emails': [{'email': 'tokin@domain1'},
                        {'email': 'kokin@domain2',
                         'start-date': '2016-01-01',
@@ -120,6 +121,7 @@ class TestGroups(TestCase):
         ret = self.c.get(self.group['gid'])
         expected = {
             u'description': u'ugroup',
+            u'domains': [u'ugroup.org', u'ugroup.com'],
             u'emails': [
                 {u'email': u'tokin@domain1'},
                 {u'start-date': u'2016-01-01',
@@ -139,6 +141,7 @@ class TestGroups(TestCase):
         ret = self.c.get(self.group['gid'])
         expected = {
             u'description': u'New group description',
+            u'domains': [u'ugroup.org', u'ugroup.com'],
             u'emails': [
                 {u'email': u'gokin@domain3'},
                 {'email': u'saboten@domain2',

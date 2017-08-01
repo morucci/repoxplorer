@@ -132,6 +132,7 @@ function groups_page_init() {
                 $("#groups-table").append("<table class=\"table table-striped\">");
                 var theader = "<tr>";
                 theader += "<th>Group name</th>";
+                theader += "<th>Group domains</th>";
                 theader += "<th>Group description</th>";
                 theader += "<th>Group members</th>";
                 $("#groups-table table").append(theader);
@@ -143,6 +144,7 @@ function groups_page_init() {
                 $.each(groups, function(i, gid) {
                     var elm = "<tr>";
                     elm += "<td><a href=group.html?gid=" + encodeURIComponent(gid) + ">" + gid + "</a></td>";
+                    elm += "<td>" + data[gid]['domains'] + "</td>";
                     elm += "<td>" + data[gid]['description'] + "</td>";
                     elm += "<td>";
                     $.each(data[gid]['members'], function(cid, cdata) {

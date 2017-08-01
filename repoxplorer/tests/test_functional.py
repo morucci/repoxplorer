@@ -309,6 +309,7 @@ class TestGroupsController(FunctionalTest):
             expected_ret = {
                 u'grp2': {
                     u'description': u'The group 2',
+                    u'domains': [],
                     u'members': {
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
@@ -322,6 +323,7 @@ class TestGroupsController(FunctionalTest):
                 },
                 u'grp1': {
                     u'description': u'The group 1',
+                    u'domains': [],
                     u'members': {
                         u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'Jane Doe',
@@ -348,6 +350,7 @@ class TestGroupsController(FunctionalTest):
             expected_ret = {
                 u'grp2': {
                     u'description': u'The group 2',
+                    u'domains': [],
                     u'members': {
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',

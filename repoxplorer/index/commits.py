@@ -32,6 +32,7 @@ PROPERTIES = {
     "author_name": {"type": "string"},
     "committer_name": {"type": "string"},
     "author_email": {"type": "string", "index": "not_analyzed"},
+    "author_email_domain": {"type": "string", "index": "not_analyzed"},
     "committer_email": {"type": "string", "index": "not_analyzed"},
     "repos": {"type": "string", "index": "not_analyzed"},
     "line_modifieds": {"type": "integer", "index": "not_analyzed"},
@@ -134,13 +135,16 @@ class Commits(object):
         bulk(self.es, gen(sha_list))
         self.es.indices.refresh(index=self.index)
 
-    def get_filter(self, mails, repos, metadata, mails_neg=False):
+    def get_filter(self, mails, repos, metadata,
+                   mails_neg=False, domains=None):
         """ Compute the search filter
         """
         if isinstance(mails, list):
             mails = dict([(mail, None) for mail in mails])
         if isinstance(repos, list):
             repos = dict([(repo, None) for repo in repos])
+        if not domains:
+            domains = []
 
         filter = {
             "bool": {
@@ -172,6 +176,16 @@ class Commits(object):
                 must_mail_clause["bool"]["must_not"].append(must)
             else:
                 must_mail_clause["bool"]["should"].append(must)
+
+        for domain in domains:
+            clause = {"bool": {"must": []}}
+            clause["bool"]["must"].append(
+                {"term": {"author_email_domain": domain}})
+            if mails_neg:
+                must_mail_clause["bool"]["must_not"].append(clause)
+            else:
+                must_mail_clause["bool"]["should"].append(clause)
+
         filter["bool"]["must"].append(must_mail_clause)
 
         must_project_clause = {
@@ -217,22 +231,18 @@ class Commits(object):
     def get_commits(self, mails=[], repos=[],
                     fromdate=None, todate=None, start=0, limit=100,
                     sort='desc', scan=False, merge_commit=None,
-                    metadata=[], mails_neg=False):
+                    metadata=[], mails_neg=False, domains=None):
         """ Return the list of commits for authors and/or repos.
         """
 
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not repos and not metadata:
-            raise Exception(
-                'At least a author email or repo or a metadata'
-                'is required to run a request')
-
         body = {
-            "filter": self.get_filter(mails, repos, metadata, mails_neg),
+            "filter": self.get_filter(mails, repos, metadata,
+                                      mails_neg, domains),
         }
 
-        # If None both are return. If you expect to skip merge commits
+        # If None both are returned. If you expect to skip merge commits
         # then set merge_commit to False
         if merge_commit is not None:
             body["filter"]["bool"]["must"].append(
@@ -267,19 +277,16 @@ class Commits(object):
     def get_commits_amount(self, mails=[], repos=[],
                            fromdate=None, todate=None,
                            merge_commit=None, metadata=[],
-                           mails_neg=False):
+                           mails_neg=False, domains=None):
         """ Return the amount of commits for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
-
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
 
         body = {
             "query": {
                 "filtered": {
                     "filter": self.get_filter(mails, repos,
-                                              metadata, mails_neg),
+                                              metadata, mails_neg, domains),
                 }
             }
         }
@@ -312,19 +319,16 @@ class Commits(object):
     def get_field_stats(self, field, mails=[], repos=[],
                         fromdate=None, todate=None,
                         merge_commit=None, metadata=[],
-                        mails_neg=False):
+                        mails_neg=False, domains=None):
         """ Return the stats about the specified field for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
-
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
 
         body = {
             "query": {
                 "filtered": {
                     "filter": self.get_filter(mails, repos,
-                                              metadata, mails_neg),
+                                              metadata, mails_neg, domains),
                 }
             },
             "aggs": {
@@ -360,7 +364,7 @@ class Commits(object):
     def get_authors(self, mails=[], repos=[],
                     fromdate=None, todate=None,
                     merge_commit=None, metadata=[],
-                    mails_neg=False):
+                    mails_neg=False, domains=None):
         """ Return the author emails (removed duplicated) also
         this return the amount of hits for a given unique
         author_email. The hits value is the amount of commits
@@ -372,7 +376,7 @@ class Commits(object):
             "query": {
                 "filtered": {
                     "filter": self.get_filter(mails, repos,
-                                              metadata, mails_neg),
+                                              metadata, mails_neg, domains),
                 }
             },
             "aggs": {
@@ -426,9 +430,6 @@ class Commits(object):
             resp = self.es.msearch(body=request)
             return resp
 
-        if not mails:
-            raise Exception('At least an author email is required')
-
         ret = []
         resps = []
         amount = 100
@@ -471,20 +472,17 @@ class Commits(object):
     def get_top_field_by_lines(self, field, mails=[], repos=[],
                                fromdate=None, todate=None,
                                merge_commit=None, metadata=[],
-                               mails_neg=False):
+                               mails_neg=False, domains=None):
         """ Return the ranking of author emails by modidified lines
         of codes
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
-
         body = {
             "query": {
                 "filtered": {
                     "filter": self.get_filter(mails, repos,
-                                              metadata, mails_neg),
+                                              metadata, mails_neg, domains),
                 }
             },
             "aggs": {
@@ -530,7 +528,8 @@ class Commits(object):
 
     def get_metadata_keys(self, mails=[], repos=[],
                           fromdate=None, todate=None,
-                          merge_commit=None, mails_neg=False):
+                          merge_commit=None, mails_neg=False,
+                          domains=None):
         """ Return the metadata keys found inside
         the filtered commits. The returned dictionnary contains
         keys associated via the amount of hits.
@@ -546,7 +545,7 @@ class Commits(object):
         ret = self.get_commits(mails, repos,
                                fromdate, todate,
                                merge_commit=merge_commit, scan=True,
-                               mails_neg=mails_neg)
+                               mails_neg=mails_neg, domains=domains)
         keys = [c['_source'].keys() for c in ret]
         map(storekey, [i for i in itertools.chain(*keys) if
                        i not in PROPERTIES])
@@ -554,7 +553,8 @@ class Commits(object):
 
     def get_metadata_key_values(self, key, mails=[], repos=[],
                                 fromdate=None, todate=None,
-                                merge_commit=None, mails_neg=False):
+                                merge_commit=None, mails_neg=False,
+                                domains=None):
         """ Return for a metadata key the values found inside
         the filtered commits.
         """
@@ -564,7 +564,8 @@ class Commits(object):
                                fromdate, todate,
                                merge_commit=merge_commit,
                                metadata=((key, None),), scan=True,
-                               mails_neg=mails_neg)
+                               mails_neg=mails_neg,
+                               domains=domains)
         for c in ret:
             values |= set(c['_source'][key])
         values = list(values)
@@ -574,21 +575,18 @@ class Commits(object):
     def get_repos(self, mails=[], repos=[],
                   fromdate=None, todate=None,
                   merge_commit=None, metadata={},
-                  mails_neg=False):
+                  mails_neg=False, domains=None):
         """ Return the repos (removed duplicated) also
         this return the amount of hits. The hits value is
         the amount of commit for an uniq repo.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
-
         body = {
             "query": {
                 "filtered": {
                     "filter": self.get_filter(mails, repos,
-                                              metadata, mails_neg),
+                                              metadata, mails_neg, domains),
                 }
             },
             "aggs": {
@@ -628,16 +626,16 @@ class Commits(object):
     def get_commits_time_delta(self, mails=[], repos=[],
                                fromdate=None, todate=None,
                                merge_commit=None, metadata=[],
-                               mails_neg=False):
+                               mails_neg=False, domains=None):
         first = self.get_commits(mails, repos, start=0, limit=1, sort='asc',
                                  fromdate=fromdate, todate=todate,
                                  merge_commit=merge_commit, metadata=metadata,
-                                 mails_neg=mails_neg)
+                                 mails_neg=mails_neg, domains=domains)
         first = first[2][0]['committer_date']
         last = self.get_commits(mails, repos, start=0, limit=1, sort='desc',
                                 fromdate=fromdate, todate=todate,
                                 merge_commit=merge_commit, metadata=metadata,
-                                mails_neg=mails_neg)
+                                mails_neg=mails_neg, domains=domains)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
         duration = duration.total_seconds()
@@ -657,20 +655,18 @@ class Commits(object):
     def get_commits_histo(self, mails=[], repos=[],
                           fromdate=None, todate=None,
                           merge_commit=None, metadata=[],
-                          mails_neg=False):
+                          mails_neg=False, domains=None):
         """ Return the histogram of contrib for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
-
-        qfilter = self.get_filter(mails, repos, metadata, mails_neg)
+        qfilter = self.get_filter(mails, repos, metadata, mails_neg, domains)
         duration = self.get_commits_time_delta(mails, repos,
                                                fromdate=fromdate,
                                                todate=todate,
                                                metadata=metadata,
-                                               mails_neg=mails_neg)[2]
+                                               mails_neg=mails_neg,
+                                               domains=domains)[2]
 
         res = self.set_histo_granularity(duration)
 
@@ -715,20 +711,18 @@ class Commits(object):
     def get_authors_histo(self, mails=[], repos=[],
                           fromdate=None, todate=None,
                           merge_commit=None, metadata=[],
-                          mails_neg=False):
+                          mails_neg=False, domains=None):
         """ Return the histogram of authors for authors and/or repos.
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        if not mails and not repos:
-            raise Exception('At least a author email or repo is required')
-
-        qfilter = self.get_filter(mails, repos, metadata, mails_neg)
+        qfilter = self.get_filter(mails, repos, metadata, mails_neg, domains)
         duration = self.get_commits_time_delta(mails, repos,
                                                fromdate=fromdate,
                                                todate=todate,
                                                metadata=metadata,
-                                               mails_neg=mails_neg)[2]
+                                               mails_neg=mails_neg,
+                                               domains=domains)[2]
 
         res = self.set_histo_granularity(duration)
 
