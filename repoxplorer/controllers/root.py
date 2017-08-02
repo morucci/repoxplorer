@@ -261,7 +261,7 @@ class RootController(object):
                     'version': rx_version}
 
         top_projects = utils.top_projects_sanitize(
-            c, projects, query_kwargs, inc_repos_detail)
+            c, projects, query_kwargs, inc_repos_detail, pid)
 
         sorted_repos_contributed = top_projects[0]
         sorted_repos_contributed_modified = top_projects[1]

@@ -196,11 +196,15 @@ def get_commits_histo(commits_index, query_kwargs):
 
 
 def top_projects_sanitize(commits_index, projects_index,
-                          query_kwargs, inc_repos_detail):
+                          query_kwargs, inc_repos_detail,
+                          project_scope=None):
     projects = projects_index.get_projects()
     c_repos = commits_index.get_repos(**query_kwargs)[1]
     lm_repos = commits_index.get_top_repos_by_lines(**query_kwargs)[1]
-    c_projects = get_projects_from_references(projects, c_repos)
+    if project_scope:
+        c_projects = [project_scope]
+    else:
+        c_projects = get_projects_from_references(projects, c_repos)
 
     repos_contributed = {}
     repos_contributed_modified = {}
