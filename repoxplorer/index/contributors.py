@@ -47,7 +47,7 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[0-9]{4}-[0-9]{4}$:
+      ^.+$:
         type: object
         additionalProperties: false
         required:
@@ -72,7 +72,7 @@ properties:
                     type: object
                     additionalProperties: false
                     patternProperties:
-                      ^[a-zA-Z0-9_-]+$:
+                      ^.+$:
                         $ref: "#/definitions/group"
 """
 
@@ -120,7 +120,7 @@ properties:
     type: object
     additionalProperties: false
     patternProperties:
-      ^[a-zA-Z0-9_-]+$:
+      ^.+$:
         type: object
         additionalProperties: false
         required:
