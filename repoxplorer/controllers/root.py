@@ -284,6 +284,7 @@ class RootController(object):
                 'duration': (datetime.fromtimestamp(infos['duration']) -
                              datetime.fromtimestamp(0)),
                 'ttl_average': infos['ttl_average'],
+                'inc_repos_detail': inc_repos_detail,
                 'gid': gid,
                 'empty': False,
                 'version': rx_version}

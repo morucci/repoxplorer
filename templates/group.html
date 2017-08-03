@@ -117,7 +117,7 @@
  <div class="col-md-6">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 10 projects by commit amount</b></h3>
+    <h3 class="panel-title text-left"><b>Top projects by commit</b></h3>
    </div>
    <div class="panel-body">
     <div id="topauthors">
@@ -131,7 +131,11 @@
        % for n, p in enumerate(repos, start=1):
        <tr>
         <td>${n}</td>
-        <td>${p[0]}</td>
+        % if not inc_repos_detail:
+          <td><a href="project.html?pid=${p[0]}">${p[0]}</a></td>
+        % else:
+          <td>${p[0]}</td>
+        % endif
         <td>${p[1]}</td>
        <tr>
        % endfor
@@ -145,7 +149,7 @@
  <div class="col-md-6">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 10 projects by line modifieds amount</b></h3>
+    <h3 class="panel-title text-left"><b>Top projects by line modifieds</b></h3>
    </div>
    <div class="panel-body">
     <div id="topauthors">
@@ -159,7 +163,11 @@
        % for n, p in enumerate(repos_line_mdfds, start=1):
        <tr>
         <td>${n}</td>
-        <td>${p[0]}</td>
+        % if not inc_repos_detail:
+          <td><a href="project.html?pid=${p[0]}">${p[0]}</a></td>
+        % else:
+          <td>${p[0]}</td>
+        % endif
         <td>${p[1]}</td>
        <tr>
        % endfor
