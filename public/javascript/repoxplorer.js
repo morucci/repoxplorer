@@ -385,6 +385,16 @@ function group_page_init(commits_amount) {
             console.log(err);
         });
 
+    // Fill the histo author selector
+    var cont_h_deferred = get_histo(pid, undefined, undefined, gid, 'authors');
+    cont_h_deferred
+        .done(function(data) {
+            gen_histo(data, 'history_author');
+        })
+        .fail(function(err) {
+            console.log(err);
+        });
+
     install_paginator(pid, undefined, undefined, gid, commits_amount);
     get_commits(pid, undefined, undefined, gid, undefined),
 
