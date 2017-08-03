@@ -29,10 +29,16 @@ function getUrlParameter(sParam) {
 function install_date_pickers() {
     var dfrom = getUrlParameter('dfrom');
     var dto = getUrlParameter('dto');
-    $( "#fromdatepicker" ).datepicker();
-    $( "#fromdatepicker" ).datepicker('setDate', dfrom);
-    $( "#todatepicker" ).datepicker();
-    $( "#todatepicker" ).datepicker('setDate', dto);
+    $("#fromdatepicker").datepicker(
+        {dateFormat: "yy-mm-dd",
+         changeMonth: true,
+         changeYear: true});
+    $("#fromdatepicker").datepicker('setDate', dfrom);
+    $("#todatepicker").datepicker(
+        {dateFormat: "yy-mm-dd",
+         changeMonth: true,
+         changeYear: true});
+    $("#todatepicker").datepicker('setDate', dto);
 }
 
 function get_groups(nameonly, prefix) {
@@ -250,12 +256,16 @@ function contributor_page_init(commits_amount) {
     });
 
     // Fill the histo commits selector
+    $("#history-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     var c_h_deferred = get_histo(pid, undefined, cid, undefined, 'commits');
     c_h_deferred
         .done(function(data) {
+            $("#history-progress").empty();
             gen_histo(data, 'history');
         })
         .fail(function(err) {
+            $("#history-progress").empty();
             console.log(err);
         });
 
@@ -376,22 +386,30 @@ function group_page_init(commits_amount) {
     })
 
     // Fill the histo commits selector
+    $("#history-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     var c_h_deferred = get_histo(pid, undefined, undefined, gid, 'commits');
     c_h_deferred
         .done(function(data) {
+            $("#history-progress").empty();
             gen_histo(data, 'history');
         })
         .fail(function(err) {
+            $("#history-progress").empty();
             console.log(err);
         });
 
     // Fill the histo author selector
+    $("#history-author-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     var cont_h_deferred = get_histo(pid, undefined, undefined, gid, 'authors');
     cont_h_deferred
         .done(function(data) {
+            $("#history-author-progress").empty();
             gen_histo(data, 'history_author');
         })
         .fail(function(err) {
+            $("#history-author-progress").empty();
             console.log(err);
         });
 
@@ -467,7 +485,7 @@ function project_page_init(projectid, tagid) {
         if ($('#repositories').val() != undefined) {
             newlocation = newlocation + "&inc_repos=" + encodeURIComponent($('#repositories').val());
         }
-        if ($('#groups').val() != undefined) {
+        if ($('#groups').val() != "") {
             newlocation = newlocation + "&exc_groups=" + encodeURIComponent($('#groups').val());
         }
         if (selected_metadata.length > 0) {
@@ -484,6 +502,10 @@ function project_page_init(projectid, tagid) {
                 .find('option')
                 .remove()
                 .end();
+            $('#groups').append($('<option>', {
+                text: 'Select a group',
+                value: ''
+            }));
             groups = [];
             $.each(data, function(k, v) {
                 groups.push(k);
@@ -507,22 +529,30 @@ function project_page_init(projectid, tagid) {
             }
         );
     // Fill the histo commits selector
-    var defer2 = get_histo(projectid, tagid, undefined, undefined, 'commits');
-    defer2
+    $("#history-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+    var c_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'commits');
+    c_h_deferred
         .done(function(data) {
+            $("#history-progress").empty();
             gen_histo(data, 'history');
         })
         .fail(function(err) {
+            $("#history-progress").empty();
             console.log(err);
         });
 
     // Fill the histo author selector
-    var defer3 = get_histo(projectid, tagid, undefined, undefined, 'authors');
-    defer3
+    $("#history-author-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+    var cont_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'authors');
+    cont_h_deferred
         .done(function(data) {
+            $("#history-author-progress").empty();
             gen_histo(data, 'history_author');
         })
         .fail(function(err) {
+            $("#history-author-progress").empty();
             console.log(err);
         });
 
@@ -556,6 +586,10 @@ function project_page_init(projectid, tagid) {
 
 function contributors_page_init() {
 
+    function fill_resultinfos_gen(leaf) {
+        $("#resultinfos").empty();
+        $("#resultinfos").append(leaf);
+    }
     function fill_resultinfos(ret) {
         var size = Object.keys(ret).length;
         $("#resultinfos").empty();
@@ -577,6 +611,7 @@ function contributors_page_init() {
     $('#search-txt').bind("enterKey",function(e){
         var args = {};
         args['query'] = $("#search-txt").val();
+        fill_resultinfos_gen('<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
         $.getJSON("search_authors.json", args)
             .done(
                 function(data) {
@@ -585,6 +620,7 @@ function contributors_page_init() {
                 })
             .fail(
                 function(err) {
+                    fill_resultinfos_gen('Server side error');
                 });
     });
     $('#search-txt').keyup(function(e){
@@ -722,8 +758,11 @@ function get_commits(pid, tid, cid, gid, page) {
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
 
+    $("#commits-table-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     $.getJSON("commits.json", args).done(function(data) {
         $("#commits-table").empty();
+        $("#commits-table-progress").empty();
         $("#commits-table").append("<table class=\"table table-striped\">");
         var theader = "<tr>";
         theader += "<th>Date of commit</th>";
@@ -768,6 +807,7 @@ function get_commits(pid, tid, cid, gid, page) {
         $("#commits-table").append("</table>");
     })
         .fail(function(err) {
+            $("#commits-table-progress").empty();
             console.log(err);
         });
 }

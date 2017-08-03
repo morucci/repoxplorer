@@ -42,9 +42,9 @@ class HistoController(object):
             include_merge_commit = None
 
         if dfrom:
-            dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
+            dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
         if dto:
-            dto = datetime.strptime(dto, "%m/%d/%Y").strftime('%s')
+            dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
         _metadata = []
 
         if metadata:

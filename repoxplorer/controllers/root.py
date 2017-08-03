@@ -112,10 +112,10 @@ class RootController(object):
             include_merge_commit = None
         if dfrom:
             dfrom = datetime.strptime(
-                dfrom, "%m/%d/%Y").strftime('%s')
+                dfrom, "%Y-%m-%d").strftime('%s')
         if dto:
             dto = datetime.strptime(
-                dto, "%m/%d/%Y").strftime('%s')
+                dto, "%Y-%m-%d").strftime('%s')
         c = Commits(index.Connector(index=indexname))
         idents = Contributors()
         projects = Projects()
@@ -209,10 +209,10 @@ class RootController(object):
             include_merge_commit = None
         if dfrom:
             dfrom = datetime.strptime(
-                dfrom, "%m/%d/%Y").strftime('%s')
+                dfrom, "%Y-%m-%d").strftime('%s')
         if dto:
             dto = datetime.strptime(
-                dto, "%m/%d/%Y").strftime('%s')
+                dto, "%Y-%m-%d").strftime('%s')
         c = Commits(index.Connector(index=indexname))
         idents = Contributors()
         projects = Projects()
@@ -308,9 +308,9 @@ class RootController(object):
             include_merge_commit = None
 
         if dfrom:
-            dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
+            dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
         if dto:
-            dto = datetime.strptime(dto, "%m/%d/%Y").strftime('%s')
+            dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
         _metadata = []
 
         if metadata:

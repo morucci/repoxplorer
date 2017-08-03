@@ -106,10 +106,10 @@ def resolv_filters(projects_index, idents, pid,
             domains.extend(group.get('domains', []))
 
     if dfrom:
-        dfrom = datetime.strptime(dfrom, "%m/%d/%Y").strftime('%s')
+        dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
 
     if dto:
-        dto = datetime.strptime(dto, "%m/%d/%Y").strftime('%s')
+        dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
 
     if inc_merge_commit == 'on':
         # The None value will return all whatever
