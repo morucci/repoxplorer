@@ -96,6 +96,7 @@ class YAMLBackend(object):
             self.default_data = load(self.db_default_file)
 
         yamlfiles = [f for f in os.listdir(self.db_path) if check_ext(f)]
+        yamlfiles.sort()
         for f in yamlfiles:
             path = os.path.join(self.db_path, f)
             if path == self.db_default_file:

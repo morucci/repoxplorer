@@ -59,12 +59,12 @@ properties:
             type: string
           default-email:
             type: string
-            pattern: ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$
+            pattern: ^.+@.+$
           emails:
             type: object
             additionalProperties: false
             patternProperties:
-              ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$:
+              ^.+@.+$:
                 type: object
                 additionalProperties: false
                 properties:
@@ -138,7 +138,7 @@ properties:
             type: object
             additionalProperties: false
             patternProperties:
-              ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$:
+              ^.+@.+$:
                 $ref: "#/definitions/email"
 """
 
