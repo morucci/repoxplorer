@@ -268,10 +268,21 @@ class RootController(object):
         c_projects = top_projects[2]
         c_repos = top_projects[3]
 
+        top_authors = c.get_authors(**query_kwargs)
+        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
+
+        idents = Contributors()
+        top_authors = utils.top_authors_sanitize(
+            idents, top_authors, c, top=25)
+        top_authors_modified = utils.top_authors_sanitize(
+            idents, top_authors_modified, c, top=25)
+
         return {'name': gid,
                 'description': description,
                 'members_amount': len(members.keys()),
                 'commits_amount': infos['commits_amount'],
+                'top_authors': top_authors,
+                'top_authors_modified': top_authors_modified,
                 'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
                 'repos': sorted_repos_contributed,

@@ -130,10 +130,13 @@ function groups_page_init() {
         .fail(function(err) {
             console.log(err);
         });
+    $("#groups-table-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     var gg_d = get_groups(false, prefix);
     gg_d
         .done(
             function(data) {
+                $("#groups-table-progress").empty();
                 $("#groups-table").empty();
                 $("#groups-table").append("<table class=\"table table-striped\">");
                 var theader = "<tr>";
@@ -165,6 +168,7 @@ function groups_page_init() {
             })
         .fail(
             function(err) {
+                $("#groups-table-progress").empty();
                 console.log(err);
             });
 }

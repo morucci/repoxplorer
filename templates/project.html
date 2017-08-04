@@ -152,7 +152,6 @@
 </div>
 
 <div class="row-fluid">
-
  <div class="col-md-6">
   <div class="panel panel-default">
    <div class="panel-heading">
@@ -191,13 +190,13 @@
         <th class="col-md-1">Rank</th>
         <th>Name</th>
         <th>Amount</th>
-       <tr>
+      </tr>
        % for n, i in enumerate(top_authors[3:], start=4):
        <tr>
         <td>${n}</td>
         <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
-       <tr>
+       </tr>
        % endfor
       </table>
      </div>
@@ -244,13 +243,13 @@
         <th class="col-md-1">Rank</th>
         <th>Author name</th>
         <th>Amount</th>
-       <tr>
+       </tr>
        % for n, i in enumerate(top_authors_modified[3:], start=4):
        <tr>
         <td>${n}</td>
         <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
-       <tr>
+       </tr>
        % endfor
       </table>
      </div>
@@ -258,6 +257,7 @@
    </div>
   </div>
  </div>
+</div>
 
 <div class="row-fluid">
  <div class="col-md-12">
