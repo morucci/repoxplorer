@@ -2,6 +2,41 @@
 Release Notes
 =============
 
+1.0.0
+=====
+
+New Features
+------------
+
+- Project and Tag pages get a new contributors count histogram
+
+- REST endpoints histo/commits and histo/authors have been added
+
+- The group page display partial result and an index is displayed on top.
+
+- A group definition can maps a list of mail domains to implicitly group commits of from specific author's mail domains.
+
+- Partial group membership date bounces can be now defined (eg. just begin-date) when still membership.
+
+- contributor and group pages own a new by project filter.
+
+- Projects definition can include a list of paths under the paths key. This limit statistics computation to those paths.
+
+- Improve datepicker configuration.
+
+- Add progress indicators.
+
+- Add authors histo on the group page.
+
+- The YAML backend use cache files to speedup loading large YAML definitions.
+
+
+Upgrade Notes
+-------------
+
+- The database schema has been modified to include author mail domain and commit modified path. The database should be wiped and re-indexed after the upgrade.
+
+
 0.9.0
 =====
 
@@ -131,5 +166,4 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
-
 
