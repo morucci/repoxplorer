@@ -17,6 +17,8 @@ ExecStart=/usr/sbin/uwsgi --plugin python --http-socket :51000 --pecan /etc/repo
  --static-map /javascript=/var/www/static/jquery-ui/js \
  --static-map /javascript=/var/www/static/bootstrap/js \
  --static-map /images=/usr/share/repoxplorer/public/images \
+ --static-map /fonts=/usr/share/repoxplorer/public/fonts \
+ --static-map /fonts=/usr/share/javascript/bootstrap_scss/fonts \
  --static-safe /usr/share/javascript
 
 [Install]
