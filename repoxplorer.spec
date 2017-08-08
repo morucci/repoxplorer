@@ -1,5 +1,5 @@
 Name:           repoxplorer
-Version:        1.0.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        RepoXplorer is a stats and charts utility for GIT repositories
 
@@ -94,6 +94,9 @@ exit 0
 %attr(-, repoxplorer, repoxplorer) %{_var}/log/repoxplorer
 
 %changelog
+* Tue Aug 08 2017 Fabien Boucher <fboucher@redhat.com> - 1.0.1-1
+- Bump to 1.0.1
+
 * Mon Aug 07 2017 Fabien Boucher <fboucher@redhat.com> - 1.0.0-1
 - Bump to 1.0.0
 
