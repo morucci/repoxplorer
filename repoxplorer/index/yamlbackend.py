@@ -72,8 +72,9 @@ class YAMLBackend(object):
         def load(path):
             data = None
             logger.debug("Check cache for %s ..." % path)
-            cached_hash_path = path + '.hash'
-            cached_data_path = path + '.cached'
+            basename = os.path.basename(path)
+            cached_hash_path = os.path.join('/tmp', basename + '.hash')
+            cached_data_path = os.path.join('/tmp', basename + '.cached')
             hash = SHA.new(file(path).read()).hexdigest()
             if (os.path.isfile(cached_hash_path) and
                     os.path.isfile(cached_data_path)):

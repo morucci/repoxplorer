@@ -18,7 +18,7 @@ RepoXplorer relies on ElasticSearch for its data backend.
 
 ## How to install
 
-Last release is RepoXplorer [1.0.0](https://github.com/morucci/repoxplorer/releases/tag/1.0.0).
+Last release is RepoXplorer [1.0.1](https://github.com/morucci/repoxplorer/releases/tag/1.0.1).
 The installation process described here is for CentOS 7 only.
 
 ### All In One Docker container
@@ -63,7 +63,7 @@ sudo yum install -y epel-release
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.0.0/repoxplorer-1.0.0-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.0.1/repoxplorer-1.0.1-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services

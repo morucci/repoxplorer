@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+1.0.1
+=====
+
+Bug Fixes
+---------
+
+- Fix yaml backend cache path that won't be writable in /etc/repoxplorer (installed by package)
+
+
 1.0.0
 =====
 
