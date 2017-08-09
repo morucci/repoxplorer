@@ -63,7 +63,7 @@ sudo yum install -y epel-release
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.0.1/repoxplorer-1.0.2-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.0.2/repoxplorer-1.0.2-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
