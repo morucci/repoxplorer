@@ -167,14 +167,15 @@ class Contributors(YAMLDefinition):
     """ This class manages definition of contributors as
     individual and group level
     """
-    def __init__(self, db_path=None, db_default_file=None):
+    def __init__(self, db_path=None, db_default_file=None, vonly=False):
         YAMLDefinition.__init__(self, db_path, db_default_file)
         self.enriched_groups = False
         self.enriched_idents = False
-        self._users = users.Users(
-            index.Connector(index_suffix='users'))
-        self._groups = users.Groups(
-            index.Connector(index_suffix='users'))
+        if not vonly:
+            self._users = users.Users(
+                index.Connector(index_suffix='users'))
+            self._groups = users.Groups(
+                index.Connector(index_suffix='users'))
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
