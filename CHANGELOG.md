@@ -2,6 +2,15 @@
 Release Notes
 =============
 
+1.0.2
+=====
+
+Bug Fixes
+---------
+
+- repoxplorer-config-validate (YAML validation) no longer requires EL to be up and running.
+
+
 1.0.1
 =====
 
