@@ -1,0 +1,3 @@
+---
+other:
+  - Change from uwsgi to gunicorn as the recommanded WSGI app wrapper

@@ -99,11 +99,8 @@ Start the RepoXplorer web UI.
 
 ```Shell
 cat > ~/start-ui.sh << EOF
-uwsgi --plugin python --http-socket :51000 --pecan \
- ~/repoxplorer/local/share/repoxplorer/config.py \
- --static-map /css=$HOME/repoxplorer/local/share/repoxplorer/public/css \
- --static-map /javascript=$HOME/repoxplorer/local/share/repoxplorer/public/javascript \
- --static-map /fonts=$HOME/repoxplorer/local/share/repoxplorer/public/fonts \
+gunicorn_pecan --workers 1 --chdir / -b 0.0.0.0:51000 \
+ --name repoxplorer ~/repoxplorer/local/share/repoxplorer/config.py
 EOF
 chmod +x ~/start-ui.sh
 ~/start-ui.sh

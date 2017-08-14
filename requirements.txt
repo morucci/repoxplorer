@@ -6,4 +6,4 @@ pecan
 pycrypto
 pytz
 requests
-uWSGI
+gunicorn
