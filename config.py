@@ -48,7 +48,7 @@ base_logging = {
 
 # Internal dev pecan server
 server = {
-    'port': '8080',
+    'port': '51000',
     'host': '0.0.0.0'
 }
 

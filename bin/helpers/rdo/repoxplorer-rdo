@@ -54,12 +54,11 @@ if __name__ == "__main__":
     struct = {'projects': projects,
               'project-templates': templates}
 
-    projects['rdo'] = {}
-    projects['rdo-core'] = {}
-    projects['rdo-client'] = {}
-    projects['rdo-lib'] = {}
-    projects['rdo-puppet'] = {}
-    projects['rdo-tempest-plugin'] = {}
+    for pname in ('rdo', 'rdo-core', 'rdo-client', 'rdo-lib',
+                  'rdo-puppet', 'rdo-tempest-plugin'):
+        projects[pname] = {
+            'repos': {},
+            'description': ""}
     for p in gp['packages']:
         pt = p['conf']
         uri = gp['package-configs'][pt]['distgit']
@@ -67,17 +66,16 @@ if __name__ == "__main__":
         name = "%s-distgit" % p['project']
         repo = {}
         repo['template'] = "rdo"
-        projects['rdo'][name] = copy.copy(repo)
-        if pt == 'rpmfactory-core':
-            projects['rdo-core'][name] = copy.copy(repo)
-        elif pt == 'rpmfactory-client':
-            projects['rdo-client'][name] = copy.copy(repo)
-        elif pt == 'rpmfactory-lib':
-            projects['rdo-lib'][name] = copy.copy(repo)
-        elif pt == 'rpmfactory-puppet':
-            projects['rdo-puppet'][name] = copy.copy(repo)
-        elif pt == 'rpmfactory-tempest-plugin':
-            projects['rdo-tempest-plugin'][name] = copy.copy(repo)
+        projects['rdo']['repos'][name] = copy.copy(repo)
+        meta = (('rpmfactory-core', 'rdo-core'),
+                ('rpmfactory-client', 'rdo-client'),
+                ('rpmfactory-lib', 'rdo-lib'),
+                ('rpmfactory-puppet', 'rdo-puppet'),
+                ('rpmfactory-tempest-plugin', 'rdo-tempest-plugin'))
+        for c, tc in meta:
+            if pt == c:
+                projects[tc]['repos'][name] = copy.copy(repo)
+                break
 
     path = 'rdo.yaml'
     if args.output_path:
@@ -91,6 +89,6 @@ if __name__ == "__main__":
            " has been written to %s" % path)
 
     print ("Please edit the yaml file if needed (like adding additional"
-           "branches to index, defines custom releases, ...)")
+           " branches to index, defines custom releases, ...)")
 
     sys.exit(0)

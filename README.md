@@ -190,15 +190,19 @@ project-templates:
 
 projects:
   Barbican:
-    barbican:
-      template: default
-    python-barbicanclient:
-      template: default
+    description: The Barbican project
+    repos:
+      barbican:
+        template: default
+      python-barbicanclient:
+        template: default
   Swift:
-    swift:
-      template: default
-    python-swiftclient:
-      template: default
+    description: The Swift project
+    repos:
+      swift:
+        template: default
+      python-swiftclient:
+        template: default
 ```
 
 After a change in this file you can start the Git indexer manually or
@@ -226,10 +230,11 @@ project-templates:
 
 projects:
   Barbican:
-    barbican:
-      templates: default
-      tags:
-      - language:python
+    repos:
+      barbican:
+        templates: default
+        tags:
+        - language:python
 ```
 
 If a repository's branch(es) are not similar to the one(s) defined in the
@@ -244,13 +249,14 @@ project-templates:
 
 projects:
   Barbican:
-    barbican:
-      templates: default
-      branches:
-      - devel
-      - stable/1.0.x
-    python-barbicanclient:
-      templates: default
+    repos:
+      barbican:
+        templates: default
+        branches:
+        - devel
+        - stable/1.0.x
+      python-barbicanclient:
+        templates: default
 ```
 
 A list of releases can be defined. It is useful when you want to define
@@ -270,8 +276,9 @@ project-templates:
 
 projects:
   Barbican:
-    barbican:
-      template: default
+    repos:
+      barbican:
+        template: default
 ```
 
 A list of paths can be given under the *paths* key. When defined for
@@ -289,15 +296,16 @@ project-templates:
 
 projects:
   Barbican:
-    barbican:
-      template: default
-      paths:
-      - barbican/tests/
-      - barbican/functional-tests/
-    python-barbicanclient:
-      templates: default
-      paths:
-      - barbicanclient/tests/
+    repos:
+      barbican:
+        template: default
+        paths:
+        - barbican/tests/
+        - barbican/functional-tests/
+      python-barbicanclient:
+        templates: default
+        paths:
+        - barbicanclient/tests/
 ```
 
 It is also possible to define metadata parsers. Please refer to

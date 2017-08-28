@@ -90,9 +90,9 @@
      <div class="col-md-3 form-group">
       <label for="repositories">Only include selected repository refs</label>
       <select id='repositories' multiple class="form-control">
-       % for repo in repos:
+      % for repo in repos:
        <option>${repo['name']}:${repo['branch']}</option>
-       % endfor
+      % endfor
       </select>
      </div>
      <div class="col-md-3 form-group">

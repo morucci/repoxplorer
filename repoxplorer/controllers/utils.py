@@ -39,8 +39,8 @@ def decrypt(key, ciphertext):
 
 def get_projects_from_references(projects, c_references):
     c_projects = set()
-    for pname, references in projects.items():
-        for r in references:
+    for pname, details in projects.items():
+        for r in details['repos']:
             rid = "%s:%s:%s" % (r['uri'],
                                 r['name'],
                                 r['branch'])
@@ -49,9 +49,9 @@ def get_projects_from_references(projects, c_references):
     return c_projects
 
 
-def get_references_filter(references, inc_references=None):
+def get_references_filter(project, inc_references=None):
     r_filter = {}
-    for r in references:
+    for r in project['repos']:
         if inc_references:
             if not "%(name)s:%(branch)s" % r in inc_references:
                 continue

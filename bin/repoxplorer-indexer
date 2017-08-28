@@ -50,11 +50,11 @@ def process():
     projects_index = projects.Projects(conf.db_path,
                                        conf.db_default_file)
     prjs = projects_index.get_projects_raw()
-    for pid, repos in prjs.items():
+    for pid, data in prjs.items():
         if args.project and args.project != pid:
             continue
         logger.info("Start indexing project %s" % pid)
-        for rid, repo in repos.items():
+        for rid, repo in data['repos'].items():
             r = indexer.RepoIndexer(rid,
                                     repo['uri'],
                                     parsers=repo['parsers'],

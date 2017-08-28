@@ -37,3 +37,40 @@
     from { -moz-transform: rotate(0deg);}
     to { -moz-transform: rotate(360deg);}
 }
+
+.row-flex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.project-panel-logo {
+    text-align: center;
+}
+
+.project-panel-logo img {
+    height: 50px;
+    width: 50px;
+}
+
+.project-panel-name h2 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.project-panel-button {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.project-panel-detail {
+    display: none;
+}
+
+.project-panel-detail h3 {
+    background-color: #F2F2F2;
+}
+
+.blank-separator {
+    margin-top: 15px;
+}

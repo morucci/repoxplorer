@@ -89,10 +89,14 @@ class TestRootController(FunctionalTest):
         cls.t = Tags(cls.con)
         cls.commits = COMMITS
         cls.c.add_commits(cls.commits)
-        cls.projects = {'test': [
-            {'uri': 'https://github.com/nakata/monkey.git',
-             'name': 'monkey',
-             'branch': 'master'}]}
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
         cls.groups = {
             "grp1": {
                 "description": "The group 1",
@@ -476,10 +480,14 @@ class TestHistoController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
-        cls.projects = {'test': [
-            {'uri': 'https://github.com/nakata/monkey.git',
-             'name': 'monkey',
-             'branch': 'master'}]}
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
         cls.c = Commits(cls.con)
         cls.commits = COMMITS
         cls.c.add_commits(cls.commits)

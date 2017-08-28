@@ -21,7 +21,9 @@ import sys
 import yaml
 import github3
 
-parser = argparse.ArgumentParser(description='Read Github organization')
+parser = argparse.ArgumentParser(
+    description='Read a Github organization and create'
+                'the repoXplorer description file')
 parser.add_argument(
     '--org', type=str,
     required=True,
@@ -38,6 +40,13 @@ args = parser.parse_args()
 if __name__ == "__main__":
     anon = github3.GitHub()
     org = anon.organization(args.org)
+    if not org:
+        print(
+            "Org %s not found, try to find single"
+            " user's repos ..." % args.org)
+        repos = anon.repositories_by(args.org)
+    else:
+        repos = org.repositories()
     templates = {
         args.org: {
             "branches": ["master", ],
@@ -46,13 +55,18 @@ if __name__ == "__main__":
             "gitweb": "http://github.com/%s/" % args.org +
                       "%(name)s/commit/%%(sha)s"}
     }
-    projects = {args.org: {}}
-    for r in org.iter_repos():
+    projects = {
+        args.org: {
+            "repos": {},
+            "description": "The %s Github organization" % args.org,
+        }
+    }
+    for r in repos:
         if r.fork and args.skip_fork:
             print "Skip %s - it is a fork" % r.name
             continue
         data = {r.name: {"template": args.org}}
-        projects[args.org].update(data)
+        projects[args.org]["repos"].update(data)
         print "Found %s" % r.name
 
     struct = {'projects': projects,
@@ -70,6 +84,6 @@ if __name__ == "__main__":
            " has been written to %s" % (args.org, path))
 
     print ("Please edit the yaml file if needed (like adding additional"
-           "branches to index, defines custom releases, ...)")
+           " branches to index, defines custom releases, ...)")
 
     sys.exit(0)

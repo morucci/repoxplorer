@@ -85,27 +85,9 @@ function create_alpha_index(groups) {
 }
 
 function projects_page_init() {
-    lastfilter = "";
-    $('#projects-filter-input').keyup(function(event) {
-        if ($('#projects-filter-input').val() != lastfilter) {
-            inp=$('#projects-filter-input').val();
-            $("div[id^=project-panel-]").each(function(i, el) {
-                $(this).hide();
-            });
-            if (inp != '') {
-                $("div[data-repoid*="+inp+"]").each(function(i, el) {
-                    repoid=$(this).data("repoid");
-                    if (repoid.toLowerCase().indexOf(inp.toLowerCase()) > -1) {
-                        $('#project-panel-'+repoid).show();
-                    }
-                });
-            } else {
-                $("div:hidden").each(function(i, el) {
-                    $(this).show();
-                });
-            }
-        }
-        lastfilter = $('#projects-filter-input').val();
+    $("a[id^=toggle-button-]").click(function(){
+        $(this).find('i').toggleClass('glyphicon-menu-down').toggleClass('glyphicon-menu-up');
+        $(this).parent().parent().find('#project-panel-detail').toggle();
     });
 }
 

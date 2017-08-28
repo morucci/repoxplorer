@@ -59,13 +59,17 @@ if __name__ == "__main__":
             continue
         if name in SKIP:
             continue
-        projects[name] = {}
+        projects[name] = {
+                "repos": {},
+                "description": None,
+        }
         for _, detail in details['deliverables'].items():
+            projects[name]["description"] = details.get("mission", "")
             if 'repos' in detail:
                 for repo in detail['repos']:
-                    projects[name][repo] = {}
-                    projects[name][repo]['template'] = "openstack"
-                    projects[name][repo]['tags'] = copy.copy(
+                    projects[name]["repos"][repo] = {}
+                    projects[name]["repos"][repo]['template'] = "openstack"
+                    projects[name]["repos"][repo]['tags'] = copy.copy(
                         detail.get('tags', []))
                     # projects[name][repo]['tags'].append("openstack")
 
@@ -81,6 +85,6 @@ if __name__ == "__main__":
            " has been written to %s" % path)
 
     print ("Please edit the yaml file if needed (like adding additional"
-           "branches to index, defines custom releases, ...)")
+           " branches to index, defines custom releases, ...)")
 
     sys.exit(0)

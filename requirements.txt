@@ -1,6 +1,6 @@
 PyYAML
 elasticsearch>=2.0.0,<3.0.0
-github3.py
+github3.py>=1.0.0
 jsonschema
 pecan
 pycrypto

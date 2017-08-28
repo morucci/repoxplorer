@@ -119,49 +119,59 @@ properties:
       ^[a-zA-Z0-9_/\. -]+$:
         type: object
         additionalProperties: false
-        patternProperties:
-          ^[a-zA-Z0-9_/\.-]+$:
+        properties:
+          description:
+            type: string
+          logo:
+            type: string
+          repos:
             type: object
             additionalProperties: false
-            required:
-            - template
-            properties:
-              template:
-                type: string
-              paths:
-                type: array
-                items:
-                  type: string
-              tags:
-                type: array
-                items:
-                  type: string
-              branches:
-                type: array
-                items:
-                  type: string
-                  minItems: 1
+            patternProperties:
+              ^[a-zA-Z0-9_/\.-]+$:
+                type: object
+                additionalProperties: false
+                required:
+                - template
+                properties:
+                  template:
+                    type: string
+                  paths:
+                    type: array
+                    items:
+                      type: string
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                  branches:
+                    type: array
+                    items:
+                      type: string
+                      minItems: 1
 """
 
 projects_example = """
 projects:
   Barbican:
-    openstack/barbican:
-      template: default
-    openstack/python-barbicanclient:
-      template: default
-      tags:
-      - client
-      - language:python
-      paths:
-      - project/tests/
+    repos:
+      openstack/barbican:
+        template: default
+      openstack/python-barbicanclient:
+        template: default
+        tags:
+        - client
+        - language:python
+        paths:
+        - project/tests/
   Swift:
-    openstack/swift:
-      template: default
-      branches:
-      - dev
-    openstack/python-swiftclient:
-      template: default
+    repos:
+      openstack/swift:
+        template: default
+        branches:
+        - dev
+      openstack/python-swiftclient:
+        template: default
 """
 
 
@@ -197,8 +207,8 @@ class Projects(YAMLDefinition):
 
     def _enrich_projects(self):
         # First resolve templates references
-        for pid, repos in self.projects.items():
-            for rid, repo in repos.items():
+        for pid, detail in self.projects.items():
+            for rid, repo in detail['repos'].items():
                 # Save tags mentioned for a repo
                 tags = []
                 if 'tags' in repo and repo['tags']:
@@ -275,8 +285,8 @@ class Projects(YAMLDefinition):
         # Check template dependencies
         for d in self.data:
             projects = d.get('projects', {})
-            for pid, project in projects.items():
-                for rid, repo in project.items():
+            for pid, detail in projects.items():
+                for rid, repo in detail['repos'].items():
                     template = repo['template']
                     if template not in tids:
                         issues.append("Project ID '%s' Repo ID '%s' "
@@ -304,23 +314,27 @@ class Projects(YAMLDefinition):
         # This transforms repos into refs by listing
         # their branches. A project is now
         # a list of refs
-        for pid, repos in self.projects.items():
-            flatten[pid] = []
-            for rid, repo in repos.items():
+        for pid, detail in self.projects.items():
+            flatten[pid] = {
+                'repos': [],
+                'description': detail.get('description'),
+                'logo': detail.get('logo')
+            }
+            for rid, repo in detail['repos'].items():
                 for branch in repo['branches']:
                     r = {}
                     r.update(copy.deepcopy(repo))
                     r['name'] = rid
                     r['branch'] = branch
                     del r['branches']
-                    flatten[pid].append(r)
+                    flatten[pid]['repos'].append(r)
         return flatten
 
     def get_tags(self):
         projects = self.get_projects()
         tags = {}
-        for _, refs in projects.items():
-            for ref in refs:
+        for _, details in projects.items():
+            for ref in details['repos']:
                 for tag in ref.get('tags', []):
                     tags.setdefault(tag, []).append(ref)
         return tags

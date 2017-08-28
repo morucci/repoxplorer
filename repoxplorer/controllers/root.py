@@ -55,8 +55,10 @@ class RootController(object):
         projects_index = Projects()
         projects = projects_index.get_projects()
         num_projects = len(projects)
-        num_repos = len(set([ref['name'] for ref in
-                             itertools.chain(*projects.values())]))
+        num_repos = len(set([
+            ref['name'] for
+            ref in itertools.chain(
+                *[p['repos'] for p in projects.values()])]))
         return {'customtext': index_custom_html,
                 'projects': num_projects,
                 'repos': num_repos,
@@ -380,7 +382,7 @@ class RootController(object):
             return {'pid': pid,
                     'tid': tid,
                     'period': period,
-                    'repos': repos,
+                    'repos': repos['repos'],
                     'inc_repos': inc_repos,
                     'empty': True,
                     'version': True}
@@ -402,7 +404,7 @@ class RootController(object):
                 'top_authors_modified': top_authors_modified,
                 'authors_amount': authors_amount,
                 'commits_amount': infos['commits_amount'],
-                'repos': repos,
+                'repos': repos['repos'],
                 'inc_repos': inc_repos,
                 'period': period,
                 'first': datetime.fromtimestamp(infos['first']),

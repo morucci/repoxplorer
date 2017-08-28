@@ -54,15 +54,17 @@ class TestProjects(TestCase):
 
         projects:
           Barbican:
-            openstack/barbican:
-              template: mytemplate
-            openstack/python-barbicanclient:
-              template: mytemplate
+            repos:
+              openstack/barbican:
+                template: mytemplate
+              openstack/python-barbicanclient:
+                template: mytemplate
           Swift:
-            openstack/swift:
-              template: default
-            openstack/python-swiftclient:
-              template: default
+            repos:
+              openstack/swift:
+                template: default
+              openstack/python-swiftclient:
+                template: default
         """
 
         default = """
@@ -81,17 +83,19 @@ class TestProjects(TestCase):
 
         projects:
           Barbican:
-            openstack/barbican:
-              template: default
-            openstack/python-barbicanclient:
-              template: default
+            repos:
+              openstack/barbican:
+                template: default
+              openstack/python-barbicanclient:
+                template: default
           Nova:
-            openstack/nova:
-              template: default
-              paths:
-              - tests/
-            openstack/python-novaclient:
-              template: default
+            repos:
+              openstack/nova:
+                template: default
+                paths:
+                - tests/
+              openstack/python-novaclient:
+                template: default
         """
         files = {'f1.yaml': f1, 'default.yaml': default}
         db = self.create_db(files)
@@ -101,62 +105,75 @@ class TestProjects(TestCase):
         ret = p.get_projects_raw()
         expected_ret = {
             'Nova': {
-                'openstack/python-novaclient': {
-                    'tags': ['openstack'],
-                    'branches': ['master', 'stable/newton', 'stable/ocata'],
-                    'parsers': ['.*(blueprint) ([^ .]+).*'],
-                    'gitweb': 'https://github.com/openstack/openstack/'
-                              'python-novaclient/commit/%(sha)s',
-                    'releases': [],
-                    'uri': 'https://github.com/openstack/python-novaclient'},
-                'openstack/nova': {
-                    'tags': ['openstack'],
-                    'branches': ['master', 'stable/newton', 'stable/ocata'],
-                    'parsers': ['.*(blueprint) ([^ .]+).*'],
-                    'gitweb': 'https://github.com/openstack/openstack/'
-                              'nova/commit/%(sha)s',
-                    'releases': [],
-                    'paths': ['tests/'],
-                    'uri': 'https://github.com/openstack/nova'}},
+                'repos': {
+                    'openstack/python-novaclient': {
+                        'tags': ['openstack'],
+                        'branches': ['master', 'stable/newton',
+                                     'stable/ocata'],
+                        'parsers': ['.*(blueprint) ([^ .]+).*'],
+                        'gitweb': 'https://github.com/openstack/openstack/'
+                        'python-novaclient/commit/%(sha)s',
+                        'releases': [],
+                        'uri':
+                        'https://github.com/openstack/python-novaclient'},
+                    'openstack/nova': {
+                        'tags': ['openstack'],
+                        'branches': ['master', 'stable/newton',
+                                     'stable/ocata'],
+                        'parsers': ['.*(blueprint) ([^ .]+).*'],
+                        'gitweb': 'https://github.com/openstack/openstack/'
+                        'nova/commit/%(sha)s',
+                        'releases': [],
+                        'paths': ['tests/'],
+                        'uri': 'https://github.com/openstack/nova'}},
+            },
             'Swift': {
-                'openstack/swift': {
-                    'tags': ['openstack'],
-                    'branches': ['master', 'stable/newton', 'stable/ocata'],
-                    'parsers': ['.*(blueprint) ([^ .]+).*'],
-                    'gitweb': 'https://github.com/openstack/openstack/'
-                              'swift/commit/%(sha)s',
-                    'releases': [],
-                    'uri': 'https://github.com/openstack/swift'},
-                'openstack/python-swiftclient': {
-                    'tags': ['openstack'],
-                    'branches': ['master', 'stable/newton', 'stable/ocata'],
-                    'parsers': ['.*(blueprint) ([^ .]+).*'],
-                    'gitweb': 'https://github.com/openstack/openstack/'
-                              'python-swiftclient/commit/%(sha)s',
-                    'releases': [],
-                    'uri': 'https://github.com/openstack/python-swiftclient'}},
+                'repos': {
+                    'openstack/swift': {
+                        'tags': ['openstack'],
+                        'branches': ['master', 'stable/newton',
+                                     'stable/ocata'],
+                        'parsers': ['.*(blueprint) ([^ .]+).*'],
+                        'gitweb': 'https://github.com/openstack/openstack/'
+                        'swift/commit/%(sha)s',
+                        'releases': [],
+                        'uri': 'https://github.com/openstack/swift'},
+                    'openstack/python-swiftclient': {
+                        'tags': ['openstack'],
+                        'branches': ['master', 'stable/newton',
+                                     'stable/ocata'],
+                        'parsers': ['.*(blueprint) ([^ .]+).*'],
+                        'gitweb': 'https://github.com/openstack/openstack/'
+                        'python-swiftclient/commit/%(sha)s',
+                        'releases': [],
+                        'uri':
+                        'https://github.com/openstack/python-swiftclient'}
+                },
+            },
             'Barbican': {
-                'openstack/barbican': {
-                    'branches': ['master'],
-                    'parsers': [],
-                    'gitweb': 'https://bitbucket.com/openstack/'
-                              'barbican/commit/%(sha)s',
-                    'uri': 'https://bitbucket.com/openstack/barbican',
-                    'tags': [],
-                    'releases': [
-                        {'name': 1.0, 'date': 1482192000.0},
-                        {'name': 2.0, 'date': 1483142400.0}]},
-                'openstack/python-barbicanclient': {
-                    'branches': ['master'],
-                    'parsers': [],
-                    'gitweb': 'https://bitbucket.com/openstack/'
-                              'python-barbicanclient/commit/%(sha)s',
-                    'uri': 'https://bitbucket.com/openstack/'
-                           'python-barbicanclient',
-                    'tags': [],
-                    'releases': [
-                        {'name': 1.0, 'date': 1482192000.0},
-                        {'name': 2.0, 'date': 1483142400.0}]}}}
+                'repos': {
+                    'openstack/barbican': {
+                        'branches': ['master'],
+                        'parsers': [],
+                        'gitweb': 'https://bitbucket.com/openstack/'
+                        'barbican/commit/%(sha)s',
+                        'uri': 'https://bitbucket.com/openstack/barbican',
+                        'tags': [],
+                        'releases': [
+                            {'name': 1.0, 'date': 1482192000.0},
+                            {'name': 2.0, 'date': 1483142400.0}]},
+                    'openstack/python-barbicanclient': {
+                        'branches': ['master'],
+                        'parsers': [],
+                        'gitweb': 'https://bitbucket.com/openstack/'
+                        'python-barbicanclient/commit/%(sha)s',
+                        'uri': 'https://bitbucket.com/openstack/'
+                        'python-barbicanclient',
+                        'tags': [],
+                        'releases': [
+                            {'name': 1.0, 'date': 1482192000.0},
+                            {'name': 2.0, 'date': 1483142400.0}]}}}
+            }
         self.assertDictEqual(expected_ret, ret)
 
     def test_projects_validate(self):
@@ -172,8 +189,9 @@ class TestProjects(TestCase):
         f2 = """
         projects:
           Barbican:
-            openstack/barbican:
-              template: mytemplate
+            repos:
+              openstack/barbican:
+                template: mytemplate
         """
         files = {'f1.yaml': f1, 'f2.yaml': f2}
         db = self.create_db(files)
@@ -224,9 +242,10 @@ class TestProjects(TestCase):
         f1 = """
         projects:
           Barbican:
-            openstack/barbican:
-              uri: https://github.com/%(name)s
-              template: default
+            repos:
+              openstack/barbican:
+                uri: https://github.com/%(name)s
+                template: default
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
@@ -250,28 +269,33 @@ class TestProjects(TestCase):
 
         projects:
           Barbican:
-            openstack/barbican:
-              template: default
-            openstack/python-barbicanclient:
-              template: default
+            logo: https://logo.png
+            description: Credentials storage
+            repos:
+              openstack/barbican:
+                template: default
+              openstack/python-barbicanclient:
+                template: default
           Swift:
-            openstack/swift:
-              template: default
-            openstack/python-swiftclient:
-              template: default
-              branches:
-              - master
-              - 1.0-dev
-              - 2.0-dev
+            repos:
+              openstack/swift:
+                template: default
+              openstack/python-swiftclient:
+                template: default
+                branches:
+                - master
+                - 1.0-dev
+                - 2.0-dev
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
-        self.assertEqual(len(p.get_projects()['Swift']), 5)
-        self.assertEqual(len(p.get_projects()['Barbican']), 4)
-        branches = [ref['branch'] for ref in p.get_projects()["Swift"] if
-                    ref['name'] == 'openstack/python-swiftclient']
+        self.assertEqual(len(p.get_projects()['Swift']['repos']), 5)
+        self.assertEqual(len(p.get_projects()['Barbican']['repos']), 4)
+        branches = [
+            ref['branch'] for ref in p.get_projects()["Swift"]['repos'] if
+            ref['name'] == 'openstack/python-swiftclient']
         self.assertListEqual(branches, ['master', '1.0-dev', '2.0-dev'])
 
     def test_get_tags(self):
@@ -289,27 +313,29 @@ class TestProjects(TestCase):
 
         projects:
           Barbican:
-            openstack/barbican:
-              template: default
-              tags:
-              - credentials
-              - server
-            openstack/python-barbicanclient:
-              template: default
-              tags:
-              - credentials
-              - client
+            repos:
+              openstack/barbican:
+                template: default
+                tags:
+                - credentials
+                - server
+              openstack/python-barbicanclient:
+                template: default
+                tags:
+                - credentials
+                - client
           Swift:
-            openstack/swift:
-              template: default
-              tags:
-              - storage
-              - server
-            openstack/python-swiftclient:
-              template: default
-              tags:
-              - storage
-              - client
+            repos:
+              openstack/swift:
+                template: default
+                tags:
+                - storage
+                - server
+              openstack/python-swiftclient:
+                template: default
+                tags:
+                - storage
+                - client
         """
         files = {'f1.yaml': f1}
         db = self.create_db(files)
