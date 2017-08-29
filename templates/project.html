@@ -174,7 +174,7 @@
        <div align="center"><p><b><h4>${i['amount']} commits</h4></b></p></div>
        <div align="center">
         <a href=contributor.html?cid=${i['cid']}>
-         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150" title="${i['name']}">
         </a>
        </div>
        <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
@@ -194,7 +194,7 @@
        % for n, i in enumerate(top_authors[3:], start=4):
        <tr>
         <td>${n}</td>
-        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
+        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
        </tr>
        % endfor
@@ -227,7 +227,7 @@
        <div align="center"><p><b><h4>${i['amount']} line modifieds</h4></b></p></div>
        <div align="center">
         <a href=contributor.html?cid=${i['cid']}>
-         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150&d=wavatar" title="${i['name']}">
+         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150" title="${i['name']}">
         </a>
        </div>
        <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
@@ -247,7 +247,7 @@
        % for n, i in enumerate(top_authors_modified[3:], start=4):
        <tr>
         <td>${n}</td>
-        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25&d=wavatar" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
+        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
         <td>${i['amount']}</td>
        </tr>
        % endfor

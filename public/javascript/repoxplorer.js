@@ -140,7 +140,7 @@ function groups_page_init() {
                     elm += "<td>";
                     $.each(data[gid]['members'], function(cid, cdata) {
                         elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
-                            cdata['gravatar'] + "?s=20&d=wavatar'></span><span style='padding-right: 5px'>" +
+                            cdata['gravatar'] + "?s=20'></span><span style='padding-right: 5px'>" +
                             "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>";
                     });
                     elm += "</td>";
@@ -587,7 +587,7 @@ function contributors_page_init() {
             var box = '<div class="col-md-2"><div class="panel panel-default">' +
                 '<div class="panel-heading"><h3 class="panel-title">' +
                 '<span style="padding-right: 5px"><img src="https://www.gravatar.com/avatar/' +
-                v.gravatar + '?s=20&d=wavatar"></span>' +
+                v.gravatar + '?s=20"></span>' +
                 '<span><a href=contributor.html?cid=' +
                 k + '>' + v.name + '</a></span></h3>' +
                 '</div></div></div>';
@@ -771,11 +771,11 @@ function get_commits(pid, tid, cid, gid, page) {
             elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>";
             elm += "<td>" + projects + "</td>";
             elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
-                v['author_gravatar'] + "?s=20&d=wavatar'></span><span><a href=contributor.html?cid=" +
+                v['author_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
                 v['cid'] + ">" + v['author_name'] + "</a></span>";
             if (v['ccid'] != v['cid']) {
                 elm += "<br><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
-                    v['committer_gravatar'] + "?s=20&d=wavatar'></span><span><a href=contributor.html?cid=" +
+                    v['committer_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
                     v['ccid'] + ">" + v['committer_name'] + "</a><span>";
             }
             elm += "</td>";
