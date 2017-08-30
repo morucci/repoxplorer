@@ -66,6 +66,8 @@ if __name__ == "__main__":
             print "Skip %s - it is a fork" % r.name
             continue
         data = {r.name: {"template": args.org}}
+        if r.default_branch != 'master':
+            data[r.name]['branches'] = [r.default_branch]
         projects[args.org]["repos"].update(data)
         print "Found %s" % r.name
 
