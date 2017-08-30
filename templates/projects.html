@@ -33,9 +33,11 @@
                   <th>Repository</th>
                   <th>Branches</th>
                 </tr>
-                % for repo, branches in data.items():
+                <% srepos = sorted(data.keys()) %>
+                % for repo in srepos:
                 <%
                   inc_repos=""
+                  branches = data[repo]
                   for branch in branches:
                     inc_repos += "%s:%s," % (repo, branch)
                   inc_repos = inc_repos.rstrip(',')
