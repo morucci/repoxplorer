@@ -56,7 +56,7 @@ def get_references_filter(project, inc_references=None):
             if inc_references:
                 if not "%(name)s:%(branch)s" % r in inc_references:
                     continue
-                r_filter["%(uri)s:%(name)s:%(branch)s" % r] = r.get('paths')
+            r_filter["%(uri)s:%(name)s:%(branch)s" % r] = r.get('paths')
     return r_filter
 
 
