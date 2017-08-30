@@ -70,7 +70,7 @@ class HistoController(object):
                 mails_to_exclude.update(group['emails'])
 
         projects_index = Projects()
-        repos = []
+        repos = {}
 
         query_kwargs = {}
 

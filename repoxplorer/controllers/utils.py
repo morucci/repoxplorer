@@ -51,11 +51,12 @@ def get_projects_from_references(projects, c_references):
 
 def get_references_filter(project, inc_references=None):
     r_filter = {}
-    for r in project['repos']:
-        if inc_references:
-            if not "%(name)s:%(branch)s" % r in inc_references:
-                continue
-        r_filter["%(uri)s:%(name)s:%(branch)s" % r] = r.get('paths')
+    if "repos" in project:
+        for r in project['repos']:
+            if inc_references:
+                if not "%(name)s:%(branch)s" % r in inc_references:
+                    continue
+                r_filter["%(uri)s:%(name)s:%(branch)s" % r] = r.get('paths')
     return r_filter
 
 

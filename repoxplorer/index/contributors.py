@@ -350,7 +350,8 @@ class Contributors(YAMLDefinition):
         return ident['uid'], data
 
     def get_ident_by_email(self, email):
-        el_ident = self._users.get_ident_by_email(email)
+        # el_ident = self._users.get_ident_by_email(email)
+        el_ident = {}
         if 'uid' in el_ident:
             el_ident = self.backend_convert_ident(el_ident)
         idents = self._get_idents()
@@ -372,7 +373,8 @@ class Contributors(YAMLDefinition):
                            'emails': {email: {}}}
 
     def get_ident_by_id(self, id):
-        el_ident = self._users.get_ident_by_id(id)
+        # el_ident = self._users.get_ident_by_id(id)
+        el_ident = {}
         ident = self._get_idents().get(id)
         if ident and el_ident:
             ret = copy.deepcopy(el_ident)
