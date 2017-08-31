@@ -24,8 +24,9 @@ from pecan import configuration
 
 from repoxplorer import index
 from repoxplorer.index.tags import Tags
+from repoxplorer.index.tags import PROPERTIES as T_PROPERTIES
 from repoxplorer.index.commits import Commits
-from repoxplorer.index.commits import PROPERTIES
+from repoxplorer.index.commits import PROPERTIES as C_PROPERTIES
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ def run(cmd, path):
 
 
 def parse_commit_line(line, re):
-    reserved_metadata_keys = PROPERTIES.keys()
+    reserved_metadata_keys = C_PROPERTIES.keys() + T_PROPERTIES.keys()
     m = re.match(line)
     if m:
         key = m.groups()[0]
