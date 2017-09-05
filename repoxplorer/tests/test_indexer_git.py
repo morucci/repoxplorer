@@ -241,7 +241,22 @@ http://metavalue
              'merge_commit': True,
              'repos': ['file:///gitshow.sample'],
              'sha': '8e1cc08e799a83ace198ee7a3c6f9169635e7f46',
-             'ttl': 0}]
+             'ttl': 0},
+            {'author_date': 1352117713,
+             'author_email': u'',
+             'author_email_domain': u'',
+             'author_name': u'mysql-builder@oracle.com',
+             'commit_msg': '',
+             'committer_date': 1352117713,
+             'committer_email': u'',
+             'committer_name': u'mysql-builder@oracle.com',
+             'files_list': [],
+             'line_modifieds': 0,
+             'merge_commit': False,
+             'repos': ['file:///gitshow.sample'],
+             'sha': '1c939e7487986f1ada02f1414f6101b7cd696824',
+             'ttl': 0},
+            ]
 
         self.assertListEqual(output, expected)
 

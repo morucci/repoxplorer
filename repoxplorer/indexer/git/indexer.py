@@ -132,6 +132,16 @@ def parse_commit(input, offset, extra_parsers=None):
     cmt['ttl'] = cmt['committer_date'] - cmt['author_date']
     # Avoid weird negative TTL (personal computers may not be sync on NTP)
     cmt['ttl'] = cmt['ttl'] if cmt['ttl'] >= 0 else 0
+    cmt['line_modifieds'] = 0
+    cmt['files_stats'] = {}
+    cmt['files_list'] = []
+    cmt['commit_msg'] = ""
+    cmt['commit_msg_full'] = ""
+    cmt['signed'] = False
+    try:
+        input[offset + 2]
+    except IndexError:
+        return cmt, offset
     if input[offset + 2] == 'gpgsig -----BEGIN PGP SIGNATURE-----':
         cmt['signed'] = True
         offset += 3
@@ -142,7 +152,6 @@ def parse_commit(input, offset, extra_parsers=None):
             i += 1
         offset += i + 1
     else:
-        cmt['signed'] = False
         offset += 2
     while len(input[offset]):
         # Consuming the rest of headers until the empty line
@@ -157,9 +166,9 @@ def parse_commit(input, offset, extra_parsers=None):
             break
         if len(input[offset + i]):
             # Commit msg lines starts with a space char but I seen
-            # exceptions so check if a stat line match
+            # exceptions so check if a stat or commit line match
             m = STATSL_RE.match(input[offset + i])
-            if m:
+            if m or input[offset + i].startswith('commit'):
                 break
         i += 1
     cmt['commit_msg_full'] = _decode("\n".join(
@@ -174,8 +183,6 @@ def parse_commit(input, offset, extra_parsers=None):
     offset += i
     # Now we start to consume the stats fields
     i = 0
-    cmt['line_modifieds'] = 0
-    cmt['files_stats'] = {}
     cmt['files_list'] = set()
     while True:
         try:
@@ -218,22 +225,22 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
             break
         try:
             cmt, offset = parse_commit(input, offset, extra_parsers)
-        except Exception:
+            cmt['repos'] = [ref_id, ]
+            # Remove atm un-supported fields
+            for f in ("author_date_tz", "committer_date_tz",
+                      "committer_email_domain", "files_stats",
+                      "signed", "commit_msg_full"):
+                del cmt[f]
+            ret.append(cmt)
+        except Exception, e:
             logger.warning("A chunk of commits failed to be parsed. Skip.")
             logger.warning("Skip it !")
             logger.debug("Output of the failed chunk at the offset %s" % (
                 offset))
             logger.debug("\n".join(input[offset:offset+100]))
-            logger.exception("Issue was:")
-        cmt['repos'] = [ref_id, ]
-        # Remove atm un-supported fields
-        del cmt["author_date_tz"]
-        del cmt["committer_date_tz"]
-        del cmt["committer_email_domain"]
-        del cmt["files_stats"]
-        del cmt["signed"]
-        del cmt["commit_msg_full"]
-        ret.append(cmt)
+            logger.exception("Issue was: %s" % e)
+            print "\n".join(input[offset:offset+100])
+            break
     return ret
 
 
