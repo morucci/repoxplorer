@@ -36,6 +36,28 @@ COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
 STATSL_RE = re.compile('(.*)\t(.*)\t(.*)')
 FILE_RENAME_RE = re.compile("(.*){(.*)\s=>\s(.*)}(.*)")
 
+EL_RESERVED_FIELDS = [
+    '_index',
+    '_uid',
+    '_type',
+    '_id',
+    '_source',
+    '_size',
+    '_all',
+    '_field_names',
+    '_timestamp',
+    '_ttl',
+    '_parent',
+    '_routing',
+    '_meta',
+]
+
+RESERVED_METADATA_KEYS = (
+    C_PROPERTIES.keys() +
+    T_PROPERTIES.keys() +
+    EL_RESERVED_FIELDS
+)
+
 
 def run(cmd, path):
     process = subprocess.Popen(cmd,
@@ -50,11 +72,10 @@ def run(cmd, path):
 
 
 def parse_commit_line(line, re):
-    reserved_metadata_keys = C_PROPERTIES.keys() + T_PROPERTIES.keys()
     m = re.match(line)
     if m:
         key = m.groups()[0]
-        if key not in reserved_metadata_keys:
+        if key not in RESERVED_METADATA_KEYS:
             value = m.groups()[1]
             # Remove space before and after the string and remove
             # the \# that will cause trouble when metadata are queried
