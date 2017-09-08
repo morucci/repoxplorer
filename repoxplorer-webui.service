@@ -5,21 +5,7 @@ After=syslog.target
 [Service]
 User=repoxplorer
 Group=repoxplorer
-ExecStart=/usr/sbin/uwsgi --plugin python --http-socket :51000 --pecan /etc/repoxplorer/config.py \
- --static-map /css=/usr/share/repoxplorer/public/css \
- --static-map /css=/usr/share/web-assets/css \
- --static-map /css=/var/www/static/css \
- --static-map /css=/var/www/static/jquery-ui/css \
- --static-map /css=/var/www/static/bootstrap/css \
- --static-map /javascript=/usr/share/repoxplorer/public/javascript \
- --static-map /javascript=/usr/share/web-assets/javascript \
- --static-map /javascript=/var/www/static/js \
- --static-map /javascript=/var/www/static/jquery-ui/js \
- --static-map /javascript=/var/www/static/bootstrap/js \
- --static-map /images=/usr/share/repoxplorer/public/images \
- --static-map /fonts=/usr/share/repoxplorer/public/fonts \
- --static-map /fonts=/usr/share/javascript/bootstrap_scss/fonts \
- --static-safe /usr/share/javascript
+ExecStart=/usr/bin/gunicorn_pecan --workers 1 --chdir / -b 0.0.0.0:51000 --name repoxplorer /etc/repoxplorer/config.py
 
 [Install]
 WantedBy=multi-user.target
