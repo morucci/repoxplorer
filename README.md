@@ -10,6 +10,10 @@ RepoXplorer let's you describe how a project is composed and then computes
 stats across them. RepoXplorer provides a Web UI to browse statistics easily.
 RepoXplorer relies on ElasticSearch for its data backend.
 
+## Have a look to the demo instance
+
+Just follow that link to access the instance: [repoXplorer-demo](http://5.135.161.134/repoxplorer-staging-test/).
+
 ## A visual overview of the user interface
 
 ![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-plist.jpg)
@@ -18,7 +22,7 @@ RepoXplorer relies on ElasticSearch for its data backend.
 
 ## How to install
 
-Last release is RepoXplorer [1.0.2](https://github.com/morucci/repoxplorer/releases/tag/1.0.2).
+Last release is RepoXplorer [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
 The installation process described here is for CentOS 7 only.
 
 ### All In One Docker container
@@ -63,7 +67,7 @@ sudo yum install -y epel-release
 Finally install RepoXplorer:
 
 ```Shell
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.0.2/repoxplorer-1.0.2-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.0/repoxplorer-1.1.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
