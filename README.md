@@ -512,3 +512,7 @@ destroyed and re-created at each run.
 ```Shell
 tox
 ```
+
+## Contact
+
+Let's join #repoxplorer channel on freenode.
