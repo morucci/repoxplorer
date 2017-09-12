@@ -12,7 +12,7 @@ RepoXplorer relies on ElasticSearch for its data backend.
 
 ## Have a look to the demo instance
 
-Just follow that link to access the instance: [repoXplorer-demo](http://5.135.161.134/repoxplorer-staging-test/).
+Just follow that link to access the instance: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
 
 ## A visual overview of the user interface
 
