@@ -342,8 +342,8 @@ class TestProjects(TestCase):
         index.conf['db_default_file'] = None
         p = projects.Projects(db_path=db)
         tags = p.get_tags()
-        self.assertEqual(len(tags['credentials']), 4)
-        self.assertEqual(len(tags['storage']), 4)
+        self.assertEqual(len(tags['credentials']['repos']), 4)
+        self.assertEqual(len(tags['storage']['repos']), 4)
         self.assertEqual(len(tags.keys()), 6)
         for tag in ('openstack', 'cloud', 'client', 'server',
                     'credentials', 'storage'):

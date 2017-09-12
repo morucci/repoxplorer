@@ -336,7 +336,8 @@ class Projects(YAMLDefinition):
         for _, details in projects.items():
             for ref in details['repos']:
                 for tag in ref.get('tags', []):
-                    tags.setdefault(tag, []).append(ref)
+                    tags.setdefault(tag, {'repos': []})
+                    tags[tag]['repos'].append(ref)
         return tags
 
     def get_gitweb_link(self, simple_uri):
