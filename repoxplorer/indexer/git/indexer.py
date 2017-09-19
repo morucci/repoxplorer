@@ -320,7 +320,7 @@ class RepoIndexer():
                                          self.branch))
         run(["git", "fetch", "origin", self.branch], self.local)
         run(["git", "branch", "-f", self.branch, "FETCH_HEAD"], self.local)
-        run(["git", "checkout", "FETCH_HEAD"], self.local)
+        run(["git", "checkout", "-f", "FETCH_HEAD"], self.local)
 
     def get_refs(self):
         refs = run(["git", "ls-remote",
