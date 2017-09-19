@@ -1,0 +1,5 @@
+---
+fixes:
+  - Prevent the git indexer to uselessly fetch same pack at each run. Bug seen on centos 7.
+  - Fix get stat by tag that was broken by the recent project schema change.
+  - Fix manual release definition that was broken by the recent project schema change.
