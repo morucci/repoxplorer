@@ -479,7 +479,7 @@ If you find an issue please fill a bug report here:
 
 - [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
 
-RepoXplorer is hosted on this Gerrit instance [Software Factory] (http://softwarefactory-project.io)
+RepoXplorer is hosted on this Gerrit instance [Software Factory](http://softwarefactory-project.io)
 a contribution should be done via Gerrit instead of using the Pull Request system of Github.
 
 If you want to help:
@@ -490,7 +490,7 @@ git review -s # You should have login on Software Factory using your Github iden
 ```
 
 Your local copy is now configured. Please read the following instructions to
-learn about Git review sub-command [git-review] (http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
+learn about Git review sub-command [git-review](http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
 
 ```
 # make some changes
