@@ -33,15 +33,9 @@ repositories like for instance your Github organization.
 
 The link below redirects to the demo instance where some Github orgs are indexed.
 
-*Demo instance*: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
+**Demo instance**: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
 
 The last release is the [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
-
-## A visual overview of the user interface
-
-![capture 1](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-plist.jpg)
-![capture 2](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-pstats.jpg)
-![capture 3](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-cont.jpg)
 
 ## All In One Docker container
 
@@ -223,7 +217,7 @@ let the indexer daemon reads the file (every minute) and handles changes.
 
 #### Advanced configuration
 
-The *branches* key of a template definition permits to defines which
+The **branches** key of a template definition permits to defines which
 branches to index. This key expects a list of branches name.
 
 A list of tags can be given to each Git repositories. This tag concept
@@ -272,7 +266,7 @@ projects:
         templates: default
 ```
 
-A list of *releases* can be defined. It is useful when you want to define
+A list of **releases** can be defined. It is useful when you want to define
 release dates across all repositories defined in a project.
 Release dates with %Y-%m-%d format can be defined and will be merged with
 detected Git tags dates.
@@ -294,7 +288,7 @@ projects:
         template: default
 ```
 
-A list of paths can be given under the *paths* key. When defined for
+A list of paths can be given under the **paths** key. When defined for
 project repository then only commits including a file
 changed under one of the list of paths will match during statistics
 computation. If you want to define a special project *Barbian-Tests*
@@ -321,13 +315,13 @@ projects:
         - barbicanclient/tests/
 ```
 
-It is also possible to define *metadata parsers*. Please refer to
+It is also possible to define **metadata parsers**. Please refer to
 the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 ### Sanitize author identities
 
 An unique author can use multiple emails (identities) when contributing
-to a project. The *identities* configuration permits to define
+to a project. The **identities** configuration permits to define
 emails that belong to a contributor.
 
 In the example below, contributions from both author emails 'john.doe@server'
@@ -349,9 +343,9 @@ identities:
         groups: {}
 ```
 
-Group's membership can be defined via the *groups* key. A group must has
+Group's membership can be defined via the **groups** key. A group must has
 been defined ([Define groups of authors](#define-groups-of-authors)) before use.
-Membership bounces can be defined via *begin-date* and *end-date* to declare
+Membership bounces can be defined via **begin-date** and **end-date** to declare
 a group's membership between given dates (%Y-%m-%d).
 
 When an identity declares a group's membership then that's not needed to
@@ -384,14 +378,14 @@ groups:
 ```
 
 Group's membership is defined via an author email. Bounces can be defined
-via *begin-date* and *end-date* to declare a group's membership between
+via **begin-date** and **end-date** to declare a group's membership between
 given dates (%Y-%m-%d).
 
 If an identity has been defined with emails part of a defined group then
 date bounces will overwrite those defined at the groups level.
 
 To define a group that implicitly include commits of authors from
-specific domains use the *domains* key to list domains.
+specific domains use the **domains** key to list domains.
 
 
 ### Metadata automatic indexation
@@ -411,7 +405,7 @@ All "key: value" that match this default regex will be indexed:
 Furthermore it is possible to specify custom capturing regexs to
 extract metadata that does not follow to the default regex.
 
-All regexs specified in the *parsers* key will be executed on
+All regexs specified in the **parsers** key will be executed on
 each commit message line. You need to have two captured elements
 and the first one will be used as the key, the second as the value.
 
