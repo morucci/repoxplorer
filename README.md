@@ -1,18 +1,41 @@
-# RepoXplorer
+# RepoXplorer - Statistics explorer for Git repositories
 
-RepoXplorer is a stats and charts utility for Git repositories. Its main
-purpose is to ease visualization of statistics for projects composed of one
-or multiple Git repositories. Indeed lot of projects are splitted and have
-a Git repository by component (server, client, library A, ...) but unfortunately
-most of the existing Git statistic tools does not handle that.
+RepoXplorer provides a web UI to browse statistics about:
 
-RepoXplorer let's you describe how a project is composed and then computes
-stats across them. RepoXplorer provides a Web UI to browse statistics easily.
-RepoXplorer relies on ElasticSearch for its data backend.
+- projets (composed of one or multiple repositories)
+- contributors
+- groups of contributors
 
-## Have a look to the demo instance
+Stats are such as:
 
-Just follow that link to access the instance: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
+- commits and authors count
+- date histogram of commits count
+- date histogram of authors count
+- top authors by commits count
+- top authors by line modified count
+
+Filters can be used to refine stats by:
+
+- dates boundaries
+- releases or tags dates
+- repositories
+- metadata (grabbed from commit message eg. fix-bug: 12)
+
+RepoXplorer is composed of:
+
+- a YAML configuration file (to define repositories to index)
+- a Git indexer service
+- a wsgi app
+- ElasticSearch as backend
+
+RepoXplorer is the right tool to continuously watch and index your
+repositories like for instance your Github organization.
+
+The link below redirects to the demo instance where some Github orgs are indexed.
+
+*Demo instance*: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
+
+The last release is the [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
 
 ## A visual overview of the user interface
 
@@ -20,15 +43,14 @@ Just follow that link to access the instance: [repoXplorer-demo](http://5.135.16
 ![capture 2](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-pstats.jpg)
 ![capture 3](https://raw.githubusercontent.com/morucci/repoxplorer/master/imgs/repoxplorer-cont.jpg)
 
-## How to install
-
-Last release is RepoXplorer [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
-The installation process described here is for CentOS 7 only.
-
-### All In One Docker container
+## All In One Docker container
 
 A repoXplorer Docker image exists. Check it out there [repoXplorer docker image](https://hub.docker.com/r/morucci/repoxplorer/).
 This is a all-in-one container that bundles ElasticSearch + repoXplorer ready to use.
+
+## How to install
+
+The installation process described here is for CentOS 7 only.
 
 ### ElasticSearch installation
 
@@ -53,19 +75,6 @@ sudo systemctl start elasticsearch
 
 ### RPM installation of repoXplorer
 
-RepoXplorer has been packaged for CentOS 7 with the EPEL7 repository activated. It is
-not in the official EPEL7 repositories but a RPM is available.
-
-Here is the process to follow:
-
-First install the EPEL7 repository.
-
-```Shell
-sudo yum install -y epel-release
-```
-
-Finally install RepoXplorer:
-
 ```Shell
 sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.0/repoxplorer-1.1.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
@@ -79,12 +88,12 @@ sudo systemctl start repoxplorer-webui
 
 Then open a Web browser to access http://localhost:51000
 
-projects.yaml and idents.yaml are available in /etc/repoxplorer. Please
-then follow the [Configuration section](#configuration).
+The default index.yaml configuration file is available in /etc/repoxplorer.
+Please then follow the [Configuration section](#configuration).
 
-### Install repoXplorer in a python virtualenv
+### Python virtualenv installation of repoXplorer
 
-This is method to follow if you want to try the last master version.
+This is method to follow especially if you intend to try the master version.
 
 ```Shell
 yum install -y python-virtualenv libffi-devel openssl-devel python-devel git gcc
@@ -99,7 +108,7 @@ python setup.py install
 ./bin/repoxplorer-fetch-web-assets
 ```
 
-Start the RepoXplorer web UI.
+#### Start the RepoXplorer web UI
 
 ```Shell
 cat > ~/start-ui.sh << EOF
@@ -112,16 +121,16 @@ chmod +x ~/start-ui.sh
 
 Then open a Web browser to access http://localhost:51000
 
-Start the RepoXplorer indexer
+#### Start the RepoXplorer indexer
 
 ```Shell
 python ~/repoxplorer/bin/repoxplorer-indexer
 ```
 
-In order to run the indexer continuously you can use the command
+In order to run the indexer continuously you can use the command's
 argument "--forever".
 
-#### Install systemd unit file for the web UI
+#### Install systemd unit file for the web UI:
 
 You can install the systemd unit file for the web UI.
 Be sure to set the correct path to the uwsgi tool, the config.py file
@@ -171,14 +180,14 @@ mv <orgname>.yaml /etc/repoxplorer/
 ## Configuration
 
 If RepoXplorer has been installed in a virtualenv then
-replace /etc/repoxplorer to ~/repoxplorer/local/share/repoxplorer/.
+replace /etc/repoxplorer to ~/repoxplorer/local/share/repoxplorer.
 
-### How to index a list of Git hosted projects
+### How to define projects to index
 
-Below is an example of projects.yaml, note that Barbican and Swift projects
-are composed of two Git repositories, a server and a client.
+Below is an example of a yaml file, note that *Barbican* and *Swift*
+projects are composed of two Git repositories each, a server and a client.
 
-Edit /etc/repoxplorer/projects.yaml to add projects you want to index.
+Edit /etc/repoxplorer/myconf.yaml to add projects you want to index.
 
 ```YAML
 ---
@@ -214,11 +223,11 @@ let the indexer daemon reads the file (every minute) and handles changes.
 
 #### Advanced configuration
 
-The branches key of a template definition permits to defines which
+The *branches* key of a template definition permits to defines which
 branches to index. This key expects a list of branches name.
 
 A list of tags can be given to each Git repositories. This tag concept
-should not be considered as Git tags but only as a way to mark
+should not be understood as Git tags but only as a way to mark
 Git repositories. For example tags like 'documentation', 'librairies',
 packaging, ...) could be considered. Tags defined at repositories level
 will be appended to those defined at the template level.
@@ -241,8 +250,8 @@ projects:
         - language:python
 ```
 
-If a repository's branch(es) are not similar to the one(s) defined in the
-template then you can overwrite them.
+If the list of the repository branches differs to the one defined in the
+template then you can overwrite it like below.
 
 ```YAML
 project-templates:
@@ -263,7 +272,7 @@ projects:
         templates: default
 ```
 
-A list of releases can be defined. It is useful when you want to define
+A list of *releases* can be defined. It is useful when you want to define
 release dates across all repositories defined in a project.
 Release dates with %Y-%m-%d format can be defined and will be merged with
 detected Git tags dates.
@@ -286,8 +295,8 @@ projects:
 ```
 
 A list of paths can be given under the *paths* key. When defined for
-project repository definition then only commits that include a file
-changed under one of the list of paths will match during statistic
+project repository then only commits including a file
+changed under one of the list of paths will match during statistics
 computation. If you want to define a special project *Barbian-Tests*
 that is limited to tests directory then:
 
@@ -312,20 +321,17 @@ projects:
         - barbicanclient/tests/
 ```
 
-It is also possible to define metadata parsers. Please refer to
+It is also possible to define *metadata parsers*. Please refer to
 the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 ### Sanitize author identities
 
-It often happens authors use mulitple identities (multiple emails) when
-they contribute to a project. You can use the file idents.yaml to define
-emails that belong to a contributor. RepoXplorer will use that file to
-group contributions with multiple emails under a single identity.
+An unique author can use multiple emails (identities) when contributing
+to a project. The *identities* configuration permits to define
+emails that belong to a contributor.
 
-In the example below contributions from both author emails 'john.doe@server'
+In the example below, contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
-
-Edit /etc/repoxplorer/idents.yaml
 
 ```YAML
 ---
@@ -343,20 +349,18 @@ identities:
         groups: {}
 ```
 
-Group's membership can be defined via the groups key. The group must has
-been defined ([Define groups of authors](#define-groups-of-authors)).
-Membership bounces can be given via *begin-date* and *end-date* to declare
+Group's membership can be defined via the *groups* key. A group must has
+been defined ([Define groups of authors](#define-groups-of-authors)) before use.
+Membership bounces can be defined via *begin-date* and *end-date* to declare
 a group's membership between given dates (%Y-%m-%d).
 
-When an identity announce a group's membership that's not necessary to
+When an identity declares a group's membership then that's not needed to
 define it again at groups level.
 
 ### Define groups of authors
 
 You may want to define groups of authors and be able to compute
-stats for groups you defined. To do that you have to define groups like below.
-
-Edit /etc/repoxplorer/groups.yaml
+stats for thos groups.
 
 ```YAML
 ---
@@ -392,26 +396,24 @@ specific domains use the *domains* key to list domains.
 
 ### Metadata automatic indexation
 
-In addition to the standard Git object fields, the indexer will detect
+In addition to the standard Git object fields, the indexer detects
 metadata such as:
 
 - close-bug: #123
 - implement-feature: bp-new-scheduler
 
-All "key: value" that match the following default regex will be indexed:
+All "key: value" that match this default regex will be indexed:
 
 ```
 '^([a-zA-Z-0-9_-]+):([^//].+)$'
 ```
 
-Furthermore in projects.yaml it is possible to specify
-custom capturing regexs to extract metadata that does not
-follow to the default regex.
+Furthermore it is possible to specify custom capturing regexs to
+extract metadata that does not follow to the default regex.
 
 All regexs specified in the *parsers* key will be executed on
 each commit message line. You need to have two captured elements
-and the first one will be used as the key the second one as
-the value.
+and the first one will be used as the key, the second as the value.
 
 ```YAML
 project-templates:
@@ -515,4 +517,4 @@ tox
 
 ## Contact
 
-Let's join #repoxplorer channel on freenode.
+Let's join the #repoxplorer channel on freenode.
