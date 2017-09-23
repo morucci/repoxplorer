@@ -1,5 +1,8 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
+**Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
+**Last release**: [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
+
 RepoXplorer provides a web UI to browse statistics about:
 
 - projets (composed of one or multiple repositories)
@@ -33,9 +36,7 @@ repositories like for instance your Github organization.
 
 The link below redirects to the demo instance where some Github orgs are indexed.
 
-**Demo instance**: [repoXplorer-demo](http://5.135.161.134/repoxplorer-demo/).
 
-The last release is the [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
 
 ## All In One Docker container
 
