@@ -1,7 +1,7 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
-**Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
-**Last release**: [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
+- **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
+- **Last release**: [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
 
 RepoXplorer provides a web UI to browse statistics about:
 
@@ -9,13 +9,21 @@ RepoXplorer provides a web UI to browse statistics about:
 - contributors
 - groups of contributors
 
-Stats are such as:
+Stats for a project are such as:
 
 - commits and authors count
-- date histogram of commits count
-- date histogram of authors count
-- top authors by commits count
-- top authors by line modified count
+- date histogram of commits
+- date histogram of authors
+- top authors by commits
+- top authors by lines modified
+
+Stats for a contributor or a group are such as:
+
+- commits, lines modified and projects count
+- date histogram of commits
+- date histogram of authors (only for group)
+- top projects by commits
+- top projects by lines modified
 
 Filters can be used to refine stats by:
 
@@ -33,10 +41,6 @@ RepoXplorer is composed of:
 
 RepoXplorer is the right tool to continuously watch and index your
 repositories like for instance your Github organization.
-
-The link below redirects to the demo instance where some Github orgs are indexed.
-
-
 
 ## All In One Docker container
 
