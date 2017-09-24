@@ -43,11 +43,11 @@ The link below redirects to the demo instance where some Github orgs are indexed
 A repoXplorer Docker image exists. Check it out there [repoXplorer docker image](https://hub.docker.com/r/morucci/repoxplorer/).
 This is a all-in-one container that bundles ElasticSearch + repoXplorer ready to use.
 
-## How to install
+## Installation
 
 The installation process described here is for CentOS 7 only.
 
-### ElasticSearch installation
+### ElasticSearch
 
 repoXplorer relies on ElasticSearch. Below is the installation steps for
 ElasticSearch 2.x:
@@ -68,7 +68,7 @@ sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
 
-### RPM installation of repoXplorer
+### Using the RPM
 
 ```Shell
 sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.0/repoxplorer-1.1.0-1.el7.centos.noarch.rpm
@@ -86,7 +86,7 @@ Then open a Web browser to access http://localhost:51000
 The default index.yaml configuration file is available in /etc/repoxplorer.
 Please then follow the [Configuration section](#configuration).
 
-### Python virtualenv installation of repoXplorer
+### Using a Python virtualenv
 
 This is method to follow especially if you intend to try the master version.
 
@@ -103,7 +103,7 @@ python setup.py install
 ./bin/repoxplorer-fetch-web-assets
 ```
 
-#### Start the RepoXplorer web UI
+#### Start the web UI
 
 ```Shell
 cat > ~/start-ui.sh << EOF
@@ -116,7 +116,7 @@ chmod +x ~/start-ui.sh
 
 Then open a Web browser to access http://localhost:51000
 
-#### Start the RepoXplorer indexer
+#### Start the indexer
 
 ```Shell
 python ~/repoxplorer/bin/repoxplorer-indexer
