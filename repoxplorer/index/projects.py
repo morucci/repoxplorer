@@ -225,8 +225,9 @@ class Projects(YAMLDefinition):
                     paths = copy.copy(repo['paths'])
                 # Apply the template
                 repo.update(copy.deepcopy(
-                    self.templates[repo['template']]))
-                del repo['template']
+                    self.templates[repo.get('template', {})]))
+                if 'template' in repo:
+                    del repo['template']
                 # Process uri and gitweb string
                 for key in ('uri', 'gitweb'):
                     repo[key] = repo[key] % {'name': rid}
