@@ -192,7 +192,9 @@ class Projects(YAMLDefinition):
             templates = d.get('project-templates', {})
             projects = d.get('projects', {})
             merged_templates.update(copy.copy(templates))
-            merged_projects.update(copy.copy(projects))
+            for p, v in projects.items():
+                merged_projects.setdefault(p, copy.copy(v))
+                merged_projects[p]['repos'].update(copy.copy(v['repos']))
 
         self.templates = {}
         self.projects = {}
