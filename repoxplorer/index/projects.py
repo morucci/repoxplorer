@@ -224,9 +224,9 @@ class Projects(YAMLDefinition):
                 if 'paths' in repo:
                     paths = copy.copy(repo['paths'])
                 # Apply the template
-                repo.update(copy.deepcopy(
-                    self.templates[repo.get('template', {})]))
                 if 'template' in repo:
+                    repo.update(copy.deepcopy(
+                        self.templates[repo['template']]))
                     del repo['template']
                 # Process uri and gitweb string
                 for key in ('uri', 'gitweb'):
