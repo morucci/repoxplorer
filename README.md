@@ -56,7 +56,8 @@ dependencies needed.
 Let's try to index the repoxplorer repository from the morucci Github organization.
 
 ```
-repoxplorer-quickstart.sh morucci repoxplorer
+curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/repoxplorer-quickstart.sh
+./repoxplorer-quickstart.sh morucci repoxplorer
 firefox http://localhost:51000
 ```
 
