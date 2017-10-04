@@ -3,3 +3,6 @@ fixes:
   - Prevent the git indexer to uselessly fetch same pack at each run. Bug seen on centos 7.
   - Fix get stat by tag that was broken by the recent project schema change.
   - Fix manual release definition that was broken by the recent project schema change.
+  - Fix mandatory usage of a template when defining a repo.
+features:
+  - repoxplorer-github-organization adds a --repo argument to index a single repository.

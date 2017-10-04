@@ -166,7 +166,7 @@ sudo journalctl -f
 ### Index a Github organization
 
 RepoXplorer comes with an helper to create a yaml file for
-repoXplorer from a Github organization. The created file can
+from indexing a Github organization. The yaml file can
 then be moved to the configuration directory of repoXplorer.
 
 ```
@@ -175,6 +175,9 @@ mv <orgname>.yaml ~/repoxplorer/local/share/repoxplorer/
 # or
 mv <orgname>.yaml /etc/repoxplorer/
 ```
+
+Using the *--repo* argument in addition to the *--org* argument
+will create the yaml file for indexing a single repository.
 
 ## Configuration
 

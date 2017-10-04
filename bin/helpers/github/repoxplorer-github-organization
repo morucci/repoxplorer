@@ -27,7 +27,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--org', type=str,
     required=True,
-    help='Specify the Github organization')
+    help='Specify the Github organization name')
+parser.add_argument(
+    '--repo', type=str,
+    required=False,
+    help='Specify the repository name')
 parser.add_argument(
     '--output-path', type=str,
     help='yaml file path to register organization repositories details')
@@ -63,7 +67,8 @@ if __name__ == "__main__":
     }
     for r in repos:
         if r.fork and args.skip_fork:
-            print "Skip %s - it is a fork" % r.name
+            continue
+        if args.repo and r.name != args.repo:
             continue
         data = {r.name: {"template": args.org}}
         if r.default_branch != 'master':
@@ -76,7 +81,9 @@ if __name__ == "__main__":
 
     path = '%s.yaml' % args.org
     if args.output_path:
-        path = os.path.join(os.path.expanduser(args.output_path), path)
+        path = os.path.expanduser(args.output_path)
+        if not (path.endswith('.yaml') or path.endswith('.yml')):
+            path += '.yaml'
 
     with open(path, 'w') as fd:
         fd.write(yaml.safe_dump(struct,
