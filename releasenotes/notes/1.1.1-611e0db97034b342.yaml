@@ -6,3 +6,4 @@ fixes:
   - Fix mandatory usage of a template when defining a repo.
 features:
   - repoxplorer-github-organization adds a --repo argument to index a single repository.
+  - add repoxplorer-quickstart.sh to ease on-boarding on repoXplorer.

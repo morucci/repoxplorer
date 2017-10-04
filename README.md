@@ -42,6 +42,26 @@ RepoXplorer is composed of:
 RepoXplorer is the right tool to continuously watch and index your
 repositories like for instance your Github organization.
 
+## Quickstart script
+
+**repoxplorer-quickstart.sh** is a script to easily run repoXplorer locally without
+the need to install services on your system. No root access is needed for the setup
+and the installation is self-contained in **$HOME/.cache/repoxplorer**.
+
+This quickstart script only support Github.
+
+The Java Runtime Environment as well as Python and Python virtualenv are the only
+dependencies needed.
+
+Let's try to index the repoxplorer repository from the morucci Github organization.
+
+```
+repoxplorer-quickstart.sh morucci repoxplorer
+firefox http://localhost:51000
+```
+
+To index the whole organization do not append the repository name.
+
 ## All In One Docker container
 
 A repoXplorer Docker image exists. Check it out there [repoXplorer docker image](https://hub.docker.com/r/morucci/repoxplorer/).
