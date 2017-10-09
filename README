@@ -1,4 +1,4 @@
 Build with mock
 ===============
 
-./build.sh
+./build.sh 1.1.1-1
