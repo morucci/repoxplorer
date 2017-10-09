@@ -2,6 +2,31 @@
 Release Notes
 =============
 
+1.1.1
+=====
+
+New Features
+------------
+
+- repoxplorer-github-organization adds a --repo argument to index a single repository.
+
+- add repoxplorer-quickstart.sh to ease on-boarding on repoXplorer.
+
+
+Bug Fixes
+---------
+
+- Prevent the git indexer to uselessly fetch same pack at each run. Bug seen on centos 7.
+
+- Fix get stat by tag that was broken by the recent project schema change.
+
+- Fix manual release definition that was broken by the recent project schema change.
+
+- Fix mandatory usage of a template when defining a repo.
+
+- Fix 500 error when defining a project w/o a gitweb link.
+
+
 1.1.0
 =====
 

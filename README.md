@@ -1,7 +1,7 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
 - **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
-- **Last release**: [1.1.0](https://github.com/morucci/repoxplorer/releases/tag/1.1.0).
+- **Last release**: [1.1.1](https://github.com/morucci/repoxplorer/releases/tag/1.1.1).
 
 RepoXplorer provides a web UI to browse statistics about:
 
@@ -97,7 +97,7 @@ sudo systemctl start elasticsearch
 ### Using the RPM
 
 ```Shell
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.0/repoxplorer-1.1.0-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.1/repoxplorer-1.1.1-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
