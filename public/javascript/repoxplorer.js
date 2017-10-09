@@ -755,7 +755,7 @@ function get_commits(pid, tid, cid, gid, page) {
         theader += "<th>Repository refs</th>";
         theader += "<th>Author/Committer</th>";
         theader += "<th>Message</th>";
-        theader += "<th>Modified lines</th>";
+        theader += "<th>Changed lines</th>";
         theader += "<th>Time To Land</th>";
         theader += "</tr>";
         $("#commits-table table").append(theader);
