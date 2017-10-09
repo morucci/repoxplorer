@@ -230,7 +230,8 @@ class Projects(YAMLDefinition):
                     del repo['template']
                 # Process uri and gitweb string
                 for key in ('uri', 'gitweb'):
-                    repo[key] = repo[key] % {'name': rid}
+                    if key in repo:
+                        repo[key] = repo[key] % {'name': rid}
                 # Re-apply saved tags
                 if 'tags' not in repo:
                     repo['tags'] = []
