@@ -442,10 +442,12 @@ class RootController(object):
              dfrom=None, dto=None, inc_repos=None):
         t = Tags(index.Connector(index=indexname))
         projects_index = Projects()
-        p_filter, _, dfrom, dto, _, domains = utils.resolv_filters(
-            projects_index, None,
-            pid, tid, None, None, dfrom, dto, inc_repos, None)
-        p_filter = [":".join(r.split(':')[:-1]) for r in p_filter]
+
+        query_kwargs = utils.resolv_filters2(
+            projects_index, None, pid, tid, None, None,
+            dfrom, dto, inc_repos, None, "", None)
+
+        p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
         ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
         # TODO: if tid is given we can include user defined releases
         # for repo tagged with tid.
