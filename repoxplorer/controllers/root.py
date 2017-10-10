@@ -474,52 +474,20 @@ class RootController(object):
                 start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
                 inc_repos=None, metadata="", exc_groups=None):
+
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Contributors()
 
-        _metadata = []
-        metadata_splitted = metadata.split(',')
-        for meta in metadata_splitted:
-            try:
-                key, value = meta.split(':')
-                if value == '*':
-                    value = None
-            except ValueError:
-                continue
-            _metadata.append((key, value))
+        query_kwargs = utils.resolv_filters2(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit,
+            metadata, exc_groups)
+        query_kwargs.update(
+            {'start': start, 'limit': limit})
 
-        mails_neg = False
+        resp = c.get_commits(**query_kwargs)
 
-        if exc_groups:
-            mails_to_exclude = {}
-            domains_to_exclude = []
-            mails_neg = True
-            groups_splitted = exc_groups.split(',')
-            idents = Contributors()
-            for gid in groups_splitted:
-                _, group = idents.get_group_by_id(gid)
-                mails_to_exclude.update(group['emails'])
-                domains_to_exclude.extend(group.get('domains', []))
-
-        projects_index._enrich_projects()
-        (p_filter, mails, dfrom, dto,
-         inc_merge_commit, domains) = utils.resolv_filters(
-            projects_index, idents,
-            pid, tid, cid, gid, dfrom, dto, inc_repos,
-            inc_merge_commit)
-
-        if mails_neg:
-            mails = mails_to_exclude
-            domains = domains_to_exclude
-
-        resp = c.get_commits(repos=p_filter, mails=mails,
-                             fromdate=dfrom, todate=dto,
-                             start=start, limit=limit,
-                             merge_commit=inc_merge_commit,
-                             metadata=_metadata,
-                             mails_neg=mails_neg,
-                             domains=domains)
         for cmt in resp[2]:
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())

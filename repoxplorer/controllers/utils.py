@@ -169,7 +169,7 @@ def resolv_filters2(projects_index, idents, pid,
         'mails_neg': mails_neg,
         'todate': dto,
         'merge_commit': inc_merge_commit,
-        'metadata': metadata,
+        'metadata': _metadata,
     }
     return query_kwargs
 
