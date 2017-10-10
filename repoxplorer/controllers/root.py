@@ -417,29 +417,24 @@ class RootController(object):
                 'empty': False,
                 'version': rx_version}
 
-    # TODO(fbo): support mail_neg here
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None):
+                 inc_repos=None, exc_groups=None):
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
         idents = Contributors()
-        (p_filter, mails, dfrom, dto,
-         inc_merge_commit, domains) = utils.resolv_filters(
-            projects_index, idents,
-            pid, tid, cid, gid, dfrom, dto, inc_repos,
-            inc_merge_commit)
+
+        query_kwargs = utils.resolv_filters2(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
+        del query_kwargs['metadata']
 
         if not key:
-            keys = c.get_metadata_keys(
-                mails, p_filter, dfrom, dto,
-                inc_merge_commit, domains=domains)
+            keys = c.get_metadata_keys(**query_kwargs)
             return keys
         else:
-            vals = c.get_metadata_key_values(
-                key, mails, p_filter, dfrom, dto,
-                inc_merge_commit, domains=domains)
+            vals = c.get_metadata_key_values(key, **query_kwargs)
             return vals
 
     @expose('json')
