@@ -28,6 +28,7 @@ from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
+from repoxplorer.controllers import infos
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -49,6 +50,7 @@ class RootController(object):
     api_groups = groups.GroupsController()
     users = users.UsersController()
     histo = histo.HistoController()
+    infos = infos.InfosController()
 
     @expose(template='index.html')
     def index(self):

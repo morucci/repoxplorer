@@ -122,6 +122,58 @@ def resolv_filters(projects_index, idents, pid,
     return p_filter, mails, dfrom, dto, inc_merge_commit, domains
 
 
+# TODO: Remove resolv_filter and move to this one
+def resolv_filters2(projects_index, idents, pid,
+                    tid, cid, gid, dfrom, dto, inc_repos,
+                    inc_merge_commit, metadata, exc_groups):
+
+    _metadata = []
+    metadata_splitted = metadata.split(',')
+    for meta in metadata_splitted:
+        try:
+            key, value = meta.split(':')
+            if value == '*':
+                value = None
+        except ValueError:
+            continue
+        _metadata.append((key, value))
+
+    mails_neg = False
+
+    if exc_groups:
+        mails_to_exclude = {}
+        domains_to_exclude = []
+        mails_neg = True
+        groups_splitted = exc_groups.split(',')
+        for gid in groups_splitted:
+            _, group = idents.get_group_by_id(gid)
+            mails_to_exclude.update(group['emails'])
+            domains_to_exclude.extend(group.get('domains', []))
+
+    projects_index._enrich_projects()
+    (p_filter, mails, dfrom, dto,
+     inc_merge_commit, domains) = resolv_filters(
+         projects_index, idents,
+         pid, tid, cid, gid, dfrom, dto, inc_repos,
+         inc_merge_commit)
+
+    if mails_neg:
+        mails = mails_to_exclude
+        domains = domains_to_exclude
+
+    query_kwargs = {
+        'repos': p_filter,
+        'fromdate': dfrom,
+        'mails': mails,
+        'domains': domains,
+        'mails_neg': mails_neg,
+        'todate': dto,
+        'merge_commit': inc_merge_commit,
+        'metadata': metadata,
+    }
+    return query_kwargs
+
+
 def search_authors_sanitize(idents, authors):
     result = {}
     for email, name in authors.items():
@@ -182,8 +234,10 @@ def get_generic_infos(commits_index, query_kwargs):
     infos['last'] = last
     infos['duration'] = duration
     ttl_average = commits_index.get_ttl_stats(**query_kwargs)[1]['avg']
-    infos['ttl_average'] = timedelta(
-        seconds=int(ttl_average)) - timedelta(seconds=0)
+    infos['ttl_average'] = \
+        timedelta(seconds=int(ttl_average)) - timedelta(seconds=0)
+    infos['ttl_average'] = int(infos['ttl_average'].total_seconds())
+
     infos['line_modifieds_amount'] = int(
         commits_index.get_line_modifieds_stats(**query_kwargs)[1]['sum'])
     return infos

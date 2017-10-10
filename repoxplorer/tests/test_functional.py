@@ -379,11 +379,9 @@ class TestUsersController(FunctionalTest):
         root.users.endpoint_active = True
         root.users.admin_token = '12345'
 
-    def setUp(self):
-        FunctionalTest.setUp(self)
-        self.con = index.Connector(index='repoxplorertest')
-
     def tearDown(self):
+        self.con = index.Connector(
+            index=root.users.indexname, index_suffix='users')
         self.con.ic.delete(index=self.con.index)
         FunctionalTest.tearDown(self)
 
@@ -522,3 +520,41 @@ class TestHistoController(FunctionalTest):
         self.assertListEqual(
             response.json,
             [{u'date': u'2014-09-11', u'value': 2}])
+
+
+class TestInfosController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+        cls.c = Commits(cls.con)
+        cls.commits = COMMITS
+        cls.c.add_commits(cls.commits)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_infos(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/infos/infos?pid=test')
+        assert response.status_int == 200
+        expected = {
+            'first': 1410456005,
+            'last': 1410456005,
+            'commits_amount': 2,
+            'line_modifieds_amount': 20,
+            'duration': 0,
+            'ttl_average': 0
+        }
+        self.assertDictEqual(response.json, expected)

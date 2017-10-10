@@ -638,7 +638,7 @@ class Commits(object):
                                 mails_neg=mails_neg, domains=domains)
         last = last[2][0]['committer_date']
         duration = timedelta(seconds=last) - timedelta(seconds=first)
-        duration = duration.total_seconds()
+        duration = int(duration.total_seconds())
         return first, last, duration
 
     def set_histo_granularity(self, duration):
