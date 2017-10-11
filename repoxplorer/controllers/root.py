@@ -425,7 +425,7 @@ class RootController(object):
         projects_index = Projects()
         idents = Contributors()
 
-        query_kwargs = utils.resolv_filters2(
+        query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
         del query_kwargs['metadata']
@@ -443,7 +443,7 @@ class RootController(object):
         t = Tags(index.Connector(index=indexname))
         projects_index = Projects()
 
-        query_kwargs = utils.resolv_filters2(
+        query_kwargs = utils.resolv_filters(
             projects_index, None, pid, tid, None, None,
             dfrom, dto, inc_repos, None, "", None)
 
@@ -476,7 +476,7 @@ class RootController(object):
         projects_index = Projects()
         idents = Contributors()
 
-        query_kwargs = utils.resolv_filters2(
+        query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)

@@ -34,7 +34,7 @@ class InfosController(object):
         projects_index = Projects()
         idents = Contributors()
 
-        query_kwargs = utils.resolv_filters2(
+        query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)

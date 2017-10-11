@@ -79,7 +79,9 @@ def get_mail_filter(idents, cid=None, gid=None):
 
 def resolv_filters(projects_index, idents, pid,
                    tid, cid, gid, dfrom, dto, inc_repos,
-                   inc_merge_commit):
+                   inc_merge_commit, metadata, exc_groups):
+
+    projects_index._enrich_projects()
 
     if pid:
         project = projects_index.get_projects().get(pid)
@@ -95,37 +97,6 @@ def resolv_filters(projects_index, idents, pid,
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []
-
-    mails = []
-    domains = []
-    if cid or gid:
-        if cid:
-            cid = decrypt(xorkey, cid)
-        mails = get_mail_filter(idents, cid, gid)
-        if gid:
-            _, group = idents.get_group_by_id(gid)
-            domains.extend(group.get('domains', []))
-
-    if dfrom:
-        dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
-
-    if dto:
-        dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
-
-    if inc_merge_commit == 'on':
-        # The None value will return all whatever
-        # the commit is a merge one or not
-        inc_merge_commit = None
-    else:
-        inc_merge_commit = False
-
-    return p_filter, mails, dfrom, dto, inc_merge_commit, domains
-
-
-# TODO: Remove resolv_filter and move to this one
-def resolv_filters2(projects_index, idents, pid,
-                    tid, cid, gid, dfrom, dto, inc_repos,
-                    inc_merge_commit, metadata, exc_groups):
 
     _metadata = []
     metadata_splitted = metadata.split(',')
@@ -150,12 +121,28 @@ def resolv_filters2(projects_index, idents, pid,
             mails_to_exclude.update(group['emails'])
             domains_to_exclude.extend(group.get('domains', []))
 
-    projects_index._enrich_projects()
-    (p_filter, mails, dfrom, dto,
-     inc_merge_commit, domains) = resolv_filters(
-         projects_index, idents,
-         pid, tid, cid, gid, dfrom, dto, inc_repos,
-         inc_merge_commit)
+    mails = []
+    domains = []
+    if cid or gid:
+        if cid:
+            cid = decrypt(xorkey, cid)
+        mails = get_mail_filter(idents, cid, gid)
+        if gid:
+            _, group = idents.get_group_by_id(gid)
+            domains.extend(group.get('domains', []))
+
+    if dfrom:
+        dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
+
+    if dto:
+        dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
+
+    if inc_merge_commit == 'on':
+        # The None value will return all whatever
+        # the commit is a merge one or not
+        inc_merge_commit = None
+    else:
+        inc_merge_commit = False
 
     if mails_neg:
         mails = mails_to_exclude
