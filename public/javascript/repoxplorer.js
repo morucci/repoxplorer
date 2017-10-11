@@ -45,7 +45,7 @@ function get_groups(nameonly, prefix) {
     var args = {};
     args['nameonly'] = nameonly;
     args['prefix'] = prefix;
-    return $.getJSON("api_groups/", args);
+    return $.getJSON("api/v1/groups", args);
 }
 
 function get_histo(pid, tid, cid, gid, type) {
@@ -63,7 +63,7 @@ function get_histo(pid, tid, cid, gid, type) {
     args['inc_repos'] = getUrlParameter('inc_repos');
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
-    return $.getJSON("histo/" + type, args);
+    return $.getJSON("api/v1/histo/" + type, args);
 }
 
 function create_alpha_index(groups) {
@@ -169,7 +169,7 @@ function contributor_page_init(commits_amount) {
         $('#inc_repos_detail').prop('checked', true);
     }
 
-    $.getJSON("projects.json")
+    $.getJSON("api/v1/projects")
         .done(
             function(data) {
                 $('#projects-filter')
@@ -204,7 +204,7 @@ function contributor_page_init(commits_amount) {
         var button = $(event.relatedTarget);
         pickupdatetarget = button.data('datetarget');
 
-        $.getJSON("projects.json")
+        $.getJSON("api/v1/projects")
             .done(
                 function(data) {
                     $('#projects')
@@ -299,7 +299,7 @@ function group_page_init(commits_amount) {
         $('#inc_repos_detail').prop('checked', true);
     }
 
-    $.getJSON("projects.json")
+    $.getJSON("api/v1/projects")
         .done(
             function(data) {
                 $('#projects-filter')
@@ -334,7 +334,7 @@ function group_page_init(commits_amount) {
         var button = $(event.relatedTarget);
         pickupdatetarget = button.data('datetarget');
 
-        $.getJSON("projects.json")
+        $.getJSON("api/v1/projects")
             .done(
                 function(data) {
                     $('#projects')
@@ -598,7 +598,7 @@ function contributors_page_init() {
         var args = {};
         args['query'] = $("#search-txt").val();
         fill_resultinfos_gen('<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-        $.getJSON("search_authors.json", args)
+        $.getJSON("api/v1/search_authors", args)
             .done(
                 function(data) {
                     fill_resultinfos(data);
@@ -625,7 +625,7 @@ function get_releases(pid, tid) {
     args['inc_repos'] = getUrlParameter('inc_repos');
 
     var releases = [];
-    $.getJSON("tags.json", args)
+    $.getJSON("api/v1/tags", args)
         .done(
             function(data) {
                 data.sort(function(a, b){
@@ -678,7 +678,7 @@ function get_metadata_keys(pid, tid, cid) {
             .end();
         if (this.value === '') {return 1;}
         args['key'] = this.value;
-        $.getJSON("metadata.json", args)
+        $.getJSON("api/v1/metadata", args)
             .done(
                 function(data) {
                     $('#metadata-values').append($('<option>', {
@@ -698,7 +698,7 @@ function get_metadata_keys(pid, tid, cid) {
                 });
     })
 
-    $.getJSON("metadata.json", args)
+    $.getJSON("api/v1/metadata", args)
         .done(
             function(data) {
                 var temp = [];
@@ -746,7 +746,7 @@ function get_commits(pid, tid, cid, gid, page) {
 
     $("#commits-table-progress").append(
         '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    $.getJSON("commits.json", args).done(function(data) {
+    $.getJSON("api/v1/commits", args).done(function(data) {
         $("#commits-table").empty();
         $("#commits-table-progress").empty();
         $("#commits-table").append("<table class=\"table table-striped\">");

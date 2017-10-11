@@ -44,13 +44,12 @@ rx_version = version.get_version()
 index_custom_html = conf.get('index_custom_html', '')
 
 
-class RootController(object):
+class V1Controller(object):
 
-    # TODO: rename it cgroups endpoint
-    api_groups = groups.GroupsController()
+    infos = infos.InfosController()
+    groups = groups.GroupsController()
     users = users.UsersController()
     histo = histo.HistoController()
-    infos = infos.InfosController()
 
     @expose('json')
     def version(self):
@@ -71,7 +70,7 @@ class RootController(object):
                 'version': rx_version}
 
     @expose('json')
-    def api_projects(self):
+    def projects(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
         projects = OrderedDict(
@@ -202,11 +201,23 @@ class RootController(object):
             del cmt['committer_email']
         return resp
 
-# HTML pages rendering #
+
+class APIController(object):
+
+    v1 = V1Controller()
+
+
+class RootController(object):
+
+    api = APIController()
+
+# The use of templates for pages will be replaced soon
+# Pages will be rederred by JS only. Today rendering
+# is a mixed of Mako templating and JS
 
     @expose(template='index.html')
     def index(self):
-        return self.status()
+        return self.api.v1.status()
 
     @expose(template='groups.html')
     def groups(self):
@@ -214,7 +225,7 @@ class RootController(object):
 
     @expose(template='projects.html')
     def projects(self):
-        ret = self.api_projects()
+        ret = self.api.v1.projects()
         ret.update({'version': rx_version})
         return ret
 

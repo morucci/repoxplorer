@@ -162,7 +162,7 @@ class TestRootController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/commits.json?pid=test')
+            response = self.app.get('/api/v1/commits?pid=test')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Nakata Daisuke')
@@ -170,7 +170,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement:feature 35')
+                '/api/v1/commits?pid=test&metadata=implement:feature 35')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Nakata Daisuke')
@@ -178,7 +178,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement:feature 36')
+                '/api/v1/commits?pid=test&metadata=implement:feature 36')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
                          'Jean Paul')
@@ -186,7 +186,7 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata='
+                '/api/v1/commits?pid=test&metadata='
                 'implement:feature 36,close-bug:18')
         assert response.status_int == 200
         self.assertEqual(response.json[2][0]['author_name'],
@@ -195,14 +195,14 @@ class TestRootController(FunctionalTest):
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&metadata=implement:*')
+                '/api/v1/commits?pid=test&metadata=implement:*')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 2)
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/commits.json?pid=test&inc_merge_commit=on')
+                '/api/v1/commits?pid=test&inc_merge_commit=on')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 3)
 
@@ -210,12 +210,13 @@ class TestRootController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/metadata.json?pid=test')
+            response = self.app.get('/api/v1/metadata?pid=test')
             assert response.status_int == 200
             self.assertDictEqual(
                 response.json,
                 {u'implement': 2, u'close-bug': 1})
-            response = self.app.get('/metadata.json?key=implement&pid=test')
+            response = self.app.get(
+                '/api/v1/metadata?key=implement&pid=test')
             assert response.status_int == 200
             self.assertIn('feature 35', response.json)
             self.assertIn('feature 36', response.json)
@@ -225,7 +226,7 @@ class TestRootController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/tags.json?pid=test')
+            response = self.app.get('/api/v1/tags?pid=test')
             assert response.status_int == 200
             tag1 = [t for t in response.json if t['name'] == 'tag1'][0]
             tag2 = [t for t in response.json if t['name'] == 'tag2'][0]
@@ -244,7 +245,7 @@ class TestRootController(FunctionalTest):
 
     def test_search_authors(self):
         root.indexname = 'repoxplorertest'
-        response = self.app.get('/search_authors.json?query=marc')
+        response = self.app.get('/api/v1/search_authors?query=marc')
         cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
         expected = {
             cid: {u'name': 'Jean Marc',
@@ -301,7 +302,7 @@ class TestGroupsController(FunctionalTest):
             gg.return_value = self.groups
             gi_by_email.side_effect = self.gi_by_email
             gca.return_value = self.gca
-            response = self.app.get('/api_groups/')
+            response = self.app.get('/api/v1/groups/')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {
@@ -335,14 +336,14 @@ class TestGroupsController(FunctionalTest):
                 }
             }
             self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get('/api_groups/?nameonly=true')
+            response = self.app.get('/api/v1/groups/?nameonly=true')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': None,
                 u'grp1': None,
             }
             self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get('/api_groups/?prefix=grp2')
+            response = self.app.get('/api/v1/groups/?prefix=grp2')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {
@@ -384,7 +385,7 @@ class TestUsersController(FunctionalTest):
             'ADMIN_TOKEN': '12345'}
         # User should not exist
         response = self.app.get(
-            '/users/1', headers=headers, status="*")
+            '/api/v1/users/1', headers=headers, status="*")
         self.assertEqual(response.status_int, 404)
 
         # Push user details
@@ -401,24 +402,24 @@ class TestUsersController(FunctionalTest):
                  ]}
             ]}
         response = self.app.put_json(
-            '/users/1', data, headers=headers, status="*")
+            '/api/v1/users/1', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 201)
 
         # Get User details
         response = self.app.get(
-            '/users/1', headers=headers, status="*")
+            '/api/v1/users/1', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, data)
 
         # Update user details
         data['name'] = 'sabosan'
         response = self.app.post_json(
-            '/users/1', data, headers=headers, status="*")
+            '/api/v1/users/1', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
         # Get User details
         response = self.app.get(
-            '/users/1', headers=headers, status="*")
+            '/api/v1/users/1', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, data)
 
@@ -432,7 +433,7 @@ class TestUsersController(FunctionalTest):
             'REMOTE_USER': 'admin',
             'ADMIN_TOKEN': 'WRONG'}
         response = self.app.put_json(
-            '/users/1', data, headers=headers, status="*")
+            '/api/v1/users/1', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
 
     def test_users_crud_user(self):
@@ -446,23 +447,23 @@ class TestUsersController(FunctionalTest):
             'REMOTE_USER': 'admin',
             'ADMIN_TOKEN': '12345'}
         self.app.put_json(
-            '/users/saboten', data, headers=headers, status="*")
+            '/api/v1/users/saboten', data, headers=headers, status="*")
         headers = {'REMOTE_USER': 'saboten'}
         response = self.app.get(
-            '/users/saboten', headers=headers, status="*")
+            '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, data)
         data['default-email'] = 'saboten@domain2'
         response = self.app.post_json(
-            '/users/saboten', data, headers=headers, status="*")
+            '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         headers = {'REMOTE_USER': 'tokin'}
         response = self.app.get(
-            '/users/saboten', headers=headers, status="*")
+            '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
         data['default-email'] = 'saboten@domain1'
         response = self.app.post_json(
-            '/users/saboten', data, headers=headers, status="*")
+            '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
 
 
@@ -491,7 +492,7 @@ class TestHistoController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/histo/authors?pid=test')
+            response = self.app.get('/api/v1/histo/authors?pid=test')
         assert response.status_int == 200
         self.assertEqual(response.json[0]['value'], 2)
         self.assertEqual(response.json[0]['date'], '2014-09-11')
@@ -501,14 +502,15 @@ class TestHistoController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/histo/authors?pid=unknown', status="*")
+            response = self.app.get(
+                '/api/v1/histo/authors?pid=unknown', status="*")
         assert response.status_int == 404
 
     def test_get_commits_histo(self):
         with patch.object(root.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/histo/commits?pid=test')
+            response = self.app.get('/api/v1/histo/commits?pid=test')
         assert response.status_int == 200
         self.assertListEqual(
             response.json,
@@ -540,7 +542,7 @@ class TestInfosController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             root.infos.indexname = 'repoxplorertest'
             m.return_value = self.projects
-            response = self.app.get('/infos/infos?pid=test')
+            response = self.app.get('/api/v1/infos/infos?pid=test')
         assert response.status_int == 200
         expected = {
             'first': 1410456005,
@@ -556,7 +558,7 @@ class TestInfosController(FunctionalTest):
 class TestVersionController(FunctionalTest):
     def test_get_version(self):
         expected = version.get_version()
-        response = self.app.get('/version')
+        response = self.app.get('/api/v1/version')
         self.assertEqual(expected, response.json['version'])
 
 
@@ -581,7 +583,7 @@ class TestStatusController(FunctionalTest):
                 'repos': 1,
                 'customtext': ''
             }
-            response = self.app.get('/status')
+            response = self.app.get('/api/v1/status')
             self.assertEqual(expected, response.json)
 
 
@@ -602,6 +604,6 @@ class TestProjectsController(FunctionalTest):
     def test_get_projects(self):
         with patch.object(root.Projects, 'get_projects') as m:
             m.return_value = self.projects
-            response = self.app.get('/api_projects')
+            response = self.app.get('/api/v1/projects')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
