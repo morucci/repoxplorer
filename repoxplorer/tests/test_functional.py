@@ -242,14 +242,6 @@ class TestRootController(FunctionalTest):
                 u'repo':
                     u'https://github.com/nakata/monkey.git:monkey'})
 
-    def test_get_projects(self):
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/projects.json?')
-            assert response.status_int == 200
-            self.assertIn('test', response.json['projects'])
-
     def test_search_authors(self):
         root.indexname = 'repoxplorertest'
         response = self.app.get('/search_authors.json?query=marc')
@@ -571,7 +563,6 @@ class TestVersionController(FunctionalTest):
 class TestStatusController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
         cls.projects = {
             'test': {
                 'repos': [
@@ -592,3 +583,25 @@ class TestStatusController(FunctionalTest):
             }
             response = self.app.get('/status')
             self.assertEqual(expected, response.json)
+
+
+class TestProjectsController(FunctionalTest):
+    @classmethod
+    def setUpClass(cls):
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master',
+                     'tags': ['python']}
+                ]
+            }
+        }
+
+    def test_get_projects(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            response = self.app.get('/api_projects')
+            assert response.status_int == 200
+            self.assertIn('test', response.json['projects'])

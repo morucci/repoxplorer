@@ -70,29 +70,15 @@ class RootController(object):
                 'repos': num_repos,
                 'version': rx_version}
 
-    @expose(template='index.html')
-    def index(self):
-        return self.status()
-
-    @expose(template='groups.html')
-    def groups(self):
-        return {'version': rx_version}
-
-    @expose(template='projects.html')
     @expose('json')
-    def projects(self):
+    def api_projects(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
         projects = OrderedDict(
             sorted(projects.items(), key=lambda t: t[0]))
         tags = projects_index.get_tags()
         return {'projects': projects,
-                'tags': tags.keys(),
-                'version': rx_version}
-
-    @expose(template='contributors.html')
-    def contributors(self):
-        return {'version': rx_version}
+                'tags': tags.keys()}
 
     @expose('json')
     def search_authors(self, query=""):
@@ -109,6 +95,132 @@ class RootController(object):
         ret = dict([(d['_source']['author_email'],
                      d['_source']['author_name']) for d in ret])
         return utils.search_authors_sanitize(idents, ret)
+
+    @expose('json')
+    def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
+                 dfrom=None, dto=None, inc_merge_commit=None,
+                 inc_repos=None, exc_groups=None):
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
+        del query_kwargs['metadata']
+
+        if not key:
+            keys = c.get_metadata_keys(**query_kwargs)
+            return keys
+        else:
+            vals = c.get_metadata_key_values(key, **query_kwargs)
+            return vals
+
+    @expose('json')
+    def tags(self, pid=None, tid=None,
+             dfrom=None, dto=None, inc_repos=None):
+        t = Tags(index.Connector(index=indexname))
+        projects_index = Projects()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, None, pid, tid, None, None,
+            dfrom, dto, inc_repos, None, "", None)
+
+        p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
+        ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
+        # TODO: if tid is given we can include user defined releases
+        # for repo tagged with tid.
+        if not pid:
+            return ret
+        # now append user defined releases
+        ur = {}
+        project = projects_index.get_projects()[pid]
+        for repo in project['repos']:
+            if 'releases' in repo:
+                for release in repo['releases']:
+                    ur[release['name']] = {'name': release['name'],
+                                           'date': release['date'],
+                                           'repo': repo['name']}
+        for rel in ur.values():
+            ret.append(rel)
+        return ret
+
+    @expose('json')
+    def commits(self, pid=None, tid=None, cid=None, gid=None,
+                start=0, limit=10,
+                dfrom=None, dto=None, inc_merge_commit=None,
+                inc_repos=None, metadata="", exc_groups=None):
+
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit,
+            metadata, exc_groups)
+        query_kwargs.update(
+            {'start': start, 'limit': limit})
+
+        resp = c.get_commits(**query_kwargs)
+
+        for cmt in resp[2]:
+            # Get extra metadata keys
+            extra = set(cmt.keys()) - set(PROPERTIES.keys())
+            cmt['metadata'] = list(extra)
+            # Compute link to access commit diff based on the
+            # URL template provided in projects.yaml
+            cmt['gitwebs'] = [projects_index.get_gitweb_link(
+                              ":".join(p.split(':')[0:-1])) %
+                              {'sha': cmt['sha']} for
+                              p in cmt['repos']]
+            # Remove to verbose details mentionning this commit belong
+            # to repos not included in the search
+            # Also remove the URI part
+            cmt['repos'] = [":".join(p.split(':')[-2:]) for
+                            p in cmt['repos']]
+            # Request the ident index to fetch author/committer name/email
+            for elm in ('author', 'committer'):
+                _, c_data = idents.get_ident_by_email(cmt['%s_email' % elm])
+                cmt['%s_email' % elm] = c_data['default-email']
+                if c_data['name']:
+                    cmt['%s_name' % elm] = c_data['name']
+            # Convert the TTL to something human readable
+            cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
+                              datetime.fromtimestamp(0)))
+            cmt['author_gravatar'] = \
+                hashlib.md5(cmt['author_email']).hexdigest()
+            cmt['committer_gravatar'] = \
+                hashlib.md5(cmt['committer_email']).hexdigest()
+            if len(cmt['commit_msg']) > 80:
+                cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
+            # Add cid and ccid
+            cmt['cid'] = utils.encrypt(xorkey, cmt['author_email'])
+            cmt['ccid'] = utils.encrypt(xorkey, cmt['committer_email'])
+            # Remove email details
+            del cmt['author_email']
+            del cmt['committer_email']
+        return resp
+
+# HTML pages rendering #
+
+    @expose(template='index.html')
+    def index(self):
+        return self.status()
+
+    @expose(template='groups.html')
+    def groups(self):
+        return {'version': rx_version}
+
+    @expose(template='projects.html')
+    def projects(self):
+        ret = self.api_projects()
+        ret.update({'version': rx_version})
+        return ret
+
+    @expose(template='contributors.html')
+    def contributors(self):
+        return {'version': rx_version}
 
     @expose(template='contributor.html')
     def contributor(self, cid, pid=None,
@@ -424,109 +536,3 @@ class RootController(object):
                 'ttl_average': infos['ttl_average'],
                 'empty': False,
                 'version': rx_version}
-
-    @expose('json')
-    def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
-                 dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None, exc_groups=None):
-        c = Commits(index.Connector(index=indexname))
-        projects_index = Projects()
-        idents = Contributors()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
-        del query_kwargs['metadata']
-
-        if not key:
-            keys = c.get_metadata_keys(**query_kwargs)
-            return keys
-        else:
-            vals = c.get_metadata_key_values(key, **query_kwargs)
-            return vals
-
-    @expose('json')
-    def tags(self, pid=None, tid=None,
-             dfrom=None, dto=None, inc_repos=None):
-        t = Tags(index.Connector(index=indexname))
-        projects_index = Projects()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, None, pid, tid, None, None,
-            dfrom, dto, inc_repos, None, "", None)
-
-        p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
-        ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
-        # TODO: if tid is given we can include user defined releases
-        # for repo tagged with tid.
-        if not pid:
-            return ret
-        # now append user defined releases
-        ur = {}
-        project = projects_index.get_projects()[pid]
-        for repo in project['repos']:
-            if 'releases' in repo:
-                for release in repo['releases']:
-                    ur[release['name']] = {'name': release['name'],
-                                           'date': release['date'],
-                                           'repo': repo['name']}
-        for rel in ur.values():
-            ret.append(rel)
-        return ret
-
-    @expose('json')
-    def commits(self, pid=None, tid=None, cid=None, gid=None,
-                start=0, limit=10,
-                dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata="", exc_groups=None):
-
-        c = Commits(index.Connector(index=indexname))
-        projects_index = Projects()
-        idents = Contributors()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit,
-            metadata, exc_groups)
-        query_kwargs.update(
-            {'start': start, 'limit': limit})
-
-        resp = c.get_commits(**query_kwargs)
-
-        for cmt in resp[2]:
-            # Get extra metadata keys
-            extra = set(cmt.keys()) - set(PROPERTIES.keys())
-            cmt['metadata'] = list(extra)
-            # Compute link to access commit diff based on the
-            # URL template provided in projects.yaml
-            cmt['gitwebs'] = [projects_index.get_gitweb_link(
-                              ":".join(p.split(':')[0:-1])) %
-                              {'sha': cmt['sha']} for
-                              p in cmt['repos']]
-            # Remove to verbose details mentionning this commit belong
-            # to repos not included in the search
-            # Also remove the URI part
-            cmt['repos'] = [":".join(p.split(':')[-2:]) for
-                            p in cmt['repos']]
-            # Request the ident index to fetch author/committer name/email
-            for elm in ('author', 'committer'):
-                _, c_data = idents.get_ident_by_email(cmt['%s_email' % elm])
-                cmt['%s_email' % elm] = c_data['default-email']
-                if c_data['name']:
-                    cmt['%s_name' % elm] = c_data['name']
-            # Convert the TTL to something human readable
-            cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
-                              datetime.fromtimestamp(0)))
-            cmt['author_gravatar'] = \
-                hashlib.md5(cmt['author_email']).hexdigest()
-            cmt['committer_gravatar'] = \
-                hashlib.md5(cmt['committer_email']).hexdigest()
-            if len(cmt['commit_msg']) > 80:
-                cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
-            # Add cid and ccid
-            cmt['cid'] = utils.encrypt(xorkey, cmt['author_email'])
-            cmt['ccid'] = utils.encrypt(xorkey, cmt['committer_email'])
-            # Remove email details
-            del cmt['author_email']
-            del cmt['committer_email']
-        return resp
