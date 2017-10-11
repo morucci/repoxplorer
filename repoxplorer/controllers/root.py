@@ -52,6 +52,10 @@ class RootController(object):
     histo = histo.HistoController()
     infos = infos.InfosController()
 
+    @expose('json')
+    def version(self):
+        return {'version': rx_version}
+
     @expose(template='index.html')
     def index(self):
         projects_index = Projects()

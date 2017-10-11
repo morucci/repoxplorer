@@ -19,6 +19,7 @@ from repoxplorer.tests import FunctionalTest
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.tags import Tags
 
+from repoxplorer import version
 from repoxplorer.controllers import root
 from repoxplorer.controllers import utils
 
@@ -558,3 +559,10 @@ class TestInfosController(FunctionalTest):
             'ttl_average': 0
         }
         self.assertDictEqual(response.json, expected)
+
+
+class TestVersionController(FunctionalTest):
+    def test_get_version(self):
+        expected = version.get_version()
+        response = self.app.get('/version')
+        self.assertEqual(expected, response.json['version'])
