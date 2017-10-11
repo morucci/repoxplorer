@@ -566,3 +566,29 @@ class TestVersionController(FunctionalTest):
         expected = version.get_version()
         response = self.app.get('/version')
         self.assertEqual(expected, response.json['version'])
+
+
+class TestStatusController(FunctionalTest):
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+
+    def test_get_status(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            expected = {
+                'version': version.get_version(),
+                'projects': 1,
+                'repos': 1,
+                'customtext': ''
+            }
+            response = self.app.get('/status')
+            self.assertEqual(expected, response.json)

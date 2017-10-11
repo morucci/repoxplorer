@@ -56,8 +56,8 @@ class RootController(object):
     def version(self):
         return {'version': rx_version}
 
-    @expose(template='index.html')
-    def index(self):
+    @expose('json')
+    def status(self):
         projects_index = Projects()
         projects = projects_index.get_projects()
         num_projects = len(projects)
@@ -69,6 +69,10 @@ class RootController(object):
                 'projects': num_projects,
                 'repos': num_repos,
                 'version': rx_version}
+
+    @expose(template='index.html')
+    def index(self):
+        return self.status()
 
     @expose(template='groups.html')
     def groups(self):
