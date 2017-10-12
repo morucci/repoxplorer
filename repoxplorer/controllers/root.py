@@ -29,6 +29,7 @@ from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
 from repoxplorer.controllers import infos
+from repoxplorer.controllers import tops
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -50,6 +51,7 @@ class V1Controller(object):
     groups = groups.GroupsController()
     users = users.UsersController()
     histo = histo.HistoController()
+    tops = tops.TopsController()
 
     @expose('json')
     def version(self):
@@ -274,8 +276,7 @@ class RootController(object):
 
         p_filter = {}
         if pid:
-            projects_index = Projects()
-            repos = projects_index.get_projects()[pid]
+            repos = projects.get_projects()[pid]
             p_filter = utils.get_references_filter(repos)
 
         query_kwargs = {

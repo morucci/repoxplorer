@@ -46,7 +46,7 @@ def get_projects_from_references(projects, c_references):
                                 r['branch'])
             if rid in c_references:
                 c_projects.add(pname)
-    return c_projects
+    return list(c_projects)
 
 
 def get_references_filter(project, inc_references=None):

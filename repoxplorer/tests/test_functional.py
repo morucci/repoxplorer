@@ -607,3 +607,49 @@ class TestProjectsController(FunctionalTest):
             response = self.app.get('/api/v1/projects')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
+
+
+class TestTopsController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+        cls.c = Commits(cls.con)
+        cls.commits = COMMITS
+        cls.c.add_commits(cls.commits)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_tops_authors(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get('/api/v1/tops/authors?pid=test')
+            assert response.status_int == 200
+            self.assertEqual(len(response.json['authors_lchanged']), 2)
+            self.assertEqual(len(response.json['authors_commits']), 2)
+
+    def test_get_tops_projects(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get('/api/v1/tops/projects?pid=test')
+            expected = {
+                'contributed_projects': ['test'],
+                'sorted_contributed_repos_lchanged': [['test', 20]],
+                'sorted_contributed_repos': [['test', 2]],
+                'contributed_repos': {
+                    'https://github.com/nakata/monkey.git:monkey:master': 2}
+            }
+            assert response.status_int == 200
+            self.assertDictEqual(response.json, expected)
