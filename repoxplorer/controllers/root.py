@@ -32,6 +32,7 @@ from repoxplorer.controllers import search
 from repoxplorer.controllers import status
 from repoxplorer.controllers import projects
 from repoxplorer.controllers import metadata
+from repoxplorer.controllers import tags
 
 from repoxplorer import index
 from repoxplorer import version
@@ -39,7 +40,6 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
-from repoxplorer.index.tags import Tags
 
 
 indexname = 'repoxplorer'
@@ -58,35 +58,7 @@ class V1Controller(object):
     status = status.StatusController()
     projects = projects.ProjectsController()
     metadata = metadata.MetadataController()
-
-    @expose('json')
-    def tags(self, pid=None, tid=None,
-             dfrom=None, dto=None, inc_repos=None):
-        t = Tags(index.Connector(index=indexname))
-        projects_index = Projects()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, None, pid, tid, None, None,
-            dfrom, dto, inc_repos, None, "", None)
-
-        p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
-        ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
-        # TODO: if tid is given we can include user defined releases
-        # for repo tagged with tid.
-        if not pid:
-            return ret
-        # now append user defined releases
-        ur = {}
-        project = projects_index.get_projects()[pid]
-        for repo in project['repos']:
-            if 'releases' in repo:
-                for release in repo['releases']:
-                    ur[release['name']] = {'name': release['name'],
-                                           'date': release['date'],
-                                           'repo': repo['name']}
-        for rel in ur.values():
-            ret.append(rel)
-        return ret
+    tags = tags.TagsController()
 
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, gid=None,

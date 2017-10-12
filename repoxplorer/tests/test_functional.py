@@ -87,7 +87,6 @@ class TestRootController(FunctionalTest):
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
-        cls.t = Tags(cls.con)
         cls.commits = COMMITS
         cls.c.add_commits(cls.commits)
         cls.projects = {
@@ -104,22 +103,6 @@ class TestRootController(FunctionalTest):
                 "emails": {
                     "j.paul@joker.org": {},
                     "j.marc@joker2.org": {}}}}
-        cls.tags = [
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
-                'date': 1410456005,
-                'repo':
-                    'https://github.com/nakata/monkey.git:monkey',
-                'name': 'tag1',
-            },
-            {
-                'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
-                'date': 1410456005,
-                'repo':
-                    'https://github.com/nakata/monkey.git:monkey',
-                'name': 'tag2',
-            }]
-        cls.t.add_tags(cls.tags)
 
     @classmethod
     def tearDownClass(cls):
@@ -205,27 +188,6 @@ class TestRootController(FunctionalTest):
                 '/api/v1/commits?pid=test&inc_merge_commit=on')
         assert response.status_int == 200
         self.assertEqual(response.json[1], 3)
-
-    def test_get_tags(self):
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/tags?pid=test')
-            assert response.status_int == 200
-            tag1 = [t for t in response.json if t['name'] == 'tag1'][0]
-            tag2 = [t for t in response.json if t['name'] == 'tag2'][0]
-            self.assertDictEqual(tag2, {
-                u'name': u'tag2',
-                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
-                u'date': 1410456005,
-                u'repo':
-                    u'https://github.com/nakata/monkey.git:monkey'})
-            self.assertDictEqual(tag1, {
-                u'name': u'tag1',
-                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
-                u'date': 1410456005,
-                u'repo':
-                    u'https://github.com/nakata/monkey.git:monkey'})
 
 
 class TestGroupsController(FunctionalTest):
@@ -687,3 +649,60 @@ class TestMetadataController(FunctionalTest):
             self.assertIn('feature 35', response.json)
             self.assertIn('feature 36', response.json)
             self.assertEqual(len(response.json), 2)
+
+
+class TestTagsController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.t = Tags(cls.con)
+        cls.tags = [
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
+                'date': 1410456005,
+                'repo':
+                    'https://github.com/nakata/monkey.git:monkey',
+                'name': 'tag1',
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
+                'date': 1410456005,
+                'repo':
+                    'https://github.com/nakata/monkey.git:monkey',
+                'name': 'tag2',
+            }]
+        cls.t.add_tags(cls.tags)
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_tags(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.tags.indexname = 'repoxplorertest'
+            response = self.app.get('/api/v1/tags/tags?pid=test')
+            assert response.status_int == 200
+            tag1 = [t for t in response.json if t['name'] == 'tag1'][0]
+            tag2 = [t for t in response.json if t['name'] == 'tag2'][0]
+            self.assertDictEqual(tag2, {
+                u'name': u'tag2',
+                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
+                u'date': 1410456005,
+                u'repo':
+                    u'https://github.com/nakata/monkey.git:monkey'})
+            self.assertDictEqual(tag1, {
+                u'name': u'tag1',
+                u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
+                u'date': 1410456005,
+                u'repo':
+                    u'https://github.com/nakata/monkey.git:monkey'})

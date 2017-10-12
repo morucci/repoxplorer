@@ -625,7 +625,7 @@ function get_releases(pid, tid) {
     args['inc_repos'] = getUrlParameter('inc_repos');
 
     var releases = [];
-    $.getJSON("api/v1/tags", args)
+    $.getJSON("api/v1/tags/tags", args)
         .done(
             function(data) {
                 data.sort(function(a, b){
