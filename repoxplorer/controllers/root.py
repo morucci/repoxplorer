@@ -293,7 +293,7 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        infos = utils.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found
@@ -380,7 +380,7 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        infos = utils.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found
@@ -494,7 +494,7 @@ class RootController(object):
         idents = Contributors()
         c = Commits(index.Connector(index=indexname))
 
-        infos = utils.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found

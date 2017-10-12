@@ -16,7 +16,6 @@
 import base64
 import hashlib
 from datetime import datetime
-from datetime import timedelta
 from collections import OrderedDict
 
 from Crypto.Cipher import XOR
@@ -174,26 +173,6 @@ def search_authors_sanitize(idents, authors):
     result = OrderedDict(
         sorted(result.items(), key=lambda t: t[0]))
     return result
-
-
-def get_generic_infos(commits_index, query_kwargs):
-    infos = {}
-    infos['commits_amount'] = commits_index.get_commits_amount(**query_kwargs)
-    if not infos['commits_amount']:
-        return infos
-    first, last, duration = commits_index.get_commits_time_delta(
-        **query_kwargs)
-    infos['first'] = first
-    infos['last'] = last
-    infos['duration'] = duration
-    ttl_average = commits_index.get_ttl_stats(**query_kwargs)[1]['avg']
-    infos['ttl_average'] = \
-        timedelta(seconds=int(ttl_average)) - timedelta(seconds=0)
-    infos['ttl_average'] = int(infos['ttl_average'].total_seconds())
-
-    infos['line_modifieds_amount'] = int(
-        commits_index.get_line_modifieds_stats(**query_kwargs)[1]['sum'])
-    return infos
 
 
 def get_commits_histo(commits_index, query_kwargs):

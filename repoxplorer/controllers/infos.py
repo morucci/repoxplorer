@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from datetime import timedelta
+
 from pecan import expose
 
 from repoxplorer import index
@@ -24,6 +26,26 @@ indexname = 'repoxplorer'
 
 
 class InfosController(object):
+
+    def get_generic_infos(self, commits_index, query_kwargs):
+        infos = {}
+        infos['commits_amount'] = commits_index.get_commits_amount(
+            **query_kwargs)
+        if not infos['commits_amount']:
+            return infos
+        first, last, duration = commits_index.get_commits_time_delta(
+            **query_kwargs)
+        infos['first'] = first
+        infos['last'] = last
+        infos['duration'] = duration
+        ttl_average = commits_index.get_ttl_stats(**query_kwargs)[1]['avg']
+        infos['ttl_average'] = \
+            timedelta(seconds=int(ttl_average)) - timedelta(seconds=0)
+        infos['ttl_average'] = int(infos['ttl_average'].total_seconds())
+
+        infos['line_modifieds_amount'] = int(
+            commits_index.get_line_modifieds_stats(**query_kwargs)[1]['sum'])
+        return infos
 
     @expose('json')
     def infos(self, pid=None, tid=None, cid=None, gid=None,
@@ -39,4 +61,4 @@ class InfosController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)
 
-        return utils.get_generic_infos(c, query_kwargs)
+        return self.get_generic_infos(c, query_kwargs)
