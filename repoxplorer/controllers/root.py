@@ -21,7 +21,6 @@ from pecan import abort
 from pecan import conf
 
 from datetime import datetime
-from collections import OrderedDict
 
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
@@ -31,6 +30,9 @@ from repoxplorer.controllers import infos
 from repoxplorer.controllers import tops
 from repoxplorer.controllers import search
 from repoxplorer.controllers import status
+from repoxplorer.controllers import projects
+from repoxplorer.controllers import metadata
+
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -54,36 +56,8 @@ class V1Controller(object):
     tops = tops.TopsController()
     search = search.SearchController()
     status = status.StatusController()
-
-    @expose('json')
-    def projects(self):
-        projects_index = Projects()
-        projects = projects_index.get_projects()
-        projects = OrderedDict(
-            sorted(projects.items(), key=lambda t: t[0]))
-        tags = projects_index.get_tags()
-        return {'projects': projects,
-                'tags': tags.keys()}
-
-    @expose('json')
-    def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
-                 dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None, exc_groups=None):
-        c = Commits(index.Connector(index=indexname))
-        projects_index = Projects()
-        idents = Contributors()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
-        del query_kwargs['metadata']
-
-        if not key:
-            keys = c.get_metadata_keys(**query_kwargs)
-            return keys
-        else:
-            vals = c.get_metadata_key_values(key, **query_kwargs)
-            return vals
+    projects = projects.ProjectsController()
+    metadata = metadata.MetadataController()
 
     @expose('json')
     def tags(self, pid=None, tid=None,

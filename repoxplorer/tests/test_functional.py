@@ -206,22 +206,6 @@ class TestRootController(FunctionalTest):
         assert response.status_int == 200
         self.assertEqual(response.json[1], 3)
 
-    def test_get_metadata(self):
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/metadata?pid=test')
-            assert response.status_int == 200
-            self.assertDictEqual(
-                response.json,
-                {u'implement': 2, u'close-bug': 1})
-            response = self.app.get(
-                '/api/v1/metadata?key=implement&pid=test')
-            assert response.status_int == 200
-            self.assertIn('feature 35', response.json)
-            self.assertIn('feature 36', response.json)
-            self.assertEqual(len(response.json), 2)
-
     def test_get_tags(self):
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
@@ -593,7 +577,7 @@ class TestProjectsController(FunctionalTest):
     def test_get_projects(self):
         with patch.object(root.Projects, 'get_projects') as m:
             m.return_value = self.projects
-            response = self.app.get('/api/v1/projects')
+            response = self.app.get('/api/v1/projects/projects')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
 
@@ -665,3 +649,41 @@ class TestSearchController(FunctionalTest):
             cid: {u'name': 'Jean Marc',
                   u'gravatar': u'185968ce180f4118a5334f0d2fdb5cbf'}}
         self.assertDictEqual(response.json, expected)
+
+
+class TestMetadataController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+        cls.c = Commits(cls.con)
+        cls.commits = COMMITS
+        cls.c.add_commits(cls.commits)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_metadata(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.metadata.indexname = 'repoxplorertest'
+            response = self.app.get('/api/v1/metadata/metadata?pid=test')
+            assert response.status_int == 200
+            self.assertDictEqual(
+                response.json,
+                {u'implement': 2, u'close-bug': 1})
+            response = self.app.get(
+                '/api/v1/metadata/metadata?key=implement&pid=test')
+            assert response.status_int == 200
+            self.assertIn('feature 35', response.json)
+            self.assertIn('feature 36', response.json)
+            self.assertEqual(len(response.json), 2)

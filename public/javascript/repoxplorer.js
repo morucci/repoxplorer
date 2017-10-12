@@ -678,7 +678,7 @@ function get_metadata_keys(pid, tid, cid) {
             .end();
         if (this.value === '') {return 1;}
         args['key'] = this.value;
-        $.getJSON("api/v1/metadata", args)
+        $.getJSON("api/v1/metadata/metadata", args)
             .done(
                 function(data) {
                     $('#metadata-values').append($('<option>', {
@@ -698,7 +698,7 @@ function get_metadata_keys(pid, tid, cid) {
                 });
     })
 
-    $.getJSON("api/v1/metadata", args)
+    $.getJSON("api/v1/metadata/metadata", args)
         .done(
             function(data) {
                 var temp = [];
