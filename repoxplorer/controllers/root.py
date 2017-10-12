@@ -29,6 +29,7 @@ from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
 from repoxplorer.controllers import infos
+from repoxplorer.controllers import tops
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -50,6 +51,7 @@ class V1Controller(object):
     groups = groups.GroupsController()
     users = users.UsersController()
     histo = histo.HistoController()
+    tops = tops.TopsController()
 
     @expose('json')
     def version(self):
@@ -274,8 +276,7 @@ class RootController(object):
 
         p_filter = {}
         if pid:
-            projects_index = Projects()
-            repos = projects_index.get_projects()[pid]
+            repos = projects.get_projects()[pid]
             p_filter = utils.get_references_filter(repos)
 
         query_kwargs = {
@@ -304,7 +305,7 @@ class RootController(object):
                     'empty': True,
                     'version': rx_version}
 
-        top_projects = utils.top_projects_sanitize(
+        top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail)
 
         sorted_repos_contributed = top_projects[0]
@@ -395,7 +396,7 @@ class RootController(object):
                     'empty': True,
                     'version': rx_version}
 
-        top_projects = utils.top_projects_sanitize(
+        top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail, pid)
 
         sorted_repos_contributed = top_projects[0]
@@ -407,9 +408,9 @@ class RootController(object):
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
 
         idents = Contributors()
-        top_authors = utils.top_authors_sanitize(
+        top_authors = self.api.v1.tops.top_authors_sanitize(
             idents, top_authors, c, top=25)
-        top_authors_modified = utils.top_authors_sanitize(
+        top_authors_modified = self.api.v1.tops.top_authors_sanitize(
             idents, top_authors_modified, c, top=25)
 
         return {'name': gid,
@@ -526,9 +527,9 @@ class RootController(object):
         authors_amount = len(top_authors[1])
 
         idents = Contributors()
-        top_authors = utils.top_authors_sanitize(
+        top_authors = self.api.v1.tops.top_authors_sanitize(
             idents, top_authors, c, top=25)
-        top_authors_modified = utils.top_authors_sanitize(
+        top_authors_modified = self.api.v1.tops.top_authors_sanitize(
             idents, top_authors_modified, c, top=25)
 
         return {'pid': pid,
