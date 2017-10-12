@@ -243,15 +243,6 @@ class TestRootController(FunctionalTest):
                 u'repo':
                     u'https://github.com/nakata/monkey.git:monkey'})
 
-    def test_search_authors(self):
-        root.indexname = 'repoxplorertest'
-        response = self.app.get('/api/v1/search_authors?query=marc')
-        cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
-        expected = {
-            cid: {u'name': 'Jean Marc',
-                  u'gravatar': u'185968ce180f4118a5334f0d2fdb5cbf'}}
-        self.assertDictEqual(response.json, expected)
-
 
 class TestGroupsController(FunctionalTest):
 
@@ -653,3 +644,26 @@ class TestTopsController(FunctionalTest):
             }
             assert response.status_int == 200
             self.assertDictEqual(response.json, expected)
+
+
+class TestSearchController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.c = Commits(cls.con)
+        cls.commits = COMMITS
+        cls.c.add_commits(cls.commits)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_search_authors(self):
+        root.search.indexname = 'repoxplorertest'
+        response = self.app.get('/api/v1/search/search_authors?query=marc')
+        cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
+        expected = {
+            cid: {u'name': 'Jean Marc',
+                  u'gravatar': u'185968ce180f4118a5334f0d2fdb5cbf'}}
+        self.assertDictEqual(response.json, expected)
