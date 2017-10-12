@@ -546,13 +546,6 @@ class TestInfosController(FunctionalTest):
         self.assertDictEqual(response.json, expected)
 
 
-class TestVersionController(FunctionalTest):
-    def test_get_version(self):
-        expected = version.get_version()
-        response = self.app.get('/api/v1/version')
-        self.assertEqual(expected, response.json['version'])
-
-
 class TestStatusController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
@@ -565,6 +558,11 @@ class TestStatusController(FunctionalTest):
             }
         }
 
+    def test_get_version(self):
+        expected = version.get_version()
+        response = self.app.get('/api/v1/status/version')
+        self.assertEqual(expected, response.json['version'])
+
     def test_get_status(self):
         with patch.object(root.Projects, 'get_projects') as m:
             m.return_value = self.projects
@@ -574,7 +572,7 @@ class TestStatusController(FunctionalTest):
                 'repos': 1,
                 'customtext': ''
             }
-            response = self.app.get('/api/v1/status')
+            response = self.app.get('/api/v1/status/status')
             self.assertEqual(expected, response.json)
 
 

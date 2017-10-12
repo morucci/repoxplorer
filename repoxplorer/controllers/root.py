@@ -15,7 +15,6 @@
 
 
 import hashlib
-import itertools
 
 from pecan import expose
 from pecan import abort
@@ -31,6 +30,7 @@ from repoxplorer.controllers import histo
 from repoxplorer.controllers import infos
 from repoxplorer.controllers import tops
 from repoxplorer.controllers import search
+from repoxplorer.controllers import status
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -43,7 +43,6 @@ from repoxplorer.index.tags import Tags
 indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 rx_version = version.get_version()
-index_custom_html = conf.get('index_custom_html', '')
 
 
 class V1Controller(object):
@@ -54,24 +53,7 @@ class V1Controller(object):
     histo = histo.HistoController()
     tops = tops.TopsController()
     search = search.SearchController()
-
-    @expose('json')
-    def version(self):
-        return {'version': rx_version}
-
-    @expose('json')
-    def status(self):
-        projects_index = Projects()
-        projects = projects_index.get_projects()
-        num_projects = len(projects)
-        num_repos = len(set([
-            ref['name'] for
-            ref in itertools.chain(
-                *[p['repos'] for p in projects.values()])]))
-        return {'customtext': index_custom_html,
-                'projects': num_projects,
-                'repos': num_repos,
-                'version': rx_version}
+    status = status.StatusController()
 
     @expose('json')
     def projects(self):
@@ -205,7 +187,7 @@ class RootController(object):
 
     @expose(template='index.html')
     def index(self):
-        return self.api.v1.status()
+        return self.api.v1.status.get_status()
 
     @expose(template='groups.html')
     def groups(self):
