@@ -598,7 +598,7 @@ function contributors_page_init() {
         var args = {};
         args['query'] = $("#search-txt").val();
         fill_resultinfos_gen('<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-        $.getJSON("api/v1/search_authors", args)
+        $.getJSON("api/v1/search/search_authors", args)
             .done(
                 function(data) {
                     fill_resultinfos(data);

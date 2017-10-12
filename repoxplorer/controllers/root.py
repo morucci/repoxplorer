@@ -30,6 +30,7 @@ from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
 from repoxplorer.controllers import infos
 from repoxplorer.controllers import tops
+from repoxplorer.controllers import search
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -52,6 +53,7 @@ class V1Controller(object):
     users = users.UsersController()
     histo = histo.HistoController()
     tops = tops.TopsController()
+    search = search.SearchController()
 
     @expose('json')
     def version(self):
@@ -80,22 +82,6 @@ class V1Controller(object):
         tags = projects_index.get_tags()
         return {'projects': projects,
                 'tags': tags.keys()}
-
-    @expose('json')
-    def search_authors(self, query=""):
-        c = Commits(index.Connector(index=indexname))
-        ret = c.es.search(
-            index=c.index, doc_type=c.dbname,
-            q=query, df="author_name", size=10000,
-            default_operator="AND",
-            _source_include=["author_name", "author_email"])
-        ret = ret['hits']['hits']
-        if not len(ret):
-            return {}
-        idents = Contributors()
-        ret = dict([(d['_source']['author_email'],
-                     d['_source']['author_name']) for d in ret])
-        return utils.search_authors_sanitize(idents, ret)
 
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,

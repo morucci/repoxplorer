@@ -14,9 +14,7 @@
 #  limitations under the License.
 
 import base64
-import hashlib
 from datetime import datetime
-from collections import OrderedDict
 
 from Crypto.Cipher import XOR
 
@@ -159,24 +157,3 @@ def resolv_filters(projects_index, idents, pid,
         'metadata': _metadata,
     }
     return query_kwargs
-
-
-def search_authors_sanitize(idents, authors):
-    result = {}
-    for email, name in authors.items():
-        iid, ident = idents.get_ident_by_email(email)
-        email = ident['default-email']
-        name = ident['name'] or name
-        result[encrypt(xorkey, iid)] = {
-            'name': name,
-            'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest()}
-    result = OrderedDict(
-        sorted(result.items(), key=lambda t: t[0]))
-    return result
-
-
-def get_commits_histo(commits_index, query_kwargs):
-    histo = commits_index.get_commits_histo(**query_kwargs)
-    histo = [{'date': d['key_as_string'],
-              'value': d['doc_count']} for d in histo[1]]
-    return histo
