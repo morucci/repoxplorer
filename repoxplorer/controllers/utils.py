@@ -13,15 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import copy
 import base64
 import hashlib
-from Crypto.Cipher import XOR
-from pecan import conf
-from pecan import abort
 from datetime import datetime
 from datetime import timedelta
 from collections import OrderedDict
+
+from Crypto.Cipher import XOR
+
+from pecan import conf
+from pecan import abort
 
 xorkey = conf.get('xorkey') or 'default'
 
@@ -46,7 +47,7 @@ def get_projects_from_references(projects, c_references):
                                 r['branch'])
             if rid in c_references:
                 c_projects.add(pname)
-    return c_projects
+    return list(c_projects)
 
 
 def get_references_filter(project, inc_references=None):
@@ -175,41 +176,6 @@ def search_authors_sanitize(idents, authors):
     return result
 
 
-def top_authors_sanitize(idents, top_authors, commits, top=100000):
-    sanitized = {}
-    for email, v in top_authors[1].items():
-        iid, ident = idents.get_ident_by_email(email)
-        main_email = ident['default-email']
-        name = ident['name']
-        if main_email in sanitized:
-            sanitized[main_email][0] += v
-        else:
-            sanitized[main_email] = [v, name, iid]
-    top_authors_s = []
-    raw_names = {}
-    for email, v in sanitized.items():
-        top_authors_s.append(
-            {'cid': encrypt(xorkey, v[2]),
-             'email': email,
-             'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest(),
-             'amount': int(v[0]),
-             'name': v[1]})
-    top_authors_s_sorted = sorted(top_authors_s,
-                                  key=lambda k: k['amount'],
-                                  reverse=True)[:top]
-    name_to_requests = []
-    for v in top_authors_s_sorted:
-        if not v['name']:
-            name_to_requests.append(v['email'])
-    if name_to_requests:
-        raw_names = commits.get_commits_author_name_by_emails(
-            name_to_requests)
-    for v in top_authors_s_sorted:
-        v['name'] = v['name'] or raw_names[v['email']]
-        del v['email']
-    return top_authors_s_sorted
-
-
 def get_generic_infos(commits_index, query_kwargs):
     infos = {}
     infos['commits_amount'] = commits_index.get_commits_amount(**query_kwargs)
@@ -235,56 +201,3 @@ def get_commits_histo(commits_index, query_kwargs):
     histo = [{'date': d['key_as_string'],
               'value': d['doc_count']} for d in histo[1]]
     return histo
-
-
-def top_projects_sanitize(commits_index, projects_index,
-                          query_kwargs, inc_repos_detail,
-                          project_scope=None):
-    projects = projects_index.get_projects()
-    c_repos = commits_index.get_repos(**query_kwargs)[1]
-    lm_repos = commits_index.get_top_repos_by_lines(**query_kwargs)[1]
-    if project_scope:
-        c_projects = [project_scope]
-    else:
-        c_projects = get_projects_from_references(projects, c_repos)
-
-    repos_contributed = {}
-    repos_contributed_modified = {}
-    if inc_repos_detail:
-        repos_contributed = [
-            (":".join(p.split(':')[-2:]), ca) for
-            p, ca in c_repos.items()]
-        repos_contributed_modified = [
-            (":".join(p.split(':')[-2:]), int(lm)) for
-            p, lm in lm_repos.items()]
-    else:
-        for pname in c_projects:
-            p_repos = projects[pname]
-            p_filter = get_references_filter(p_repos, None)
-            _query_kwargs = copy.deepcopy(query_kwargs)
-            _query_kwargs['repos'] = p_filter
-            repos_contributed[pname] = commits_index.get_commits_amount(
-                **_query_kwargs)
-            repos_contributed_modified[pname] = int(
-                commits_index.get_line_modifieds_stats(
-                    **_query_kwargs)[1]['sum'] or 0)
-
-        repos_contributed = [
-            (p, ca) for
-            p, ca in repos_contributed.items() if ca]
-        repos_contributed_modified = [
-            (p, lm) for
-            p, lm in repos_contributed_modified.items() if lm]
-
-    sorted_repos_contributed = sorted(
-        repos_contributed,
-        key=lambda i: i[1],
-        reverse=True)
-
-    sorted_repos_contributed_modified = sorted(
-        repos_contributed_modified,
-        key=lambda i: i[1],
-        reverse=True)
-
-    return (sorted_repos_contributed, sorted_repos_contributed_modified,
-            c_projects, c_repos)

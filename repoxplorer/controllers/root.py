@@ -29,6 +29,7 @@ from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
 from repoxplorer.controllers import infos
+from repoxplorer.controllers import tops
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
@@ -50,6 +51,7 @@ class V1Controller(object):
     groups = groups.GroupsController()
     users = users.UsersController()
     histo = histo.HistoController()
+    tops = tops.TopsController()
 
     @expose('json')
     def version(self):
@@ -274,8 +276,7 @@ class RootController(object):
 
         p_filter = {}
         if pid:
-            projects_index = Projects()
-            repos = projects_index.get_projects()[pid]
+            repos = projects.get_projects()[pid]
             p_filter = utils.get_references_filter(repos)
 
         query_kwargs = {
@@ -304,23 +305,18 @@ class RootController(object):
                     'empty': True,
                     'version': rx_version}
 
-        top_projects = utils.top_projects_sanitize(
+        top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail)
-
-        sorted_repos_contributed = top_projects[0]
-        sorted_repos_contributed_modified = top_projects[1]
-        c_projects = top_projects[2]
-        c_repos = top_projects[3]
 
         return {'name': name,
                 'gravatar': hashlib.md5(ident['default-email']).hexdigest(),
                 'commits_amount': infos['commits_amount'],
                 'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
-                'repos': sorted_repos_contributed,
-                'repos_line_mdfds': sorted_repos_contributed_modified,
-                'projects_amount': len(c_projects),
-                'repos_amount': len(c_repos),
+                'repos': top_projects[0],
+                'repos_line_mdfds': top_projects[1],
+                'projects_amount': len(top_projects[2]),
+                'repos_amount': len(top_projects[3]),
                 'known_emails_amount': len(mails),
                 'first': datetime.fromtimestamp(infos['first']),
                 'last': datetime.fromtimestamp(infos['last']),
@@ -395,22 +391,11 @@ class RootController(object):
                     'empty': True,
                     'version': rx_version}
 
-        top_projects = utils.top_projects_sanitize(
+        top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail, pid)
 
-        sorted_repos_contributed = top_projects[0]
-        sorted_repos_contributed_modified = top_projects[1]
-        c_projects = top_projects[2]
-        c_repos = top_projects[3]
-
-        top_authors = c.get_authors(**query_kwargs)
-        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
-
-        idents = Contributors()
-        top_authors = utils.top_authors_sanitize(
-            idents, top_authors, c, top=25)
-        top_authors_modified = utils.top_authors_sanitize(
-            idents, top_authors_modified, c, top=25)
+        top_authors, top_authors_modified, _ = \
+            self.api.v1.tops.get_top_authors(c, idents, query_kwargs)
 
         return {'name': gid,
                 'description': description,
@@ -420,10 +405,10 @@ class RootController(object):
                 'top_authors_modified': top_authors_modified,
                 'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
-                'repos': sorted_repos_contributed,
-                'repos_line_mdfds': sorted_repos_contributed_modified,
-                'projects_amount': len(c_projects),
-                'repos_amount': len(c_repos),
+                'repos': top_projects[0],
+                'repos_line_mdfds': top_projects[1],
+                'projects_amount': len(top_projects[2]),
+                'repos_amount': len(top_projects[3]),
                 'known_emails_amount': len(mails),
                 'first': datetime.fromtimestamp(infos['first']),
                 'last': datetime.fromtimestamp(infos['last']),
@@ -506,6 +491,7 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
+        idents = Contributors()
         c = Commits(index.Connector(index=indexname))
 
         infos = utils.get_generic_infos(c, query_kwargs)
@@ -520,16 +506,8 @@ class RootController(object):
                     'empty': True,
                     'version': True}
 
-        top_authors = c.get_authors(**query_kwargs)
-        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
-
-        authors_amount = len(top_authors[1])
-
-        idents = Contributors()
-        top_authors = utils.top_authors_sanitize(
-            idents, top_authors, c, top=25)
-        top_authors_modified = utils.top_authors_sanitize(
-            idents, top_authors_modified, c, top=25)
+        top_authors, top_authors_modified, authors_amount = \
+            self.api.v1.tops.get_top_authors(c, idents, query_kwargs)
 
         return {'pid': pid,
                 'tid': tid,
