@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_52608835",
+        "filename": "repoxplorer/controllers/root.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 68
+      },
+      "writtenOn": "2017-10-12T12:46:57Z",
+      "side": 1,
+      "message": "I\u0027d prefer a path like ../api/version/projects/\n\nHow about using pecan\u0027s RESTController directly ?",
+      "revId": "e6ef24d971ada1f96b7f6464f84c714ce16fad1d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
