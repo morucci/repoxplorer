@@ -678,6 +678,19 @@ class TestCommitsController(FunctionalTest):
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
 
+    def test_input_filter_validation(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.commits.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=invalid', status="*")
+            assert response.status_int == 404
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&dfrom=invalid', status="*")
+            assert response.status_int == 400
+
     def test_get_commits(self):
         with patch.object(root.Projects, 'get_projects') as m:
             root.commits.indexname = 'repoxplorertest'

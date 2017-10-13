@@ -326,9 +326,13 @@ class RootController(object):
 
         projects_index = Projects()
         if pid:
-            repos = projects_index.get_projects()[pid]
+            repos = projects_index.get_projects().get(pid)
         else:
-            repos = projects_index.get_tags()[tid]
+            repos = projects_index.get_tags().get(tid)
+
+        if repos is None:
+            abort(404,
+                  detail='Project or Tag ID has not been found')
 
         p_filter = utils.get_references_filter(repos, inc_repos)
 

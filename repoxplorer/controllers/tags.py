@@ -36,6 +36,8 @@ class TagsController(object):
             dfrom, dto, inc_repos, None, None, None)
 
         p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
+        dfrom = query_kwargs['fromdate']
+        dto = query_kwargs['todate']
         ret = [r['_source'] for r in t.get_tags(p_filter, dfrom, dto)]
         # TODO: if tid is given we can include user defined releases
         # for repo tagged with tid.

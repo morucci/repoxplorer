@@ -75,23 +75,48 @@ def get_mail_filter(idents, cid=None, gid=None):
         return {}
 
 
-def resolv_filters(projects_index, idents, pid,
-                   tid, cid, gid, dfrom, dto, inc_repos,
-                   inc_merge_commit, metadata, exc_groups):
-
-    projects_index._enrich_projects()
+def filters_validation(projects_index, idents, pid=None, tid=None,
+                       cid=None, gid=None, dfrom=None, dto=None,
+                       inc_merge_commit=None, inc_repos=None, metadata=None,
+                       exc_groups=None):
 
     if pid:
         project = projects_index.get_projects().get(pid)
         if not project:
             abort(404,
                   detail="The project has not been found")
-        p_filter = get_references_filter(project, inc_repos)
-    elif tid:
+    if tid:
         project = projects_index.get_tags().get(tid)
         if not project:
             abort(404,
-                  detail="The project has not been found")
+                  detail="The tag has not been found")
+
+    try:
+        if dfrom:
+            datetime.strptime(dfrom, "%Y-%m-%d")
+        if dto:
+            datetime.strptime(dto, "%Y-%m-%d")
+    except Exception:
+        abort(400,
+              detail="Date format is expected to be 'Y-m-d'")
+
+
+def resolv_filters(projects_index, idents, pid,
+                   tid, cid, gid, dfrom, dto, inc_repos,
+                   inc_merge_commit, metadata, exc_groups):
+
+    projects_index._enrich_projects()
+
+    filters_validation(
+        projects_index, idents, pid=pid, tid=tid, cid=cid, gid=gid,
+        dfrom=dfrom, dto=dto, inc_merge_commit=inc_merge_commit,
+        inc_repos=inc_repos, metadata=metadata, exc_groups=exc_groups)
+
+    if pid:
+        project = projects_index.get_projects().get(pid)
+        p_filter = get_references_filter(project, inc_repos)
+    elif tid:
+        project = projects_index.get_tags().get(tid)
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []
