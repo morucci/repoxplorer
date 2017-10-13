@@ -15,15 +15,15 @@ Stats for a project are such as:
 - date histogram of commits
 - date histogram of authors
 - top authors by commits
-- top authors by lines modified
+- top authors by lines changed
 
 Stats for a contributor or a group are such as:
 
-- commits, lines modified and projects count
+- commits, lines changed and projects count
 - date histogram of commits
 - date histogram of authors (only for group)
 - top projects by commits
-- top projects by lines modified
+- top projects by lines changed
 
 Filters can be used to refine stats by:
 
