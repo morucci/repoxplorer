@@ -169,7 +169,7 @@ function contributor_page_init(commits_amount) {
         $('#inc_repos_detail').prop('checked', true);
     }
 
-    $.getJSON("api/v1/projects")
+    $.getJSON("api/v1/projects/projects")
         .done(
             function(data) {
                 $('#projects-filter')
@@ -204,7 +204,7 @@ function contributor_page_init(commits_amount) {
         var button = $(event.relatedTarget);
         pickupdatetarget = button.data('datetarget');
 
-        $.getJSON("api/v1/projects")
+        $.getJSON("api/v1/projects/projects")
             .done(
                 function(data) {
                     $('#projects')
@@ -299,7 +299,7 @@ function group_page_init(commits_amount) {
         $('#inc_repos_detail').prop('checked', true);
     }
 
-    $.getJSON("api/v1/projects")
+    $.getJSON("api/v1/projects/projects")
         .done(
             function(data) {
                 $('#projects-filter')
@@ -334,7 +334,7 @@ function group_page_init(commits_amount) {
         var button = $(event.relatedTarget);
         pickupdatetarget = button.data('datetarget');
 
-        $.getJSON("api/v1/projects")
+        $.getJSON("api/v1/projects/projects")
             .done(
                 function(data) {
                     $('#projects')

@@ -111,6 +111,10 @@ class TestRootController(FunctionalTest):
         response = self.app.get('/')
         assert response.status_int == 200
 
+    def test_get_projects_page(self):
+        response = self.app.get('/projects.html')
+        assert response.status_int == 200
+
     def test_get_project_page(self):
         with patch.object(root.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'

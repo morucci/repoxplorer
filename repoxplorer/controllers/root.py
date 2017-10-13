@@ -85,7 +85,7 @@ class RootController(object):
 
     @expose(template='projects.html')
     def projects(self):
-        ret = self.api.v1.projects()
+        ret = self.api.v1.projects.get_projects()
         ret.update({'version': rx_version})
         return ret
 
