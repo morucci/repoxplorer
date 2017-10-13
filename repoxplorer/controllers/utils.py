@@ -97,6 +97,8 @@ def resolv_filters(projects_index, idents, pid,
         p_filter = []
 
     _metadata = []
+    if not metadata:
+        metadata = ""
     metadata_splitted = metadata.split(',')
     for meta in metadata_splitted:
         try:

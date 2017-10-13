@@ -50,7 +50,7 @@ class InfosController(object):
     @expose('json')
     def infos(self, pid=None, tid=None, cid=None, gid=None,
               dfrom=None, dto=None, inc_merge_commit=None,
-              inc_repos=None, metadata="", exc_groups=None):
+              inc_repos=None, metadata=None, exc_groups=None):
 
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()

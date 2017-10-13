@@ -34,7 +34,7 @@ class MetadataController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, None, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
         del query_kwargs['metadata']
 
         if not key:

@@ -17,13 +17,11 @@ from collections import OrderedDict
 
 from pecan import expose
 
-from pecan import conf
 from repoxplorer import version
 from repoxplorer.index.projects import Projects
 
 indexname = 'repoxplorer'
 rx_version = version.get_version()
-index_custom_html = conf.get('index_custom_html', '')
 
 
 class ProjectsController(object):

@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from pecan import conf
 from pecan import expose
 
 from repoxplorer import index
@@ -22,7 +21,6 @@ from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
 indexname = 'repoxplorer'
-xorkey = conf.get('xorkey') or 'default'
 
 
 class HistoController(object):
@@ -30,7 +28,7 @@ class HistoController(object):
     @expose('json')
     def authors(self, pid=None, tid=None, cid=None, gid=None,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata="", exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None):
 
         projects_index = Projects()
         idents = Contributors()
@@ -61,7 +59,7 @@ class HistoController(object):
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, gid=None,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata="", exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None):
 
         projects_index = Projects()
         idents = Contributors()

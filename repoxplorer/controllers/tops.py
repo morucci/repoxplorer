@@ -121,7 +121,7 @@ class TopsController(object):
     @expose('json')
     def projects(self, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None, metadata="", exc_groups=None,
+                 inc_repos=None, metadata=None, exc_groups=None,
                  inc_repos_detail=None):
 
         c = Commits(index.Connector(index=indexname))
@@ -130,7 +130,7 @@ class TopsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
 
         top_projects = self.top_projects_sanitize(
             c, projects_index, query_kwargs, inc_repos_detail)
@@ -159,7 +159,7 @@ class TopsController(object):
     @expose('json')
     def authors(self, pid=None, tid=None, cid=None, gid=None,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata="", exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None):
 
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
@@ -167,7 +167,7 @@ class TopsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, "", exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
 
         top_authors, top_authors_modified, _ = self.get_top_authors(
             c, idents, query_kwargs)
