@@ -746,7 +746,7 @@ function get_commits(pid, tid, cid, gid, page) {
 
     $("#commits-table-progress").append(
         '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    $.getJSON("api/v1/commits", args).done(function(data) {
+    $.getJSON("api/v1/commits/commits", args).done(function(data) {
         $("#commits-table").empty();
         $("#commits-table-progress").empty();
         $("#commits-table").append("<table class=\"table table-striped\">");

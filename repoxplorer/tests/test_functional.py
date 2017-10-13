@@ -87,8 +87,7 @@ class TestRootController(FunctionalTest):
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
         cls.projects = {
             'test': {
                 'repos': [
@@ -140,54 +139,6 @@ class TestRootController(FunctionalTest):
         root.indexname = 'repoxplorertest'
         response = self.app.get('/contributors.html')
         assert response.status_int == 200
-
-    def test_get_commits(self):
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/commits?pid=test')
-        assert response.status_int == 200
-        self.assertEqual(response.json[2][0]['author_name'],
-                         'Nakata Daisuke')
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/commits?pid=test&metadata=implement:feature 35')
-        assert response.status_int == 200
-        self.assertEqual(response.json[2][0]['author_name'],
-                         'Nakata Daisuke')
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/commits?pid=test&metadata=implement:feature 36')
-        assert response.status_int == 200
-        self.assertEqual(response.json[2][0]['author_name'],
-                         'Jean Paul')
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/commits?pid=test&metadata='
-                'implement:feature 36,close-bug:18')
-        assert response.status_int == 200
-        self.assertEqual(response.json[2][0]['author_name'],
-                         'Jean Paul')
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/commits?pid=test&metadata=implement:*')
-        assert response.status_int == 200
-        self.assertEqual(response.json[1], 2)
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/commits?pid=test&inc_merge_commit=on')
-        assert response.status_int == 200
-        self.assertEqual(response.json[1], 3)
 
 
 class TestGroupsController(FunctionalTest):
@@ -418,8 +369,7 @@ class TestHistoController(FunctionalTest):
             }
         }
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
 
     @classmethod
     def tearDownClass(cls):
@@ -468,8 +418,7 @@ class TestInfosController(FunctionalTest):
             }
         }
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
 
     @classmethod
     def tearDownClass(cls):
@@ -558,8 +507,7 @@ class TestTopsController(FunctionalTest):
             }
         }
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
 
     @classmethod
     def tearDownClass(cls):
@@ -596,8 +544,7 @@ class TestSearchController(FunctionalTest):
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
 
     @classmethod
     def tearDownClass(cls):
@@ -627,8 +574,7 @@ class TestMetadataController(FunctionalTest):
             }
         }
         cls.c = Commits(cls.con)
-        cls.commits = COMMITS
-        cls.c.add_commits(cls.commits)
+        cls.c.add_commits(COMMITS)
 
     @classmethod
     def tearDownClass(cls):
@@ -706,3 +652,67 @@ class TestTagsController(FunctionalTest):
                 u'date': 1410456005,
                 u'repo':
                     u'https://github.com/nakata/monkey.git:monkey'})
+
+
+class TestCommitsController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.c = Commits(cls.con)
+        cls.c.add_commits(COMMITS)
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_get_commits(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.commits.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+
+            response = self.app.get('/api/v1/commits/commits?pid=test')
+            assert response.status_int == 200
+            self.assertEqual(response.json[2][0]['author_name'],
+                             'Nakata Daisuke')
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&'
+                'metadata=implement:feature 35')
+            assert response.status_int == 200
+            self.assertEqual(response.json[2][0]['author_name'],
+                             'Nakata Daisuke')
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&'
+                'metadata=implement:feature 36')
+            assert response.status_int == 200
+            self.assertEqual(response.json[2][0]['author_name'],
+                             'Jean Paul')
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&metadata='
+                'implement:feature 36,close-bug:18')
+            assert response.status_int == 200
+            self.assertEqual(response.json[2][0]['author_name'],
+                             'Jean Paul')
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&'
+                'metadata=implement:*')
+            assert response.status_int == 200
+            self.assertEqual(response.json[1], 2)
+
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&'
+                'inc_merge_commit=on')
+            assert response.status_int == 200
+            self.assertEqual(response.json[1], 3)
