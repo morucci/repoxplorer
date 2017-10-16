@@ -19,6 +19,7 @@ from repoxplorer import index
 from repoxplorer.controllers import utils
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.contributors import Contributors
 
 indexname = 'repoxplorer'
 
@@ -29,11 +30,16 @@ class MetadataController(object):
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
                  inc_repos=None, exc_groups=None):
+
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
+        idents = None
+
+        if cid or gid:
+            idents = Contributors()
 
         query_kwargs = utils.resolv_filters(
-            projects_index, None, pid, tid, cid, gid,
+            projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
         del query_kwargs['metadata']
 
