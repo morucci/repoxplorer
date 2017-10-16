@@ -3,9 +3,9 @@
 - **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
 - **Last release**: [1.1.1](https://github.com/morucci/repoxplorer/releases/tag/1.1.1).
 
-RepoXplorer provides a web UI to browse statistics about:
+RepoXplorer provides a web UI and a REST API to browse statistics about:
 
-- projets (composed of one or multiple repositories)
+- projects (composed of one or multiple repositories)
 - contributors
 - groups of contributors
 
@@ -34,10 +34,10 @@ Filters can be used to refine stats by:
 
 RepoXplorer is composed of:
 
-- a YAML configuration file (to define repositories to index)
+- YAML configuration file(s)
 - a Git indexer service
-- a wsgi app
-- ElasticSearch as backend
+- a WSGI application
+- an ElasticSearch backend
 
 RepoXplorer is the right tool to continuously watch and index your
 repositories like for instance your Github organization.
@@ -48,12 +48,13 @@ repositories like for instance your Github organization.
 the need to install services on your system. No root access is needed for the setup
 and the installation is self-contained in **$HOME/.cache/repoxplorer**.
 
-This quickstart script only support Github.
+This quickstart script only support indexation of projects hosted on Github.
 
 The Java Runtime Environment as well as Python and Python virtualenv are the only
 dependencies needed.
 
-Let's try to index the repoxplorer repository from the morucci Github organization.
+Let's try to index *this repository*. The repoxplorer repository from the morucci
+Github organization.
 
 ```
 curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/repoxplorer-quickstart.sh
@@ -71,11 +72,11 @@ This is a all-in-one container that bundles ElasticSearch + repoXplorer ready to
 
 ## Installation
 
-The installation process described here is for CentOS 7 only.
+The installation process described here is for **CentOS 7 only**.
 
 ### ElasticSearch
 
-repoXplorer relies on ElasticSearch. Below is the installation steps for
+repoXplorer relies on ElasticSearch. Below are the installation steps for
 ElasticSearch 2.x:
 
 ```Shell
@@ -153,38 +154,6 @@ python ~/repoxplorer/bin/repoxplorer-indexer
 In order to run the indexer continuously you can use the command's
 argument "--forever".
 
-#### Install systemd unit file for the web UI:
-
-You can install the systemd unit file for the web UI.
-Be sure to set the correct path to the uwsgi tool, the config.py file
-and web assets as this unit file expect repoXplorer installed outside
-of a virtualenv.
-
-```
-sudo cp etc/repoxplorer-webui.service /usr/lib/systemd/system/repoxplorer-webui.service
-
-sudo systemctl daemon-reload
-sudo systemctl start repoxplorer-webui
-sudo systemctl status repoxplorer-webui
-
-# You can check the webui log via journalctl
-sudo journalctl -f
-```
-
-#### Install systemd unit file for the indexer
-
-```
-sudo cp etc/repoxplorer.service /usr/lib/systemd/system/repoxplorer.service
-# Be sure to set the correct path to the repoxplorer-indexer script
-
-sudo systemctl daemon-reload
-sudo systemctl start repoxplorer
-sudo systemctl status repoxplorer
-
-# You can check the indexer log via journalctl
-sudo journalctl -f
-```
-
 ## Quickstart helpers
 
 ### Index a Github organization
@@ -208,7 +177,7 @@ will create the yaml file for indexing a single repository.
 If RepoXplorer has been installed in a virtualenv then
 replace /etc/repoxplorer to ~/repoxplorer/local/share/repoxplorer.
 
-### How to define projects to index
+### Define projects to index
 
 Below is an example of a yaml file, note that *Barbican* and *Swift*
 projects are composed of two Git repositories each, a server and a client.
@@ -249,7 +218,7 @@ let the indexer daemon reads the file (every minute) and handles changes.
 
 #### Advanced configuration
 
-The **branches** key of a template definition permits to defines which
+The **branches** key of a template definition permits to define which
 branches to index. This key expects a list of branches name.
 
 A list of tags can be given to each Git repositories. This tag concept
@@ -465,55 +434,421 @@ when repoXplorer has been installed via the RPM package.
 repoxplorer-config-validate
 ```
 
-## Use the commits.json REST endpoint to query the internal DB
+## REST API endpoints
 
-This endpoint is used by the UI to fetch commits listing according
-to the filters you have setup in the UI but the endpoint can be also used
-outside of the UI. Here are some examples about how to use it:
+### Endpoints
+
+See [below](#parameters) available parameters.
+
+#### /api/v1/status/status
+
+This endpoint permits to retrieve the platform status.
 
 ```Shell
-# Return all commits from repositories included in the designate project
-curl "http://localhost:51000/commits.json?pid=designate"
-
-# Return all commits from repositories included into the designate project that
-# have a metadata "Closes-bug" (whatever the field value)
-curl "http://localhost:51000/commits.json?pid=designate&metadata=Closes-Bug:*"
-
-# Return all commits from all repositories that have the
-# metadata "implement-feature" that match "bp-new-scheduler"
-curl "http://localhost:51000/commits.json?metadata=implement-feature:bp-new-scheduler"
-
-# Return all commits from all repositories that have the
-# metadata "implement-feature" that match "bp-new-scheduler" or
-# "implement" that match "bp-new-scheduler"
-curl "http://localhost:51000/commits.json?metadata=implement-feature:bp-new-scheduler,implement:bp-new-scheduler"
+curl "http://localhost:51000/api/v1/status/status"
+```
+```Python
+{
+    "customtext": "",
+    "projects": 2,
+    "repos": 4,
+    "version": "1.2.0"
+}
 ```
 
-Available arguments are:
-- fromdate: epoch
-- todate: epoch
-- limit: amount of result returned by page (default: 10)
-- start: page cursor
-- pid: project name as configured in projects.yaml
-- tid: tag as configured in the projects.yaml
-- cid: contributor id
+#### /api/v1/projects/projects
 
+This endpoint permits to retrieve defined projects.
+
+```Shell
+curl "http://localhost:51000/api/v1/projects/projects"
+```
+
+```Python
+{
+    "projects": {
+        "Barbican": {
+            "description": "The barbican project",
+            "repos": [
+                {
+                    "branch": "master",
+                    "gitweb": "https://github.com/openstack/barbican/commit/%(sha)s",
+                    "name": "barbican",
+                    "parsers": [],
+                    "releases": [],
+                    "tags": [],
+                    "uri": "https://github.com/openstack/barbican"
+                },
+                {
+                    "branch": "stable/ocata",
+                    "gitweb": "https://github.com/openstack/barbican/commit/%(sha)s",
+                    "name": "barbican",
+                    "parsers": [],
+                    "releases": [],
+                    "tags": [],
+                    "uri": "https://github.com/openstack/barbican"
+                },
+                {
+                    "branch": "master",
+                    "gitweb": "https://github.com/openstack/python-barbicanclient/commit/%(sha)s",
+                    "name": "python-barbicanclient",
+                    "parsers": [],
+                    "releases": [],
+                    "tags": [],
+                    "uri": "https://github.com/openstack/python-barbicanclient"
+                },
+                {
+                    "branch": "stable/ocata",
+                    "gitweb": "https://github.com/openstack/python-barbicanclient/commit/%(sha)s",
+                    "name": "python-barbicanclient",
+                    "parsers": [],
+                    "releases": [],
+                    "tags": [],
+                    "uri": "https://github.com/openstack/python-barbicanclient"
+                }
+            ]
+        }
+    }
+}
+```
+
+#### /api/v1/infos/infos
+
+This endpoint is used to fetch project, contributor, group or tag
+general information.
+
+```Shell
+curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+```
+```Python
+{
+    "commits_amount": 13,
+    "duration": 33695365,
+    "first": 1401312787,
+    "last": 1435008152,
+    "line_modifieds_amount": 4180,
+    "ttl_average": 184525
+}
+```
+
+#### /api/v1/commits/commits
+
+This endpoint is used to fetch commits.
+
+Examples:
+
+```Shell
+curl "http://localhost:51000/api/v1/commits/commits.json?pid=Barbican&limit=1"
+```
+```Python
+[
+    1,
+    2214,
+    [
+        {
+            "Change-Id": [
+                "I03080db776eb4c9c2991eca8f5df43f74eb6bf24"
+            ],
+            "author_date": 1507229976,
+            "author_email_domain": "lists.openstack.org",
+            "author_gravatar": "5718d97082d0499d42ea0a291c46ec40",
+            "author_name": "OpenStack Proposal Bot",
+            "ccid": "CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-",
+            "cid": "CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-",
+            "commit_msg": "Updated from global requirements",
+            "committer_date": 1507229976,
+            "committer_gravatar": "5718d97082d0499d42ea0a291c46ec40",
+            "committer_name": "OpenStack Proposal Bot",
+            "files_list": [
+                "requirements.txt"
+            ],
+            "gitwebs": [
+                "https://github.com/openstack/python-barbicanclient/commit/77eedac597fb99745751a049a11d0719c4b67a85"
+            ],
+            "line_modifieds": 2,
+            "merge_commit": false,
+            "metadata": [
+                "Change-Id"
+            ],
+            "repos": [
+                "python-barbicanclient:master"
+            ],
+            "sha": "77eedac597fb99745751a049a11d0719c4b67a85",
+            "ttl": "0:00:00"
+        }
+    ]
+]
+```
+
+#### /api/v1/tops/authors
+
+This endpoint is used to fetch the top authors list. It makes more
+sense to use it with the **pid** or **tid** parameter.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors?pid=Barbican"
+```
+```Python
+{
+    "authors_commits": [
+        {
+            "amount": 325,
+            "cid": "DgoOD1sbGwsBJhMUDx8XFQcCEEIXCwg-",
+            "gravatar": "79dbb2ce21b59960b9e89ac256c13fe8",
+            "name": "John Wood"
+        },
+        {
+            "amount": 262,
+            "cid": "CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-",
+            "gravatar": "5718d97082d0499d42ea0a291c46ec40",
+            "name": "OpenStack Proposal Bot"
+        },
+        ...
+    ],
+    "authors_lchanged": [
+        {
+            "amount": 66271,
+            "cid": "DgoOD1sbGwsBJhMUDx8XFQcCEEIXCwg-",
+            "gravatar": "79dbb2ce21b59960b9e89ac256c13fe8",
+            "name": "John Wood"
+        },
+        {
+            "amount": 27165,
+            "cid": "DgQUExAYWhYEDww1HhUHDhURFA8RSgYJDA--",
+            "gravatar": "fec13c0a2aa5f2db76eb72a35cd80be0",
+            "name": "Jarret Raim"
+        },
+        ...
+    ]
+}
+```
+
+#### /api/v1/tops/projects
+
+This endpoint is used to fetch the top projects list. It makes more
+sense to use it with the **cid** or **gid** parameter.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+```
+```Python
+{
+    "contributed_projects": [
+        "Barbican"
+    ],
+    "contributed_repos": {
+        "https://github.com/openstack/barbican:barbican:master": 13
+    },
+    "sorted_contributed_repos": [
+        [
+            "Barbican",
+            13
+        ]
+    ],
+    "sorted_contributed_repos_lchanged": [
+        [
+            "Barbican",
+            4180
+        ]
+    ]
+}
+
+```
+
+#### /api/v1/histo/commits
+
+This endpoint is used to fetch ready to use histogram data about
+commits amount.
+
+```Shell
+curl "http://localhost:51000/api/v1/histo/commits?pid=Barbican"
+```
+```Python
+[
+    {
+        "date": "2013-02-01",
+        "value": 16
+    },
+    {
+        "date": "2013-03-01",
+        "value": 28
+    },
+    ....
+]
+```
+
+#### /api/v1/histo/authors
+
+This endpoint is used to fetch ready to use histogram data
+authors amount.
+
+```Shell
+curl "http://localhost:51000/api/v1/histo/authors?pid=Barbican"
+```
+```Python
+[
+    {
+        "date": "2013-02-01",
+        "value": 1
+    },
+    {
+        "date": "2013-03-01",
+        "value": 5
+    },
+    ...
+]
+```
+
+#### /api/v1/tags/tags
+
+This endpoint is used to retrieve detected releases (Git tags, or user defined ones).
+
+```Shell
+curl "http://localhost:51000/api/v1/tags/tags?pid=Barbican"
+```
+```Python
+[
+    {
+        "date": 1367962025,
+        "name": "0.1.36",
+        "repo": "https://github.com/openstack/barbican:barbican",
+        "sha": "e2a599872041429ddf1d078092b9da5ab839ed83"
+    },
+    {
+        "date": 1368651959,
+        "name": "0.1.43",
+        "repo": "https://github.com/openstack/barbican:barbican",
+        "sha": "ac5df0080930bcfb0872c40d00a7cb99f2179f09"
+    },
+    ...
+]
+```
+
+#### /api/v1/metadata/metadata
+
+This endpoint is used to fetch detected commit's metadata.
+
+```Shell
+curl "http://localhost:51000/api/v1/metadata/metadata?pid=Barbican"
+```
+```Python
+{
+    "Author": 3,
+    "Closes-Bug": 245,
+    "Closes-bug": 89,
+    "Co-Authored-By": 16,
+    "Co-authored-by": 7,
+    "Depends-On": 21,
+    "Fixes": 7,
+    "Implementing": 2,
+    "Implements": 102,
+    "Partial-Bug": 18,
+    "Partial-bug": 2,
+    "Partially-Implements": 27,
+    "Partially-implements": 17,
+    ...
+}
+```
+
+```Shell
+curl "http://localhost:51000/api/v1/metadata/metadata?pid=Barbican&key=Implements"
+```
+```Python
+[
+    "blueprint add-authentication-token-support",
+    "blueprint add-cas",
+    "blueprint add-certificate-to-the-container-type",
+    "blueprint add-local-installer-script",
+    "blueprint add-metadata-to-secrets",
+    "blueprint add-missing-alembic-modules",
+    ...
+]
+```
+
+#### /api/v1/search/search_authors
+
+This endpoint can be used to search a commit's author. The search
+is performed against the full name.
+
+```Shell
+curl "http://localhost:51000/api/v1/search/search_authors?query=john"
+```
+```Python
+{
+    "CQAmDxoYWgkL": {
+        "gravatar": "957192aaa5b95658443fa90b63e10d6a",
+        "name": "John Dickinson"
+    },
+    "DgMRDhoINBEHEw8BGVpMCwkPEEU-": {
+        "gravatar": "67b96b16c256d01f79d0d330382229b3",
+        "name": "John Wood"
+    },
+    "DggFChwCECQCCwAcAFoHCgs-": {
+        "gravatar": "3d1233d9f185ca8ccfc84654d5bb1d0a",
+        "name": "John McKenzie"
+   },
+   ...
+}
+```
+
+### Parameters
+
+#### Available parameters for all endpoints
+
+##### Mandatory
+
+Only one of:
+
+- **pid**: project ID as in projects definitions.
+- **tid**: tag ID as in projects definitions.
+- **cid**: contributor ID as in contributors definitions or
+  auto computed ID.
+- **gid**: group ID as in groups definitions.
+
+##### Optionals
+
+- **fromdate**: From date with the format: %Y-%m-%d.
+- **todate**: To date with the format: %Y-%m-%d.
+- **metadata**: key:value list of metadata grabbed from commit messages.
+  example: 'implement-feature:bp-new-scheduler,implement:bp-new-scheduler'
+- **inc_merge_commit**: Include merge commits in computation (default is no)
+  set in to 'on' to include them.
+- **inc_repos**: A list of repository IDs to only include in the computation.
+  example: 'barbican:master,python-barbicanclient:master'
+- **exc_groups**: group ID as in groups definitions to exclude from
+  the computation. Only one group is supported.
+
+#### Commits endpoint only
+
+- **limit**: amount of results returned by page (default: 10).
+- **start**: page cursor (default: 0).
+
+#### Metadata endpoint only
+
+- **key**: The metadata key.
+
+#### Search endpoint only
+
+- **query**: The query terms. Wildcards are authorized and a logical AND is
+  used between terms.
 
 ## Contribute
 
-RepoXplorer is new and should be considered Alpha ! Feel free to help !
-Look at the feature requests list on the Github issue tracker:
+Feel free to help ! I'll be happy to accept any contributions.
 
-- [Feature requests](https://github.com/morucci/repoxplorer/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement)
+You can have a look to the backlog (Do not hesitate to add some - add the 'repoxplorer' tag please):
 
-If you find an issue please fill a bug report here:
+- [Feature requests](https://tree.taiga.io/project/morucci-software-factory/backlog?q=&tags=repoxplorer)
+
+If you find an issue please fill a bug report on Github:
 
 - [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
 
-RepoXplorer is hosted on this Gerrit instance [Software Factory](http://softwarefactory-project.io)
-a contribution should be done via Gerrit instead of using the Pull Request system of Github.
+RepoXplorer is hosted and developed via this Gerrit instance [Software Factory](http://softwarefactory-project.io).
+Contributions should preferably be done via Gerrit but I will accept them on Github too :).
 
-If you want to help:
+If you want to help via Github then use the regular Github workflow.
+Below are instructions to follow if your prefer to use Gerrit:
 
 ```Shell
 git clone http://softwarefactory-project.io/r/repoxplorer
@@ -527,7 +862,7 @@ learn about Git review sub-command [git-review](http://softwarefactory-project.i
 # make some changes
 git add -a
 git commit # local commit your changes
-git review # propose your changes on Gerrit
+git review # propose your changes
 ```
 
 ### Run tests
