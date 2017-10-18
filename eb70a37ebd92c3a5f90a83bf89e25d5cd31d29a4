@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_5eaacf71",
+        "filename": "repoxplorer/controllers/infos.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 68
+      },
+      "writtenOn": "2017-10-18T09:23:09Z",
+      "side": 1,
+      "message": "it should be \"modified_lines_amount\" for english\u0027s sake, but there\u0027s no impact on code. Just make sure the frontend has the correct spelling!",
+      "revId": "eb70a37ebd92c3a5f90a83bf89e25d5cd31d29a4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
