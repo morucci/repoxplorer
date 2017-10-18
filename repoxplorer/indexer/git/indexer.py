@@ -464,20 +464,22 @@ class RepoIndexer():
             to_delete_update = [c['sha'] for
                                 c in docs if len(c['repos']) > 1]
 
-            logger.info("%s: %s commits will be delete ..." % (
-                self.name, len(to_delete)))
-            self.c.del_commits(to_delete)
+            if to_delete:
+                logger.info("%s: %s commits will be delete ..." % (
+                    self.name, len(to_delete)))
+                self.c.del_commits(to_delete)
 
-            logger.info("%s: %s commits belonging to other repos "
-                        "will be updated ..." % (
-                            self.name, len(to_delete_update)))
-            res = self.c.get_commits_by_id(to_delete_update)
-            if res:
-                original_commits = [c['_source'] for
-                                    c in res['docs']]
-                for c in original_commits:
-                    c['repos'].remove(self.ref_id)
-                self.c.update_commits(original_commits)
+            if to_delete_update:
+                logger.info("%s: %s commits belonging to other repos "
+                            "will be updated ..." % (
+                                self.name, len(to_delete_update)))
+                res = self.c.get_commits_by_id(to_delete_update)
+                if res:
+                    original_commits = [c['_source'] for
+                                        c in res['docs']]
+                    for c in original_commits:
+                        c['repos'].remove(self.ref_id)
+                    self.c.update_commits(original_commits)
 
         # check whether a commit should be created or
         # updated by adding the repo into the repos field
@@ -488,16 +490,16 @@ class RepoIndexer():
             to_create = [c['_id'] for
                          c in res['docs'] if c['found'] is False]
 
-            logger.info("%s: %s commits will be created ..." % (
-                self.name, len(to_create)))
-            # Here we use sub processes workers to speedup
-            # getting commits stats
-            self.c.add_commits(
-                self.run_workers(to_create, extract_workers))
+            if to_create:
+                logger.info("%s: %s commits will be created ..." % (
+                    self.name, len(to_create)))
+                self.c.add_commits(
+                    self.run_workers(to_create, extract_workers))
 
-            logger.info(
-                "%s: %s commits already indexed and need to be updated" % (
-                    self.name, len(to_update)))
-            for c in to_update:
-                c['repos'].append(self.ref_id)
-            self.c.update_commits(to_update)
+            if to_update:
+                logger.info(
+                    "%s: %s commits already indexed and need to be updated" % (
+                        self.name, len(to_update)))
+                for c in to_update:
+                    c['repos'].append(self.ref_id)
+                self.c.update_commits(to_update)
