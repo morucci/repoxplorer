@@ -151,7 +151,7 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found
@@ -238,7 +238,7 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found
@@ -252,8 +252,10 @@ class RootController(object):
         top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail, pid)
 
-        top_authors, top_authors_modified, _ = \
-            self.api.v1.tops.get_top_authors(c, idents, query_kwargs)
+        top_authors = self.api.v1.tops.authors.gbycommits(
+            c, idents, query_kwargs)
+        top_authors_modified = self.api.v1.tops.authors.gbylchanged(
+            c, idents, query_kwargs)
 
         return {'name': gid,
                 'description': description,
@@ -356,7 +358,7 @@ class RootController(object):
         idents = Contributors()
         c = Commits(index.Connector(index=indexname))
 
-        infos = self.api.v1.infos.get_generic_infos(c, query_kwargs)
+        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
 
         if not infos['commits_amount']:
             # No commit found
@@ -368,14 +370,16 @@ class RootController(object):
                     'empty': True,
                     'version': True}
 
-        top_authors, top_authors_modified, authors_amount = \
-            self.api.v1.tops.get_top_authors(c, idents, query_kwargs)
+        top_authors = self.api.v1.tops.authors.gbycommits(
+            c, idents, query_kwargs)
+        top_authors_modified = self.api.v1.tops.authors.gbylchanged(
+            c, idents, query_kwargs)
 
         return {'pid': pid,
                 'tid': tid,
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
-                'authors_amount': authors_amount,
+                'authors_amount': infos['authors_amount'],
                 'commits_amount': infos['commits_amount'],
                 'repos': repos['repos'],
                 'inc_repos': inc_repos,

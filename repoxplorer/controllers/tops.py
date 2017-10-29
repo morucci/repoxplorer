@@ -28,19 +28,11 @@ indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
-class TopsController(object):
+class TopAuthorsController(object):
 
     def top_authors_sanitize(
-            self, idents, top_authors, commits, top=100000):
-        sanitized = {}
-        for email, v in top_authors[1].items():
-            iid, ident = idents.get_ident_by_email(email)
-            main_email = ident['default-email']
-            name = ident['name']
-            if main_email in sanitized:
-                sanitized[main_email][0] += v
-            else:
-                sanitized[main_email] = [v, name, iid]
+            self, idents, authors, commits, top):
+        sanitized = utils.authors_sanitize(idents, authors)
         top_authors_s = []
         raw_names = {}
         for email, v in sanitized.items():
@@ -64,6 +56,58 @@ class TopsController(object):
             v['name'] = v['name'] or raw_names[v['email']]
             del v['email']
         return top_authors_s_sorted
+
+    def gbycommits(self, c, idents, query_kwargs):
+        top = 25
+        authors = c.get_authors(**query_kwargs)[1]
+        top_authors = self.top_authors_sanitize(
+            idents, authors, c, top)
+
+        return top_authors
+
+    def gbylchanged(self, c, idents, query_kwargs):
+        top = 25
+        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)[1]
+
+        top_authors_modified = self.top_authors_sanitize(
+            idents, top_authors_modified, c, top)
+
+        return top_authors_modified
+
+    @expose('json')
+    def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
+                   dfrom=None, dto=None, inc_merge_commit=None,
+                   inc_repos=None, metadata=None, exc_groups=None):
+
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+
+        return self.gbylchanged(c, idents, query_kwargs)
+
+    @expose('json')
+    def bycommits(self, pid=None, tid=None, cid=None, gid=None,
+                  dfrom=None, dto=None, inc_merge_commit=None,
+                  inc_repos=None, metadata=None, exc_groups=None):
+
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+
+        return self.gbycommits(c, idents, query_kwargs)
+
+
+class TopsController(object):
+
+    authors = TopAuthorsController()
 
     def top_projects_sanitize(
             self, commits_index, projects_index,
@@ -142,38 +186,3 @@ class TopsController(object):
             'contributed_repos': top_projects[3]}
 
         return ret
-
-    def get_top_authors(self, c, idents, query_kwargs):
-        top_authors = c.get_authors(**query_kwargs)
-        top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)
-
-        authors_amount = len(top_authors[1])
-
-        top_authors = self.top_authors_sanitize(
-            idents, top_authors, c, top=25)
-        top_authors_modified = self.top_authors_sanitize(
-            idents, top_authors_modified, c, top=25)
-
-        return top_authors, top_authors_modified, authors_amount
-
-    @expose('json')
-    def authors(self, pid=None, tid=None, cid=None, gid=None,
-                dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata=None, exc_groups=None):
-
-        c = Commits(index.Connector(index=indexname))
-        projects_index = Projects()
-        idents = Contributors()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
-
-        top_authors, top_authors_modified, _ = self.get_top_authors(
-            c, idents, query_kwargs)
-
-        tops = {
-            'authors_lchanged': top_authors_modified,
-            'authors_commits': top_authors}
-
-        return tops
