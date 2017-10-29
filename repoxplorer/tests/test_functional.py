@@ -58,7 +58,7 @@ COMMITS = [
         'committer_email': 'j.paul@joker.org',
         'repos': [
             'https://github.com/nakata/monkey.git:monkey:master', ],
-        'line_modifieds': 10,
+        'line_modifieds': 11,
         'merge_commit': False,
         'commit_msg': 'Add feature 36',
         'implement': ['feature 36', ],
@@ -69,10 +69,10 @@ COMMITS = [
         'author_date': 1410456005,
         'committer_date': 1410456005,
         'ttl': 0,
-        'author_name': 'Jean Marc',
-        'committer_name': 'Jean Marc',
-        'author_email': 'j.marc@joker2.org',
-        'committer_email': 'j.marc@joker2.org',
+        'author_name': 'Jean Paul',
+        'committer_name': 'Jean Paul',
+        'author_email': 'j.paul@joker.org',
+        'committer_email': 'j.paul@joker.org',
         'repos': [
             'https://github.com/nakata/monkey.git:monkey:master', ],
         'line_modifieds': 0,
@@ -436,7 +436,8 @@ class TestInfosController(FunctionalTest):
             'first': 1410456005,
             'last': 1410456005,
             'commits_amount': 2,
-            'line_modifieds_amount': 20,
+            'authors_amount': 2,
+            'line_modifieds_amount': 21,
             'duration': 0,
             'ttl_average': 0
         }
@@ -515,14 +516,50 @@ class TestTopsController(FunctionalTest):
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
 
-    def test_get_tops_authors(self):
+    def test_get_tops_authors_bylchanged(self):
         with patch.object(root.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.tops.indexname = 'repoxplorertest'
-            response = self.app.get('/api/v1/tops/authors?pid=test')
+            response = self.app.get('/api/v1/tops/authors/bylchanged?pid=test')
             assert response.status_int == 200
-            self.assertEqual(len(response.json['authors_lchanged']), 2)
-            self.assertEqual(len(response.json['authors_commits']), 2)
+            expected_top1 = {
+                'amount': 11,
+                'gravatar': 'c184ebe163aa66b25668757000116849',
+                'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
+                'name': 'Jean Paul'
+            }
+            expected_top2 = {
+                'amount': 10,
+                'gravatar': '505dcbea438008f24001e2928cdc0678',
+                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+                'name': 'Nakata Daisuke'
+            }
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertDictEqual(response.json[1], expected_top2)
+            self.assertEqual(len(response.json), 2)
+
+    def test_get_tops_authors_bycommits(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get(
+                '/api/v1/tops/authors/bycommits?pid=test&inc_merge_commit=on')
+            assert response.status_int == 200
+            expected_top1 = {
+                'gravatar': 'c184ebe163aa66b25668757000116849',
+                'amount': 2,
+                'name': 'Jean Paul',
+                'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
+            }
+            expected_top2 = {
+                'gravatar': '505dcbea438008f24001e2928cdc0678',
+                'amount': 1,
+                'name': 'Nakata Daisuke',
+                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+            }
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertDictEqual(response.json[1], expected_top2)
+            self.assertEqual(len(response.json), 2)
 
     def test_get_tops_projects(self):
         with patch.object(root.Projects, 'get_projects') as m:
@@ -531,7 +568,7 @@ class TestTopsController(FunctionalTest):
             response = self.app.get('/api/v1/tops/projects?pid=test')
             expected = {
                 'contributed_projects': ['test'],
-                'sorted_contributed_repos_lchanged': [['test', 20]],
+                'sorted_contributed_repos_lchanged': [['test', 21]],
                 'sorted_contributed_repos': [['test', 2]],
                 'contributed_repos': {
                     'https://github.com/nakata/monkey.git:monkey:master': 2}
@@ -554,11 +591,11 @@ class TestSearchController(FunctionalTest):
 
     def test_search_authors(self):
         root.search.indexname = 'repoxplorertest'
-        response = self.app.get('/api/v1/search/search_authors?query=marc')
-        cid = utils.encrypt(xorkey, 'j.marc@joker2.org')
+        response = self.app.get('/api/v1/search/search_authors?query=jean')
+        cid = utils.encrypt(xorkey, 'j.paul@joker.org')
         expected = {
-            cid: {u'name': 'Jean Marc',
-                  u'gravatar': u'185968ce180f4118a5334f0d2fdb5cbf'}}
+            cid: {u'name': 'Jean Paul',
+                  u'gravatar': u'c184ebe163aa66b25668757000116849'}}
         self.assertDictEqual(response.json, expected)
 
 
