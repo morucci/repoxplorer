@@ -27,12 +27,14 @@ indexname = 'repoxplorer'
 
 class InfosController(object):
 
-    def get_generic_infos(self, commits_index, query_kwargs):
+    def get_generic_infos(self, commits_index, idents, query_kwargs):
         infos = {}
         infos['commits_amount'] = commits_index.get_commits_amount(
             **query_kwargs)
         if not infos['commits_amount']:
             return infos
+        authors = commits_index.get_authors(**query_kwargs)[1]
+        infos['authors_amount'] = len(utils.authors_sanitize(idents, authors))
         first, last, duration = commits_index.get_commits_time_delta(
             **query_kwargs)
         infos['first'] = first
@@ -61,4 +63,4 @@ class InfosController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)
 
-        return self.get_generic_infos(c, query_kwargs)
+        return self.get_generic_infos(c, idents, query_kwargs)

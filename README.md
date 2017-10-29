@@ -522,6 +522,7 @@ curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0X
 ```
 ```Python
 {
+    "authors_amount": 1,
     "commits_amount": 13,
     "duration": 33695365,
     "first": 1401312787,
@@ -580,47 +581,68 @@ curl "http://localhost:51000/api/v1/commits/commits.json?pid=Barbican&limit=1"
 ]
 ```
 
-#### /api/v1/tops/authors
+#### /api/v1/tops/authors/bycommits
 
-This endpoint is used to fetch the top authors list. It makes more
-sense to use it with the **pid** or **tid** parameter.
+This endpoint is used to fetch the top authors list by amount of commits.
+It makes more sense to use it with the **pid** or **tid** parameter.
 
 ```Shell
-curl "http://localhost:51000/api/v1/tops/authors?pid=Barbican"
+curl "http://localhost:51000/api/v1/tops/authors/bycommits?pid=Barbican"
 ```
 ```Python
-{
-    "authors_commits": [
-        {
-            "amount": 325,
-            "cid": "DgoOD1sbGwsBJhMUDx8XFQcCEEIXCwg-",
-            "gravatar": "79dbb2ce21b59960b9e89ac256c13fe8",
-            "name": "John Wood"
-        },
-        {
-            "amount": 262,
-            "cid": "CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-",
-            "gravatar": "5718d97082d0499d42ea0a291c46ec40",
-            "name": "OpenStack Proposal Bot"
-        },
-        ...
-    ],
-    "authors_lchanged": [
-        {
-            "amount": 66271,
-            "cid": "DgoOD1sbGwsBJhMUDx8XFQcCEEIXCwg-",
-            "gravatar": "79dbb2ce21b59960b9e89ac256c13fe8",
-            "name": "John Wood"
-        },
-        {
-            "amount": 27165,
-            "cid": "DgQUExAYWhYEDww1HhUHDhURFA8RSgYJDA--",
-            "gravatar": "fec13c0a2aa5f2db76eb72a35cd80be0",
-            "name": "Jarret Raim"
-        },
-        ...
-    ]
-}
+[
+    {
+        "amount": 73,
+        "cid": "CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-",
+        "gravatar": "5718d97082d0499d42ea0a291c46ec40",
+        "name": "OpenStack Proposal Bot"
+    },
+    {
+        "amount": 39,
+        "cid": "AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-",
+        "gravatar": "ae4be8ffcc6d487934c3df3d3708049a",
+        "name": "Douglas Mendizabal"
+    },
+    {
+        "amount": 35,
+        "cid": "BRcHEh0LHAsXAxgGBB0kAgsAHABaBwoL",
+        "gravatar": "0ac9841e2c93f631d5f5d88f2aed0910",
+        "name": "Arash Ghoreyshi"
+    },
+    ...
+]
+```
+
+#### /api/v1/tops/authors/bylchanged
+
+This endpoint is used to fetch the top authors list by amount of commits.
+It makes more sense to use it with the **pid** or **tid** parameter.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
+```
+```Python
+[
+    {
+        "amount": 5663,
+        "cid": "AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-",
+        "gravatar": "ae4be8ffcc6d487934c3df3d3708049a",
+        "name": "Douglas Mendizabal"
+    },
+    {
+        "amount": 3816,
+        "cid": "AgkTGVsNEAUIJgYYDR0ISwUOGA--",
+        "gravatar": "ac3cb4707ed65da7764a4b3a9fe825e6",
+        "name": "Adam Harwell"
+    },
+    {
+        "amount": 3814,
+        "cid": "DgQUExAYWhYEDww1HhUHDhURFA8RSgYJDA--",
+        "gravatar": "fec13c0a2aa5f2db76eb72a35cd80be0",
+        "name": "Jarret Raim"
+    },
+    ...
+]
 ```
 
 #### /api/v1/tops/projects
