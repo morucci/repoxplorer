@@ -35,6 +35,19 @@ def decrypt(key, ciphertext):
     return cipher.decrypt(base64.b64decode(ciphertext.replace('-', '=')))
 
 
+def authors_sanitize(idents, authors):
+    sanitized = {}
+    for email, match in authors.items():
+        iid, ident = idents.get_ident_by_email(email)
+        main_email = ident['default-email']
+        name = ident['name']
+        if main_email in sanitized:
+            sanitized[main_email][0] += match
+        else:
+            sanitized[main_email] = [match, name, iid]
+    return sanitized
+
+
 def get_projects_from_references(projects, c_references):
     c_projects = set()
     for pname, details in projects.items():
