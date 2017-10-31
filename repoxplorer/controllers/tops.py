@@ -75,6 +75,7 @@ class TopAuthorsController(object):
         return top_authors_modified
 
     @expose('json')
+    @expose('csv:', content_type='text/csv')
     def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
                    dfrom=None, dto=None, inc_merge_commit=None,
                    inc_repos=None, metadata=None, exc_groups=None):
@@ -90,6 +91,7 @@ class TopAuthorsController(object):
         return self.gbylchanged(c, idents, query_kwargs)
 
     @expose('json')
+    @expose('csv:', content_type='text/csv')
     def bycommits(self, pid=None, tid=None, cid=None, gid=None,
                   dfrom=None, dto=None, inc_merge_commit=None,
                   inc_repos=None, metadata=None, exc_groups=None):
