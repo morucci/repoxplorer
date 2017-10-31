@@ -1,6 +1,8 @@
 import copy
 import sys
 
+from repoxplorer.controllers.renderers import CSVRenderer
+
 # RepoXplorer configuration file
 base_logging = {
     'version': 1,
@@ -56,6 +58,7 @@ server = {
 app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
+    'custom_renderers': {'csv': CSVRenderer},
     'static_root': '%(confdir)s/public',
     'template_path': '%(confdir)s/templates',
     'debug': False,
