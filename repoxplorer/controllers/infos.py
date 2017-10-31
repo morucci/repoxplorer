@@ -50,6 +50,7 @@ class InfosController(object):
         return infos
 
     @expose('json')
+    @expose('csv:', content_type='text/csv')
     def infos(self, pid=None, tid=None, cid=None, gid=None,
               dfrom=None, dto=None, inc_merge_commit=None,
               inc_repos=None, metadata=None, exc_groups=None):

@@ -438,6 +438,13 @@ repoxplorer-config-validate
 
 ### Endpoints
 
+All features are exposed via the REST API since the version 1.2.0 (current master).
+All endpoints can be called with or without the suffix *.json*. If called without
+the *.json* suffix then the request's header *Accept: application/json* must be set.
+
+Some endpoints can return CSV data by adding the suffix *.csv* or without the suffix
+but by adding the request's header *Accept: text/csv*.
+
 See [below](#parameters) available parameters.
 
 #### /api/v1/status/status
@@ -517,6 +524,9 @@ curl "http://localhost:51000/api/v1/projects/projects"
 This endpoint is used to fetch project, contributor, group or tag
 general information.
 
+This endpoint can also output to CSV.
+
+
 ```Shell
 curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
 ```
@@ -530,6 +540,13 @@ curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0X
     "line_modifieds_amount": 4180,
     "ttl_average": 184525
 }
+```
+```Shell
+curl "http://localhost:51000/api/v1/infos/infos.csv?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+```
+```
+last,authors_amount,commits_amount,ttl_average,duration,line_modifieds_amount,first
+1435008152,1,13,184525,33695365,4180,1401312787
 ```
 
 #### /api/v1/commits/commits
@@ -586,6 +603,8 @@ curl "http://localhost:51000/api/v1/commits/commits.json?pid=Barbican&limit=1"
 This endpoint is used to fetch the top authors list by amount of commits.
 It makes more sense to use it with the **pid** or **tid** parameter.
 
+This endpoint can also output to CSV.
+
 ```Shell
 curl "http://localhost:51000/api/v1/tops/authors/bycommits?pid=Barbican"
 ```
@@ -613,10 +632,23 @@ curl "http://localhost:51000/api/v1/tops/authors/bycommits?pid=Barbican"
 ]
 ```
 
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors/bycommits.csv?pid=Barbican"
+```
+```
+amount,gravatar,name,cid
+73,5718d97082d0499d42ea0a291c46ec40,OpenStack Proposal Bot,CxUDDwYYFQcOSwgbCgYFJQoIBhgHSgoWBBsfAAUGDU8aHhM-
+39,ae4be8ffcc6d487934c3df3d3708049a,Douglas Mendizabal,AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-
+35,0ac9841e2c93f631d5f5d88f2aed0910,Arash Ghoreyshi,BRcHEh0LHAsXAxgGBB0kAgsAHABaBwoL
+...
+```
+
 #### /api/v1/tops/authors/bylchanged
 
 This endpoint is used to fetch the top authors list by amount of commits.
 It makes more sense to use it with the **pid** or **tid** parameter.
+
+This endpoint can also output to CSV.
 
 ```Shell
 curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
@@ -643,6 +675,17 @@ curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
     },
     ...
 ]
+```
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
+```
+```
+amount,gravatar,name,cid
+5663,ae4be8ffcc6d487934c3df3d3708049a,Douglas Mendizabal,AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-
+3816,ac3cb4707ed65da7764a4b3a9fe825e6,Adam Harwell,AgkTGVsNEAUIJgYYDR0ISwUOGA--
+3814,fec13c0a2aa5f2db76eb72a35cd80be0,Jarret Raim,DgQUExAYWhYEDww1HhUHDhURFA8RSgYJDA--
+...
 ```
 
 #### /api/v1/tops/projects

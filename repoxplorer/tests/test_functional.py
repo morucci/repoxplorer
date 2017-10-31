@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import csv
 
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
@@ -25,6 +26,8 @@ from repoxplorer.controllers import utils
 
 from mock import patch
 from contextlib import nested
+
+from StringIO import StringIO
 
 from pecan import conf
 
@@ -79,6 +82,18 @@ COMMITS = [
         'merge_commit': True,
         'commit_msg': 'Merge: something',
     }]
+
+
+def build_dict_from_csv(body):
+    buf = StringIO(body)
+    raw_fields = buf.readlines()[0]
+    fields = raw_fields.strip().split(',')
+    buf.seek(len(raw_fields))
+    r = csv.DictReader(buf, fields)
+    ret = []
+    for row in r:
+        ret.append(row)
+    return ret
 
 
 class TestRootController(FunctionalTest):
@@ -427,11 +442,6 @@ class TestInfosController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_get_infos(self):
-        with patch.object(root.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/infos/infos?pid=test')
-        assert response.status_int == 200
         expected = {
             'first': 1410456005,
             'last': 1410456005,
@@ -441,7 +451,20 @@ class TestInfosController(FunctionalTest):
             'duration': 0,
             'ttl_average': 0
         }
-        self.assertDictEqual(response.json, expected)
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/api/v1/infos/infos?pid=test')
+            self.assertEqual(response.status_int, 200)
+            self.assertDictEqual(response.json, expected)
+            # Check endpoint CSV mode
+            response = self.app.get('/api/v1/infos/infos.csv?pid=test')
+            self.assertEqual(response.status_int, 200)
+            csvret = build_dict_from_csv(response.body)
+            # Convert all dict values to str
+            expected = dict((k, str(v)) for k, v in expected.items())
+            self.assertDictEqual(csvret[0], expected)
+            self.assertEqual(len(csvret), 1)
 
 
 class TestStatusController(FunctionalTest):
@@ -518,10 +541,6 @@ class TestTopsController(FunctionalTest):
 
     def test_get_tops_authors_bylchanged(self):
         with patch.object(root.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get('/api/v1/tops/authors/bylchanged?pid=test')
-            assert response.status_int == 200
             expected_top1 = {
                 'amount': 11,
                 'gravatar': 'c184ebe163aa66b25668757000116849',
@@ -534,17 +553,28 @@ class TestTopsController(FunctionalTest):
                 'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
                 'name': 'Nakata Daisuke'
             }
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get('/api/v1/tops/authors/bylchanged?pid=test')
+            assert response.status_int == 200
             self.assertDictEqual(response.json[0], expected_top1)
             self.assertDictEqual(response.json[1], expected_top2)
             self.assertEqual(len(response.json), 2)
 
+            # Validate the CSV endpoint mode
+            response = self.app.get(
+                '/api/v1/tops/authors/bylchanged.csv?pid=test')
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            # Convert all dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+            self.assertDictEqual(csvret[0], expected_top1)
+            self.assertDictEqual(csvret[1], expected_top2)
+            self.assertEqual(len(csvret), 2)
+
     def test_get_tops_authors_bycommits(self):
         with patch.object(root.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get(
-                '/api/v1/tops/authors/bycommits?pid=test&inc_merge_commit=on')
-            assert response.status_int == 200
             expected_top1 = {
                 'gravatar': 'c184ebe163aa66b25668757000116849',
                 'amount': 2,
@@ -557,9 +587,27 @@ class TestTopsController(FunctionalTest):
                 'name': 'Nakata Daisuke',
                 'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
             }
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get(
+                '/api/v1/tops/authors/bycommits?pid=test&inc_merge_commit=on')
+            assert response.status_int == 200
             self.assertDictEqual(response.json[0], expected_top1)
             self.assertDictEqual(response.json[1], expected_top2)
             self.assertEqual(len(response.json), 2)
+
+            # Validate the CSV endpoint mode
+            response = self.app.get(
+                '/api/v1/tops/authors/bycommits.csv?'
+                'pid=test&inc_merge_commit=on')
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            # Convert all dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+            self.assertDictEqual(csvret[0], expected_top1)
+            self.assertDictEqual(csvret[1], expected_top2)
+            self.assertEqual(len(csvret), 2)
 
     def test_get_tops_projects(self):
         with patch.object(root.Projects, 'get_projects') as m:
