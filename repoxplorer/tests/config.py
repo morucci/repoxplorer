@@ -1,4 +1,5 @@
 import tempfile
+from repoxplorer.controllers.renderers import CSVRenderer
 
 # Server Specific Configurations
 server = {
@@ -10,6 +11,7 @@ server = {
 app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
+    'custom_renderers': {'csv': CSVRenderer},
     'static_root': '%(confdir)s/../../public',
     'template_path': '%(confdir)s/../../templates',
     'debug': True,
