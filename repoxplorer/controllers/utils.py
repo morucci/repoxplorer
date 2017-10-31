@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+
 import base64
 from datetime import datetime
 
@@ -20,6 +21,7 @@ from Crypto.Cipher import XOR
 
 from pecan import conf
 from pecan import abort
+
 
 xorkey = conf.get('xorkey') or 'default'
 
