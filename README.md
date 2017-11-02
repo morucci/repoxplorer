@@ -152,7 +152,8 @@ python ~/repoxplorer/bin/repoxplorer-indexer
 ```
 
 In order to run the indexer continuously you can use the command's
-argument "--forever".
+argument "--forever". When indexing continuously, it will sleep for
+60 seconds between runs.
 
 ## Quickstart helpers
 
@@ -323,7 +324,8 @@ the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 An unique author can use multiple emails (identities) when contributing
 to a project. The **identities** configuration permits to define
-emails that belong to a contributor.
+emails that belong to a contributor. By default, the configuration file is
+`<configuration directory>/idents.yaml`.
 
 In the example below, contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
@@ -344,7 +346,7 @@ identities:
         groups: {}
 ```
 
-Group's membership can be defined via the **groups** key. A group must has
+Group's membership can be defined via the **groups** key. A group must have
 been defined ([Define groups of authors](#define-groups-of-authors)) before use.
 Membership bounces can be defined via **begin-date** and **end-date** to declare
 a group's membership between given dates (%Y-%m-%d).
@@ -355,7 +357,8 @@ define it again at groups level.
 ### Define groups of authors
 
 You may want to define groups of authors and be able to compute
-stats for thos groups.
+stats for those groups. By default, the configuration file is
+`<configuration directory>/groups.yaml`.
 
 ```YAML
 ---
@@ -438,7 +441,9 @@ repoxplorer-config-validate
 
 ### Endpoints
 
-See [below](#parameters) available parameters.
+See [below](#parameters) for available parameters. Keep in mind that some
+parameters are mandatory, while some others are optional or only available
+for certain calls.
 
 #### /api/v1/status/status
 
@@ -799,11 +804,11 @@ curl "http://localhost:51000/api/v1/search/search_authors?query=john"
 
 Only one of:
 
-- **pid**: project ID as in projects definitions.
+- **pid**: project ID as in projects definitions (see [above](define-projects-to-index)).
 - **tid**: tag ID as in projects definitions.
-- **cid**: contributor ID as in contributors definitions or
+- **cid**: contributor ID as in [contributors definitions](sanitize-author-identities) or
   auto computed ID.
-- **gid**: group ID as in groups definitions.
+- **gid**: group ID as in [groups definitions](define-groups-of-authors).
 
 ##### Optionals
 
