@@ -152,7 +152,8 @@ python ~/repoxplorer/bin/repoxplorer-indexer
 ```
 
 In order to run the indexer continuously you can use the command's
-argument "--forever".
+argument "--forever". When indexing continuously, it will sleep for
+60 seconds between runs.
 
 ## Quickstart helpers
 
@@ -174,15 +175,25 @@ will create the yaml file for indexing a single repository.
 
 ## Configuration
 
-If RepoXplorer has been installed in a virtualenv then
-replace /etc/repoxplorer to ~/repoxplorer/local/share/repoxplorer.
+This configuration directory will be called `<configuration directory>/`
+in this documentation.
+
+If RepoXplorer has been installed via the virtualenv method then
+`<configuration directory>/` will be ~/repoxplorer/local/share/repoxplorer.
+Using the RPM installtion method it will be /etc/repoxplorer.
+
+Please note that projects, groups, contributors can be defined in
+any YAML files in the configuration directory. RepoXplorer will
+load YAML files and do a basic data update when definition's keys appears
+in multiple YAML files. The loading is performed by alphabetical
+order.
 
 ### Define projects to index
 
 Below is an example of a yaml file, note that *Barbican* and *Swift*
 projects are composed of two Git repositories each, a server and a client.
 
-Edit /etc/repoxplorer/myconf.yaml to add projects you want to index.
+By default, the configuration file is `<configuration directory>/projects.yaml`.
 
 ```YAML
 ---
@@ -323,7 +334,8 @@ the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 An unique author can use multiple emails (identities) when contributing
 to a project. The **identities** configuration permits to define
-emails that belong to a contributor.
+emails that belong to a contributor. By default, the configuration file is
+`<configuration directory>/idents.yaml`.
 
 In the example below, contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
@@ -344,7 +356,7 @@ identities:
         groups: {}
 ```
 
-Group's membership can be defined via the **groups** key. A group must has
+Group's membership can be defined via the **groups** key. A group must have
 been defined ([Define groups of authors](#define-groups-of-authors)) before use.
 Membership bounces can be defined via **begin-date** and **end-date** to declare
 a group's membership between given dates (%Y-%m-%d).
@@ -355,7 +367,8 @@ define it again at groups level.
 ### Define groups of authors
 
 You may want to define groups of authors and be able to compute
-stats for thos groups.
+stats for those groups. By default, the configuration file is
+`<configuration directory>/groups.yaml`.
 
 ```YAML
 ---
@@ -427,7 +440,7 @@ of the Git repository it apply.
 
 The command *repoxplorer-config-validate* can be used to check
 that yaml definition files follow the right format. Please use
-the --config option to target /etc/repoxplorer/config.py
+the --config option to target `<configuration directory>/config.py`
 when repoXplorer has been installed via the RPM package.
 
 ```Shell
@@ -438,7 +451,9 @@ repoxplorer-config-validate
 
 ### Endpoints
 
-See [below](#parameters) available parameters.
+See [below](#parameters) for available parameters. Keep in mind that some
+parameters are mandatory, while some others are optional or only available
+for certain calls.
 
 #### /api/v1/status/status
 
@@ -799,11 +814,11 @@ curl "http://localhost:51000/api/v1/search/search_authors?query=john"
 
 Only one of:
 
-- **pid**: project ID as in projects definitions.
+- **pid**: project ID as in [projects definitions](#define-projects-to-index).
 - **tid**: tag ID as in projects definitions.
-- **cid**: contributor ID as in contributors definitions or
+- **cid**: contributor ID as in [contributors definitions](#sanitize-author-identities) or
   auto computed ID.
-- **gid**: group ID as in groups definitions.
+- **gid**: group ID as in [groups definitions](#define-groups-of-authors).
 
 ##### Optionals
 
