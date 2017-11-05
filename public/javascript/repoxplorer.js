@@ -752,6 +752,7 @@ function get_commits(pid, tid, cid, gid, page) {
         $("#commits-table").append("<table class=\"table table-striped\">");
         var theader = "<tr>";
         theader += "<th>Date of commit</th>";
+        theader += "<th>Projects</th>";
         theader += "<th>Repository refs</th>";
         theader += "<th>Author/Committer</th>";
         theader += "<th>Message</th>";
@@ -764,12 +765,18 @@ function get_commits(pid, tid, cid, gid, page) {
             cmt_date = moment(cmt_date);
             var elm = "<tr>";
             var projects = "";
-            $.each(v['repos'], function(i, p) {
+            $.each(v['projects'], function(i, p) {
                 if (i > 0) {projects += "<br>";}
                 projects += p;
             });
+            var refs = "";
+            $.each(v['repos'], function(i, p) {
+                if (i > 0) {refs += "<br>";}
+                refs += p;
+            });
             elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>";
             elm += "<td>" + projects + "</td>";
+            elm += "<td>" + refs + "</td>";
             elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                 v['author_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
                 v['cid'] + ">" + v['author_name'] + "</a></span>";

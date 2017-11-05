@@ -788,6 +788,8 @@ class TestCommitsController(FunctionalTest):
             assert response.status_int == 200
             self.assertEqual(response.json[2][0]['author_name'],
                              'Nakata Daisuke')
+            self.assertIn('test', response.json[2][0]['projects'])
+            self.assertEqual(len(response.json[2][0]['projects']), 1)
 
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test&'
