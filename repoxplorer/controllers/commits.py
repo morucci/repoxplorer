@@ -62,8 +62,8 @@ class CommitsController(object):
                               ":".join(p.split(':')[0:-1])) %
                               {'sha': cmt['sha']} for
                               p in cmt['repos']]
-            # Remove to verbose details mentionning this commit belong
-            # to repos not included in the search
+            cmt['projects'] = utils.get_projects_from_references(
+                projects_index.get_projects(), cmt['repos'])
             # Also remove the URI part
             cmt['repos'] = [":".join(p.split(':')[-2:]) for
                             p in cmt['repos']]

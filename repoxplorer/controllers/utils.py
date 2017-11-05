@@ -50,16 +50,18 @@ def authors_sanitize(idents, authors):
     return sanitized
 
 
-def get_projects_from_references(projects, c_references):
-    c_projects = set()
-    for pname, details in projects.items():
+def get_projects_from_references(pi, references):
+    # TODO(fbo): that's not optimal. The project index should
+    # provide a mapping uri -> project.
+    projects = set()
+    for pname, details in pi.items():
         for r in details['repos']:
             rid = "%s:%s:%s" % (r['uri'],
                                 r['name'],
                                 r['branch'])
-            if rid in c_references:
-                c_projects.add(pname)
-    return list(c_projects)
+            if rid in references:
+                projects.add(pname)
+    return list(projects)
 
 
 def get_references_filter(project, inc_references=None):
