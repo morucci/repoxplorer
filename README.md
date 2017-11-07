@@ -539,9 +539,6 @@ curl "http://localhost:51000/api/v1/projects/projects"
 This endpoint is used to fetch project, contributor, group or tag
 general information.
 
-This endpoint can also output to CSV.
-
-
 ```Shell
 curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
 ```
@@ -556,6 +553,9 @@ curl "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0X
     "ttl_average": 184525
 }
 ```
+
+This endpoint can also output to CSV.
+
 ```Shell
 curl "http://localhost:51000/api/v1/infos/infos.csv?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
 ```
@@ -618,8 +618,6 @@ curl "http://localhost:51000/api/v1/commits/commits.json?pid=Barbican&limit=1"
 This endpoint is used to fetch the top authors list by amount of commits.
 It makes more sense to use it with the **pid** or **tid** parameter.
 
-This endpoint can also output to CSV.
-
 ```Shell
 curl "http://localhost:51000/api/v1/tops/authors/bycommits?pid=Barbican"
 ```
@@ -647,6 +645,8 @@ curl "http://localhost:51000/api/v1/tops/authors/bycommits?pid=Barbican"
 ]
 ```
 
+This endpoint can also output to CSV.
+
 ```Shell
 curl "http://localhost:51000/api/v1/tops/authors/bycommits.csv?pid=Barbican"
 ```
@@ -662,8 +662,6 @@ amount,gravatar,name,cid
 
 This endpoint is used to fetch the top authors list by amount of commits.
 It makes more sense to use it with the **pid** or **tid** parameter.
-
-This endpoint can also output to CSV.
 
 ```Shell
 curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
@@ -692,8 +690,10 @@ curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
 ]
 ```
 
+This endpoint can also output to CSV.
+
 ```Shell
-curl "http://localhost:51000/api/v1/tops/authors/bylchanged?pid=Barbican"
+curl "http://localhost:51000/api/v1/tops/authors/bylchanged.csv?pid=Barbican"
 ```
 ```
 amount,gravatar,name,cid
