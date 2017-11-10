@@ -1,9 +1,24 @@
 <%inherit file="layout.html" />
 
-
 <%def name="title()">
   [RepoXplorer] - Projects listing
 </%def>
+
+<div class="row-fluid">
+ <div class="col-md-12">
+  <div class="jumbotron">
+   <h3>Listing of projects referenced in the database. You can click on them to display details.</h3>
+  </div>
+ </div>
+</div>
+
+<div class="row-fluid" id="tag-results">
+</div>
+
+<div class="row-fluid">
+    <div class="col-md-4" id="project-results">
+    </div>
+</div>
 
 <%def name="box(project, data)">
     <div class="panel panel-default panel-project" id="project-panel-${project}">
@@ -114,6 +129,7 @@
     % endfor
     </div>
 </div>
+
 <script type="text/javascript">
  projects_page_init();
 </script>
