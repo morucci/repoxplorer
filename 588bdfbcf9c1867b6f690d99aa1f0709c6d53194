@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ad0253b_356cf09b",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-10T14:22:07Z",
+      "side": 1,
+      "message": "I\u0027m having trouble with this part. Based on the jQuery code from lines 143-146, this should act as a toggle button when clicked and show the panel, but id does not :-/. I see it works fine when rendering the Mako-generated HTML, so what am I doing wrong?",
+      "range": {
+        "startLine": 107,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 119
+      },
+      "revId": "588bdfbcf9c1867b6f690d99aa1f0709c6d53194",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ad0253b_1569f48b",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-10T14:22:07Z",
+      "side": 1,
+      "message": "Some guidance would be very welcome here :)",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 127,
+        "endChar": 37
+      },
+      "revId": "588bdfbcf9c1867b6f690d99aa1f0709c6d53194",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ad0253b_f50438c7",
+        "filename": "templates/projects.html",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-10T14:22:07Z",
+      "side": 1,
+      "message": "This part should render the data using JS. I\u0027m still keeping the Mako-generated HTML below, to compare the output while I\u0027m working on it.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 6
+      },
+      "revId": "588bdfbcf9c1867b6f690d99aa1f0709c6d53194",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
