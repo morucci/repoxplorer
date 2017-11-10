@@ -85,7 +85,81 @@ function create_alpha_index(groups) {
 }
 
 function projects_page_init() {
-    $("a[id^=toggle-button-]").click(function(){
+    function fill_result(ret) {
+        $("#project-results").empty();
+        $.each(ret['projects'], function(k, v) {
+            var box = '<div class="panel panel-default panel-project" id="project-panel-' +
+                      k + '">' +
+                      '<div class="panel-body">' +
+                      '<div class="row-fluid row-flex" id="project-panel-row">' +
+                      '<div class="col-md-2 project-panel-logo">'
+
+            if (v.logo) {
+                box += '<img src="data:image/png;base64,' + v.logo + '">'
+            } else {
+                box += '<img src="https://www.gravatar.com/avatar/?s=50">'
+            }
+
+            box +=    '</div> '+
+                      '<div class="col-md-9 project-panel-name">' +
+                      '<h2><a href="project.html?pid=' + k + '"><b>' + k + '</b></a></h2></div>' +
+                      '<div class="col-md-1">' +
+                      '<a id="toggle-button-' + k + '" class="btn btn-default">' +
+                      '<i class="glyphicon glyphicon-menu-down project-panel-button" aria-hidden="true"></i></a></div>'
+
+            var middle = '<div class="col-md-12 project-panel-detail" id="project-panel-detail">' +
+                         '<div class="blank-separator"></div>'
+
+            if (v.description) {
+                middle += '<h3>' + v.description + '</h3>'
+                middle += '<div class="blank-separator"></div>'
+            }
+            middle += '<table class="table">'
+            middle += '<tr>'
+            middle += '<th>Repository</th>'
+            middle += '<th>Branches</th>'
+            middle += '</tr>'
+
+            repos = [];
+            $.each(v['repos'], function(key, repo) {
+                repos.push(repo);
+            });
+            repos.sort(function(a, b){
+                if (a.name < b.name){ return -1;}
+                if (a.name > b.name){ return 1;}
+                return 0;
+                });
+
+            var line ='<tr>'
+            $.each(repos, function(k2, v2) {
+            // FIXME(jpena): I cannot relate all branches for a single repo like the original Mako
+            // templated version does
+                line += '<td><a href="project.html?pid=' + k + '">' + v2.name + '</a></td>'
+                line += '<td>'
+                line += '<span><a href="project.html?pid=' + k + '&inc_repos=' + v2.name + ':' + v2.branch + '">' + v2.branch +'</a></span>'
+                line += '</td>'
+                line += '</tr>'
+            });
+
+            middle += line
+            middle += '</table></div></div></div></div>'
+
+            box += middle
+            $("#project-results").append(box);
+        });
+    }
+
+    $.getJSON("api/v1/projects/projects")
+        .done(
+            function(data) {
+                fill_result(data);
+            })
+        .fail(
+            function(err) {
+                console.log(err);
+            });
+
+    $(document).on('click',"a[id^=toggle-button-]",function(){
         $(this).find('i').toggleClass('glyphicon-menu-down').toggleClass('glyphicon-menu-up');
         $(this).parent().parent().find('#project-panel-detail').toggle();
     });
