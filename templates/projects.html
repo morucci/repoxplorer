@@ -1,61 +1,7 @@
 <%inherit file="layout.html" />
 
-
 <%def name="title()">
   [RepoXplorer] - Projects listing
-</%def>
-
-<%def name="box(project, data)">
-    <div class="panel panel-default panel-project" id="project-panel-${project}">
-        <div class="panel-body">
-          <div class="row-fluid row-flex" id="project-panel-row">
-              <div class="col-md-2 project-panel-logo">
-                  % if projects[project]['logo']:
-                  <img src="data:image/png;base64,${projects[project]['logo']}">
-                  % else:
-                  <img src="https://www.gravatar.com/avatar/?s=50">
-                  % endif
-              </div>
-            <div class="col-md-9 project-panel-name">
-                <h2><a href="project.html?pid=${project}"><b>${project}</b></a></h2>
-            </div>
-            <div class="col-md-1">
-                <a id="toggle-button-${project}" class="btn btn-default"><i class="glyphicon glyphicon-menu-down project-panel-button" aria-hidden="true"></i></a>
-            </div>
-            <div class="col-md-12 project-panel-detail" id="project-panel-detail">
-              <div class="blank-separator"></div>
-              % if projects[project]['description']:
-              <h3>${projects[project]['description']}</h3>
-              <div class="blank-separator"></div>
-              % endif
-              <table class="table">
-                <tr>
-                  <th>Repository</th>
-                  <th>Branches</th>
-                </tr>
-                <% srepos = sorted(data.keys()) %>
-                % for repo in srepos:
-                <%
-                  inc_repos=""
-                  branches = data[repo]
-                  for branch in branches:
-                    inc_repos += "%s:%s," % (repo, branch)
-                  inc_repos = inc_repos.rstrip(',')
-                %>
-                <tr>
-                    <td><a href="project.html?pid=${project}&inc_repos=${inc_repos}">${repo}</a></td>
-                    <td>
-                        % for branch in branches:
-                        <span><a href="project.html?pid=${project}&inc_repos=${repo}:${branch}">${branch}</a></span>
-                        % endfor
-                    </td>
-                </tr>
-                % endfor
-              </table>
-            </div>
-          </div>
-        </div>
-    </div>
 </%def>
 
 <div class="row-fluid">
@@ -66,54 +12,12 @@
  </div>
 </div>
 
-<div class="row-fluid">
- <div class="col-md-12">
-  <% ntags = len(tags) %>
-  % if ntags > 0:
-  <div class="panel panel-default">
-   <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Tags list</b></h3>
-   </div>
-   <div class="panel-body">
-     <h4>
-     % for tag in tags:
-     <a href="project.html?tid=${tag}">${tag}</a>
-     % endfor
-     </h4>
-   </div>
-  </div>
-  % endif
- </div>
+<div class="row-fluid" id="tag-results">
 </div>
-<div class="row-fluid">
-    <%
-     filtered = {}
-     for pid, detail in projects.items():
-       filtered[pid] = {}
-       for ref in detail['repos']:
-         filtered[pid].setdefault(ref['name'], [])
-         filtered[pid][ref['name']].append(ref['branch'])
-     ofk = sorted(filtered.keys(), key=lambda s: s.lower())
-    %>
-    <div class="col-md-4">
-    % for i in xrange(0, len(filtered), 3):
-      <% pid = ofk[i] %>
-      ${box(pid, filtered[pid])}
-    % endfor
-    </div>
-    <div class="col-md-4">
-    % for i in xrange(1, len(filtered), 3):
-      <% pid = ofk[i] %>
-      ${box(pid, filtered[pid])}
-    % endfor
-    </div>
-    <div class="col-md-4">
-    % for i in xrange(2, len(filtered), 3):
-      <% pid = ofk[i] %>
-      ${box(pid, filtered[pid])}
-    % endfor
-    </div>
+
+<div class="row-fluid" id=project-results>
 </div>
+
 <script type="text/javascript">
  projects_page_init();
 </script>
