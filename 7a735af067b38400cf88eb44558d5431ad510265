@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ad0253b_d567fc23",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 5
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-11T20:49:57Z",
+      "side": 1,
+      "message": "We should also sort the repo names and display them in alphabetical order. I missed that here. Putting the repo names in an array then sort and access the dict via the sorted keys can be a solution.",
+      "revId": "7a735af067b38400cf88eb44558d5431ad510265",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
