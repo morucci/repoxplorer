@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ad0253b_75b0288c",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-11T16:32:18Z",
+      "side": 1,
+      "message": "I prefer \u0027data\u0027 here of consistency with the rest of the code.",
+      "range": {
+        "startLine": 88,
+        "startChar": 24,
+        "endLine": 88,
+        "endChar": 28
+      },
+      "revId": "592db0e5637f6284e4b2d55bc86ab83e84092cd1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ad0253b_95baa46d",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-11T16:32:18Z",
+      "side": 1,
+      "message": "I don\u0027t think you need that piece of code. You can use ret[\u0027projects\u0027] as it is right ?",
+      "range": {
+        "startLine": 112,
+        "startChar": 0,
+        "endLine": 115,
+        "endChar": 11
+      },
+      "revId": "592db0e5637f6284e4b2d55bc86ab83e84092cd1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ad0253b_55ad2c30",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-11T16:32:18Z",
+      "side": 1,
+      "message": "It was v.value.description see my proposal PS5",
+      "range": {
+        "startLine": 145,
+        "startChar": 0,
+        "endLine": 148,
+        "endChar": 17
+      },
+      "revId": "592db0e5637f6284e4b2d55bc86ab83e84092cd1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ad0253b_35aab01a",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-11T16:32:18Z",
+      "side": 1,
+      "message": "See the my proposal on the PS5.",
+      "range": {
+        "startLine": 155,
+        "startChar": 0,
+        "endLine": 174,
+        "endChar": 19
+      },
+      "revId": "592db0e5637f6284e4b2d55bc86ab83e84092cd1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
