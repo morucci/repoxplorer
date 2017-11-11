@@ -115,13 +115,13 @@ class TopsController(object):
             self, commits_index, projects_index,
             query_kwargs, inc_repos_detail,
             project_scope=None):
-        projects = projects_index.get_projects()
         c_repos = commits_index.get_repos(**query_kwargs)[1]
         lm_repos = commits_index.get_top_repos_by_lines(**query_kwargs)[1]
         if project_scope:
             c_projects = [project_scope]
         else:
-            c_projects = utils.get_projects_from_references(projects, c_repos)
+            c_projects = utils.get_projects_from_references(
+                projects_index, c_repos)
 
         repos_contributed = {}
         repos_contributed_modified = {}
@@ -134,7 +134,7 @@ class TopsController(object):
                 p, lm in lm_repos.items()]
         else:
             for pname in c_projects:
-                p_repos = projects[pname]
+                p_repos = projects_index.get_projects()[pname]
                 p_filter = utils.get_references_filter(p_repos, None)
                 _query_kwargs = copy.deepcopy(query_kwargs)
                 _query_kwargs['repos'] = p_filter

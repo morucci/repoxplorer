@@ -182,6 +182,8 @@ class Projects(YAMLDefinition):
         YAMLDefinition.__init__(self, db_path, db_default_file)
         self.enriched = False
         self.gitweb_lookup = {}
+        self.flatten = {}
+        self.ref2projects_lookup = {}
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -251,7 +253,7 @@ class Projects(YAMLDefinition):
                 # Transform date to epoch
                 for release in repo['releases']:
                     release['date'] = date2epoch(release['date'])
-                # Init a lookup table for gitweb links
+                # Fill the lookup table for gitweb links
                 if 'gitweb' in repo:
                     su = '%s:%s' % (repo['uri'], rid)
                     self.gitweb_lookup[su] = repo['gitweb']
@@ -314,12 +316,13 @@ class Projects(YAMLDefinition):
     def get_projects(self):
         if not self.enriched:
             self._enrich_projects()
-        flatten = {}
+        if self.flatten:
+            return self.flatten
         # This transforms repos into refs by listing
         # their branches. A project is now
         # a list of refs
         for pid, detail in self.projects.items():
-            flatten[pid] = {
+            self.flatten[pid] = {
                 'repos': [],
                 'description': detail.get('description'),
                 'logo': detail.get('logo')
@@ -331,8 +334,8 @@ class Projects(YAMLDefinition):
                     r['name'] = rid
                     r['branch'] = branch
                     del r['branches']
-                    flatten[pid]['repos'].append(r)
-        return flatten
+                    self.flatten[pid]['repos'].append(r)
+        return self.flatten
 
     def get_tags(self):
         projects = self.get_projects()
@@ -343,6 +346,20 @@ class Projects(YAMLDefinition):
                     tags.setdefault(tag, {'repos': []})
                     tags[tag]['repos'].append(ref)
         return tags
+
+    def get_ref2projects_lookup(self):
+        if self.ref2projects_lookup:
+            return self.ref2projects_lookup
+        projects = self.get_projects()
+        # Fill ref2project lookup
+        for pname, details in projects.items():
+            for r in details['repos']:
+                full_rid = "%s:%s:%s" % (r['uri'],
+                                         r['name'],
+                                         r['branch'])
+                self.ref2projects_lookup.setdefault(
+                    full_rid, set()).update([pname])
+        return self.ref2projects_lookup
 
     def get_gitweb_link(self, simple_uri):
         return self.gitweb_lookup.get(simple_uri, "")
