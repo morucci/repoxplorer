@@ -801,9 +801,10 @@ function get_commits(pid, tid, cid, gid, page) {
 function check_fragment() {
     var hash = window.location.hash || "#page-1";
     hash = hash.match(/^#page-(\d+)$/);
-    if(hash)
+    if(hash) {
         page = parseInt(hash[1]);
         $("#pagination").pagination('selectPage', page);
+    }
 }
 
 function install_paginator(pid, tid, cid, gid, items_amount) {
@@ -813,18 +814,19 @@ function install_paginator(pid, tid, cid, gid, items_amount) {
         items_amount = 1000;
     }
     $(window).bind("popstate", check_fragment);
-    $(function() {
-        $('#pagination').pagination({
-            items: items_amount,
-            itemsOnPage: 10,
-            cssStyle: 'light-theme',
-            onPageClick: function(pageNumber, ev) {
-                // This check prevent get_commits to be called twice
-                if (ev != undefined) {
-                    get_commits(pid, tid, cid, gid, (pageNumber - 1) * 10);
-                }
+    $('#pagination').pagination({
+        items: items_amount,
+        itemsOnPage: 10,
+        cssStyle: 'light-theme',
+        onPageClick: function(pageNumber, ev) {
+            // The paginator will update the page hash fragment
+            // To avoid the double get_commits call (due to the bind of the popstate event)
+            // I skip calling get_commit if ev is defined.
+            // On hash change/history update the paginator is refresh
+            // On click on a button the paginator is refresh
+            if (!(ev)) {
+                get_commits(pid, tid, cid, gid, (pageNumber - 1) * 10);
             }
-        });
-        check_fragment();
+        }
     });
 }
