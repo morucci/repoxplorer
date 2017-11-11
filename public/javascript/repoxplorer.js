@@ -255,8 +255,8 @@ function contributor_page_init(commits_amount) {
             console.log(err);
         });
 
-    install_paginator(pid, undefined, cid, undefined, commits_amount);
-    get_commits(pid, undefined, cid, undefined, undefined),
+    install_paginator(pid, undefined, cid, undefined, commits_amount, true);
+    get_commits(pid, undefined, cid, undefined, undefined, true),
 
     $("#selectrelease").click(function(){
         var rdate = $('#releases').val();
@@ -399,8 +399,8 @@ function group_page_init(commits_amount) {
             console.log(err);
         });
 
-    install_paginator(pid, undefined, undefined, gid, commits_amount);
-    get_commits(pid, undefined, undefined, gid, undefined),
+    install_paginator(pid, undefined, undefined, gid, commits_amount, true);
+    get_commits(pid, undefined, undefined, gid, undefined, true),
 
     $("#selectrelease").click(function(){
         var rdate = $('#releases').val();
@@ -723,7 +723,7 @@ function get_metadata_keys(pid, tid, cid) {
             });
 }
 
-function get_commits(pid, tid, cid, gid, page) {
+function get_commits(pid, tid, cid, gid, page, with_projects_c) {
     if (page === undefined) {
         page = 0;
     }
@@ -752,6 +752,9 @@ function get_commits(pid, tid, cid, gid, page) {
         $("#commits-table").append("<table class=\"table table-striped\">");
         var theader = "<tr>";
         theader += "<th>Date of commit</th>";
+        if (with_projects_c) {
+            theader += "<th>Projects</th>";
+        }
         theader += "<th>Repository refs</th>";
         theader += "<th>Author/Committer</th>";
         theader += "<th>Message</th>";
@@ -763,13 +766,23 @@ function get_commits(pid, tid, cid, gid, page) {
             var cmt_date = new Date(1000 * v['committer_date']);
             cmt_date = moment(cmt_date);
             var elm = "<tr>";
-            var projects = "";
+            if (with_projects_c) {
+                var projects = "";
+                $.each(v['projects'], function(i, p) {
+                    if (i > 0) {projects += "<br>";}
+                    projects += p;
+                });
+            }
+            var refs = "";
             $.each(v['repos'], function(i, p) {
-                if (i > 0) {projects += "<br>";}
-                projects += p;
+                if (i > 0) {refs += "<br>";}
+                refs += p;
             });
             elm += "<td>" + cmt_date.format("MMM D, YYYY") + "</td>";
-            elm += "<td>" + projects + "</td>";
+            if (with_projects_c) {
+                elm += "<td>" + projects + "</td>";
+            }
+            elm += "<td>" + refs + "</td>";
             elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                 v['author_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
                 v['cid'] + ">" + v['author_name'] + "</a></span>";
@@ -806,7 +819,7 @@ function check_fragment() {
         $("#pagination").pagination('selectPage', page);
 }
 
-function install_paginator(pid, tid, cid, gid, items_amount) {
+function install_paginator(pid, tid, cid, gid, items_amount, with_projects_c) {
     if (items_amount >= 1000) {
         // Limit the amount of pages to 100
         // User should use the calendar filter to dig in the results
@@ -821,7 +834,7 @@ function install_paginator(pid, tid, cid, gid, items_amount) {
             onPageClick: function(pageNumber, ev) {
                 // This check prevent get_commits to be called twice
                 if (ev != undefined) {
-                    get_commits(pid, tid, cid, gid, (pageNumber - 1) * 10);
+                    get_commits(pid, tid, cid, gid, (pageNumber - 1) * 10, with_projects_c);
                 }
             }
         });
