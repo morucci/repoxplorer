@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "5ad0253b_384bc55b",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-13T09:40:25Z",
+      "side": 1,
+      "message": "Not really. I tried that, but since ret[\u0027projects\u0027] is not an array but a hash, I could not use slice() to split it into 3 parts.",
+      "parentUuid": "5ad0253b_95baa46d",
+      "range": {
+        "startLine": 112,
+        "startChar": 0,
+        "endLine": 115,
+        "endChar": 11
+      },
+      "revId": "592db0e5637f6284e4b2d55bc86ab83e84092cd1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5ad0253b_55ad2c30",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 4
