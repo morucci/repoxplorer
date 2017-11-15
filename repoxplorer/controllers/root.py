@@ -85,9 +85,7 @@ class RootController(object):
 
     @expose(template='projects.html')
     def projects(self):
-        ret = self.api.v1.projects.get_projects()
-        ret.update({'version': rx_version})
-        return ret
+        return {'version': rx_version}
 
     @expose(template='contributors.html')
     def contributors(self):
