@@ -35,16 +35,12 @@
    </div>
    <div class="panel-body">
     <div id="infos">
-     % if not empty:
-     <% repos_len = len(repos) %>
-     <div><b>Repository refs:</b> ${repos_len}</div>
-     <div><b>Commits:</b> ${commits_amount}</div>
-     <div><b>Authors:</b> ${authors_amount}</div>
-     <div><b>Activity duration:</b> ${duration}</div>
-     <div><b>Date of first commit:</b> ${first}</div>
-     <div><b>Date of last commit:</b> ${last}</div>
-     <!-- <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div> -->
-     % endif
+     <div id="infos-repo_refs"></div>
+     <div id="infos-commits_amount"></div>
+     <div id="infos-authors_amount"></div>
+     <div id="infos-duration"></div>
+     <div id="infos-first_commit"></div>
+     <div id="infos-last_commit"></div>
     </div>
    </div>
   </div>
@@ -283,14 +279,16 @@
 </div>
 <script type="text/javascript">
  % if pid:
+ var commits_amount = get_infos('${pid}', undefined, undefined, undefined);
  project_page_init('${pid}', undefined);
- install_paginator('${pid}', undefined, undefined, undefined, '${commits_amount}');
+ install_paginator('${pid}', undefined, undefined, undefined, commits_amount);
  get_metadata_keys('${pid}', undefined, undefined);
  get_commits('${pid}', undefined, undefined, undefined, undefined);
  get_releases('${pid}', undefined);
  % elif tid:
+ var commits_amount = get_infos(undefined, '${tid}', undefined, undefined);
  project_page_init(undefined, '${tid}');
- install_paginator(undefined, '${tid}', undefined, undefined, '${commits_amount}');
+ install_paginator(undefined, '${tid}', undefined, undefined, commits_amount);
  get_metadata_keys(undefined, '${tid}', undefined);
  get_commits(undefined, '${tid}', undefined, undefined);
  get_releases(undefined, '${tid}');

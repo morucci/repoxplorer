@@ -356,18 +356,6 @@ class RootController(object):
         idents = Contributors()
         c = Commits(index.Connector(index=indexname))
 
-        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
-
-        if not infos['commits_amount']:
-            # No commit found
-            return {'pid': pid,
-                    'tid': tid,
-                    'period': period,
-                    'repos': repos['repos'],
-                    'inc_repos': inc_repos,
-                    'empty': True,
-                    'version': True}
-
         top_authors = self.api.v1.tops.authors.gbycommits(
             c, idents, query_kwargs)
         top_authors_modified = self.api.v1.tops.authors.gbylchanged(
@@ -377,15 +365,8 @@ class RootController(object):
                 'tid': tid,
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
-                'authors_amount': infos['authors_amount'],
-                'commits_amount': infos['commits_amount'],
                 'repos': repos['repos'],
                 'inc_repos': inc_repos,
                 'period': period,
-                'first': datetime.fromtimestamp(infos['first']),
-                'last': datetime.fromtimestamp(infos['last']),
-                'duration': (datetime.fromtimestamp(infos['duration']) -
-                             datetime.fromtimestamp(0)),
-                'ttl_average': infos['ttl_average'],
                 'empty': False,
                 'version': rx_version}
