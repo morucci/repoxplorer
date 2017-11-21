@@ -189,7 +189,7 @@ class Commits(object):
         filter["bool"]["must"].append(must_mail_clause)
 
         must_project_clause = {
-             "bool": {
+            "bool": {
                  "should": []
              }
         }
@@ -204,7 +204,7 @@ class Commits(object):
             if paths:
                 for path in paths:
                     repo_clause["bool"]["must"][0]["bool"]["should"].append(
-                            {"term": {"files_list": path}})
+                        {"term": {"files_list": path}})
 
             must_project_clause["bool"]["should"].append(repo_clause)
 
