@@ -66,6 +66,82 @@ function get_histo(pid, tid, cid, gid, type) {
     return $.getJSON("api/v1/histo/" + type, args);
 }
 
+function fill_info_box(args) {
+    $("#infos-repo_refs").empty();
+    $("#infos-commits_amount").empty();
+    $("#infos-authors_amount").empty();
+    $("#infos-duration").empty();
+    $("#infos-first_commit").empty();
+    $("#infos-last_commit").empty();
+    $("#infos-lines_changed").empty();
+
+    $("#infos-repo_refs").append('<b>Repository refs:</b> ' + args.repo_refs);
+    $("#infos-commits_amount").append('<b>Commits:</b> ' + args.commits_amount);
+    $("#infos-authors_amount").append('<b>Authors:</b> ' + args.authors_amount);
+    $("#infos-duration").append('<b>Activity duration:</b> ' + args.duration + ' days');
+    $("#infos-first_commit").append('<b>Date of first commit:</b> '+ moment(args.first).format("YYYY-MM-DD HH:mm:ss"));
+    $("#infos-last_commit").append('<b>Date of last commit:</b> ' + moment(args.last).format("YYYY-MM-DD HH:mm:ss"));
+    $("#infos-lines_changed").append('<b>Lines changed:</b> ' + args.line_modifieds_amount);
+}
+
+function get_infos(pid, tid, cid, gid) {
+    if ($('#inc_merge_commit').prop('checked')) {
+        var inc_merge_commit = 'on';
+    }
+    var args = {};
+    args['pid'] = pid;
+    args['tid'] = tid;
+    args['cid'] = cid;
+    args['gid'] = gid;
+    args['dfrom'] = getUrlParameter('dfrom');
+    args['dto'] = getUrlParameter('dto');
+    args['inc_merge_commit'] = inc_merge_commit;
+    args['inc_repos'] = getUrlParameter('inc_repos');
+    args['metadata'] = getUrlParameter('metadata');
+    args['exc_groups'] = getUrlParameter('exc_groups');
+
+    if(tid || pid) {
+        gp_d = $.getJSON("api/v1/projects/projects");
+    } else {
+        // Return an already resolved Deferred object
+        gp_d = $.when();
+    }
+    gi_d = $.getJSON("api/v1/infos/infos", args);
+    return $.when(gp_d, gi_d)
+        .done(
+            function(pdata, idata) {
+                pdata = pdata[0];
+                idata = idata[0];
+                var ib_data = {};
+                var repo_refs = 0;
+                if (pid) {
+                    repo_refs = pdata['projects'][pid]['repos'].length;
+                } else if (tid) {
+                    // We have to go through every repo and find the tag
+                    $.each(jk['projects'], function(k, value) {
+                        $.each(value['repos'], function(key, repo) {
+                            if (repo.tags.indexOf(tid) != -1) {
+                                repo_refs++;
+                            }
+                        });
+                    });
+                }
+                ib_data.repo_refs = repo_refs;
+                ib_data.duration = parseInt(moment.duration(1000 * idata.duration).asDays());
+                ib_data.first = new Date(1000 * idata.first);
+                ib_data.last = new Date(1000 * idata.last);
+                ib_data.commits_amount = idata.commits_amount;
+                ib_data.authors_amount = idata.authors_amount;
+                ib_data.line_modifieds_amount = idata.line_modifieds_amount;
+                fill_info_box(ib_data);
+            })
+        .fail(
+            function(err) {
+                console.log(err);
+            });
+}
+
+
 function create_alpha_index(groups) {
     r = {};
     sr = [];
@@ -549,10 +625,13 @@ function group_page_init(commits_amount) {
     });
 }
 
-function project_page_init(projectid, tagid) {
+function project_page_init() {
     install_date_pickers();
 
     var selected_metadata = [];
+
+    projectid = getUrlParameter('pid');
+    tagid = getUrlParameter('tid');
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -600,6 +679,33 @@ function project_page_init(projectid, tagid) {
         window.location = newlocation;
     });
 
+    $("#add-to-filter").click(function(){
+        metadata = $('#metadata').val();
+        value = $('#metadata-values').val();
+        if (metadata === '') {return 1;}
+        selected_metadata.push(metadata + ":" + value);
+        $("#metadata-selected").html("");
+        $.each(selected_metadata, function(i, v) {
+            $("#metadata-selected").append('<span class="badge">'+v+'</div>');
+        });
+    });
+
+    $("#clean-filter").click(function(){
+        selected_metadata = [];
+        $("#metadata-selected").html("");
+    });
+
+    var pickupdatetarget = undefined;
+    $('#releasesmodal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        pickupdatetarget = button.data('datetarget');
+    });
+    $("#selectrelease").click(function(){
+        var rdate = $('#releases').val();
+        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+    });
+
     // Fill the groups selector
     var defer = get_groups(true);
     defer.done(
@@ -634,60 +740,70 @@ function project_page_init(projectid, tagid) {
                 console.log(err);
             }
         );
-    // Fill the histo commits selector
-    $("#history-progress").append(
-        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    var c_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'commits');
-    c_h_deferred
-        .done(function(data) {
-            $("#history-progress").empty();
-            gen_histo(data, 'history');
-        })
-        .fail(function(err) {
-            $("#history-progress").empty();
-            console.log(err);
-        });
 
-    // Fill the histo author selector
-    $("#history-author-progress").append(
-        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    var cont_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'authors');
-    cont_h_deferred
-        .done(function(data) {
-            $("#history-author-progress").empty();
-            gen_histo(data, 'history_author');
-        })
-        .fail(function(err) {
-            $("#history-author-progress").empty();
-            console.log(err);
-        });
+    // Get the info and continue to fill the page if commits_amount is > 0
+    d = get_infos(projectid, tagid, undefined, undefined);
+    d.done(function(pdata, idata) {
+        pdata = pdata[0];
+        idata = idata[0];
+        if (idata.commits_amount > 0) {
 
-    $("#add-to-filter").click(function(){
-        metadata = $('#metadata').val();
-        value = $('#metadata-values').val();
-        if (metadata === '') {return 1;}
-        selected_metadata.push(metadata + ":" + value);
-        $("#metadata-selected").html("");
-        $.each(selected_metadata, function(i, v) {
-            $("#metadata-selected").append('<span class="badge">'+v+'</div>');
-        });
+            install_paginator(
+                projectid, tagid, undefined,
+                undefined, idata.commits_amount, true);
+
+            get_metadata_keys(projectid, tagid, undefined);
+
+            get_commits(
+                projectid, tagid, undefined, undefined,
+                undefined, true);
+
+            get_releases(projectid, tagid);
+
+            // Fill the histo commits selector
+            $("#history-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var c_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'commits');
+            c_h_deferred
+                .done(function(data) {
+                    $("#history-progress").empty();
+                    gen_histo(data, 'history');
+                })
+                .fail(function(err) {
+                    $("#history-progress").empty();
+                    console.log(err);
+                });
+
+            // Fill the histo author selector
+            $("#history-author-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var cont_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'authors');
+            cont_h_deferred
+                .done(function(data) {
+                    $("#history-author-progress").empty();
+                    gen_histo(data, 'history_author');
+                })
+                .fail(function(err) {
+                    $("#history-author-progress").empty();
+                    console.log(err);
+                });
+        } else {
+            $("#empty-warning").show();
+            $("#infos-duration").hide();
+            $("#infos-first_commit").hide();
+            $("#infos-last_commit").hide();
+            $("#top_authors_c_div").hide();
+            $("#infos-authors_amount").hide();
+            $("#commits_histo_div").hide();
+            $("#contributors_histo_div").hide();
+            $("#top_authors_c_div").hide();
+            $("#top_authors_lc_div").hide();
+            $("#commits_listing_div").hide();
+        }
     });
 
-    $("#clean-filter").click(function(){
-        selected_metadata = [];
-        $("#metadata-selected").html("");
-    });
 
-    var pickupdatetarget = undefined;
-    $('#releasesmodal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        pickupdatetarget = button.data('datetarget');
-    });
-    $("#selectrelease").click(function(){
-        var rdate = $('#releases').val();
-        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
-        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
-    });
+
 }
 
 function contributors_page_init() {
