@@ -1,0 +1,18 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Extract Pre-built OpenJDK 8
+      unarchive:
+        src: https://github.com/AdoptOpenJDK/openjdk8-releases/releases/download/jdk8u144-b01/OpenJDK8_x64_Linux_jdk8u144-b01.tar.gz
+        dest: /tmp/
+    - name: Extract ElasticSearch 2.4.0 archive
+      unarchive:
+        src: https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
+        dest: /tmp/
+        remote_src: yes
+    - name: Start ElasticSearch
+      command: /tmp/elasticsearch-2.4.0/bin/elasticsearch -d
+      environment:
+        JAVA_HOME: /tmp/jdk8u144-b01/
+    - name: Stats
+      command: ps axf
