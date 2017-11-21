@@ -66,6 +66,70 @@ function get_histo(pid, tid, cid, gid, type) {
     return $.getJSON("api/v1/histo/" + type, args);
 }
 
+function get_infos(pid, tid, cid, gid) {
+    var args = {};
+    args['pid'] = pid;
+    args['tid'] = tid;
+    args['cid'] = cid;
+    args['gid'] = gid;
+
+    $("#infos-repo_refs").empty();
+    $("#infos-commits_amount").empty();
+    $("#infos-authors_amount").empty();
+    $("#infos-duration").empty();
+    $("#infos-first_commit").empty();
+    $("#infos-last_commit").empty();
+    $("#infos-lines_changed").empty();
+
+    // We need to know the number of repository refs
+    // for this pid/tid
+    repo_refs = 0;
+    if(tid || pid) {
+        $.getJSON("api/v1/projects/projects")
+            .done(
+                function(data) {
+                   if (pid) {
+                        repo_refs = data['projects'][pid]['repos'].length;
+                    } else if (tid) {
+                        // We have to go through every repo and find the tag
+                        $.each(data['projects'], function(k, value) {
+                            $.each(value['repos'], function(key, repo) {
+                                if (repo.tags.indexOf(tid) != -1) {
+                                    repo_refs++;
+                                }
+                            });
+                        });
+                    }
+                })
+            .fail(
+                function(err) {
+                    console.log(err);
+                });
+    }
+
+    $.getJSON("api/v1/infos/infos", args)
+        .done(
+            function(data) {
+                    duration = parseInt(moment.duration(1000 * data.duration).asDays());
+                    first = new Date(1000 * data.first);
+                    last = new Date(1000 * data.last);
+                    commits_amount = data.commits_amount;
+                    $("#infos-repo_refs").append('<b>Repository refs:</b> ' + repo_refs);
+                    $("#infos-commits_amount").append('<b>Commits:</b> ' + data.commits_amount);
+                    $("#infos-authors_amount").append('<b>Authors:</b> ' + data.authors_amount);
+                    $("#infos-duration").append('<b>Activity duration:</b> ' + duration + ' days');
+                    $("#infos-first_commit").append('<b>Date of first commit:</b> '+ moment(first).format("YYYY-MM-DD HH:mm:ss"));
+                    $("#infos-last_commit").append('<b>Date of last commit:</b> ' + moment(last).format("YYYY-MM-DD HH:mm:ss"));
+                    $("#infos-lines_changed").append('<b>Lines changed:</b> ' + data.line_modifieds_amount);
+            })
+        .fail(
+            function(err) {
+                console.log(err);
+            });
+
+    return commits_amount;
+}
+
 function create_alpha_index(groups) {
     r = {};
     sr = [];
