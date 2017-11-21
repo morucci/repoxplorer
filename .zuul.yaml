@@ -1,0 +1,16 @@
+---
+- job:
+    name: repoxplorer-unittests
+    parent: base
+    description: This is running the unittests for this project
+    run: playbooks/unittests.yaml
+    nodeset:
+      nodes:
+        - name: test-node
+          label: centos-oci
+
+- project:
+    name: repoxplorer
+    check:
+      jobs:
+        - repoxplorer-unittest
