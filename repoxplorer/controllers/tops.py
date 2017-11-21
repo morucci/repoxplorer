@@ -107,10 +107,101 @@ class TopAuthorsController(object):
         return self.gbycommits(c, idents, query_kwargs)
 
 
+class TopProjectsController(object):
+
+    def gby(self, ci, pi, query_kwargs,
+            inc_repos_detail, project_scope, f1, f2):
+        repos = f1(**query_kwargs)[1]
+        if project_scope:
+            projects = [project_scope]
+        else:
+            projects = utils.get_projects_from_references(pi, repos)
+        if inc_repos_detail:
+            repos_contributed = [
+                (p, ca) for p, ca in repos.items()]
+        else:
+            repos_contributed = []
+            for pname in projects:
+                p_repos = pi.get_projects()[pname]
+                p_filter = utils.get_references_filter(p_repos)
+                _query_kwargs = copy.deepcopy(query_kwargs)
+                _query_kwargs['repos'] = p_filter
+                ca = int(f2(**_query_kwargs) or 0)
+                if ca:
+                    repos_contributed.append((pname, ca))
+
+        sorted_rc = sorted(repos_contributed,
+                           key=lambda i: i[1],
+                           reverse=True)
+        ret = []
+        for item in sorted_rc:
+            ret.append({"amount": int(item[1])})
+            if inc_repos_detail:
+                ret[-1]["projects"] = utils.get_projects_from_references(
+                    pi, [item[0]])
+            ret[-1]["name"] = ":".join(item[0].split(':')[-2:])
+
+        return ret
+
+    def gbycommits(self, ci, pi, query_kwargs,
+                   inc_repos_detail, project_scope):
+        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail, project_scope,
+                       ci.get_repos, ci.get_commits_amount)
+        return ret
+
+    def gbylchanged(self, ci, pi, query_kwargs,
+                    inc_repos_detail, project_scope):
+
+        def f2(**kwargs):
+            return ci.get_line_modifieds_stats(**kwargs)[1]['sum']
+
+        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail, project_scope,
+                       ci.get_top_repos_by_lines, f2)
+        return ret
+
+    @expose('json')
+    # @expose('csv:', content_type='text/csv')
+    def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
+                   dfrom=None, dto=None, inc_merge_commit=None,
+                   inc_repos=None, metadata=None, exc_groups=None,
+                   inc_repos_detail=None, project_scope=None):
+
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+
+        return self.gbylchanged(c, projects_index, query_kwargs,
+                                inc_repos_detail, project_scope)
+
+    @expose('json')
+    # @expose('csv:', content_type='text/csv')
+    def bycommits(self, pid=None, tid=None, cid=None, gid=None,
+                  dfrom=None, dto=None, inc_merge_commit=None,
+                  inc_repos=None, metadata=None, exc_groups=None,
+                  inc_repos_detail=None, project_scope=None):
+
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+
+        return self.gbycommits(c, projects_index, query_kwargs,
+                               inc_repos_detail, project_scope)
+
+
 class TopsController(object):
 
     authors = TopAuthorsController()
+    projects = TopProjectsController()
 
+    # TODO(fbo): Legacy used be the make templating will be removed
     def top_projects_sanitize(
             self, commits_index, projects_index,
             query_kwargs, inc_repos_detail,
@@ -163,28 +254,3 @@ class TopsController(object):
 
         return (sorted_repos_contributed, sorted_repos_contributed_modified,
                 c_projects, c_repos)
-
-    @expose('json')
-    def projects(self, pid=None, tid=None, cid=None, gid=None,
-                 dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None, metadata=None, exc_groups=None,
-                 inc_repos_detail=None):
-
-        c = Commits(index.Connector(index=indexname))
-        projects_index = Projects()
-        idents = Contributors()
-
-        query_kwargs = utils.resolv_filters(
-            projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
-
-        top_projects = self.top_projects_sanitize(
-            c, projects_index, query_kwargs, inc_repos_detail)
-
-        ret = {
-            'sorted_contributed_repos': top_projects[0],
-            'sorted_contributed_repos_lchanged': top_projects[1],
-            'contributed_projects': top_projects[2],
-            'contributed_repos': top_projects[3]}
-
-        return ret

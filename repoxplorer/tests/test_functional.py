@@ -614,20 +614,59 @@ class TestTopsController(FunctionalTest):
             self.assertDictEqual(csvret[1], expected_top2)
             self.assertEqual(len(csvret), 2)
 
-    def test_get_tops_projects(self):
+    def test_get_tops_projects_bycommits(self):
+        cid = utils.encrypt(xorkey, 'j.paul@joker.org')
         with patch.object(root.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.tops.indexname = 'repoxplorertest'
-            response = self.app.get('/api/v1/tops/projects?pid=test')
-            expected = {
-                'contributed_projects': ['test'],
-                'sorted_contributed_repos_lchanged': [['test', 21]],
-                'sorted_contributed_repos': [['test', 2]],
-                'contributed_repos': {
-                    'https://github.com/nakata/monkey.git:monkey:master': 2}
+            response = self.app.get(
+                '/api/v1/tops/projects/bycommits?cid=%s' % cid)
+            expected_top1 = {
+                'amount': 1,
+                'name': 'test'
             }
             assert response.status_int == 200
-            self.assertDictEqual(response.json, expected)
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
+            # Ask repo details
+            response = self.app.get(
+                '/api/v1/tops/projects/bycommits?cid='
+                '%s&inc_repos_detail=true' % cid)
+            expected_top1 = {
+                'amount': 1,
+                'name': 'monkey:master',
+                'projects': ['test']
+            }
+            assert response.status_int == 200
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
+
+    def test_get_tops_projects_bylchanged(self):
+        cid = utils.encrypt(xorkey, 'j.paul@joker.org')
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get(
+                '/api/v1/tops/projects/bylchanged?cid=%s' % cid)
+            expected_top1 = {
+                'amount': 11,
+                'name': 'test'
+            }
+            assert response.status_int == 200
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
+            # Ask repo details
+            response = self.app.get(
+                '/api/v1/tops/projects/bylchanged?cid='
+                '%s&inc_repos_detail=true' % cid)
+            expected_top1 = {
+                'amount': 11,
+                'name': 'monkey:master',
+                'projects': ['test']
+            }
+            assert response.status_int == 200
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
 
 
 class TestSearchController(FunctionalTest):

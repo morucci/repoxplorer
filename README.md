@@ -615,7 +615,7 @@ curl "http://localhost:51000/api/v1/commits/commits.json?pid=Barbican&limit=1"
 
 #### /api/v1/tops/authors/bycommits
 
-This endpoint is used to fetch the top authors list by amount of commits.
+This endpoint is used to fetch the top authors list by the amount of commits.
 It makes more sense to use it with the **pid** or **tid** parameter.
 
 ```Shell
@@ -660,7 +660,7 @@ amount,gravatar,name,cid
 
 #### /api/v1/tops/authors/bylchanged
 
-This endpoint is used to fetch the top authors list by amount of commits.
+This endpoint is used to fetch the top authors list by the amount of lines changed.
 It makes more sense to use it with the **pid** or **tid** parameter.
 
 ```Shell
@@ -703,36 +703,98 @@ amount,gravatar,name,cid
 ...
 ```
 
-#### /api/v1/tops/projects
+#### /api/v1/tops/projects/bycommits
 
-This endpoint is used to fetch the top projects list. It makes more
-sense to use it with the **cid** or **gid** parameter.
+This endpoint is used to fetch the top projects list by the amount of commits.
+It makes more sense to use it with the **cid** or **gid** parameter.
 
 ```Shell
-curl "http://localhost:51000/api/v1/tops/projects?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+curl "http://localhost:51000/api/v1/tops/projects/bycommits.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
 ```
 ```Python
-{
-    "contributed_projects": [
-        "Barbican"
-    ],
-    "contributed_repos": {
-        "https://github.com/openstack/barbican:barbican:master": 13
+[
+    {
+        "amount": 56,
+        "name": "Swift"
     },
-    "sorted_contributed_repos": [
-        [
-            "Barbican",
-            13
-        ]
-    ],
-    "sorted_contributed_repos_lchanged": [
-        [
-            "Barbican",
-            4180
-        ]
-    ]
-}
+    {
+        "amount": 4,
+        "name": "Barbican"
+    }
+]
+```
 
+By using the parameter **inc_repos_detail** the response outputs the
+top repositories instead of projects.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bycommits.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-&inc_repos_detail=true"
+```
+```Python
+[
+    {
+        "amount": 41,
+        "name": "swift:master",
+        "projects": [
+            "Swift"
+        ]
+    },
+    {
+        "amount": 39,
+        "name": "swift:stable/ocata",
+        "projects": [
+            "Swift"
+        ]
+    },
+    ...
+]
+```
+
+#### /api/v1/tops/projects/bylchanged
+
+This endpoint is used to fetch the top projects list by the amount of lines changed.
+It makes more sense to use it with the **cid** or **gid** parameter.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bylchanged.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
+```
+```Python
+[
+    {
+        "amount": 21853,
+        "name": "Swift"
+    },
+    {
+        "amount": 205,
+        "name": "Barbican"
+    }
+]
+```
+
+By using the parameter **inc_repos_detail** the response outputs the
+top repositories instead of projects.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bylchanged.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-&inc_repos_detail=true"
+```
+```Python
+[
+    {
+        "amount": 20172,
+        "name": "swift:master",
+        "projects": [
+            "Swift"
+        ]
+    },
+    {
+        "amount": 20033,
+        "name": "swift:stable/ocata",
+        "projects": [
+            "Swift"
+        ]
+    },
+    ...
+]
 ```
 
 #### /api/v1/histo/commits
@@ -934,16 +996,16 @@ Only one of:
 - **exc_groups**: group ID as in groups definitions to exclude from
   the computation. Only one group is supported.
 
-#### Commits endpoint only
+#### commits endpoint only
 
 - **limit**: amount of results returned by page (default: 10).
 - **start**: page cursor (default: 0).
 
-#### Metadata endpoint only
+#### metadata endpoint only
 
 - **key**: The metadata key.
 
-#### Search endpoint only
+#### search endpoint only
 
 - **query**: The query terms. Wildcards are authorized and a logical AND is
   used between terms.
@@ -952,6 +1014,11 @@ Only one of:
 
 - **prefix**: Return groups that start by `prefix`.
 - **nameonly**: if set to `true`, return only the group names. Otherwise, return all information.
+
+#### tops/projects endpoint only
+
+- **inc_repos_detail**: Set to *true* or unset to include or not
+  repositories details in the response.
 
 ## Contribute
 
