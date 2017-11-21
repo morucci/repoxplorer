@@ -1,0 +1,19 @@
+---
+- hosts: test-node
+  tasks:
+    - name: "Set pwd"
+      set_fact:
+        home: "{{ pwd_command.stdout }}"
+    - name: Extract ElasticSearch 2.4.0 archive
+      unarchive:
+        src: https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
+        dest: "{{ home }}"
+        remote_src: yes
+    - name: Start ElasticSearch
+      command: "{{ home }}/elasticsearch-2.4.0/bin/elasticsearch -d"
+    - name: Get processes list
+      command: ps axf
+    - name: Run unit tests
+      command: tox
+      args:
+        chdir: "{{ zuul.project.src_dir }}/"
