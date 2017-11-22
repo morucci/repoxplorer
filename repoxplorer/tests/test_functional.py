@@ -468,6 +468,22 @@ class TestInfosController(FunctionalTest):
             expected = dict((k, str(v)) for k, v in expected.items())
             self.assertDictEqual(csvret[0], expected)
             self.assertEqual(len(csvret), 1)
+    
+    def test_get_infos_contributor(self):
+        expected = {
+            'mails': {'n.suke@joker.org': {}},
+            'repos_amount': 1,
+            'name': 'Nakata Daisuke',
+            'mails_amount': 1,
+            'gravatar': '505dcbea438008f24001e2928cdc0678',
+            'projects_amount': 1
+        }
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/api/v1/infos/contributor?cid=CksVFB4JNA4KDQQHQhsWAg--')
+            self.assertEqual(response.status_int, 200)
+            self.assertDictEqual(response.json, expected)
 
 
 class TestStatusController(FunctionalTest):

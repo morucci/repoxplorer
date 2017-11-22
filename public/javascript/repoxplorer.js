@@ -80,6 +80,11 @@ function get_infos(pid, tid, cid, gid) {
     $("#infos-first_commit").empty();
     $("#infos-last_commit").empty();
     $("#infos-lines_changed").empty();
+    $("#infos-author_name").empty();
+    $("#infos-gravatar").empty();
+    $("#infos-projects_amount").empty();
+    $("#infos-repos_amount").empty();
+    $("#infos-known_emails").empty();
 
     // We need to know the number of repository refs
     // for this pid/tid
@@ -106,6 +111,22 @@ function get_infos(pid, tid, cid, gid) {
                     console.log(err);
                 });
     }
+    // There is some data we need to get from the author
+    if(cid) {
+        $.getJSON("api/v1/infos/contributor", args)
+            .done(
+                function(data) {
+                    $("#infos-author_name").append('<b>Full Name:</b> ' + data.name);
+                    $("#infos-gravatar").append('<img src="https://www.gravatar.com/avatar/' + data.gravatar + '?s=150" title="' +data.name+ '">');
+                    $("#infos-projects_amount").append('<b>Projects contributed:</b> ' + data.projects_amount);
+                    $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + data.repos_amount);
+                    $("#infos-known_emails").append('<b>Known emails:</b> ' + data.mails_amount);
+                })
+            .fail(
+                function(err) {
+                    console.log(err);
+                });
+    }
 
     $.getJSON("api/v1/infos/infos", args)
         .done(
@@ -113,7 +134,7 @@ function get_infos(pid, tid, cid, gid) {
                     duration = parseInt(moment.duration(1000 * data.duration).asDays());
                     first = new Date(1000 * data.first);
                     last = new Date(1000 * data.last);
-                    commits_amount = data.commits_amount;
+                    var commits_amount = data.commits_amount;
                     $("#infos-repo_refs").append('<b>Repository refs:</b> ' + repo_refs);
                     $("#infos-commits_amount").append('<b>Commits:</b> ' + data.commits_amount);
                     $("#infos-authors_amount").append('<b>Authors:</b> ' + data.authors_amount);

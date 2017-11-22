@@ -564,6 +564,25 @@ last,authors_amount,commits_amount,ttl_average,duration,line_modifieds_amount,fi
 1435008152,1,13,184525,33695365,4180,1401312787
 ```
 
+#### /api/v1/infos/contributor
+
+This endpoint is used to fetch contributor-specific information. Note the **cid** parameter is
+mandatory.
+
+```Shell
+curl "http://localhost:51000/api/v1/infos/contributor?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+```
+```Python
+{ "mails": {"javier.pena@redhat.com": {}}, 
+  "repos_amount": 75,
+  "name": "rdo-trunk",
+  "mails_amount": 1,
+  "gravatar": "b726b19f8e7c2e23e403e4b5d3ab4508",
+  "projects_amount": 2
+}
+```
+
+
 #### /api/v1/commits/commits
 
 This endpoint is used to fetch commits.
