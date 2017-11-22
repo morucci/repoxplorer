@@ -74,6 +74,11 @@ function fill_info_box(args) {
     $("#infos-first_commit").empty();
     $("#infos-last_commit").empty();
     $("#infos-lines_changed").empty();
+    $("#infos-author_name").empty();
+    $("#infos-gravatar").empty();
+    $("#infos-projects_amount").empty();
+    $("#infos-repos_amount").empty();
+    $("#infos-known_emails").empty();
 
     $("#infos-repo_refs").append('<b>Repository refs:</b> ' + args.repo_refs);
     $("#infos-commits_amount").append('<b>Commits:</b> ' + args.commits_amount);
@@ -82,6 +87,11 @@ function fill_info_box(args) {
     $("#infos-first_commit").append('<b>Date of first commit:</b> '+ moment(args.first).format("YYYY-MM-DD HH:mm:ss"));
     $("#infos-last_commit").append('<b>Date of last commit:</b> ' + moment(args.last).format("YYYY-MM-DD HH:mm:ss"));
     $("#infos-lines_changed").append('<b>Lines changed:</b> ' + args.line_modifieds_amount);
+    $("#infos-author_name").append('<b>Full Name:</b> ' + args.name);
+    $("#infos-gravatar").append('<img src="https://www.gravatar.com/avatar/' + args.gravatar + '?s=150" title="' + args.name + '">');
+    $("#infos-projects_amount").append('<b>Projects contributed:</b> ' + args.projects_amount);
+    $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + args.repos_amount);
+    $("#infos-known_emails").append('<b>Known emails:</b> ' + args.mails_amount);
 }
 
 function get_infos(pid, tid, cid, gid) {
@@ -102,15 +112,25 @@ function get_infos(pid, tid, cid, gid) {
 
     if(tid || pid) {
         gp_d = $.getJSON("api/v1/projects/projects");
+        gc_d = null
+    } else if(cid) {
+        gc_d = $.getJSON("api/v1/infos/contributor", args);
+        gp_d = null
     } else {
         // Return an already resolved Deferred object
         gp_d = $.when();
+        gc_d = $.when();            
     }
     gi_d = $.getJSON("api/v1/infos/infos", args);
-    return $.when(gp_d, gi_d)
+    return $.when(gp_d, gi_d, gc_d)
         .done(
-            function(pdata, idata) {
-                pdata = pdata[0];
+            function(pdata, idata, cdata) {
+                if (pid) {
+                    pdata = pdata[0];
+                }
+                if (cid) {
+                    cdata = cdata[0];
+                }
                 idata = idata[0];
                 var ib_data = {};
                 var repo_refs = 0;
@@ -133,6 +153,13 @@ function get_infos(pid, tid, cid, gid) {
                 ib_data.commits_amount = idata.commits_amount;
                 ib_data.authors_amount = idata.authors_amount;
                 ib_data.line_modifieds_amount = idata.line_modifieds_amount;
+                if (cid) {
+                    ib_data.name = cdata.name;
+                    ib_data.gravatar = cdata.gravatar;
+                    ib_data.projects_amount = cdata.projects_amount;
+                    ib_data.repos_amount = cdata.repos_amount;
+                    ib_data.mails_amount = cdata.mails_amount;
+                }
                 fill_info_box(ib_data);
             })
         .fail(
@@ -351,8 +378,7 @@ function groups_page_init() {
             });
 }
 
-function contributor_page_init(commits_amount) {
-
+function contributor_page_init() {
     install_date_pickers();
 
     cid = getUrlParameter('cid');
@@ -364,6 +390,26 @@ function contributor_page_init(commits_amount) {
     if (getUrlParameter('inc_repos_detail') == 'on') {
         $('#inc_repos_detail').prop('checked', true);
     }
+
+    $("#filter").click(function(){
+        var newlocation = "contributor.html?cid=" + cid;
+        if ($('#fromdatepicker').val() != '') {
+            newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val());
+        }
+        if ($('#todatepicker').val() != '') {
+            newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val());
+        }
+        if ($('#inc_merge_commit').prop('checked')) {
+            newlocation = newlocation + "&inc_merge_commit=on";
+        }
+        if ($('#inc_repos_detail').prop('checked')) {
+            newlocation = newlocation + "&inc_repos_detail=on";
+        }
+        if ($('#projects-filter').val() != undefined) {
+            newlocation = newlocation + "&pid=" + encodeURIComponent($('#projects-filter').val());
+        }
+        window.location = newlocation;
+    });
 
     $.getJSON("api/v1/projects/projects")
         .done(
@@ -427,6 +473,11 @@ function contributor_page_init(commits_amount) {
                     console.log(err);
                 });
     }),
+    $("#selectrelease").click(function(){
+        var rdate = $('#releases').val();
+        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
+        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
+    });
 
     $('#projects').on('change', function() {
         $('#releases')
@@ -437,47 +488,41 @@ function contributor_page_init(commits_amount) {
         get_releases(this.value);
     });
 
-    // Fill the histo commits selector
-    $("#history-progress").append(
-        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    var c_h_deferred = get_histo(pid, undefined, cid, undefined, 'commits');
-    c_h_deferred
-        .done(function(data) {
-            $("#history-progress").empty();
-            gen_histo(data, 'history');
-        })
-        .fail(function(err) {
-            $("#history-progress").empty();
-            console.log(err);
-        });
+    d = get_infos(pid, undefined, cid, undefined);
+    d.done(function(pdata, cdata) {
+        if(pdata) {
+            pdata = pdata[0];
+        }
+        cdata = cdata[0];
+        if(cdata.commits_amount > 0) {
+            install_paginator(pid, undefined, cid, undefined, cdata.commits_amount, true);
+            get_commits(pid, undefined, cid, undefined, undefined, true);
 
-    install_paginator(pid, undefined, cid, undefined, commits_amount, true);
-    get_commits(pid, undefined, cid, undefined, undefined, true),
-
-    $("#selectrelease").click(function(){
-        var rdate = $('#releases').val();
-        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
-        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
-    });
-
-    $("#filter").click(function(){
-        var newlocation = "contributor.html?cid=" + cid;
-        if ($('#fromdatepicker').val() != '') {
-            newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val());
+            // Fill the histo commits selector
+            $("#history-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var c_h_deferred = get_histo(pid, undefined, cid, undefined, 'commits');
+            c_h_deferred
+                .done(function(data) {
+                    $("#history-progress").empty();
+                    gen_histo(data, 'history');
+                })
+                .fail(function(err) {
+                    $("#history-progress").empty();
+                    console.log(err);
+                });
+        } else {
+            $("#empty-warning").show();
+            $("#infos-duration").hide();
+            $("#infos-first_commit").hide();
+            $("#infos-last_commit").hide();
+            $("#infos-projects_amount").hide();
+            $("#infos-repos_amount").hide();
+            $("#commits_histo_div").hide();
+            $("#top_projects_c_div").hide();
+            $("#top_projects_lc_div").hide();
+            $("#commits_listing_div").hide();
         }
-        if ($('#todatepicker').val() != '') {
-            newlocation = newlocation + "&dto=" + encodeURIComponent($('#todatepicker').val());
-        }
-        if ($('#inc_merge_commit').prop('checked')) {
-            newlocation = newlocation + "&inc_merge_commit=on";
-        }
-        if ($('#inc_repos_detail').prop('checked')) {
-            newlocation = newlocation + "&inc_repos_detail=on";
-        }
-        if ($('#projects-filter').val() != undefined) {
-            newlocation = newlocation + "&pid=" + encodeURIComponent($('#projects-filter').val());
-        }
-        window.location = newlocation;
     });
 }
 
