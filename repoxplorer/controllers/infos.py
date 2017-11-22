@@ -14,15 +14,21 @@
 
 from datetime import timedelta
 
+import hashlib
+
+from pecan import abort
 from pecan import expose
+from pecan import conf
 
 from repoxplorer import index
+from repoxplorer.controllers import tops
 from repoxplorer.controllers import utils
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
 indexname = 'repoxplorer'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class InfosController(object):
@@ -65,3 +71,49 @@ class InfosController(object):
             metadata, exc_groups)
 
         return self.get_generic_infos(c, idents, query_kwargs)
+
+    @expose('json')
+    def contributor(self, cid=None):
+        if not cid:
+            abort(404,
+                  detail="No contributor specified")
+
+        cid = utils.decrypt(xorkey, cid)
+        c = Commits(index.Connector(index=indexname))
+        idents = Contributors()
+        projects = Projects()
+        iid, ident = idents.get_ident_by_id(cid)
+
+        if not ident:
+            # No ident has been declared for that contributor
+            iid, ident = idents.get_ident_by_email(cid)
+        mails = ident['emails']
+        name = ident['name']
+        if not name:
+            raw_names = c.get_commits_author_name_by_emails([cid])
+            if cid not in raw_names:
+                # TODO: get_commits_author_name_by_emails must
+                # support look by committer email too
+                name = 'Unnamed'
+            else:
+                name = raw_names[cid]
+
+        p_filter = {}
+        query_kwargs = {
+            'mails': mails,
+            'merge_commit': False,
+            'repos': p_filter,
+        }
+
+        tops_ctl = tops.TopsController()
+        top_projects = tops_ctl.top_projects_sanitize(c, projects,
+                                                      query_kwargs, None)
+
+        infos = {}
+        infos['name'] = name
+        infos['mails_amount'] = len(mails)
+        infos['mails'] = mails
+        infos['projects_amount'] = len(top_projects[2])
+        infos['repos_amount'] = len(top_projects[3])
+        infos['gravatar'] = hashlib.md5(ident['default-email']).hexdigest()
+        return infos

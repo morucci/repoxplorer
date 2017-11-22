@@ -80,6 +80,11 @@ function get_infos(pid, tid, cid, gid) {
     $("#infos-first_commit").empty();
     $("#infos-last_commit").empty();
     $("#infos-lines_changed").empty();
+    $("#infos-author_name").empty();
+    $("#infos-gravatar").empty();
+    $("#infos-projects_amount").empty();
+    $("#infos-repos_amount").empty();
+    $("#infos-known_emails").empty();
 
     // We need to know the number of repository refs
     // for this pid/tid
@@ -100,6 +105,22 @@ function get_infos(pid, tid, cid, gid) {
                             });
                         });
                     }
+                })
+            .fail(
+                function(err) {
+                    console.log(err);
+                });
+    }
+    // There is some data we need to get from the author
+    if(cid) {
+        $.getJSON("api/v1/infos/contributor", args)
+            .done(
+                function(data) {
+                    $("#infos-author_name").append('<b>Full Name:</b> ' + data.name);
+                    $("#infos-gravatar").append('<img src="https://www.gravatar.com/avatar/' + data.gravatar + '?s=150" title="' +data.name+ '">');
+                    $("#infos-projects_amount").append('<b>Projects contributed:</b> ' + data.projects_amount);
+                    $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + data.repos_amount);
+                    $("#infos-known_emails").append('<b>Known emails:</b> ' + data.mails_amount);
                 })
             .fail(
                 function(err) {

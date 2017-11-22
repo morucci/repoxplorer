@@ -23,21 +23,18 @@
    </div>
    <div class="panel-body container-fluid">
     <div id="gravatar" class="col-md-4">
-     <div><img src="https://www.gravatar.com/avatar/${gravatar}?s=150" title="${name}"></div>
+     <div id="infos-gravatar"></div>
     </div>
     <div id="infos" class="col-md-8">
-     <div><b>Full Name:</b> ${name}</div>
-     % if not empty:
-     <div><b>Known emails:</b> ${known_emails_amount}</div>
-     <div><b>Commits:</b> ${commits_amount}</div>
-     <div><b>Lines changed:</b> ${line_modifieds_amount}</div>
-     <div><b>Projects contributed:</b> ${projects_amount}</div>
-     <div><b>Repository refs contributed:</b> ${repos_amount}</div>
-     <div><b>Activity duration:</b> ${duration}</div>
-     <div><b>Date of first commit:</b> ${first}</div>
-     <div><b>Date of last commit:</b> ${last}</div>
-     <!-- <div><b>Change average TTL (Time To Land):</b> ${ttl_average}</div> -->
-     % endif
+     <div id="infos-author_name"></div>
+     <div id="infos-known_emails"></div>
+     <div id="infos-commits_amount"></div>
+     <div id="infos-lines_changed"></div>
+     <div id="infos-projects_amount"></div>
+     <div id="infos-repos_amount"></div>
+     <div id="infos-duration"></div>
+     <div id="infos-first_commit"></div>
+     <div id="infos-last_commit"></div>
     </div>
    </div>
   </div>
@@ -200,7 +197,8 @@
 </div>
 
 <script type="text/javascript">
- contributor_page_init('${commits_amount}');
+ var commits_amount = get_infos(undefined, undefined, '${cid}', undefined);
+ contributor_page_init(commits_amount);
 </script>
 % else:
 <div class="row-fluid">
