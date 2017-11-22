@@ -14,15 +14,21 @@
 
 from datetime import timedelta
 
+import hashlib
+
+from pecan import abort
 from pecan import expose
+from pecan import conf
 
 from repoxplorer import index
+from repoxplorer.controllers import tops
 from repoxplorer.controllers import utils
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
 indexname = 'repoxplorer'
+xorkey = conf.get('xorkey') or 'default'
 
 
 class InfosController(object):
@@ -32,6 +38,7 @@ class InfosController(object):
         infos['commits_amount'] = commits_index.get_commits_amount(
             **query_kwargs)
         if not infos['commits_amount']:
+            infos['line_modifieds_amount'] = 0
             return infos
         authors = commits_index.get_authors(**query_kwargs)[1]
         infos['authors_amount'] = len(utils.authors_sanitize(idents, authors))
@@ -65,3 +72,49 @@ class InfosController(object):
             metadata, exc_groups)
 
         return self.get_generic_infos(c, idents, query_kwargs)
+
+    @expose('json')
+    def contributor(self, cid=None):
+        if not cid:
+            abort(404,
+                  detail="No contributor specified")
+
+        cid = utils.decrypt(xorkey, cid)
+        c = Commits(index.Connector(index=indexname))
+        idents = Contributors()
+        projects = Projects()
+        iid, ident = idents.get_ident_by_id(cid)
+
+        if not ident:
+            # No ident has been declared for that contributor
+            iid, ident = idents.get_ident_by_email(cid)
+        mails = ident['emails']
+        name = ident['name']
+        if not name:
+            raw_names = c.get_commits_author_name_by_emails([cid])
+            if cid not in raw_names:
+                # TODO: get_commits_author_name_by_emails must
+                # support look by committer email too
+                name = 'Unnamed'
+            else:
+                name = raw_names[cid]
+
+        p_filter = {}
+        query_kwargs = {
+            'mails': mails,
+            'merge_commit': False,
+            'repos': p_filter,
+        }
+
+        tops_ctl = tops.TopProjectsController()
+        top_projects = tops_ctl.gbycommits(c, projects, query_kwargs, None,
+                                           None)
+        top_repos = tops_ctl.gbycommits(c, projects, query_kwargs, True, None)
+
+        infos = {}
+        infos['name'] = name
+        infos['mails_amount'] = len(mails)
+        infos['projects_amount'] = len(top_projects)
+        infos['repos_amount'] = len(top_repos)
+        infos['gravatar'] = hashlib.md5(ident['default-email']).hexdigest()
+        return infos
