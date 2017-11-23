@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fae47921_bb3a1be6",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 733,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-23T17:00:40Z",
+      "side": 1,
+      "message": "missing \"Python\" for formatting?",
+      "revId": "201d83aec6bb3a52a9a9f171a5e7369dc0a6812a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_9b3f57d6",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 780,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-23T17:00:40Z",
+      "side": 1,
+      "message": "Same as above",
+      "revId": "201d83aec6bb3a52a9a9f171a5e7369dc0a6812a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
