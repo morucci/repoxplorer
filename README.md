@@ -871,6 +871,42 @@ curl "http://localhost:51000/api/v1/search/search_authors?query=john"
 }
 ```
 
+#### /api/v1/groups/
+
+This endpoint can be used to retrieve the defined groups, and search for
+groups that start with a specific prefix.
+
+```Shell
+curl "http://localhost:51000/api/v1/groups/"
+```
+```Python
+{
+  "me": {
+    "domains": [],
+    "description": "Just me and myself",
+    "members": {
+      "DhUDDxQsBgEBDgABQhcLCA--": {
+        "bounces": null,
+        "gravatar": "659d8254ef5235d8a163734889131b0e",
+        "name": "john.doe@example.com"
+      },
+      "DgQQCBAeWhQACAA1HhEADQcVWw8bCQ--": {
+        "bounces": null,
+        "gravatar": "b726b19f8e7c2e23e403e4b5d3ab4508",
+        "name": "doe.john@example.com"
+      }
+    }
+  },
+  "redhatters": {
+    "domains": [
+      "redhat.com"
+    ],
+    "description": "People from Red Hat",
+    "members": {}
+  }
+}
+```
+
 ### Parameters
 
 #### Available parameters for all endpoints
@@ -911,6 +947,11 @@ Only one of:
 
 - **query**: The query terms. Wildcards are authorized and a logical AND is
   used between terms.
+
+#### Group endpoint only
+
+- **prefix**: Return groups that start by `prefix`.
+- **nameonly**: if set to `true`, return only the group names. Otherwise, return all information.
 
 ## Contribute
 
