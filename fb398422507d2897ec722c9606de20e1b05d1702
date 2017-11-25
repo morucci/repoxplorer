@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fae47921_86893acd",
+        "filename": "README.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 576,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:54:25Z",
+      "side": 1,
+      "message": "I used to \"hide\" emails everywhere and just use a the gid/cid ciphered data. So we should remove that for now. Maybe later, as there is already some code in repoxplorer to authenticate API calls with an API key, we\u0027ll be able to return more \"sensitive\" data to the authenticated caller like the contributor emails.",
+      "range": {
+        "startLine": 576,
+        "startChar": 1,
+        "endLine": 576,
+        "endChar": 43
+      },
+      "revId": "fb398422507d2897ec722c9606de20e1b05d1702",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_668656bb",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:54:25Z",
+      "side": 1,
+      "message": "We do not need that info for a contributor.",
+      "range": {
+        "startLine": 140,
+        "startChar": 20,
+        "endLine": 140,
+        "endChar": 96
+      },
+      "revId": "fb398422507d2897ec722c9606de20e1b05d1702",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_469352fb",
+        "filename": "repoxplorer/controllers/infos.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:54:25Z",
+      "side": 1,
+      "message": "Could you use that method (also using inc_repos_detail to get repos amount) https://github.com/morucci/repoxplorer/commit/0ec6b652b940bab1717a29318bd5719ec0bf39e2#diff-1f392b002fa570f5679955800dfab96eR146 instead as top_projects_sanitized will be removed.",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 110,
+        "endChar": 73
+      },
+      "revId": "fb398422507d2897ec722c9606de20e1b05d1702",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_26904eec",
+        "filename": "templates/contributor.html",
+        "patchSetId": 4
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:54:25Z",
+      "side": 1,
+      "message": "Could you handle that commits_amount same as I did in the new PS I proposed in the parent patch. As well as build the page hide/show div according to that commits_amount.",
+      "range": {
+        "startLine": 200,
+        "startChar": 0,
+        "endLine": 200,
+        "endChar": 75
+      },
+      "revId": "fb398422507d2897ec722c9606de20e1b05d1702",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
