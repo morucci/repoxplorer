@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fae47921_e62fe6f4",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:09:16Z",
+      "side": 1,
+      "message": "This should have been an information returned by the info endpoint as well. But we can keep this API call into that new get_info function for the moment.",
+      "range": {
+        "startLine": 86,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 5
+      },
+      "revId": "8233120e7b16e174c7158173a25bad3f513c13dd",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_e6f2466f",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:09:16Z",
+      "side": 1,
+      "message": "So the problem by filling the info box with the repo_refs values is that you can\u0027t get sure when the call to api/v1/projects/projects will return then when the .done will be called. In other words sometime repo_refs will be 0 sometime it will be the right value. We need to chain the deferred calls. JS is completely asynchronous. I don\u0027t mastering that part but in some places in that file that is handled with deferred. So I\u0027ll propose a new patchset with this.",
+      "range": {
+        "startLine": 117,
+        "startChar": 78,
+        "endLine": 117,
+        "endChar": 87
+      },
+      "revId": "8233120e7b16e174c7158173a25bad3f513c13dd",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_a6ec3e90",
+        "filename": "templates/project.html",
+        "patchSetId": 2
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:09:16Z",
+      "side": 1,
+      "message": "Here the calls to JS functions, I wanted to remove them, like for groups or contributor pages, where only one init function is called. As the commits_amount handling is not obvious I think that\u0027s the good moment to do that, so check my new PS.\n\nAlso I think we can refactor the JS init functions and call the other API endpoints when the info API call return that there are commits so data to display. If no commits we just don\u0027t do more API calls and don\u0027t display other div like tops, commits histo ... The new PS make sure we first call the info API the get this commits_amount info then we react according to that value.",
+      "range": {
+        "startLine": 281,
+        "startChar": 0,
+        "endLine": 295,
+        "endChar": 8
+      },
+      "revId": "8233120e7b16e174c7158173a25bad3f513c13dd",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

@@ -22,6 +22,30 @@
       "revId": "24df1fc143c13301c5bc4b01c6288b5c158103bf",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fae47921_c6e742ab",
+        "filename": "repoxplorer/controllers/root.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-25T18:09:16Z",
+      "side": 0,
+      "message": "Yes, we need to display or not div elements from the DOM from the JS when commits_amount is 0 or \u003e 0. See my new PS.",
+      "parentUuid": "fae47921_db671f24",
+      "range": {
+        "startLine": 359,
+        "startChar": 0,
+        "endLine": 369,
+        "endChar": 36
+      },
+      "revId": "24df1fc143c13301c5bc4b01c6288b5c158103bf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
