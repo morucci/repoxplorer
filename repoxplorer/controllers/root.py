@@ -205,23 +205,6 @@ class RootController(object):
             'repos': p_filter,
         }
 
-        if dfrom is None or dto is None:
-            period = (None, None)
-        else:
-            period = (datetime.fromtimestamp(float(dfrom)),
-                      datetime.fromtimestamp(float(dto)))
-
-        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
-
-        if not infos['commits_amount']:
-            # No commit found
-            return {'name': gid,
-                    'description': description,
-                    'gid': gid,
-                    'period': period,
-                    'empty': True,
-                    'version': rx_version}
-
         top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail, pid)
 
@@ -231,26 +214,14 @@ class RootController(object):
             c, idents, query_kwargs)
 
         return {'name': gid,
-                'description': description,
-                'members_amount': len(members.keys()),
-                'commits_amount': infos['commits_amount'],
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
-                'line_modifieds_amount': infos['line_modifieds_amount'],
-                'period': period,
                 'repos': top_projects[0],
                 'repos_line_mdfds': top_projects[1],
                 'projects_amount': len(top_projects[2]),
                 'repos_amount': len(top_projects[3]),
-                'known_emails_amount': len(mails),
-                'first': datetime.fromtimestamp(infos['first']),
-                'last': datetime.fromtimestamp(infos['last']),
-                'duration': (datetime.fromtimestamp(infos['duration']) -
-                             datetime.fromtimestamp(0)),
-                'ttl_average': infos['ttl_average'],
                 'inc_repos_detail': inc_repos_detail,
                 'gid': gid,
-                'empty': False,
                 'version': rx_version}
 
     @expose(template='project.html')

@@ -21,9 +21,11 @@ from pecan import conf
 from pecan import expose
 
 from repoxplorer import index
+from repoxplorer.controllers import tops
 from repoxplorer.controllers import utils
 from repoxplorer.index.contributors import Contributors
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.projects import Projects
 
 indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
@@ -36,6 +38,7 @@ class GroupsController(object):
         ci = Commits(index.Connector(index=indexname))
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
+        projects = Projects()
         if nameonly == 'true':
             ret = dict([(k, None) for k in groups.keys()])
             if prefix:
@@ -43,6 +46,7 @@ class GroupsController(object):
                             k.lower().startswith(prefix)])
             return ret
         ret_groups = {}
+        tops_ctl = tops.TopProjectsController()
         for group, data in groups.items():
             if prefix and not group.lower().startswith(prefix):
                 continue
@@ -55,6 +59,7 @@ class GroupsController(object):
                 member['gravatar'] = hashlib.md5(
                     member['default-email']).hexdigest()
                 member['bounces'] = bounces
+                member['mails_amount'] = len(member['emails'])
                 del member['emails']
                 if not member['name']:
                     # Try to find it among commits
@@ -65,5 +70,20 @@ class GroupsController(object):
                     member['name'] = name
                 del member['default-email']
                 rg['members'][utils.encrypt(xorkey, id)] = member
+
+            # Fetch the number of projects and repos contributed to
+            p_filter = {}
+            query_kwargs = {
+                'mails': data['emails'],
+                'merge_commit': False,
+                'repos': p_filter,
+            }
+
+            top_projects = tops_ctl.gbycommits(ci, projects, query_kwargs,
+                                               None, None)
+            top_repos = tops_ctl.gbycommits(ci, projects, query_kwargs,
+                                            True, None)
+            rg['projects_amount'] = len(top_projects)
+            rg['repos_amount'] = len(top_repos)
             ret_groups[group] = rg
         return ret_groups
