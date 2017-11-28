@@ -963,26 +963,32 @@ curl "http://localhost:51000/api/v1/groups/"
 {
   "me": {
     "domains": [],
+    "projects_amount": 2,
     "description": "Just me and myself",
     "members": {
       "DhUDDxQsBgEBDgABQhcLCA--": {
         "bounces": null,
+        "mails_amount": 1,
         "gravatar": "659d8254ef5235d8a163734889131b0e",
-        "name": "john.doe@example.com"
+        "name": "John Doe"
       },
       "DgQQCBAeWhQACAA1HhEADQcVWw8bCQ--": {
         "bounces": null,
+        "mails_amount": 1,
         "gravatar": "b726b19f8e7c2e23e403e4b5d3ab4508",
-        "name": "doe.john@example.com"
+        "name": "Doe John"
       }
-    }
+    },
+    "repos_amount": 244
   },
   "redhatters": {
     "domains": [
       "redhat.com"
     ],
+    "projects_amount": 2,
     "description": "People from Red Hat",
-    "members": {}
+    "members": {},
+    "repos_amount": 340
   }
 }
 ```
