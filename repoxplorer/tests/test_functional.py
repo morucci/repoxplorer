@@ -204,8 +204,10 @@ class TestGroupsController(FunctionalTest):
                    patch.object(root.groups.Contributors,
                                 'get_ident_by_email'),
                    patch.object(root.groups.Commits,
-                                'get_commits_author_name_by_emails')]
-        with nested(*patches) as (gg, gi_by_email, gca):
+                                'get_commits_author_name_by_emails'),
+                   patch.object(root.groups.tops.TopProjectsController,
+                                'gbycommits')]
+        with nested(*patches) as (gg, gi_by_email, gca, gby_commits):
             gg.return_value = self.groups
             gi_by_email.side_effect = self.gi_by_email
             gca.return_value = self.gca
@@ -219,12 +221,16 @@ class TestGroupsController(FunctionalTest):
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'mails_amount': 0,
                             u'bounces': {}},
                         u'VFVWUVhcRFRV': {
                             u'name': u'Ampanman',
                             u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                            u'mails_amount': 1,
                             u'bounces': {}}
-                    }
+                    },
+                    u'projects_amount': 0,
+                    u'repos_amount': 0,
                 },
                 u'grp1': {
                     u'description': u'The group 1',
@@ -233,13 +239,17 @@ class TestGroupsController(FunctionalTest):
                         u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'Jane Doe',
                             u'gravatar': u'98685715b08980dac8b2379097c332f4',
+                            u'mails_amount': 0,
                             u'bounces': {
                                 'end-date': '2016-01-01'}},
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'mails_amount': 0,
                             u'bounces': {}}
-                    }
+                    },
+                    u'projects_amount': 0,
+                    u'repos_amount': 0,
                 }
             }
             self.assertDictEqual(response.json, expected_ret)
@@ -260,12 +270,16 @@ class TestGroupsController(FunctionalTest):
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                            u'mails_amount': 0,
                             u'bounces': {}},
                         u'VFVWUVhcRFRV': {
                             u'name': u'Ampanman',
                             u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                            u'mails_amount': 1,
                             u'bounces': {}}
-                    }
+                    },
+                    u'projects_amount': 0,
+                    u'repos_amount': 0,
                 }
             }
             self.assertDictEqual(response.json, expected_ret)
