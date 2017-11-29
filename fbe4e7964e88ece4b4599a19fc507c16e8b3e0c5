@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dae975fb_54c78245",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 6
+      },
+      "lineNbr": 492,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-29T17:50:11Z",
+      "side": 1,
+      "message": "it should be pdata, idata, cdata. There is 3 deferred in the get_infos function. I had issues when trying to scope to a specific project on a contributor page. I looked into it a provided few little modification to fix it in the last PS.",
+      "range": {
+        "startLine": 492,
+        "startChar": 20,
+        "endLine": 492,
+        "endChar": 32
+      },
+      "revId": "fbe4e7964e88ece4b4599a19fc507c16e8b3e0c5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
