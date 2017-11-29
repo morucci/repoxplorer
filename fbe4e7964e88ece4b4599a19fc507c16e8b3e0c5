@@ -22,6 +22,30 @@
       "revId": "fbe4e7964e88ece4b4599a19fc507c16e8b3e0c5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dae975fb_14d8da1c",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 6
+      },
+      "lineNbr": 492,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-11-29T18:09:22Z",
+      "side": 1,
+      "message": "Ohh I see. Thanks! I\u0027ll have a look at it, and modify the groups review accordingly.",
+      "parentUuid": "dae975fb_54c78245",
+      "range": {
+        "startLine": 492,
+        "startChar": 20,
+        "endLine": 492,
+        "endChar": 32
+      },
+      "revId": "fbe4e7964e88ece4b4599a19fc507c16e8b3e0c5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
