@@ -961,10 +961,10 @@ curl "http://localhost:51000/api/v1/groups/"
 ```
 ```Python
 {
-  "me": {
+  "Doe Organization": {
     "domains": [],
     "projects_amount": 2,
-    "description": "Just me and myself",
+    "description": "People from the Doe organization",
     "members": {
       "DhUDDxQsBgEBDgABQhcLCA--": {
         "bounces": null,
