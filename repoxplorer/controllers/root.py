@@ -14,8 +14,6 @@
 #  limitations under the License.
 
 
-import hashlib
-
 from pecan import expose
 from pecan import abort
 from pecan import conf
@@ -149,36 +147,13 @@ class RootController(object):
             period = (datetime.fromtimestamp(float(dfrom)),
                       datetime.fromtimestamp(float(dto)))
 
-        infos = self.api.v1.infos.get_generic_infos(c, idents, query_kwargs)
-
-        if not infos['commits_amount']:
-            # No commit found
-            return {'name': name,
-                    'gravatar': hashlib.md5(
-                        ident['default-email']).hexdigest(),
-                    'cid': utils.encrypt(xorkey, cid),
-                    'period': period,
-                    'empty': True,
-                    'version': rx_version}
-
         top_projects = self.api.v1.tops.top_projects_sanitize(
             c, projects, query_kwargs, inc_repos_detail)
 
         return {'name': name,
-                'gravatar': hashlib.md5(ident['default-email']).hexdigest(),
-                'commits_amount': infos['commits_amount'],
-                'line_modifieds_amount': infos['line_modifieds_amount'],
                 'period': period,
                 'repos': top_projects[0],
                 'repos_line_mdfds': top_projects[1],
-                'projects_amount': len(top_projects[2]),
-                'repos_amount': len(top_projects[3]),
-                'known_emails_amount': len(mails),
-                'first': datetime.fromtimestamp(infos['first']),
-                'last': datetime.fromtimestamp(infos['last']),
-                'duration': (datetime.fromtimestamp(infos['duration']) -
-                             datetime.fromtimestamp(0)),
-                'ttl_average': infos['ttl_average'],
                 'cid': utils.encrypt(xorkey, cid),
                 'empty': False,
                 'inc_repos_detail': inc_repos_detail,
