@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7ad8896b_ae6d37ce",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 6
+      },
+      "lineNbr": 674,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-30T15:02:35Z",
+      "side": 1,
+      "message": "I needed that change to make it work. In fact only idata contain the commits_amount value.",
+      "range": {
+        "startLine": 671,
+        "startChar": 0,
+        "endLine": 674,
+        "endChar": 90
+      },
+      "revId": "49ac8436e29c1ebbc87eb04c071c493fd6a2b8ca",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
