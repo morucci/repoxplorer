@@ -706,7 +706,11 @@ amount,gravatar,name,cid
 #### /api/v1/tops/projects/bycommits
 
 This endpoint is used to fetch the top projects list by the amount of commits.
-It makes more sense to use it with the **cid** or **gid** parameter.
+It makes more sense to use it with the **cid** or **gid** parameter. Note this endpoint can
+also output to CSV. When the CSV endpoint is used with the **inc_repos_detail** parameter,
+the project field can contain values separated by ';'. Indeed a ref (reponame:branch) can
+be part of multiple projects. Then make sure your CSV loader is properly configured to not
+interpret ';' as a separator.
 
 ```Shell
 curl "http://localhost:51000/api/v1/tops/projects/bycommits.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
@@ -722,6 +726,14 @@ curl "http://localhost:51000/api/v1/tops/projects/bycommits.json?cid=CQoUBQcJECQ
         "name": "Barbican"
     }
 ]
+```
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bycommits.csv?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
+```
+```
+amount,name
+56,Swift
+4,Barbican
 ```
 
 By using the parameter **inc_repos_detail** the response outputs the
@@ -749,11 +761,24 @@ curl "http://localhost:51000/api/v1/tops/projects/bycommits.json?cid=CQoUBQcJECQ
     ...
 ]
 ```
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bycommits.csv?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-&inc_repos_detail=true"
+```
+```
+amount,name,projects
+41,swift:master,Swift
+39,swift:stable/ocata,Swift
+...
+```
 
 #### /api/v1/tops/projects/bylchanged
 
 This endpoint is used to fetch the top projects list by the amount of lines changed.
-It makes more sense to use it with the **cid** or **gid** parameter.
+It makes more sense to use it with the **cid** or **gid** parameter. Note this endpoint can
+also output to CSV. When the CSV endpoint is used with the **inc_repos_detail** parameter,
+the project field can contain values separated by ';'. Indeed a ref (reponame:branch) can
+be part of multiple projects. Then make sure your CSV loader is properly configured to not
+interpret ';' as a separator.
 
 ```Shell
 curl "http://localhost:51000/api/v1/tops/projects/bylchanged.json?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
@@ -769,6 +794,15 @@ curl "http://localhost:51000/api/v1/tops/projects/bylchanged.json?cid=CQoUBQcJEC
         "name": "Barbican"
     }
 ]
+```
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bylchanged.csv?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-"
+```
+```
+amount,name
+21853,Swift
+205,Barbican
 ```
 
 By using the parameter **inc_repos_detail** the response outputs the
@@ -795,6 +829,16 @@ curl "http://localhost:51000/api/v1/tops/projects/bylchanged.json?cid=CQoUBQcJEC
     },
     ...
 ]
+```
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/projects/bylchanged.csv?cid=CQoUBQcJECQMCAAACwEXEUgCGgE-&inc_repos_detail=true"
+```
+```
+amount,name,projects
+20172,swift:master,Swift
+20033,swift:stable/ocata,Swift
+...
 ```
 
 #### /api/v1/histo/commits
