@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "7ad8896b_ae7bf77a",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 6
+      },
+      "lineNbr": 672,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-11-30T15:20:13Z",
+      "side": 1,
+      "message": "Oh yes you\u0027re right !. Do you mind updating the patch ? Then fell free to merge.",
+      "parentUuid": "7ad8896b_6eaf4fe4",
+      "range": {
+        "startLine": 672,
+        "startChar": 6,
+        "endLine": 672,
+        "endChar": 25
+      },
+      "revId": "49ac8436e29c1ebbc87eb04c071c493fd6a2b8ca",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7ad8896b_ae6d37ce",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 6
