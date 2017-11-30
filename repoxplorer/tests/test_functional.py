@@ -596,14 +596,14 @@ class TestTopsController(FunctionalTest):
             self.assertEqual(len(response.json), 2)
 
             # Validate the CSV endpoint mode
+            # First convert all expected dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
             response = self.app.get(
                 '/api/v1/tops/authors/bylchanged?pid=test',
                 headers={'Accept': 'text/csv'})
             assert response.status_int == 200
             csvret = build_dict_from_csv(response.body)
-            # Convert all dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
             self.assertDictEqual(csvret[0], expected_top1)
             self.assertDictEqual(csvret[1], expected_top2)
             self.assertEqual(len(csvret), 2)
@@ -632,15 +632,15 @@ class TestTopsController(FunctionalTest):
             self.assertEqual(len(response.json), 2)
 
             # Validate the CSV endpoint mode
+            # First convert all expected dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
             response = self.app.get(
                 '/api/v1/tops/authors/bycommits?'
                 'pid=test&inc_merge_commit=on',
                 headers={'Accept': 'text/csv'})
             assert response.status_int == 200
             csvret = build_dict_from_csv(response.body)
-            # Convert all dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
             self.assertDictEqual(csvret[0], expected_top1)
             self.assertDictEqual(csvret[1], expected_top2)
             self.assertEqual(len(csvret), 2)
@@ -663,14 +663,39 @@ class TestTopsController(FunctionalTest):
             response = self.app.get(
                 '/api/v1/tops/projects/bycommits?cid='
                 '%s&inc_repos_detail=true' % cid)
-            expected_top1 = {
+            expected_top1_d = {
                 'amount': 1,
                 'name': 'monkey:master',
                 'projects': ['test']
             }
             assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertDictEqual(response.json[0], expected_top1_d)
             self.assertEqual(len(response.json), 1)
+
+            # Validate the CSV endpoint mode
+            # First convert all expected dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            for k, v in expected_top1_d.items():
+                if isinstance(v, list):
+                    # A list, that will be semi column separated, can be return
+                    # when inc_repos_detail is passed to this endpoint
+                    expected_top1_d[k] = ";".join(v)
+                else:
+                    expected_top1_d[k] = str(v)
+            response = self.app.get(
+                '/api/v1/tops/projects/bycommits?'
+                'cid=%s' % cid,
+                headers={'Accept': 'text/csv'})
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            self.assertDictEqual(csvret[0], expected_top1)
+            response = self.app.get(
+                '/api/v1/tops/projects/bycommits?'
+                'cid=%s&inc_repos_detail=true' % cid,
+                headers={'Accept': 'text/csv'})
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            self.assertDictEqual(csvret[0], expected_top1_d)
 
     def test_get_tops_projects_bylchanged(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
@@ -690,14 +715,39 @@ class TestTopsController(FunctionalTest):
             response = self.app.get(
                 '/api/v1/tops/projects/bylchanged?cid='
                 '%s&inc_repos_detail=true' % cid)
-            expected_top1 = {
+            expected_top1_d = {
                 'amount': 11,
                 'name': 'monkey:master',
                 'projects': ['test']
             }
             assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertDictEqual(response.json[0], expected_top1_d)
             self.assertEqual(len(response.json), 1)
+
+            # Validate the CSV endpoint mode
+            # First convert all expected dict values to str
+            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+            for k, v in expected_top1_d.items():
+                if isinstance(v, list):
+                    # A list, that will be semi column separated, can be return
+                    # when inc_repos_detail is passed to this endpoint
+                    expected_top1_d[k] = ";".join(v)
+                else:
+                    expected_top1_d[k] = str(v)
+            response = self.app.get(
+                '/api/v1/tops/projects/bylchanged?'
+                'cid=%s' % cid,
+                headers={'Accept': 'text/csv'})
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            self.assertDictEqual(csvret[0], expected_top1)
+            response = self.app.get(
+                '/api/v1/tops/projects/bylchanged?'
+                'cid=%s&inc_repos_detail=true' % cid,
+                headers={'Accept': 'text/csv'})
+            assert response.status_int == 200
+            csvret = build_dict_from_csv(response.body)
+            self.assertDictEqual(csvret[0], expected_top1_d)
 
 
 class TestSearchController(FunctionalTest):
