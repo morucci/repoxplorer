@@ -645,6 +645,32 @@ class TestTopsController(FunctionalTest):
             self.assertDictEqual(csvret[1], expected_top2)
             self.assertEqual(len(csvret), 2)
 
+    def test_get_tops_authors_diff(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            expected_top1 = {
+                'gravatar': 'c184ebe163aa66b25668757000116849',
+                'amount': 2,
+                'name': 'Jean Paul',
+                'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
+            }
+            expected_top2 = {
+                'gravatar': '505dcbea438008f24001e2928cdc0678',
+                'amount': 1,
+                'name': 'Nakata Daisuke',
+                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+            }
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get(
+                '/api/v1/tops/authors/diff?pid=test&dfromref=2014-01-01'
+                '&dtoref=2014-09-03&dfrom=2014-09-04&dto=2017-01-01'
+                '&inc_merge_commit=on')
+            assert response.status_int == 200
+
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertDictEqual(response.json[1], expected_top2)
+            self.assertEqual(len(response.json), 2)
+
     def test_get_tops_projects_bycommits(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
         with patch.object(root.Projects, 'get_projects') as m:
