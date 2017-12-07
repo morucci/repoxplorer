@@ -35,6 +35,22 @@ xorkey = conf.get('xorkey') or 'default'
 
 COMMITS = [
     {
+        'sha': '3597334f2cb10772950c97ddf2f6cc17b183',
+        'author_date': 1393860653,
+        'committer_date': 1393860653,
+        'ttl': 0,
+        'author_name': 'Jean Paul',
+        'committer_name': 'Jean Paul',
+        'author_email': 'j.paul@joker.org',
+        'committer_email': 'j.paul@joker.org',
+        'repos': [
+            'https://github.com/nakata/monkey.git:monkey:master', ],
+        'line_modifieds': 8,
+        'merge_commit': False,
+        'commit_msg': 'Test commit',
+        'implement': ['feature 1', ],
+    },
+    {
         'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
         'author_date': 1410456005,
         'committer_date': 1410456005,
@@ -414,8 +430,8 @@ class TestHistoController(FunctionalTest):
             m.return_value = self.projects
             response = self.app.get('/api/v1/histo/authors?pid=test')
         assert response.status_int == 200
-        self.assertEqual(response.json[0]['value'], 2)
-        self.assertEqual(response.json[0]['date'], '2014-09-11')
+        self.assertEqual(response.json[0]['value'], 1)
+        self.assertEqual(response.json[0]['date'], '2014-03-01')
 
         with patch.object(root.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
@@ -432,7 +448,14 @@ class TestHistoController(FunctionalTest):
         assert response.status_int == 200
         self.assertListEqual(
             response.json,
-            [{u'date': u'2014-09-11', u'value': 2}])
+            [{u'date': u'2014-03-01', u'value': 1},
+             {u'date': u'2014-04-01', u'value': 0},
+             {u'date': u'2014-05-01', u'value': 0},
+             {u'date': u'2014-06-01', u'value': 0},
+             {u'date': u'2014-07-01', u'value': 0},
+             {u'date': u'2014-08-01', u'value': 0},
+             {u'date': u'2014-09-01', u'value': 2}]
+        )
 
 
 class TestInfosController(FunctionalTest):
@@ -457,12 +480,12 @@ class TestInfosController(FunctionalTest):
 
     def test_get_infos(self):
         expected = {
-            'first': 1410456005,
+            'first': 1393860653,
             'last': 1410456005,
-            'commits_amount': 2,
+            'commits_amount': 3,
             'authors_amount': 2,
-            'line_modifieds_amount': 21,
-            'duration': 0,
+            'line_modifieds_amount': 29,
+            'duration': 16595352,
             'ttl_average': 0
         }
         with patch.object(root.Projects, 'get_projects') as m:
@@ -576,7 +599,7 @@ class TestTopsController(FunctionalTest):
     def test_get_tops_authors_bylchanged(self):
         with patch.object(root.Projects, 'get_projects') as m:
             expected_top1 = {
-                'amount': 11,
+                'amount': 19,
                 'gravatar': 'c184ebe163aa66b25668757000116849',
                 'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
                 'name': 'Jean Paul'
@@ -612,7 +635,7 @@ class TestTopsController(FunctionalTest):
         with patch.object(root.Projects, 'get_projects') as m:
             expected_top1 = {
                 'gravatar': 'c184ebe163aa66b25668757000116849',
-                'amount': 2,
+                'amount': 3,
                 'name': 'Jean Paul',
                 'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
             }
@@ -645,6 +668,25 @@ class TestTopsController(FunctionalTest):
             self.assertDictEqual(csvret[1], expected_top2)
             self.assertEqual(len(csvret), 2)
 
+    def test_get_tops_authors_diff(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            expected_diff = {
+                'gravatar': '505dcbea438008f24001e2928cdc0678',
+                'amount': 1,
+                'name': 'Nakata Daisuke',
+                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+            }
+            m.return_value = self.projects
+            root.tops.indexname = 'repoxplorertest'
+            response = self.app.get(
+                '/api/v1/tops/authors/diff?pid=test&dfromref=2014-01-01'
+                '&dtoref=2014-09-03&dfrom=2014-09-04&dto=2017-01-01'
+                '&inc_merge_commit=on')
+            assert response.status_int == 200
+
+            self.assertDictEqual(response.json[0], expected_diff)
+            self.assertEqual(len(response.json), 1)
+
     def test_get_tops_projects_bycommits(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
         with patch.object(root.Projects, 'get_projects') as m:
@@ -653,7 +695,7 @@ class TestTopsController(FunctionalTest):
             response = self.app.get(
                 '/api/v1/tops/projects/bycommits?cid=%s' % cid)
             expected_top1 = {
-                'amount': 1,
+                'amount': 2,
                 'name': 'test'
             }
             assert response.status_int == 200
@@ -664,7 +706,7 @@ class TestTopsController(FunctionalTest):
                 '/api/v1/tops/projects/bycommits?cid='
                 '%s&inc_repos_detail=true' % cid)
             expected_top1_d = {
-                'amount': 1,
+                'amount': 2,
                 'name': 'monkey:master',
                 'projects': ['test']
             }
@@ -705,7 +747,7 @@ class TestTopsController(FunctionalTest):
             response = self.app.get(
                 '/api/v1/tops/projects/bylchanged?cid=%s' % cid)
             expected_top1 = {
-                'amount': 11,
+                'amount': 19,
                 'name': 'test'
             }
             assert response.status_int == 200
@@ -716,7 +758,7 @@ class TestTopsController(FunctionalTest):
                 '/api/v1/tops/projects/bylchanged?cid='
                 '%s&inc_repos_detail=true' % cid)
             expected_top1_d = {
-                'amount': 11,
+                'amount': 19,
                 'name': 'monkey:master',
                 'projects': ['test']
             }
@@ -800,13 +842,14 @@ class TestMetadataController(FunctionalTest):
             assert response.status_int == 200
             self.assertDictEqual(
                 response.json,
-                {u'implement': 2, u'close-bug': 1})
+                {u'implement': 3, u'close-bug': 1})
             response = self.app.get(
                 '/api/v1/metadata/metadata?key=implement&pid=test')
             assert response.status_int == 200
+            self.assertIn('feature 1', response.json)            
             self.assertIn('feature 35', response.json)
             self.assertIn('feature 36', response.json)
-            self.assertEqual(len(response.json), 2)
+            self.assertEqual(len(response.json), 3)
 
 
 class TestTagsController(FunctionalTest):
@@ -936,10 +979,10 @@ class TestCommitsController(FunctionalTest):
                 '/api/v1/commits/commits?pid=test&'
                 'metadata=implement:*')
             assert response.status_int == 200
-            self.assertEqual(response.json[1], 2)
+            self.assertEqual(response.json[1], 3)
 
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test&'
                 'inc_merge_commit=on')
             assert response.status_int == 200
-            self.assertEqual(response.json[1], 3)
+            self.assertEqual(response.json[1], 4)

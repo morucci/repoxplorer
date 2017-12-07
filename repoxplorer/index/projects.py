@@ -210,6 +210,8 @@ class Projects(YAMLDefinition):
         self.projects.update(merged_projects)
 
     def _enrich_projects(self):
+        if self.enriched:
+            return  # cannot enrich twice
         # First resolve templates references
         for pid, detail in self.projects.items():
             for rid, repo in detail['repos'].items():
