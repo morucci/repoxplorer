@@ -859,6 +859,48 @@ amount,name,projects
 ...
 ```
 
+#### /api/v1/tops/diff
+
+This endpoint takes a reference timeframe (parameters **dfromref**/**dtoref**) and a new timeframe
+(parameters **dfrom**/**dto**), and returns the authors in the new timeframe that were not present
+in the reference timeframe. In other words, it returns the new contributors to the project in
+the specified timeframe.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors/diff?pid=Barbican&dfromref=2017-11-01&dtoref=2017-11-05&dfrom=2017-11-06&dto=2017-11-16"
+```
+This command will return the new contributors between November 6th and November 16th 2017,
+using the period from November 1st and November 5th 2017 as a reference.
+```Python
+[
+    {
+        "amount": 13,
+        "cid": "AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-",
+        "gravatar": "ae4be8ffcc6d487934c3df3d3708049a",
+        "name": "Douglas Mendizabal"
+    },
+    {
+        "amount": 2,
+        "cid": "AgkTGVsNEAUIJgYYDR0ISwUOGA--",
+        "gravatar": "ac3cb4707ed65da7764a4b3a9fe825e6",
+        "name": "Adam Harwell"
+    },
+    ...
+]
+```
+
+This endpoint can also output to CSV.
+
+```Shell
+curl "http://localhost:51000/api/v1/tops/authors/diff.csv?pid=Barbican&dfromref=2017-11-01&dtoref=2017-11-05&dfrom=2017-11-06&dto=2017-11-16"
+```
+```
+amount,gravatar,name,cid
+13,ae4be8ffcc6d487934c3df3d3708049a,Douglas Mendizabal,AAoTBhkNB0oIAw8RBQ4FBwcNNR4VBw4VERQPEUoGCQw-
+2,ac3cb4707ed65da7764a4b3a9fe825e6,Adam Harwell,AgkTGVsNEAUIJgYYDR0ISwUOGA--
+...
+```
+
 #### /api/v1/histo/commits
 
 This endpoint is used to fetch ready to use histogram data about
@@ -1087,6 +1129,11 @@ Only one of:
 
 - **inc_repos_detail**: Set to *true* or unset to include or not
   repositories details in the response.
+
+#### tops/diff endpoint only
+
+- **dfromref**: Start of the reference period to use when getting new contributors, using the format: %Y-%m-%d.
+- **dtoref**: End of the reference period to use when getting new contributors, using the format: %Y-%m-%d.
 
 ## Contribute
 

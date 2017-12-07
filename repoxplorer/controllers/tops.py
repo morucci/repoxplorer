@@ -15,6 +15,7 @@
 import copy
 import hashlib
 
+from pecan import abort
 from pecan import conf
 from pecan import expose
 
@@ -44,7 +45,10 @@ class TopAuthorsController(object):
                  'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
-                                      reverse=True)[:top]
+                                      reverse=True)
+        if top > 0:
+            top_authors_s_sorted = top_authors_s_sorted[:top]
+
         name_to_requests = []
         for v in top_authors_s_sorted:
             if not v['name']:
@@ -57,16 +61,14 @@ class TopAuthorsController(object):
             del v['email']
         return top_authors_s_sorted
 
-    def gbycommits(self, c, idents, query_kwargs):
-        top = 25
+    def gbycommits(self, c, idents, query_kwargs, top=25):
         authors = c.get_authors(**query_kwargs)[1]
         top_authors = self.top_authors_sanitize(
             idents, authors, c, top)
 
         return top_authors
 
-    def gbylchanged(self, c, idents, query_kwargs):
-        top = 25
+    def gbylchanged(self, c, idents, query_kwargs, top=25):
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)[1]
 
         top_authors_modified = self.top_authors_sanitize(
@@ -105,6 +107,48 @@ class TopAuthorsController(object):
             dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
 
         return self.gbycommits(c, idents, query_kwargs)
+
+    @expose('json')
+    @expose('csv:', content_type='text/csv')
+    def diff(self, pid=None, tid=None, cid=None, gid=None,
+             dfrom=None, dto=None, dfromref=None, dtoref=None,
+             inc_merge_commit=None, inc_repos=None, metadata=None,
+             exc_groups=None):
+
+        if not dfrom or not dto:
+            abort(404,
+                  detail="Must specify dfrom and dto dates for the new "
+                         "contributors")
+
+        if not dfromref or not dtoref:
+            abort(404,
+                  detail="Must specify dfromref and dtoref dates for the "
+                         "reference period to compute new contributors")
+
+        # Get contributors for the new period
+        c = Commits(index.Connector(index=indexname))
+        projects_index = Projects()
+        idents = Contributors()
+
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+
+        authors_new = self.gbycommits(c, idents, query_kwargs, top=-1)
+
+        # Now get contributors for the old reference period
+        query_kwargs = utils.resolv_filters(
+            projects_index, idents, pid, tid, cid, gid,
+            dfromref, dtoref, inc_repos, inc_merge_commit, None, exc_groups)
+
+        authors_old = self.gbycommits(c, idents, query_kwargs, top=-1)
+
+        # And compute the difference
+        cids_new = set([auth['cid'] for auth in authors_new]) - \
+            set([auth['cid'] for auth in authors_old])
+        authors_diff = [author for author in authors_new
+                        if author['cid'] in cids_new]
+        return authors_diff
 
 
 class TopProjectsController(object):
