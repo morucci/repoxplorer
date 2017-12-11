@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ae2911b_8f3f19d6",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T10:11:17Z",
+      "side": 1,
+      "message": "This can be instantiated just once for the new and ref period.",
+      "range": {
+        "startLine": 128,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 31
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_6f250dc1",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T10:11:17Z",
+      "side": 1,
+      "message": "Can be removed.",
+      "range": {
+        "startLine": 139,
+        "startChar": 0,
+        "endLine": 141,
+        "endChar": 31
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_2f2f05a3",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T10:11:17Z",
+      "side": 1,
+      "message": "The cid list of authors_old should be computed just once, not in each loop.\n\nUsing set could simplify the code. For instance (not tested):\n\ncids \u003d set([ath[\u0027cid\u0027] for ath in authors_new]) - set([ath[\u0027cid\u0027] for ath in authors_old)\nauthors_diff \u003d [authors_new[cid] for cid in cids]\n\nBut we\u0027ll need to sort again the authors_diff I guess.",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 154,
+        "endChar": 43
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_af11b55f",
+        "filename": "repoxplorer/tests/test_functional.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 570,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T10:11:17Z",
+      "side": 1,
+      "message": "To improve the test I think we should have someone in the ref period so to do that we can add a new commit of Nakata Daisuke between 2014-01-01 and 2014-09-01 just for the TestTopsController. Others tests in that class will need to be slightly adapted then too.",
+      "range": {
+        "startLine": 570,
+        "startChar": 8,
+        "endLine": 570,
+        "endChar": 34
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
