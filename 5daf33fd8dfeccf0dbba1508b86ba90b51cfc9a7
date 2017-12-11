@@ -235,6 +235,30 @@
       "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_125fcc0f",
+        "filename": "repoxplorer/tests/test_functional.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 570,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-12-11T12:18:35Z",
+      "side": 1,
+      "message": "Ack, I\u0027ll add it here.",
+      "parentUuid": "3ae2911b_b26d98ce",
+      "range": {
+        "startLine": 570,
+        "startChar": 8,
+        "endLine": 570,
+        "endChar": 34
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
