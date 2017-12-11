@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "3ae2911b_f27320b3",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T12:03:59Z",
+      "side": 1,
+      "message": "Oh ok, then yes there is an issue with the resolv_filters. Maybe removing projects_index._enrich_projects() will be enough as later in resolv_filters get_projects() is called and this one do the enrich only if not done yet.",
+      "parentUuid": "3ae2911b_9224dcaf",
+      "range": {
+        "startLine": 128,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 31
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3ae2911b_6f250dc1",
         "filename": "repoxplorer/controllers/tops.py",
         "patchSetId": 3
@@ -119,6 +143,30 @@
     },
     {
       "key": {
+        "uuid": "3ae2911b_d2782492",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T12:03:59Z",
+      "side": 1,
+      "message": "This line from the snippet I proposed\nauthors_diff \u003d [authors_new[cid] for cid in cids]\nshould contain the list of authors not only the cid.",
+      "parentUuid": "3ae2911b_323408dd",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 154,
+        "endChar": 43
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3ae2911b_af11b55f",
         "filename": "repoxplorer/tests/test_functional.py",
         "patchSetId": 3
@@ -154,6 +202,30 @@
       "side": 1,
       "message": "Yes, I thought about it. Should it be a follow-up review, to avoid adding this complexity to this one?",
       "parentUuid": "3ae2911b_af11b55f",
+      "range": {
+        "startLine": 570,
+        "startChar": 8,
+        "endLine": 570,
+        "endChar": 34
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_b26d98ce",
+        "filename": "repoxplorer/tests/test_functional.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 570,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-11T12:03:59Z",
+      "side": 1,
+      "message": "I prefer in this patch :)",
+      "parentUuid": "3ae2911b_f24c4078",
       "range": {
         "startLine": 570,
         "startChar": 8,
