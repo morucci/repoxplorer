@@ -139,6 +139,30 @@
       "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_f24c4078",
+        "filename": "repoxplorer/tests/test_functional.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 570,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2017-12-11T11:41:08Z",
+      "side": 1,
+      "message": "Yes, I thought about it. Should it be a follow-up review, to avoid adding this complexity to this one?",
+      "parentUuid": "3ae2911b_af11b55f",
+      "range": {
+        "startLine": 570,
+        "startChar": 8,
+        "endLine": 570,
+        "endChar": 34
+      },
+      "revId": "5daf33fd8dfeccf0dbba1508b86ba90b51cfc9a7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
