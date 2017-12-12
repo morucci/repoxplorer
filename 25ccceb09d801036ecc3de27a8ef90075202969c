@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ae2911b_92af3c94",
+        "filename": "README.md",
+        "patchSetId": 7
+      },
+      "lineNbr": 877,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-12T11:56:41Z",
+      "side": 1,
+      "message": "I just changed the values to be more realistic.",
+      "revId": "25ccceb09d801036ecc3de27a8ef90075202969c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
