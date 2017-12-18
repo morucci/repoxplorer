@@ -15,6 +15,7 @@
 
 from collections import OrderedDict
 
+from pecan import abort
 from pecan import expose
 
 from repoxplorer import version
@@ -25,6 +26,21 @@ rx_version = version.get_version()
 
 
 class ProjectsController(object):
+
+    def get_repos(self, pid=None, tid=None):
+        projects_index = Projects()
+        if pid:
+            repos = projects_index.get_projects().get(pid)
+        elif tid:
+            repos = projects_index.get_tags().get(tid)
+        else:
+            abort(404,
+                  detail="A tag ID or project ID must be passed as parameter")
+
+        if repos is None:
+            abort(404,
+                  detail='Project ID or Tag ID has not been found')
+        return repos
 
     def get_projects(self):
         projects_index = Projects()
@@ -38,3 +54,7 @@ class ProjectsController(object):
     @expose('json')
     def projects(self):
         return self.get_projects()
+
+    @expose('json')
+    def repos(self, pid=None, tid=None):
+        return self.get_repos(pid, tid)['repos']

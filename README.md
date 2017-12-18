@@ -534,6 +534,29 @@ curl "http://localhost:51000/api/v1/projects/projects"
 }
 ```
 
+#### /api/v1/projects/repos
+
+This endpoint permits to retrieve repositories for a project or tag.
+
+```Shell
+curl "http://localhost:51000/api/v1/projects/repos?pid=Barbican"
+```
+
+```Python
+[
+    {
+        "branch": "master",
+        "gitweb": "https://github.com/openstack/barbican/commit/%(sha)s",
+        "name": "barbican",
+        "parsers": [],
+        "releases": [],
+        "tags": [],
+        "uri": "https://github.com/openstack/barbican"
+    },
+    ...
+]
+```
+
 #### /api/v1/infos/infos
 
 This endpoint is used to fetch project, contributor, group or tag

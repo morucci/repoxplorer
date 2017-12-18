@@ -575,6 +575,19 @@ class TestProjectsController(FunctionalTest):
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
 
+    def test_get_repos(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            m.return_value = self.projects
+            response = self.app.get('/api/v1/projects/repos?pid=test')
+            assert response.status_int == 200
+            self.assertEqual(len(response.json), 1)
+            print response.json
+            self.assertEqual(response.json[0]['name'], 'monkey')
+            response = self.app.get('/api/v1/projects/repos?tid=python')
+            assert response.status_int == 200
+            self.assertEqual(len(response.json), 1)
+            self.assertEqual(response.json[0]['name'], 'monkey')
+
 
 class TestTopsController(FunctionalTest):
 
