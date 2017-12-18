@@ -117,9 +117,9 @@ function get_infos(pid, tid, cid, gid) {
     gp_d = $.when();
     gc_d = $.when();
     gg_d = $.when();
-    if(tid || pid) {
-        gp_d = $.getJSON("api/v1/projects/projects");
-
+    if(pid || tid) {
+        gr_d = $.getJSON("api/v1/projects/repos",
+                         {'pid': pid, 'tid': tid});
     }
     if(cid) {
         gc_d = $.getJSON("api/v1/infos/contributor", {'cid': cid});
@@ -129,11 +129,11 @@ function get_infos(pid, tid, cid, gid) {
     }
 
     gi_d = $.getJSON("api/v1/infos/infos", args);
-    return $.when(gp_d, gi_d, gc_d, gg_d)
+    return $.when(gr_d, gi_d, gc_d, gg_d)
         .done(
-            function(pdata, idata, cdata, gdata) {
-                if (pid) {
-                    pdata = pdata[0];
+            function(rdata, idata, cdata, gdata) {
+                if (pid || tid) {
+                    rdata = rdata[0];
                 }
                 if (cid) {
                     cdata = cdata[0];
@@ -144,17 +144,8 @@ function get_infos(pid, tid, cid, gid) {
                 idata = idata[0];
                 var ib_data = {};
                 var repo_refs = 0;
-                if (pid) {
-                    repo_refs = pdata['projects'][pid]['repos'].length;
-                } else if (tid) {
-                    // We have to go through every repo and find the tag
-                    $.each(pdata['projects'], function(k, value) {
-                        $.each(value['repos'], function(key, repo) {
-                            if (repo.tags.indexOf(tid) != -1) {
-                                repo_refs++;
-                            }
-                        });
-                    });
+                if (pid || tid) {
+                    repo_refs = rdata.length;
                 }
 
                 ib_data.repo_refs = repo_refs;
@@ -221,12 +212,12 @@ function projects_page_init() {
         if (data['tags'].length > 0) {
             tagoutput += '<div class="panel panel-default">' +
                    '<div class="panel-heading">' +
-                   '<h3 class="panel-title text-left"><b>Tags list</b></h3>' +
+                   '<h3 class="panel-title text-left"><b>Tags</b></h3>' +
                    '</div>' +
                    '<div class="panel-body">' +
                    '<h4>';
             $.each(data['tags'], function(key, tag) {
-                tagoutput +='<a href="project.html?tid=' + tag + '">' + tag + ' </a>';
+                tagoutput +='<a href="project.html?tid=' + tag + '">' + tag + '</a> ';
             });
             tagoutput += '</h4></div></div>';
         }
@@ -513,7 +504,7 @@ function contributor_page_init() {
     });
 
     d = get_infos(pid, undefined, cid, undefined);
-    d.done(function(pdata, idata, cdata, gdata) {
+    d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
         if(idata.commits_amount > 0) {
             install_paginator(pid, undefined, cid, undefined, idata.commits_amount, true);
@@ -660,7 +651,7 @@ function group_page_init(commits_amount) {
     });
 
     d = get_infos(pid, undefined, undefined, gid);
-    d.done(function(pdata, idata, cdata, gdata) {
+    d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
 
         if(idata.commits_amount > 0) {
@@ -825,7 +816,7 @@ function project_page_init() {
 
     // Get the info and continue to fill the page if commits_amount is > 0
     d = get_infos(projectid, tagid, undefined, undefined);
-    d.done(function(pdata, idata, cdata, gdata) {
+    d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
         if (idata.commits_amount > 0) {
             install_paginator(

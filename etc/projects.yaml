@@ -10,6 +10,8 @@ projects: {}
 #    - stable/mitaka
 #    - stable/newton
 #    - stable/ocata
+#    tags:
+#      - python
 #    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
 #
 #projects:
@@ -445,8 +447,12 @@ projects: {}
 #    repos:
 #      barbican:
 #        template: default
+#        tags:
+#          - security
 #      python-barbicanclient:
 #        template: default
+#        tags:
+#          - security
 #  Swift:
 #    description: The Swift project
 #    logo: |
@@ -2323,5 +2329,9 @@ projects: {}
 #    repos:
 #      swift:
 #        template: default
+#        tags:
+#          - storage
 #      python-swiftclient:
 #        template: default
+#        tags:
+#          - storage
