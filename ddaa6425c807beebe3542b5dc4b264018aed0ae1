@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fa0d59b9_4d236d06",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-19T14:21:43Z",
+      "side": 1,
+      "message": "Yes there is special reason :) I prefer in this order :D",
+      "parentUuid": "fa0d59b9_2d76f93e",
+      "revId": "ddaa6425c807beebe3542b5dc4b264018aed0ae1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa0d59b9_ed8ea126",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2017-12-19T10:39:07Z",
       "side": 1,
       "message": "It might make more sense to name this variable gr_d now, but it\u0027s just nitpicking.",
+      "revId": "ddaa6425c807beebe3542b5dc4b264018aed0ae1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa0d59b9_2d2039f7",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2017-12-19T14:21:43Z",
+      "side": 1,
+      "message": "Yes you are right I\u0027m fixing that.",
+      "parentUuid": "fa0d59b9_ed8ea126",
       "revId": "ddaa6425c807beebe3542b5dc4b264018aed0ae1",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
