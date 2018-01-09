@@ -176,6 +176,53 @@ class TestRootController(FunctionalTest):
         assert response.status_int == 200
 
 
+class TestErrorController(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+        cls.c = Commits(cls.con)
+        cls.c.add_commits(COMMITS)
+        cls.projects = {
+            'test': {
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
+    def test_api_infos_pid_not_found(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            headers = {'Accept': 'application/json'}
+            response = self.app.get(
+                '/api/v1/infos/infos?pid=notexists',
+                headers=headers, status='*')
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(
+            response.json['description'],
+            'The project has not been found')
+
+    def test_api_project_repos_pid_not_found(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            headers = {'Accept': 'application/json'}
+            response = self.app.get(
+                '/api/v1/projects/repos?pid=notexists',
+                headers=headers, status='*')
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(
+            response.json['description'],
+            'Project ID or Tag ID has not been found')
+
+
 class TestGroupsController(FunctionalTest):
 
     @classmethod

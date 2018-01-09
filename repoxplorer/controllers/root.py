@@ -17,6 +17,7 @@
 from pecan import expose
 from pecan import abort
 from pecan import conf
+from pecan import request
 
 from datetime import datetime
 
@@ -65,9 +66,18 @@ class APIController(object):
     v1 = V1Controller()
 
 
+class ErrorController(object):
+
+    @expose('json')
+    def e404(self):
+        message = str(request.environ.get('pecan.original_exception', ''))
+        return dict(status=404, message=message)
+
+
 class RootController(object):
 
     api = APIController()
+    error = ErrorController()
 
 # The use of templates for some pages will be replaced soon
 # Pages will be rederred by JS only. Today rendering
@@ -227,6 +237,7 @@ class RootController(object):
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
                 inc_merge_commit=None, inc_repos=None, metadata=None,
                 exc_groups=None):
+
         if not pid and not tid:
             abort(404,
                   detail="tag ID or project ID is mandatory")
@@ -234,83 +245,6 @@ class RootController(object):
             abort(404,
                   detail="tag ID and project ID can't be requested together")
 
-        if inc_merge_commit != 'on':
-            include_merge_commit = False
-        else:
-            # The None value will return all whatever
-            # the commit is a merge one or not
-            include_merge_commit = None
-
-        if dfrom:
-            dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
-        if dto:
-            dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
-        _metadata = []
-
-        if metadata:
-            metadata_splitted = metadata.split(',')
-            for meta in metadata_splitted:
-                try:
-                    key, value = meta.split(':')
-                    if value == '*':
-                        value = None
-                except ValueError:
-                    continue
-                _metadata.append((key, value))
-        metadata = _metadata
-
-        mails_to_exclude = {}
-        domains_to_exclude = []
-        if exc_groups:
-            groups_splitted = exc_groups.split(',')
-            idents = Contributors()
-            for gid in groups_splitted:
-                _, group = idents.get_group_by_id(gid)
-                mails_to_exclude.update(group['emails'])
-                domains_to_exclude.extend(group.get('domains', []))
-
-        projects_index = Projects()
-        if pid:
-            repos = projects_index.get_projects().get(pid)
-        else:
-            repos = projects_index.get_tags().get(tid)
-
-        if repos is None:
-            abort(404,
-                  detail='Project or Tag ID has not been found')
-
-        p_filter = utils.get_references_filter(repos, inc_repos)
-
-        query_kwargs = {
-            'repos': p_filter,
-            'fromdate': dfrom,
-            'mails': mails_to_exclude,
-            'domains': domains_to_exclude,
-            'mails_neg': True,
-            'todate': dto,
-            'merge_commit': include_merge_commit,
-            'metadata': metadata,
-        }
-
-        if dfrom is None or dto is None:
-            period = (None, None)
-        else:
-            period = (datetime.fromtimestamp(float(dfrom)),
-                      datetime.fromtimestamp(float(dto)))
-
-        idents = Contributors()
-        c = Commits(index.Connector(index=indexname))
-
-        top_authors = self.api.v1.tops.authors.gbycommits(
-            c, idents, query_kwargs)
-        top_authors_modified = self.api.v1.tops.authors.gbylchanged(
-            c, idents, query_kwargs)
-
         return {'pid': pid,
                 'tid': tid,
-                'top_authors': top_authors,
-                'top_authors_modified': top_authors_modified,
-                'inc_repos': inc_repos,
-                'period': period,
-                'empty': False,
                 'version': rx_version}

@@ -63,7 +63,7 @@ app = {
     'template_path': '%(confdir)s/templates',
     'debug': False,
     'errors': {
-        404: '/error/404',
+        404: '/error/e404',
         '__force_dict__': True
     }
 }

@@ -22,7 +22,13 @@
 
 </div>
 
-<div class="row-fluid">
+<div class="row-fluid" id="error-box" style="display:none">
+ <div class="col-md-12">
+  <div class="alert alert-warning text-center" id="error-msg"></div>
+ </div>
+</div>
+
+<div class="row-fluid" id="infos_filters_div">
 
  <div class="col-md-3">
   <div class="panel panel-default">
@@ -150,56 +156,19 @@
  </div>
 </div>
 
-<div class="row-fluid" id="top_authors_c_div">
- <div class="col-md-6">
+<div class="row-fluid">
+
+ <div class="col-md-6" id="top_authors_c_div">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 25 authors by commit</b></h3>
+    <h3 class="panel-title text-left">
+     <b>Top authors by commit</b><span id="topauthor-bycommits-progress"></span>
+    </h3>
    </div>
    <div class="panel-body">
-    <div id="topauthors_gravatar">
-     <div class="row-fluid">
-      % for n, i in enumerate(top_authors[0:3], start=1):
-      <div class="col-md-4">
-       <%
-        if n == 1:
-         n = "1 st"
-        elif n == 2:
-         n = "2 nd"
-        elif n == 3:
-         n = "3 rd"
-       %>
-       <div align="center"><p><b><h3>${n}</h3></b></p></div>
-       <div align="center"><p><b><h4>${i['amount']} commits</h4></b></p></div>
-       <div align="center">
-        <a href=contributor.html?cid=${i['cid']}>
-         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150" title="${i['name']}">
-        </a>
-       </div>
-       <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
-      </div>
-      % endfor
-     </div>
-    </div>
+    <div id="topauthors_gravatar"></div>
     <hr />
-    <div id="topauthors">
-     <div id="topauthors_table">
-      <table class="table table-striped">
-       <tr>
-        <th class="col-md-1">Rank</th>
-        <th>Name</th>
-        <th>Amount</th>
-      </tr>
-       % for n, i in enumerate(top_authors[3:], start=4):
-       <tr>
-        <td>${n}</td>
-        <td></span><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
-        <td>${i['amount']}</td>
-       </tr>
-       % endfor
-      </table>
-     </div>
-    </div>
+    <div id="topauthors"></div>
    </div>
   </div>
  </div>
@@ -207,55 +176,18 @@
  <div class="col-md-6" id="top_authors_lc_div">
   <div class="panel panel-default">
    <div class="panel-heading">
-    <h3 class="panel-title text-left"><b>Top 25 authors by lines changed</b></h3>
+    <h3 class="panel-title text-left">
+     <b>Top authors by lines changed</b><span id="topauthor-bylchanged-progress">
+    </h3>
    </div>
    <div class="panel-body">
-    <div id="topauthors_m_gravatar">
-     <div class="row-fluid">
-      % for n, i in enumerate(top_authors_modified[0:3], start=1):
-      <div class="col-md-4">
-       <%
-        if n == 1:
-         n = "1 st"
-        elif n == 2:
-         n = "2 nd"
-        elif n == 3:
-         n = "3 rd"
-       %>
-       <div align="center"><p><b><h3>${n}</h3></b></p></div>
-       <div align="center"><p><b><h4>${i['amount']} lines changed</h4></b></p></div>
-       <div align="center">
-        <a href=contributor.html?cid=${i['cid']}>
-         <img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=150" title="${i['name']}">
-        </a>
-       </div>
-       <div align="center"><p><b><h3><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></h3></b></p></div>
-      </div>
-      % endfor
-     </div>
-    </div>
+    <div id="topauthors_m_gravatar"></div>
     <hr />
-    <div id="topauthors_m">
-     <div id="topauthors_m_table">
-      <table class="table table-striped">
-       <tr>
-        <th class="col-md-1">Rank</th>
-        <th>Author name</th>
-        <th>Amount</th>
-       </tr>
-       % for n, i in enumerate(top_authors_modified[3:], start=4):
-       <tr>
-        <td>${n}</td>
-        <td><span style='padding-right: 5px'><img src="https://www.gravatar.com/avatar/${i['gravatar']}?s=25" title="${i['name']}"></span><span><b><a href=contributor.html?cid=${i['cid']}>${i['name']}</a></b></span></td>
-        <td>${i['amount']}</td>
-       </tr>
-       % endfor
-      </table>
-     </div>
-    </div>
+    <div id="topauthors_m"></div>
    </div>
   </div>
  </div>
+
 </div>
 
 <div class="row-fluid" id="commits_listing_div">
