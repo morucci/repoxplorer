@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_4e48072e",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 842,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-09T14:58:04Z",
+      "side": 1,
+      "message": "This is making us lose the alphabetical sort for repository refs. Could we get it back somehow?",
+      "range": {
+        "startLine": 835,
+        "startChar": 0,
+        "endLine": 842,
+        "endChar": 15
+      },
+      "revId": "90e42bbf3574ba60502fae481e388a3a61e14f64",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
