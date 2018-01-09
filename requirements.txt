@@ -3,6 +3,7 @@ elasticsearch>=2.0.0,<3.0.0
 github3.py==1.0.0a4
 jsonschema
 pecan
+WebOb>=1.7.0,<1.8.0
 pycrypto
 pytz
 requests

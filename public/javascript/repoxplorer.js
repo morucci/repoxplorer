@@ -818,6 +818,7 @@ function project_page_init() {
     d = get_infos(projectid, tagid, undefined, undefined);
     d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
+        rdata = rdata[0];
         if (idata.commits_amount > 0) {
             install_paginator(
                 projectid, tagid, undefined,
@@ -830,6 +831,20 @@ function project_page_init() {
                 undefined, true);
 
             get_releases(projectid, tagid);
+
+            // Fill project refs selector
+            refs = [];
+            $.each(rdata, function(i, v) {
+                val = v.name + ':' + v.branch;
+                refs.push(val);
+            });
+            refs.sort();
+            $.each(refs, function(i, ref) {
+                $('#repositories').append($('<option>', {
+                    text: ref,
+                    value: ref
+                }));
+            });
 
             // Fill the histo commits selector
             $("#history-progress").append(

@@ -310,7 +310,6 @@ class RootController(object):
                 'tid': tid,
                 'top_authors': top_authors,
                 'top_authors_modified': top_authors_modified,
-                'repos': repos['repos'],
                 'inc_repos': inc_repos,
                 'period': period,
                 'empty': False,
