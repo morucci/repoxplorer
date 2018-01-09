@@ -581,7 +581,6 @@ class TestProjectsController(FunctionalTest):
             response = self.app.get('/api/v1/projects/repos?pid=test')
             assert response.status_int == 200
             self.assertEqual(len(response.json), 1)
-            print response.json
             self.assertEqual(response.json[0]['name'], 'monkey')
             response = self.app.get('/api/v1/projects/repos?tid=python')
             assert response.status_int == 200
