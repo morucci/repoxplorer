@@ -49,6 +49,7 @@ function get_groups(nameonly, prefix) {
 }
 
 function get_histo(pid, tid, cid, gid, type) {
+    // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
     }
@@ -64,6 +65,26 @@ function get_histo(pid, tid, cid, gid, type) {
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
     return $.getJSON("api/v1/histo/" + type, args);
+}
+
+function get_top(pid, tid, cid, gid, type, stype) {
+    // TODO: move checkbox value retrieval outside
+    if ($('#inc_merge_commit').prop('checked')) {
+        var inc_merge_commit = 'on';
+    }
+    var args = {
+        'pid': pid,
+        'tid': tid,
+        'cid': cid,
+        'gid': gid,
+        'dfrom': getUrlParameter('dfrom'),
+        'dto': getUrlParameter('dto'),
+        'inc_merge_commit': inc_merge_commit,
+        'inc_repos': getUrlParameter('inc_repos'),
+        'metadata': getUrlParameter('metadata'),
+        'exc_groups': getUrlParameter('exc_groups')
+    };
+    return $.getJSON("api/v1/tops/" + type + "/" + stype, args);
 }
 
 function fill_info_box(args) {
@@ -99,6 +120,7 @@ function fill_info_box(args) {
 }
 
 function get_infos(pid, tid, cid, gid) {
+    // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
     }
@@ -114,7 +136,7 @@ function get_infos(pid, tid, cid, gid) {
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
 
-    gp_d = $.when();
+    gr_d = $.when();
     gc_d = $.when();
     gg_d = $.when();
     if(pid || tid) {
@@ -183,7 +205,6 @@ function get_infos(pid, tid, cid, gid) {
             });
 }
 
-
 function create_alpha_index(groups) {
     r = {};
     sr = [];
@@ -200,6 +221,44 @@ function create_alpha_index(groups) {
     }
     sr.sort();
     return [r, sr];
+}
+
+function build_top_authors_head(top) {
+    top_h = '<div class="row-fluid">';
+    for (i = 0; i < 3; i++) {
+        var pos;
+        if (i == 0) { pos = "1 st"; }
+        if (i == 1) { pos = "2 nd"; }
+        if (i == 3) { pos = "3 rd"; }
+        top_h += '<div class="col-md-4">';
+        top_h += '<div align="center"><p><b><h3>' + pos + '</h3></b></p></div>';
+        top_h += '<div align="center"><p><b><h4>' + top[i].amount + ' commits</h4></b></p></div>';
+        top_h += '<div align="center"><a href=contributor.html?cid=' + top[i].cid + '>' +
+            '<img src="https://www.gravatar.com/avatar/' +
+            top[i].gravatar + '?s=150" title=' + top[i].name + '></a></div>';
+        top_h += '<div align="center"><p><b><h3><a href=contributor.html?cid=' +
+            top[i].cid + '>' + top[i].name + '</a></h3></b></p></div>';
+        top_h += '</div>';
+    };
+    return top_h;
+}
+
+function build_top_authors_body(top) {
+    top_b = '<table class="table table-striped">';
+    top_b += '<tr><th class="col-md-1">Rank</th><th>Name</th><th>Amount</th></tr>';
+    for (i = 3; i < top.length; i++) {
+        top_b += '<tr>';
+        top_b += '<td>' + i + '</td>';
+        top_b += '<td></span><span style="padding-right: 5px">' +
+            '<img src="https://www.gravatar.com/avatar/' +
+            top[i].gravatar + '?s=25" title="' + top[i].name + '">' +
+            '</span><span><b><a href=contributor.html?cid=' +
+            top[i].cid + '>' + top[i].name + '</a></b></span></td>';
+        top_b += '<td>' + top[i].amount + '</td>';
+        top_b += '</tr>';
+    }
+    top_b += '</table>';
+    return top_b;
 }
 
 function projects_page_init() {
@@ -871,6 +930,46 @@ function project_page_init() {
                 })
                 .fail(function(err) {
                     $("#history-author-progress").empty();
+                    console.log(err);
+                });
+
+            // Fill the top authors by commits
+            $("#topauthor-bycommits-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_auth_commit_deferred = get_top(
+                projectid, tagid, undefined, undefined, 'authors', 'bycommits');
+            top_auth_commit_deferred
+                .done(function(top) {
+                    $("#topauthor-bycommits-progress").empty();
+                    top_h = build_top_authors_head(top);
+                    $("#topauthors_gravatar").append(top_h);
+                    top_b = build_top_authors_body(top);
+                    $("#topauthors").append(top_b);
+                })
+                .fail(function(err) {
+                    $("#topauthor-bycommits-progress").empty();
+                    $("#topauthors_gravatar").empty();
+                    $("#topauthors").empty();
+                    console.log(err);
+                });
+
+            // Fill the top authors by line changes
+            $("#topauthor-bylchanged-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_auth_lchanged_deferred = get_top(
+                projectid, tagid, undefined, undefined, 'authors', 'bylchanged');
+            top_auth_lchanged_deferred
+                .done(function(top) {
+                    $("#topauthor-bylchanged-progress").empty();
+                    top_h = build_top_authors_head(top);
+                    $("#topauthors_m_gravatar").append(top_h);
+                    top_b = build_top_authors_body(top);
+                    $("#topauthors_m").append(top_b);
+                })
+                .fail(function(err) {
+                    $("#topauthor-bylchanged-progress").empty();
+                    $("#topauthors_m_gravatar").empty();
+                    $("#topauthors_m").empty();
                     console.log(err);
                 });
         } else {
