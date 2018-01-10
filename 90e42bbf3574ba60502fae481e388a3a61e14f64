@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ba076199_519306a4",
+        "filename": "repoxplorer/controllers/root.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-01-10T12:20:59Z",
+      "side": 0,
+      "message": "Yes That\u0027s true I finally kept that check.",
+      "parentUuid": "ba076199_ced75722",
+      "range": {
+        "startLine": 230,
+        "startChar": 0,
+        "endLine": 235,
+        "endChar": 77
+      },
+      "revId": "90e42bbf3574ba60502fae481e388a3a61e14f64",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba076199_6ee74b13",
         "filename": "repoxplorer/controllers/root.py",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2018-01-09T17:02:55Z",
       "side": 0,
       "message": "Similar issue here, if we specify a non-existing project or tag.",
+      "range": {
+        "startLine": 278,
+        "startChar": 0,
+        "endLine": 280,
+        "endChar": 64
+      },
+      "revId": "90e42bbf3574ba60502fae481e388a3a61e14f64",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_31909295",
+        "filename": "repoxplorer/controllers/root.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-01-10T12:20:59Z",
+      "side": 0,
+      "message": "In the next ps I looked at fetching the detail string from the pecan abort method at the JS level. I wanted to get 404 error reason from the get_infos JS function and adapt the page if a 404 error occurs when calling the API:\n- Display the message just under the top menu\n- Hide the rest of the page",
+      "parentUuid": "ba076199_6ee74b13",
       "range": {
         "startLine": 278,
         "startChar": 0,
