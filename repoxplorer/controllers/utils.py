@@ -101,6 +101,12 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
         if not project:
             abort(404,
                   detail="The tag has not been found")
+    if cid:
+        try:
+            cid = decrypt(xorkey, cid)
+        except:
+            abort(404,
+                  detail="The cid is incorrectly formated")
 
     try:
         if dfrom:

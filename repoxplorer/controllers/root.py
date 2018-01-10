@@ -104,70 +104,41 @@ class RootController(object):
                     dfrom=None, dto=None,
                     inc_merge_commit=None,
                     inc_repos_detail=None):
-        cid = utils.decrypt(xorkey, cid)
-        if inc_merge_commit != 'on':
-            include_merge_commit = False
-        else:
-            # The None value will return all whatever
-            # the commit is a merge one or not
-            include_merge_commit = None
-        if dfrom:
-            dfrom = datetime.strptime(
-                dfrom, "%Y-%m-%d").strftime('%s')
-        if dto:
-            dto = datetime.strptime(
-                dto, "%Y-%m-%d").strftime('%s')
+
+        if not cid:
+            abort(404,
+                  detail="A contributor ID is mandatory")
+
+        ocid = cid
+        try:
+            cid = utils.decrypt(xorkey, cid)
+        except:
+            # Unable to uncypher the cid return and let
+            # the JS handle a comprehensible display
+            return {
+                'name': 'Unknown contributor',
+                'cid': ocid,
+                'version': rx_version}
+
+        # TODO: remove the name in the mako template then remove that below
         c = Commits(index.Connector(index=indexname))
         idents = Contributors()
-        projects = Projects()
         iid, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
             iid, ident = idents.get_ident_by_email(cid)
-        mails = ident['emails']
         name = ident['name']
         if not name:
-            if not name:
-                raw_names = c.get_commits_author_name_by_emails([cid])
-                if cid not in raw_names:
-                    # TODO: get_commits_author_name_by_emails must
-                    # support look by committer email too
-                    name = 'Unamed'
-                else:
-                    name = raw_names[cid]
+            raw_names = c.get_commits_author_name_by_emails([cid])
+            if cid not in raw_names:
+                name = 'Unknown contributor'
+            else:
+                name = raw_names[cid]
 
-            name = raw_names[cid]
-
-        p_filter = {}
-        if pid:
-            repos = projects.get_projects()[pid]
-            p_filter = utils.get_references_filter(repos)
-
-        query_kwargs = {
-            'fromdate': dfrom,
-            'todate': dto,
-            'mails': mails,
-            'merge_commit': include_merge_commit,
-            'repos': p_filter,
-        }
-
-        if dfrom is None or dto is None:
-            period = (None, None)
-        else:
-            period = (datetime.fromtimestamp(float(dfrom)),
-                      datetime.fromtimestamp(float(dto)))
-
-        top_projects = self.api.v1.tops.top_projects_sanitize(
-            c, projects, query_kwargs, inc_repos_detail)
-
-        return {'name': name,
-                'period': period,
-                'repos': top_projects[0],
-                'repos_line_mdfds': top_projects[1],
-                'cid': utils.encrypt(xorkey, cid),
-                'empty': False,
-                'inc_repos_detail': inc_repos_detail,
-                'version': rx_version}
+        return {
+            'name': name,
+            'cid': ocid,
+            'version': rx_version}
 
     @expose(template='group.html')
     def group(self, gid, pid=None, dfrom=None, dto=None,

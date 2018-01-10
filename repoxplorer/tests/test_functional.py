@@ -222,6 +222,19 @@ class TestErrorController(FunctionalTest):
             response.json['description'],
             'Project ID or Tag ID has not been found')
 
+    def test_api_infos_cid_bad(self):
+        with patch.object(root.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            headers = {'Accept': 'application/json'}
+            response = self.app.get(
+                '/api/v1/infos/infos?cid=XYZ',
+                headers=headers, status='*')
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(
+            response.json['description'],
+            'The cid is incorrectly formated')
+
 
 class TestGroupsController(FunctionalTest):
 

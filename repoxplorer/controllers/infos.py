@@ -79,7 +79,11 @@ class InfosController(object):
             abort(404,
                   detail="No contributor specified")
 
-        cid = utils.decrypt(xorkey, cid)
+        try:
+            cid = utils.decrypt(xorkey, cid)
+        except:
+            abort(404,
+                  detail="The cid is incorrectly formated")
         c = Commits(index.Connector(index=indexname))
         idents = Contributors()
         projects = Projects()
