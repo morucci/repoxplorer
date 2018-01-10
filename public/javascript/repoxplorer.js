@@ -72,6 +72,9 @@ function get_top(pid, tid, cid, gid, type, stype) {
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
     }
+    if ($('#inc_repos_detail').prop('checked')) {
+        var inc_repos_detail = 'true';
+    }
     var args = {
         'pid': pid,
         'tid': tid,
@@ -80,6 +83,7 @@ function get_top(pid, tid, cid, gid, type, stype) {
         'dfrom': getUrlParameter('dfrom'),
         'dto': getUrlParameter('dto'),
         'inc_merge_commit': inc_merge_commit,
+        'inc_repos_detail': inc_repos_detail,
         'inc_repos': getUrlParameter('inc_repos'),
         'metadata': getUrlParameter('metadata'),
         'exc_groups': getUrlParameter('exc_groups')
@@ -268,6 +272,31 @@ function build_top_authors_body(top) {
             top[i].gravatar + '?s=25" title="' + top[i].name + '">' +
             '</span><span><b><a href=contributor.html?cid=' +
             top[i].cid + '>' + top[i].name + '</a></b></span></td>';
+        top_b += '<td>' + top[i].amount + '</td>';
+        top_b += '</tr>';
+    }
+    top_b += '</table>';
+    return top_b;
+}
+function build_top_projects_table(top, inc_repos_detail) {
+    top_b = '<table class="table table-striped">';
+    if (inc_repos_detail == true) {
+    top_b += '<tr><th class="col-md-1">Rank</th><th>Project</th><th>Name</th><th>Amount</th></tr>';
+    } else {
+        top_b += '<tr><th class="col-md-1">Rank</th><th>Name</th><th>Amount</th></tr>';
+    }
+    for (i = 0; i < top.length; i++) {
+        top_b += '<tr>';
+        rank = i + 1;
+        top_b += '<td>' + rank + '</td>';
+        if (inc_repos_detail == true) {
+            // A ref can be found in multiple project ... simply use the first item
+            top_b += '<td><a href="project.html?pid=' + top[i].projects[0] + '">' + top[i].projects[0] + '</a></td>';
+            top_b += '<td><a href="project.html?pid=' + top[i].projects[0] + '&inc_repos=' + top[i].name + '">' + top[i].name +'</a></span> ';
+        }
+        else {
+            top_b += '<td><a href="project.html?pid=' + top[i].name + '">' + top[i].name + '</a></td>';
+        }
         top_b += '<td>' + top[i].amount + '</td>';
         top_b += '</tr>';
     }
@@ -475,7 +504,9 @@ function contributor_page_init() {
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
     }
+    var inc_repos_detail = false;
     if (getUrlParameter('inc_repos_detail') == 'on') {
+        inc_repos_detail = true;
         $('#inc_repos_detail').prop('checked', true);
     }
 
@@ -594,6 +625,42 @@ function contributor_page_init() {
                 })
                 .fail(function(err) {
                     $("#history-progress").empty();
+                    console.log(err);
+                });
+
+            // Fill the top project by commits
+            $("#topprojects-bycommits-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_projects_commit_deferred = get_top(
+                pid, undefined, cid, undefined, 'projects', 'bycommits');
+            top_projects_commit_deferred
+                .done(function(top) {
+                    $("#topprojects-bycommits-progress").empty();
+                    top_t = build_top_projects_table(
+                        top, inc_repos_detail);
+                    $("#topprojects").append(top_t);
+                })
+                .fail(function(err) {
+                    $("#topprojects-bycommits-progress").empty();
+                    $("#topprojects").empty();
+                    console.log(err);
+                });
+
+            // Fill the top project by lines changed
+            $("#topprojects-bylchanged-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_projects_lchanged_deferred = get_top(
+                pid, undefined, cid, undefined, 'projects', 'bylchanged');
+            top_projects_lchanged_deferred
+                .done(function(top) {
+                    $("#topprojects-bylchanged-progress").empty();
+                    top_t = build_top_projects_table(
+                        top, inc_repos_detail);
+                    $("#topprojects_m").append(top_t);
+                })
+                .fail(function(err) {
+                    $("#topprojects-bylchanged-progress").empty();
+                    $("#topprojects_m").empty();
                     console.log(err);
                 });
         } else {
@@ -783,10 +850,6 @@ function project_page_init() {
         $('#inc_merge_commit').prop('checked', true);
     }
 
-    if (getUrlParameter('inc_repos')) {
-        selected = getUrlParameter('inc_repos').split(',');
-        $('#repositories').val(selected);
-    }
 
     if (getUrlParameter('metadata')) {
         selected_metadata = getUrlParameter('metadata').split(',');
@@ -918,6 +981,11 @@ function project_page_init() {
                     value: ref
                 }));
             });
+            // Select the ones specified in the url
+            if (getUrlParameter('inc_repos')) {
+                selected = getUrlParameter('inc_repos').split(',');
+                $('#repositories').val(selected);
+            }
 
             // Fill the histo commits selector
             $("#history-progress").append(
