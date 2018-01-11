@@ -242,7 +242,8 @@ function create_alpha_index(groups) {
 
 function build_top_authors_head(top, label) {
     top_h = '<div class="row-fluid">';
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < top.length; i++) {
+        if ( i > 2 ) { break; };
         var pos;
         if (i == 0) { pos = "1 st"; }
         if (i == 1) { pos = "2 nd"; }
@@ -688,7 +689,10 @@ function group_page_init(commits_amount) {
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
     }
+
+    var inc_repos_detail = false;
     if (getUrlParameter('inc_repos_detail') == 'on') {
+        inc_repos_detail = true;
         $('#inc_repos_detail').prop('checked', true);
     }
 
@@ -825,6 +829,82 @@ function group_page_init(commits_amount) {
                     $("#history-author-progress").empty();
                     console.log(err);
                 });
+
+            // Fill the top project by commits
+            $("#topprojects-bycommits-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_projects_commit_deferred = get_top(
+                pid, undefined, undefined, gid, 'projects', 'bycommits');
+            top_projects_commit_deferred
+                .done(function(top) {
+                    $("#topprojects-bycommits-progress").empty();
+                    top_t = build_top_projects_table(
+                        top, inc_repos_detail);
+                    $("#topprojects").append(top_t);
+                })
+                .fail(function(err) {
+                    $("#topprojects-bycommits-progress").empty();
+                    $("#topprojects").empty();
+                    console.log(err);
+                });
+
+            // Fill the top project by lines changed
+            $("#topprojects-bylchanged-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_projects_lchanged_deferred = get_top(
+                pid, undefined, undefined, gid, 'projects', 'bylchanged');
+            top_projects_lchanged_deferred
+                .done(function(top) {
+                    $("#topprojects-bylchanged-progress").empty();
+                    top_t = build_top_projects_table(
+                        top, inc_repos_detail);
+                    $("#topprojects_m").append(top_t);
+                })
+                .fail(function(err) {
+                    $("#topprojects-bylchanged-progress").empty();
+                    $("#topprojects_m").empty();
+                    console.log(err);
+                });
+
+            // Fill the top authors by commits
+            $("#topauthor-bycommits-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_auth_commit_deferred = get_top(
+                pid, undefined, undefined, gid, 'authors', 'bycommits');
+            top_auth_commit_deferred
+                .done(function(top) {
+                    $("#topauthor-bycommits-progress").empty();
+                    top_h = build_top_authors_head(top, 'commits');
+                    $("#topauthors_gravatar").append(top_h);
+                    top_b = build_top_authors_body(top);
+                    $("#topauthors").append(top_b);
+                })
+                .fail(function(err) {
+                    $("#topauthor-bycommits-progress").empty();
+                    $("#topauthors_gravatar").empty();
+                    $("#topauthors").empty();
+                    console.log(err);
+                });
+
+            // Fill the top authors by line changes
+            $("#topauthor-bylchanged-progress").append(
+                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+            var top_auth_lchanged_deferred = get_top(
+                pid, undefined, undefined, gid, 'authors', 'bylchanged');
+            top_auth_lchanged_deferred
+                .done(function(top) {
+                    $("#topauthor-bylchanged-progress").empty();
+                    top_h = build_top_authors_head(top, 'lines changed');
+                    $("#topauthors_m_gravatar").append(top_h);
+                    top_b = build_top_authors_body(top);
+                    $("#topauthors_m").append(top_b);
+                })
+                .fail(function(err) {
+                    $("#topauthor-bylchanged-progress").empty();
+                    $("#topauthors_m_gravatar").empty();
+                    $("#topauthors_m").empty();
+                    console.log(err);
+                });
         } else {
             $("#empty-warning").show();
             $("#commits_histo_div").hide();
@@ -843,8 +923,8 @@ function project_page_init() {
 
     var selected_metadata = [];
 
-    projectid = getUrlParameter('pid');
-    tagid = getUrlParameter('tid');
+    pid = getUrlParameter('pid');
+    tid = getUrlParameter('tid');
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -861,11 +941,11 @@ function project_page_init() {
     var newlocation;
 
     $("#filter").click(function(){
-        if (projectid) {
-            newlocation = "project.html?pid=" + projectid;
+        if (pid) {
+            newlocation = "project.html?pid=" + pid;
         }
         else {
-            newlocation = "project.html?tid=" + tagid;
+            newlocation = "project.html?tid=" + tid;
         }
         if ($('#fromdatepicker').val() != '') {
             newlocation = newlocation + "&dfrom=" + encodeURIComponent($('#fromdatepicker').val());
@@ -951,22 +1031,22 @@ function project_page_init() {
         );
 
     // Get the info and continue to fill the page if commits_amount is > 0
-    d = get_infos(projectid, tagid, undefined, undefined);
+    d = get_infos(pid, tid, undefined, undefined);
     d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
         rdata = rdata[0];
         if (idata.commits_amount > 0) {
             install_paginator(
-                projectid, tagid, undefined,
+                pid, tid, undefined,
                 undefined, idata.commits_amount, true);
 
-            get_metadata_keys(projectid, tagid, undefined);
+            get_metadata_keys(pid, tid, undefined);
 
             get_commits(
-                projectid, tagid, undefined, undefined,
+                pid, tid, undefined, undefined,
                 undefined, true);
 
-            get_releases(projectid, tagid);
+            get_releases(pid, tid);
 
             // Fill project refs selector
             refs = [];
@@ -990,7 +1070,7 @@ function project_page_init() {
             // Fill the histo commits selector
             $("#history-progress").append(
                 '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var c_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'commits');
+            var c_h_deferred = get_histo(pid, tid, undefined, undefined, 'commits');
             c_h_deferred
                 .done(function(data) {
                     $("#history-progress").empty();
@@ -1004,7 +1084,7 @@ function project_page_init() {
             // Fill the histo author selector
             $("#history-author-progress").append(
                 '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var cont_h_deferred = get_histo(projectid, tagid, undefined, undefined, 'authors');
+            var cont_h_deferred = get_histo(pid, tid, undefined, undefined, 'authors');
             cont_h_deferred
                 .done(function(data) {
                     $("#history-author-progress").empty();
@@ -1019,7 +1099,7 @@ function project_page_init() {
             $("#topauthor-bycommits-progress").append(
                 '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
             var top_auth_commit_deferred = get_top(
-                projectid, tagid, undefined, undefined, 'authors', 'bycommits');
+                pid, tid, undefined, undefined, 'authors', 'bycommits');
             top_auth_commit_deferred
                 .done(function(top) {
                     $("#topauthor-bycommits-progress").empty();
@@ -1039,7 +1119,7 @@ function project_page_init() {
             $("#topauthor-bylchanged-progress").append(
                 '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
             var top_auth_lchanged_deferred = get_top(
-                projectid, tagid, undefined, undefined, 'authors', 'bylchanged');
+                pid, tid, undefined, undefined, 'authors', 'bylchanged');
             top_auth_lchanged_deferred
                 .done(function(top) {
                     $("#topauthor-bylchanged-progress").empty();

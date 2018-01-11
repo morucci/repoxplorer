@@ -147,14 +147,14 @@ class TestRootController(FunctionalTest):
         assert response.status_int == 200
 
     def test_get_project_page(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/project.html?pid=test')
         assert response.status_int == 200
 
     def test_get_group_page(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             with patch.object(root.groups.Contributors, 'get_groups') as g:
                 root.indexname = 'repoxplorertest'
                 m.return_value = self.projects
@@ -164,7 +164,7 @@ class TestRootController(FunctionalTest):
 
     def test_get_contributor_page(self):
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/contributor.html?cid=%s' % cid)
@@ -197,7 +197,7 @@ class TestErrorController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_api_infos_pid_not_found(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             headers = {'Accept': 'application/json'}
@@ -210,7 +210,7 @@ class TestErrorController(FunctionalTest):
             'The project has not been found')
 
     def test_api_project_repos_pid_not_found(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             headers = {'Accept': 'application/json'}
@@ -223,7 +223,7 @@ class TestErrorController(FunctionalTest):
             'Project ID or Tag ID has not been found')
 
     def test_api_infos_cid_bad(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.indexname = 'repoxplorertest'
             m.return_value = self.projects
             headers = {'Accept': 'application/json'}
@@ -485,7 +485,7 @@ class TestHistoController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_get_authors_histo(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/api/v1/histo/authors?pid=test')
@@ -493,7 +493,7 @@ class TestHistoController(FunctionalTest):
         self.assertEqual(response.json[0]['value'], 1)
         self.assertEqual(response.json[0]['date'], '2014-03-01')
 
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
@@ -501,7 +501,7 @@ class TestHistoController(FunctionalTest):
         assert response.status_int == 404
 
     def test_get_commits_histo(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.histo.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/api/v1/histo/commits?pid=test')
@@ -548,7 +548,7 @@ class TestInfosController(FunctionalTest):
             'duration': 16595352,
             'ttl_average': 0
         }
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.infos.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/api/v1/infos/infos?pid=test')
@@ -575,7 +575,7 @@ class TestInfosController(FunctionalTest):
             'projects_amount': 1
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.infos.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
@@ -602,7 +602,7 @@ class TestStatusController(FunctionalTest):
         self.assertEqual(expected, response.json['version'])
 
     def test_get_status(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             expected = {
                 'version': version.get_version(),
@@ -629,14 +629,14 @@ class TestProjectsController(FunctionalTest):
         }
 
     def test_get_projects(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             response = self.app.get('/api/v1/projects/projects')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
 
     def test_get_repos(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             response = self.app.get('/api/v1/projects/repos?pid=test')
             assert response.status_int == 200
@@ -669,7 +669,7 @@ class TestTopsController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_get_tops_authors_bylchanged(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             expected_top1 = {
                 'amount': 19,
                 'gravatar': 'c184ebe163aa66b25668757000116849',
@@ -704,7 +704,7 @@ class TestTopsController(FunctionalTest):
             self.assertEqual(len(csvret), 2)
 
     def test_get_tops_authors_bycommits(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             expected_top1 = {
                 'gravatar': 'c184ebe163aa66b25668757000116849',
                 'amount': 3,
@@ -741,7 +741,7 @@ class TestTopsController(FunctionalTest):
             self.assertEqual(len(csvret), 2)
 
     def test_get_tops_authors_diff(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             expected_diff = {
                 'gravatar': '505dcbea438008f24001e2928cdc0678',
                 'amount': 1,
@@ -761,7 +761,7 @@ class TestTopsController(FunctionalTest):
 
     def test_get_tops_projects_bycommits(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.tops.indexname = 'repoxplorertest'
             response = self.app.get(
@@ -813,7 +813,7 @@ class TestTopsController(FunctionalTest):
 
     def test_get_tops_projects_bylchanged(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.tops.indexname = 'repoxplorertest'
             response = self.app.get(
@@ -907,7 +907,7 @@ class TestMetadataController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_get_metadata(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.metadata.indexname = 'repoxplorertest'
             response = self.app.get('/api/v1/metadata/metadata?pid=test')
@@ -960,7 +960,7 @@ class TestTagsController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_get_tags(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             m.return_value = self.projects
             root.tags.indexname = 'repoxplorertest'
             response = self.app.get('/api/v1/tags/tags?pid=test')
@@ -1002,7 +1002,7 @@ class TestCommitsController(FunctionalTest):
         cls.con.ic.delete(index=cls.con.index)
 
     def test_input_filter_validation(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.commits.indexname = 'repoxplorertest'
             m.return_value = self.projects
 
@@ -1015,7 +1015,7 @@ class TestCommitsController(FunctionalTest):
             assert response.status_int == 400
 
     def test_get_commits(self):
-        with patch.object(root.Projects, 'get_projects') as m:
+        with patch.object(root.projects.Projects, 'get_projects') as m:
             root.commits.indexname = 'repoxplorertest'
             m.return_value = self.projects
 

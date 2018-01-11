@@ -19,8 +19,6 @@ from pecan import abort
 from pecan import conf
 from pecan import request
 
-from datetime import datetime
-
 from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
@@ -37,7 +35,6 @@ from repoxplorer.controllers import commits
 from repoxplorer import index
 from repoxplorer import version
 from repoxplorer.index.commits import Commits
-from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
 
@@ -144,64 +141,12 @@ class RootController(object):
     def group(self, gid, pid=None, dfrom=None, dto=None,
               inc_merge_commit=None,
               inc_repos_detail=None):
-        if inc_merge_commit != 'on':
-            include_merge_commit = False
-        else:
-            # The None value will return all whatever
-            # the commit is a merge one or not
-            include_merge_commit = None
-        if dfrom:
-            dfrom = datetime.strptime(
-                dfrom, "%Y-%m-%d").strftime('%s')
-        if dto:
-            dto = datetime.strptime(
-                dto, "%Y-%m-%d").strftime('%s')
-        c = Commits(index.Connector(index=indexname))
-        idents = Contributors()
-        projects = Projects()
-        gid, group = idents.get_group_by_id(gid)
-        if not group:
+
+        if not gid:
             abort(404,
-                  detail="The group has not been found")
-        mails = group['emails']
-        domains = group.get('domains', [])
-        members = {}
-        for email in mails:
-            iid, ident = idents.get_ident_by_email(email)
-            members[iid] = ident
+                  detail="A group ID is mandatory")
 
-        p_filter = {}
-        if pid:
-            projects_index = Projects()
-            repos = projects_index.get_projects()[pid]
-            p_filter = utils.get_references_filter(repos)
-
-        query_kwargs = {
-            'fromdate': dfrom,
-            'todate': dto,
-            'mails': mails,
-            'domains': domains,
-            'merge_commit': include_merge_commit,
-            'repos': p_filter,
-        }
-
-        top_projects = self.api.v1.tops.top_projects_sanitize(
-            c, projects, query_kwargs, inc_repos_detail, pid)
-
-        top_authors = self.api.v1.tops.authors.gbycommits(
-            c, idents, query_kwargs)
-        top_authors_modified = self.api.v1.tops.authors.gbylchanged(
-            c, idents, query_kwargs)
-
-        return {'name': gid,
-                'top_authors': top_authors,
-                'top_authors_modified': top_authors_modified,
-                'repos': top_projects[0],
-                'repos_line_mdfds': top_projects[1],
-                'projects_amount': len(top_projects[2]),
-                'repos_amount': len(top_projects[3]),
-                'inc_repos_detail': inc_repos_detail,
-                'gid': gid,
+        return {'gid': gid,
                 'version': rx_version}
 
     @expose(template='project.html')
