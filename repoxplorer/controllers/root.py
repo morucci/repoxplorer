@@ -15,7 +15,6 @@
 
 
 from pecan import expose
-from pecan import abort
 from pecan import request
 
 from repoxplorer.controllers import groups
@@ -81,38 +80,13 @@ class RootController(object):
         return {}
 
     @expose(template='contributor.html')
-    def contributor(self, cid, pid=None,
-                    dfrom=None, dto=None,
-                    inc_merge_commit=None,
-                    inc_repos_detail=None):
-
-        if not cid:
-            abort(404,
-                  detail="A contributor ID is mandatory")
-
+    def contributor(self):
         return {}
 
     @expose(template='group.html')
-    def group(self, gid, pid=None, dfrom=None, dto=None,
-              inc_merge_commit=None,
-              inc_repos_detail=None):
-
-        if not gid:
-            abort(404,
-                  detail="A group ID is mandatory")
-
+    def group(self):
         return {}
 
     @expose(template='project.html')
-    def project(self, pid=None, tid=None, dfrom=None, dto=None,
-                inc_merge_commit=None, inc_repos=None, metadata=None,
-                exc_groups=None):
-
-        if not pid and not tid:
-            abort(404,
-                  detail="tag ID or project ID is mandatory")
-        if pid and tid:
-            abort(404,
-                  detail="tag ID and project ID can't be requested together")
-
+    def project(self):
         return {}
