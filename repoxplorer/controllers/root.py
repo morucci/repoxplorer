@@ -16,10 +16,8 @@
 
 from pecan import expose
 from pecan import abort
-from pecan import conf
 from pecan import request
 
-from repoxplorer.controllers import utils
 from repoxplorer.controllers import groups
 from repoxplorer.controllers import users
 from repoxplorer.controllers import histo
@@ -31,16 +29,6 @@ from repoxplorer.controllers import projects
 from repoxplorer.controllers import metadata
 from repoxplorer.controllers import tags
 from repoxplorer.controllers import commits
-
-from repoxplorer import index
-from repoxplorer import version
-from repoxplorer.index.commits import Commits
-from repoxplorer.index.contributors import Contributors
-
-
-indexname = 'repoxplorer'
-xorkey = conf.get('xorkey') or 'default'
-rx_version = version.get_version()
 
 
 class V1Controller(object):
@@ -76,25 +64,21 @@ class RootController(object):
     api = APIController()
     error = ErrorController()
 
-# The use of templates for some pages will be replaced soon
-# Pages will be rederred by JS only. Today rendering
-# is a mixed of Mako templating and JS
-
     @expose(template='index.html')
     def index(self):
-        return self.api.v1.status.get_status()
+        return {}
 
     @expose(template='groups.html')
     def groups(self):
-        return {'version': rx_version}
+        return {}
 
     @expose(template='projects.html')
     def projects(self):
-        return {'version': rx_version}
+        return {}
 
     @expose(template='contributors.html')
     def contributors(self):
-        return {'version': rx_version}
+        return {}
 
     @expose(template='contributor.html')
     def contributor(self, cid, pid=None,
@@ -106,36 +90,7 @@ class RootController(object):
             abort(404,
                   detail="A contributor ID is mandatory")
 
-        ocid = cid
-        try:
-            cid = utils.decrypt(xorkey, cid)
-        except Exception:
-            # Unable to uncypher the cid return and let
-            # the JS handle a comprehensible display
-            return {
-                'name': 'Unknown contributor',
-                'cid': ocid,
-                'version': rx_version}
-
-        # TODO: remove the name in the mako template then remove that below
-        c = Commits(index.Connector(index=indexname))
-        idents = Contributors()
-        iid, ident = idents.get_ident_by_id(cid)
-        if not ident:
-            # No ident has been declared for that contributor
-            iid, ident = idents.get_ident_by_email(cid)
-        name = ident['name']
-        if not name:
-            raw_names = c.get_commits_author_name_by_emails([cid])
-            if cid not in raw_names:
-                name = 'Unknown contributor'
-            else:
-                name = raw_names[cid]
-
-        return {
-            'name': name,
-            'cid': ocid,
-            'version': rx_version}
+        return {}
 
     @expose(template='group.html')
     def group(self, gid, pid=None, dfrom=None, dto=None,
@@ -146,8 +101,7 @@ class RootController(object):
             abort(404,
                   detail="A group ID is mandatory")
 
-        return {'gid': gid,
-                'version': rx_version}
+        return {}
 
     @expose(template='project.html')
     def project(self, pid=None, tid=None, dfrom=None, dto=None,
@@ -161,6 +115,4 @@ class RootController(object):
             abort(404,
                   detail="tag ID and project ID can't be requested together")
 
-        return {'pid': pid,
-                'tid': tid,
-                'version': rx_version}
+        return {}

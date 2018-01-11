@@ -48,6 +48,21 @@ function get_groups(nameonly, prefix) {
     return $.getJSON("api/v1/groups", args);
 }
 
+function fill_status() {
+    gs_d = $.getJSON("api/v1/status/status");
+    gs_d
+        .done(function(status) {
+            $("#version").append(
+                '<a href="#">Version:' + status.version + '</a>');
+            $("#intro-paragraph").append(
+                "<h2>" + status.projects + " projects over " + status.repos + " Git repositories are indexed on this repoXplorer instance. You'll find stats about them and their contributors.</h2>");
+              $("#intro-paragraph").append(status.customtext);
+        })
+        .fail(function(err) {
+            console.log(err);
+        });
+}
+
 function get_histo(pid, tid, cid, gid, type) {
     // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
@@ -305,6 +320,10 @@ function build_top_projects_table(top, inc_repos_detail) {
     return top_b;
 }
 
+function index_page_init() {
+    fill_status();
+}
+
 function projects_page_init() {
     function fill_result(data) {
         $("#project-results").empty();
@@ -416,6 +435,10 @@ function projects_page_init() {
         }
     }
 
+    $("#page-title").append("[RepoXplorer] - Projects listing");
+
+    fill_status();
+
     $.getJSON("api/v1/projects/projects")
         .done(
             function(data) {
@@ -433,6 +456,8 @@ function projects_page_init() {
 }
 
 function groups_page_init() {
+    $("#page-title").append("[RepoXplorer] - Groups listing");
+    fill_status();
     var prefix = getUrlParameter('prefix');
     if (prefix === undefined) {
         prefix = 'a';
@@ -498,9 +523,11 @@ function groups_page_init() {
 
 function contributor_page_init() {
     install_date_pickers();
+    fill_status();
 
     cid = getUrlParameter('cid');
     pid = getUrlParameter('pid');
+
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -611,9 +638,19 @@ function contributor_page_init() {
     d = get_infos(pid, undefined, cid, undefined);
     d.done(function(rdata, idata, cdata, gdata) {
         idata = idata[0];
+        cdata = cdata[0];
         if(idata.commits_amount > 0) {
             install_paginator(pid, undefined, cid, undefined, idata.commits_amount, true);
             get_commits(pid, undefined, cid, undefined, undefined, true);
+
+            // Fill the title
+            $("#page-title").append("[" + cdata.name + "] - Contributor stats");
+
+            // Fill the jumbotron
+            $("#jumbotron_block").empty();
+            $("#jumbotron_block").append(
+                "<h2><a href=contributor.html?cid=" + cid + ">" + cdata.name + "</a>'s contributor stats</h2>"
+            );
 
             // Fill the histo commits selector
             $("#history-progress").append(
@@ -685,6 +722,9 @@ function group_page_init(commits_amount) {
 
     gid = getUrlParameter('gid');
     pid = getUrlParameter('pid');
+
+    $("#page-title").append("[" + gid + "] - Group stats");
+    fill_status();
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -801,6 +841,12 @@ function group_page_init(commits_amount) {
         if(idata.commits_amount > 0) {
             install_paginator(pid, undefined, undefined, gid, idata.commits_amount, true);
             get_commits(pid, undefined, undefined, gid, undefined, true);
+
+            // Fill the jumbotron
+            $("#jumbotron_block").empty();
+            $("#jumbotron_block").append(
+                "<h2><a href=group.html?gid=" + gid + ">" + gid + "</a>'s group stats</h2>"
+            );
 
             // Fill the histo commits selector
             $("#history-progress").append(
@@ -926,10 +972,23 @@ function project_page_init() {
     pid = getUrlParameter('pid');
     tid = getUrlParameter('tid');
 
+    if (pid) {
+        $("#page-title").append("[" + pid + "] - Project stats");
+        $("#jumbotron_block").append(
+            "<h2><a href=project.html?pid=" + pid + ">" + pid + "</a>'s project stats</h2>"
+        );
+    } else {
+        $("#page-title").append("[" + tid + "] - Project tag stats");
+        $("#jumbotron_block").append(
+            "<h2><a href=projects.html?cid=" + tid + ">" + tid + "</a>'s tag stats</h2>"
+        );
+    }
+
+    fill_status();
+
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
     }
-
 
     if (getUrlParameter('metadata')) {
         selected_metadata = getUrlParameter('metadata').split(',');
@@ -1174,6 +1233,11 @@ function contributors_page_init() {
             $("#search-results").append(box);
         });
     }
+
+    $("#page-title").append("[RepoXplorer] - Search a contributor");
+
+    fill_status();
+
     $('#search-txt').bind("enterKey",function(e){
         var args = {};
         args['query'] = $("#search-txt").val();
