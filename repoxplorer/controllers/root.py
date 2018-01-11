@@ -62,31 +62,3 @@ class RootController(object):
 
     api = APIController()
     error = ErrorController()
-
-    @expose(template='index.html')
-    def index(self):
-        return {}
-
-    @expose(template='groups.html')
-    def groups(self):
-        return {}
-
-    @expose(template='projects.html')
-    def projects(self):
-        return {}
-
-    @expose(template='contributors.html')
-    def contributors(self):
-        return {}
-
-    @expose(template='contributor.html')
-    def contributor(self):
-        return {}
-
-    @expose(template='group.html')
-    def group(self):
-        return {}
-
-    @expose(template='project.html')
-    def project(self):
-        return {}

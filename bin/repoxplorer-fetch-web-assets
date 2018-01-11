@@ -150,16 +150,6 @@ for name, url in archives.items():
     path = download_file(url, td)
     install_archive(name, path, td)
 
-# Copy already install repoxplorer bundled assets if exists
-if os.path.exists(os.path.join(args.path, 'javascript', 'repoxplorer.js')):
-    shutil.copy(os.path.join(args.path, 'javascript', 'repoxplorer.js'),
-                os.path.join(td, 'javascript', 'repoxplorer.js'))
-    print "Copied repoxplorer.js"
-if os.path.exists(os.path.join(args.path, 'css', 'repoxplorer.css')):
-    shutil.copy(os.path.join(args.path, 'css', 'repoxplorer.css'),
-                os.path.join(td, 'css', 'repoxplorer.css'))
-    print "Copied repoxplorer.css"
-
 shutil.rmtree(args.path)
 shutil.move(td, args.path)
 os.chmod(args.path, 0755)
