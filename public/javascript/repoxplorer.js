@@ -223,18 +223,22 @@ function get_infos(pid, tid, cid, gid) {
                 console.log(err);
                 if (err.status == 404) {
                     msg = '<string>' + err.responseJSON.message + '</strong>';
-                    $("#error-msg").append(msg);
-                    $("#error-box").show();
-                    $("#infos_filters_div").hide();
-                    $("#commits_histo_div").hide();
-                    $("#contributors_histo_div").hide();
-                    $("#top_authors_c_div").hide();
-                    $("#top_authors_lc_div").hide();
-                    $("#top_projects_c_div").hide();
-                    $("#top_projects_lc_div").hide();
-                    $("#commits_listing_div").hide();
+                    set_error_msg(msg);
                 }
             });
+}
+
+function set_error_msg(msg) {
+    $("#error-msg").append(msg);
+    $("#error-box").show();
+    $("#infos_filters_div").hide();
+    $("#commits_histo_div").hide();
+    $("#contributors_histo_div").hide();
+    $("#top_authors_c_div").hide();
+    $("#top_authors_lc_div").hide();
+    $("#top_projects_c_div").hide();
+    $("#top_projects_lc_div").hide();
+    $("#commits_listing_div").hide();
 }
 
 function create_alpha_index(groups) {
@@ -528,6 +532,10 @@ function contributor_page_init() {
     cid = getUrlParameter('cid');
     pid = getUrlParameter('pid');
 
+    if (!cid) {
+        set_error_msg("Missing mandatory parameters");
+        return;
+    }
 
     if (getUrlParameter('inc_merge_commit') == 'on') {
         $('#inc_merge_commit').prop('checked', true);
@@ -722,6 +730,11 @@ function group_page_init(commits_amount) {
 
     gid = getUrlParameter('gid');
     pid = getUrlParameter('pid');
+
+    if (!gid) {
+        set_error_msg("Missing mandatory parameters");
+        return;
+    }
 
     $("#page-title").append("[" + gid + "] - Group stats");
     fill_status();
@@ -971,6 +984,15 @@ function project_page_init() {
 
     pid = getUrlParameter('pid');
     tid = getUrlParameter('tid');
+
+    if (!pid && !tid) {
+        set_error_msg("Missing mandatory parameters");
+        return;
+    }
+    if (pid && tid) {
+        set_error_msg("pid and tid parameters are exclusives");
+        return;
+    }
 
     if (pid) {
         $("#page-title").append("[" + pid + "] - Project stats");
