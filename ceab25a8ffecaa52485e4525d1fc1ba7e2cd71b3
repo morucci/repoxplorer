@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_5cd8bdef",
+        "filename": "setup.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T12:22:29Z",
+      "side": 1,
+      "message": "There is no templates/ directory anymore after this patch, should we remove this?",
+      "range": {
+        "startLine": 45,
+        "startChar": 0,
+        "endLine": 46,
+        "endChar": 45
+      },
+      "revId": "ceab25a8ffecaa52485e4525d1fc1ba7e2cd71b3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
