@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ba076199_3c93c9fc",
+        "filename": "etc/groups.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-01-12T13:24:19Z",
+      "side": 1,
+      "message": "Just for that file to more handy to me. Usually when I want to do manual tests I un-comment the projects.yaml or groups.yaml files in the venv. With the order reverted I can just un-comment line 5-8 and avoid removing the declaration of the empty group dict :)",
+      "parentUuid": "ba076199_bc59f990",
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba076199_fc5f7173",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "ba076199_1c9005ec",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-01-12T13:24:19Z",
+      "side": 1,
+      "message": "Yes :)",
+      "parentUuid": "ba076199_fc5f7173",
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba076199_dc64ad4a",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 2
@@ -47,6 +83,30 @@
       "writtenOn": "2018-01-12T11:50:11Z",
       "side": 1,
       "message": "These changes are probably unrelated to the commit",
+      "range": {
+        "startLine": 926,
+        "startChar": 0,
+        "endLine": 927,
+        "endChar": 33
+      },
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_fcbbf173",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 927,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-01-12T13:24:19Z",
+      "side": 1,
+      "message": "Yes, the change is for keeping the same naming accross that file.",
+      "parentUuid": "ba076199_dc64ad4a",
       "range": {
         "startLine": 926,
         "startChar": 0,
