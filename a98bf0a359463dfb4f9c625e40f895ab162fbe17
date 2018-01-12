@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_5c51dd61",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 536,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T12:07:29Z",
+      "side": 1,
+      "message": "I would try to be a bit more specific, and tell the user that the \"cid\" parameter is missing. When I try this, the message does not tell me enough for me to know how to fix the error.",
+      "revId": "a98bf0a359463dfb4f9c625e40f895ab162fbe17",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_3c4e29c2",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 735,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T12:07:29Z",
+      "side": 1,
+      "message": "Same here",
+      "range": {
+        "startLine": 735,
+        "startChar": 0,
+        "endLine": 735,
+        "endChar": 54
+      },
+      "revId": "a98bf0a359463dfb4f9c625e40f895ab162fbe17",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_1c4b65b2",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 991,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T12:07:29Z",
+      "side": 1,
+      "message": "And here",
+      "range": {
+        "startLine": 988,
+        "startChar": 1,
+        "endLine": 991,
+        "endChar": 5
+      },
+      "revId": "a98bf0a359463dfb4f9c625e40f895ab162fbe17",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
