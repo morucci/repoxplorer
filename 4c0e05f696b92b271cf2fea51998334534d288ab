@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_bc59f990",
+        "filename": "etc/groups.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T11:50:11Z",
+      "side": 1,
+      "message": "Just curious: why are we changing the order here?",
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_fc5f7173",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T11:50:11Z",
+      "side": 1,
+      "message": "Oh, good call :)",
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_dc64ad4a",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 927,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-01-12T11:50:11Z",
+      "side": 1,
+      "message": "These changes are probably unrelated to the commit",
+      "range": {
+        "startLine": 926,
+        "startChar": 0,
+        "endLine": 927,
+        "endChar": 33
+      },
+      "revId": "4c0e05f696b92b271cf2fea51998334534d288ab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
