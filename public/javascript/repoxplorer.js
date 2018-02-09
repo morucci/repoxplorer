@@ -95,8 +95,8 @@ function get_top(pid, tid, cid, gid, type, stype) {
         'tid': tid,
         'cid': cid,
         'gid': gid,
-        'dfrom': getUrlParameter('dfrom'),
         'dto': getUrlParameter('dto'),
+        'dfrom': getUrlParameter('dfrom'),
         'inc_merge_commit': inc_merge_commit,
         'inc_repos_detail': inc_repos_detail,
         'inc_repos': getUrlParameter('inc_repos'),
@@ -104,6 +104,32 @@ function get_top(pid, tid, cid, gid, type, stype) {
         'exc_groups': getUrlParameter('exc_groups')
     };
     return $.getJSON("api/v1/tops/" + type + "/" + stype, args);
+}
+
+function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfrom) {
+    // TODO: move checkbox value retrieval outside
+    if ($('#inc_merge_commit').prop('checked')) {
+        var inc_merge_commit = 'on';
+    }
+    if ($('#inc_repos_detail').prop('checked')) {
+        var inc_repos_detail = 'true';
+    }
+    var args = {
+        'pid': pid,
+        'tid': tid,
+        'cid': cid,
+        'gid': gid,
+        'dfromref': moment(infos.first * 1000).format("YYYY-MM-DD"),
+        'dtoref': dtoref_dfrom.format("YYYY-MM-DD"),
+        'dfrom': dtoref_dfrom.format("YYYY-MM-DD"),
+        'dto': moment(infos.last * 1000).format("YYYY-MM-DD"),
+        'inc_merge_commit': inc_merge_commit,
+        'inc_repos_detail': inc_repos_detail,
+        'inc_repos': getUrlParameter('inc_repos'),
+        'metadata': getUrlParameter('metadata'),
+        'exc_groups': getUrlParameter('exc_groups')
+    };
+    return $.getJSON("api/v1/tops/authors/diff", args);
 }
 
 function fill_info_box(args) {
@@ -981,6 +1007,8 @@ function project_page_init() {
     install_date_pickers();
 
     var selected_metadata = [];
+    $("#newsincerelease").val("");
+    var newsinceval;
 
     pid = getUrlParameter('pid');
     tid = getUrlParameter('tid');
@@ -1070,11 +1098,36 @@ function project_page_init() {
         var button = $(event.relatedTarget);
         pickupdatetarget = button.data('datetarget');
     });
-    $("#selectrelease").click(function(){
-        var rdate = $('#releases').val();
-        if (pickupdatetarget === 'fromdatepicker') {$( "#fromdatepicker" ).datepicker('setDate', rdate);}
-        if (pickupdatetarget === 'todatepicker')  {$( "#todatepicker" ).datepicker('setDate', rdate);}
-    });
+
+    function fill_top_new_authors(infos, dtoref_dfrom) {
+        $("#topnewauthors-progress").append(
+            '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+        var top_new_authors_deferred = get_top_diff(
+            pid, tid, undefined, undefined, infos, dtoref_dfrom);
+        top_new_authors_deferred
+            .done(function(top) {
+                $("#topnewauthors_gravatar").empty();
+                $("#topnewauthors").empty();
+                $("#topnewauthors-progress").empty();
+                top_h = build_top_authors_head(top, 'commits');
+                $("#topnewauthors_gravatar").append(top_h);
+                top_b = build_top_authors_body(top);
+                $("#topnewauthors").append(top_b);
+                dtoref_dfrom = dtoref_dfrom.format("YYYY-MM-DD");
+                dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
+                dto = moment(infos.last * 1000).format("YYYY-MM-DD");
+                $('#difftxt').text(
+                    "During the period from " + dtoref_dfrom + " to " + dto + " compared to the period from " + dfromref + " to " + dtoref_dfrom);
+            })
+            .fail(function(err) {
+                $("#topnewauthors-progress").empty();
+                $("#topnewauthors_gravatar").empty();
+                $("#topnewauthors").empty();
+                $('#diffduring').empty();
+                $('#diffref').empty();
+                console.log(err);
+            });
+    }
 
     // Fill the groups selector
     var defer = get_groups(true);
@@ -1117,6 +1170,21 @@ function project_page_init() {
         idata = idata[0];
         rdata = rdata[0];
         if (idata.commits_amount > 0) {
+            $("#selectrelease").click(function(){
+                var rdate = $('#releases').val();
+                if (pickupdatetarget === 'fromdatepicker') {
+                    $("#fromdatepicker").datepicker('setDate', rdate);
+                }
+                if (pickupdatetarget === 'todatepicker') {
+                    $("#todatepicker").datepicker('setDate', rdate);
+                }
+                if (pickupdatetarget === 'newsincerelease') {
+                    $("#newsincerelease").val(rdate);
+                    newsinceval = $('#newsincerelease').val();
+                    dtoref_dfrom = moment(newsinceval, "YYYY-MM-DD");
+                    fill_top_new_authors(idata, dtoref_dfrom);
+                }
+            });
             install_paginator(
                 pid, tid, undefined,
                 undefined, idata.commits_amount, true);
@@ -1175,6 +1243,18 @@ function project_page_init() {
                     $("#history-author-progress").empty();
                     console.log(err);
                 });
+
+	          // Fill the top new authors
+            if (newsinceval === undefined) {
+                newsinceval = $('#newsince').val();
+                dtoref_dfrom = moment(idata.last * 1000).subtract(newsinceval, 'seconds');
+                fill_top_new_authors(idata, dtoref_dfrom);
+            }
+            $('#newsince').change(function() {
+                newsinceval = $('#newsince').val();
+                dtoref_dfrom = moment(idata.last * 1000).subtract(newsinceval, 'seconds');
+                fill_top_new_authors(idata, dtoref_dfrom);
+            });
 
             // Fill the top authors by commits
             $("#topauthor-bycommits-progress").append(
