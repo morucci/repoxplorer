@@ -882,7 +882,7 @@ amount,name,projects
 ...
 ```
 
-#### /api/v1/tops/diff
+#### /api/v1/tops/authors/diff
 
 This endpoint takes a reference timeframe (parameters **dfromref**/**dtoref**) and a new timeframe
 (parameters **dfrom**/**dto**), and returns the authors in the new timeframe that were not present
@@ -1118,8 +1118,8 @@ Only one of:
 
 ##### Optionals
 
-- **fromdate**: From date with the format: %Y-%m-%d.
-- **todate**: To date with the format: %Y-%m-%d.
+- **dfrom**: From date with the format: %Y-%m-%d.
+- **dto**: To date with the format: %Y-%m-%d.
 - **metadata**: key:value list of metadata grabbed from commit messages.
   example: 'implement-feature:bp-new-scheduler,implement:bp-new-scheduler'
 - **inc_merge_commit**: Include merge commits in computation (default is no)
