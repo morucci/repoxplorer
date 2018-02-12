@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_3534fadc",
+        "filename": "README.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 1121,
+      "author": {
+        "id": 421
+      },
+      "writtenOn": "2018-02-12T15:42:38Z",
+      "side": 1,
+      "message": "given \"from\" (\"to\") is the variable name and \"d\" only denotes expected data type, I\u0027d go with \"fromd\" and \"tod\" if you really want to save these few chars.",
+      "revId": "1fb4e639b6aae55a7c83f4bb1917534a43be5b20",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
