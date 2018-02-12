@@ -1153,10 +1153,15 @@ Only one of:
 - **inc_repos_detail**: Set to *true* or unset to include or not
   repositories details in the response.
 
-#### tops/diff endpoint only
+#### tops/authors endpoint only
+
+- **limit**: Max amount of items returned (default: 10).
+
+#### tops/authors/diff endpoint only
 
 - **dfromref**: Start of the reference period to use when getting new contributors, using the format: %Y-%m-%d.
 - **dtoref**: End of the reference period to use when getting new contributors, using the format: %Y-%m-%d.
+- **limit**: Max amount of items returned (default: 10).
 
 ## Contribute
 

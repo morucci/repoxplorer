@@ -625,6 +625,12 @@ class TestTopsController(FunctionalTest):
             self.assertDictEqual(response.json[0], expected_top1)
             self.assertDictEqual(response.json[1], expected_top2)
             self.assertEqual(len(response.json), 2)
+            # Same request but with a limit set to 1
+            response = self.app.get(
+                '/api/v1/tops/authors/bylchanged?pid=test&limit=1')
+            assert response.status_int == 200
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
 
             # Validate the CSV endpoint mode
             # First convert all expected dict values to str
@@ -661,6 +667,13 @@ class TestTopsController(FunctionalTest):
             self.assertDictEqual(response.json[0], expected_top1)
             self.assertDictEqual(response.json[1], expected_top2)
             self.assertEqual(len(response.json), 2)
+            # Same request but with a limit set to 1
+            response = self.app.get(
+                '/api/v1/tops/authors/bycommits?pid=test'
+                '&inc_merge_commit=on&limit=1')
+            assert response.status_int == 200
+            self.assertDictEqual(response.json[0], expected_top1)
+            self.assertEqual(len(response.json), 1)
 
             # Validate the CSV endpoint mode
             # First convert all expected dict values to str
@@ -689,9 +702,8 @@ class TestTopsController(FunctionalTest):
             response = self.app.get(
                 '/api/v1/tops/authors/diff?pid=test&dfromref=2014-01-01'
                 '&dtoref=2014-09-03&dfrom=2014-09-04&dto=2017-01-01'
-                '&inc_merge_commit=on')
+                '&inc_merge_commit=on&limit=1')
             assert response.status_int == 200
-
             self.assertDictEqual(response.json[0], expected_diff)
             self.assertEqual(len(response.json), 1)
 

@@ -46,8 +46,13 @@ class TopAuthorsController(object):
         top_authors_s_sorted = sorted(top_authors_s,
                                       key=lambda k: k['amount'],
                                       reverse=True)
-        if top > 0:
-            top_authors_s_sorted = top_authors_s_sorted[:top]
+        if top is None:
+            top = 10
+        else:
+            top = int(top)
+        # If top set to a negative value all results will be returned
+        if top >= 0:
+            top_authors_s_sorted = top_authors_s_sorted[:int(top)]
 
         name_to_requests = []
         for v in top_authors_s_sorted:
@@ -61,14 +66,14 @@ class TopAuthorsController(object):
             del v['email']
         return top_authors_s_sorted
 
-    def gbycommits(self, c, idents, query_kwargs, top=25):
+    def gbycommits(self, c, idents, query_kwargs, top):
         authors = c.get_authors(**query_kwargs)[1]
         top_authors = self.top_authors_sanitize(
             idents, authors, c, top)
 
         return top_authors
 
-    def gbylchanged(self, c, idents, query_kwargs, top=25):
+    def gbylchanged(self, c, idents, query_kwargs, top):
         top_authors_modified = c.get_top_authors_by_lines(**query_kwargs)[1]
 
         top_authors_modified = self.top_authors_sanitize(
@@ -80,7 +85,8 @@ class TopAuthorsController(object):
     @expose('csv:', content_type='text/csv')
     def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
                    dfrom=None, dto=None, inc_merge_commit=None,
-                   inc_repos=None, metadata=None, exc_groups=None):
+                   inc_repos=None, metadata=None, exc_groups=None,
+                   limit=None):
 
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
@@ -90,13 +96,14 @@ class TopAuthorsController(object):
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
 
-        return self.gbylchanged(c, idents, query_kwargs)
+        return self.gbylchanged(c, idents, query_kwargs, limit)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')
     def bycommits(self, pid=None, tid=None, cid=None, gid=None,
                   dfrom=None, dto=None, inc_merge_commit=None,
-                  inc_repos=None, metadata=None, exc_groups=None):
+                  inc_repos=None, metadata=None, exc_groups=None,
+                  limit=None):
 
         c = Commits(index.Connector(index=indexname))
         projects_index = Projects()
@@ -106,14 +113,14 @@ class TopAuthorsController(object):
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
 
-        return self.gbycommits(c, idents, query_kwargs)
+        return self.gbycommits(c, idents, query_kwargs, limit)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')
     def diff(self, pid=None, tid=None, cid=None, gid=None,
              dfrom=None, dto=None, dfromref=None, dtoref=None,
              inc_merge_commit=None, inc_repos=None, metadata=None,
-             exc_groups=None):
+             exc_groups=None, limit=None):
 
         if not dfrom or not dto:
             abort(404,
@@ -148,6 +155,13 @@ class TopAuthorsController(object):
             set([auth['cid'] for auth in authors_old])
         authors_diff = [author for author in authors_new
                         if author['cid'] in cids_new]
+        if limit is None:
+            limit = 10
+        else:
+            limit = int(limit)
+        # If limit set to a negative value all results will be returned
+        if limit >= 0:
+            authors_diff = authors_diff[:limit]
         return authors_diff
 
 
