@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_b5b34a0a",
+        "filename": "public/contributor.html",
+        "patchSetId": 1
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-02-13T11:44:28Z",
+      "side": 1,
+      "message": "I\u0027ve opted for setting the icon here and then cleaning it in javascript code, to avoid a short delay during JS code load.",
+      "range": {
+        "startLine": 61,
+        "startChar": 8,
+        "endLine": 61,
+        "endChar": 83
+      },
+      "revId": "c08832f15ba0e967dafb2faeaeb0114b4f3c1990",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
