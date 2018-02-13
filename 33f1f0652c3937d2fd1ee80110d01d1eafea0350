@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_35ad1a89",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 248,
+      "author": {
+        "id": 421
+      },
+      "writtenOn": "2018-02-13T14:07:37Z",
+      "side": 0,
+      "message": "How is this related?",
+      "revId": "33f1f0652c3937d2fd1ee80110d01d1eafea0350",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
