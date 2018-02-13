@@ -82,7 +82,7 @@ function get_histo(pid, tid, cid, gid, type) {
     return $.getJSON("api/v1/histo/" + type, args);
 }
 
-function get_top(pid, tid, cid, gid, type, stype) {
+function get_top(pid, tid, cid, gid, type, stype, limit) {
     // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
@@ -101,12 +101,13 @@ function get_top(pid, tid, cid, gid, type, stype) {
         'inc_repos_detail': inc_repos_detail,
         'inc_repos': getUrlParameter('inc_repos'),
         'metadata': getUrlParameter('metadata'),
-        'exc_groups': getUrlParameter('exc_groups')
+        'exc_groups': getUrlParameter('exc_groups'),
+        'limit': limit
     };
     return $.getJSON("api/v1/tops/" + type + "/" + stype, args);
 }
 
-function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfrom) {
+function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfromi, limit) {
     // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
@@ -127,7 +128,8 @@ function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfrom) {
         'inc_repos_detail': inc_repos_detail,
         'inc_repos': getUrlParameter('inc_repos'),
         'metadata': getUrlParameter('metadata'),
-        'exc_groups': getUrlParameter('exc_groups')
+        'exc_groups': getUrlParameter('exc_groups'),
+        'limit': limit
     };
     return $.getJSON("api/v1/tops/authors/diff", args);
 }
@@ -308,7 +310,7 @@ function build_top_authors_head(top, label) {
     return top_h;
 }
 
-function build_top_authors_body(top) {
+function build_top_authors_body(top, btid_dall, btid_coll, limit) {
     top_b = '<table class="table table-striped">';
     top_b += '<tr><th class="col-md-1">Rank</th><th>Name</th><th>Amount</th></tr>';
     for (i = 3; i < top.length; i++) {
@@ -324,6 +326,15 @@ function build_top_authors_body(top) {
         top_b += '</tr>';
     }
     top_b += '</table>';
+    top_b += '<div class="col-md-5"></div>';
+    top_b += '<div class="col-md-1">';
+    if (limit != -1) {
+        top_b += '<button type="button" id="' + btid_dall + '" class="btn btn-link">display all</button>';
+    } else {
+        top_b += '<button type="button" id="' + btid_coll + '" class="btn btn-link">collapse</button>';
+    }
+    top_b += '</div>';
+    top_b += '<div class="col-md-5"></div>';
     return top_b;
 }
 function build_top_projects_table(top, inc_repos_detail) {
@@ -953,45 +964,73 @@ function group_page_init(commits_amount) {
                     console.log(err);
                 });
 
-            // Fill the top authors by commits
-            $("#topauthor-bycommits-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_auth_commit_deferred = get_top(
-                pid, undefined, undefined, gid, 'authors', 'bycommits');
-            top_auth_commit_deferred
-                .done(function(top) {
-                    $("#topauthor-bycommits-progress").empty();
-                    top_h = build_top_authors_head(top, 'commits');
-                    $("#topauthors_gravatar").append(top_h);
-                    top_b = build_top_authors_body(top);
-                    $("#topauthors").append(top_b);
-                })
-                .fail(function(err) {
-                    $("#topauthor-bycommits-progress").empty();
-                    $("#topauthors_gravatar").empty();
-                    $("#topauthors").empty();
-                    console.log(err);
-                });
 
-            // Fill the top authors by line changes
-            $("#topauthor-bylchanged-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_auth_lchanged_deferred = get_top(
-                pid, undefined, undefined, gid, 'authors', 'bylchanged');
-            top_auth_lchanged_deferred
-                .done(function(top) {
-                    $("#topauthor-bylchanged-progress").empty();
-                    top_h = build_top_authors_head(top, 'lines changed');
-                    $("#topauthors_m_gravatar").append(top_h);
-                    top_b = build_top_authors_body(top);
-                    $("#topauthors_m").append(top_b);
-                })
-                .fail(function(err) {
-                    $("#topauthor-bylchanged-progress").empty();
-                    $("#topauthors_m_gravatar").empty();
-                    $("#topauthors_m").empty();
-                    console.log(err);
-                });
+            // Fill the top authors by commits
+            function fill_top_authors_by_commits(limit) {
+                $("#topauthor-bycommits-progress").append(
+                    '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+                var top_auth_commit_deferred = get_top(
+                    pid, undefined, undefined, gid, 'authors', 'bycommits', limit);
+                top_auth_commit_deferred
+                    .done(function(top) {
+                        $("#topauthor-bycommits-progress").empty();
+                        $("#topauthors_gravatar").empty();
+                        $("#topauthors").empty();
+                        top_h = build_top_authors_head(top, 'commits');
+                        $("#topauthors_gravatar").append(top_h);
+                        if (top.length > 3) {
+                            top_b = build_top_authors_body(top, 'tabc-dall', 'tabc-coll', limit);
+                            $("#topauthors").append(top_b);
+                            $('#tabc-dall').click(function() {
+                                fill_top_authors_by_commits(-1);
+                            });
+                            $('#tabc-coll').click(function() {
+                                fill_top_authors_by_commits();
+                            });
+                        }
+                    })
+                    .fail(function(err) {
+                        $("#topauthor-bycommits-progress").empty();
+                        $("#topauthors_gravatar").empty();
+                        $("#topauthors").empty();
+                        console.log(err);
+                    });
+            }
+            fill_top_authors_by_commits();
+
+            // Fill the top authors by line changed
+            function fill_top_authors_by_lchanged(limit) {
+                $("#topauthor-bylchanged-progress").append(
+                    '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+                var top_auth_lchanged_deferred = get_top(
+                    pid, undefined, undefined, gid, 'authors', 'bylchanged', limit);
+                top_auth_lchanged_deferred
+                    .done(function(top) {
+                        $("#topauthor-bylchanged-progress").empty();
+                        $("#topauthors_m_gravatar").empty();
+                        $("#topauthors_m").empty();
+                        top_h = build_top_authors_head(top, 'lines changed');
+                        $("#topauthors_m_gravatar").append(top_h);
+                        if (top.length > 3) {
+                            top_b = build_top_authors_body(top, 'tablc-dall', 'tablc-coll', limit);
+                            $("#topauthors_m").append(top_b);
+                            $('#tablc-dall').click(function() {
+                                fill_top_authors_by_lchanged(-1);
+                            });
+                            $('#tablc-coll').click(function() {
+                                fill_top_authors_by_lchanged();
+                            });
+                        }
+                    })
+                    .fail(function(err) {
+                        $("#topauthor-bylchanged-progress").empty();
+                        $("#topauthors_m_gravatar").empty();
+                        $("#topauthors_m").empty();
+                        console.log(err);
+                    });
+            }
+            fill_top_authors_by_lchanged();
+
         } else {
             $("#empty-warning").show();
             $("#commits_histo_div").hide();
@@ -1101,11 +1140,11 @@ function project_page_init() {
         pickupdatetarget = button.data('datetarget');
     });
 
-    function fill_top_new_authors(infos, dtoref_dfrom) {
+    function fill_top_new_authors(infos, dtoref_dfrom, limit) {
         $("#topnewauthors-progress").append(
             '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
         var top_new_authors_deferred = get_top_diff(
-            pid, tid, undefined, undefined, infos, dtoref_dfrom);
+            pid, tid, undefined, undefined, infos, dtoref_dfrom, limit);
         top_new_authors_deferred
             .done(function(top) {
                 $("#topnewauthors_gravatar").empty();
@@ -1113,13 +1152,22 @@ function project_page_init() {
                 $("#topnewauthors-progress").empty();
                 top_h = build_top_authors_head(top, 'commits');
                 $("#topnewauthors_gravatar").append(top_h);
-                top_b = build_top_authors_body(top);
-                $("#topnewauthors").append(top_b);
-                dtoref_dfrom = dtoref_dfrom.format("YYYY-MM-DD");
-                dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
-                dto = moment(infos.last * 1000).format("YYYY-MM-DD");
-                $('#difftxt').text(
-                    "During the period from " + dtoref_dfrom + " to " + dto + " compared to the period from " + dfromref + " to " + dtoref_dfrom);
+                if (top.length > 3) {
+                    top_b = build_top_authors_body(top, 'tna-dall', 'tna-coll', limit);
+                    $("#topnewauthors").append(top_b);
+                    dtoref_dfrom_orig = dtoref_dfrom;
+                    dtoref_dfrom = dtoref_dfrom.format("YYYY-MM-DD");
+                    dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
+                    dto = moment(infos.last * 1000).format("YYYY-MM-DD");
+                    $('#difftxt').text(
+                        "During the period from " + dtoref_dfrom + " to " + dto + " compared to the period from " + dfromref + " to " + dtoref_dfrom);
+                    $('#tna-dall').click(function() {
+                        fill_top_new_authors(infos, dtoref_dfrom_orig, -1);
+                    });
+                    $('#tna-coll').click(function() {
+                        fill_top_new_authors(infos, dtoref_dfrom_orig);
+                    });
+                }
             })
             .fail(function(err) {
                 $("#topnewauthors-progress").empty();
@@ -1258,44 +1306,71 @@ function project_page_init() {
             });
 
             // Fill the top authors by commits
-            $("#topauthor-bycommits-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_auth_commit_deferred = get_top(
-                pid, tid, undefined, undefined, 'authors', 'bycommits');
-            top_auth_commit_deferred
-                .done(function(top) {
-                    $("#topauthor-bycommits-progress").empty();
-                    top_h = build_top_authors_head(top, 'commits');
-                    $("#topauthors_gravatar").append(top_h);
-                    top_b = build_top_authors_body(top);
-                    $("#topauthors").append(top_b);
-                })
-                .fail(function(err) {
-                    $("#topauthor-bycommits-progress").empty();
-                    $("#topauthors_gravatar").empty();
-                    $("#topauthors").empty();
-                    console.log(err);
-                });
+            function fill_top_authors_by_commits(limit) {
+                $("#topauthor-bycommits-progress").append(
+                    '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+                var top_auth_commit_deferred = get_top(
+                    pid, tid, undefined, undefined, 'authors', 'bycommits', limit);
+                top_auth_commit_deferred
+                    .done(function(top) {
+                        $("#topauthor-bycommits-progress").empty();
+                        $("#topauthors_gravatar").empty();
+                        $("#topauthors").empty();
+                        top_h = build_top_authors_head(top, 'commits');
+                        $("#topauthors_gravatar").append(top_h);
+                        if (top.length > 3) {
+                            top_b = build_top_authors_body(top, 'tabc-dall', 'tabc-coll', limit);
+                            $("#topauthors").append(top_b);
+                            $('#tabc-dall').click(function() {
+                                fill_top_authors_by_commits(-1);
+                            });
+                            $('#tabc-coll').click(function() {
+                                fill_top_authors_by_commits();
+                            });
+                        }
+                    })
+                    .fail(function(err) {
+                        $("#topauthor-bycommits-progress").empty();
+                        $("#topauthors_gravatar").empty();
+                        $("#topauthors").empty();
+                        console.log(err);
+                    });
+            }
+            fill_top_authors_by_commits();
 
-            // Fill the top authors by line changes
-            $("#topauthor-bylchanged-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_auth_lchanged_deferred = get_top(
-                pid, tid, undefined, undefined, 'authors', 'bylchanged');
-            top_auth_lchanged_deferred
-                .done(function(top) {
-                    $("#topauthor-bylchanged-progress").empty();
-                    top_h = build_top_authors_head(top, 'lines changed');
-                    $("#topauthors_m_gravatar").append(top_h);
-                    top_b = build_top_authors_body(top);
-                    $("#topauthors_m").append(top_b);
-                })
-                .fail(function(err) {
-                    $("#topauthor-bylchanged-progress").empty();
-                    $("#topauthors_m_gravatar").empty();
-                    $("#topauthors_m").empty();
-                    console.log(err);
-                });
+            // Fill the top authors by line changed
+            function fill_top_authors_by_lchanged(limit) {
+                $("#topauthor-bylchanged-progress").append(
+                    '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+                var top_auth_lchanged_deferred = get_top(
+                    pid, tid, undefined, undefined, 'authors', 'bylchanged', limit);
+                top_auth_lchanged_deferred
+                    .done(function(top) {
+                        $("#topauthor-bylchanged-progress").empty();
+                        $("#topauthors_m_gravatar").empty();
+                        $("#topauthors_m").empty();
+                        top_h = build_top_authors_head(top, 'lines changed');
+                        $("#topauthors_m_gravatar").append(top_h);
+                        if (top.length > 3) {
+                            top_b = build_top_authors_body(top, 'tablc-dall', 'tablc-coll', limit);
+                            $("#topauthors_m").append(top_b);
+                            $('#tablc-dall').click(function() {
+                                fill_top_authors_by_lchanged(-1);
+                            });
+                            $('#tablc-coll').click(function() {
+                                fill_top_authors_by_lchanged();
+                            });
+                        }
+                    })
+                    .fail(function(err) {
+                        $("#topauthor-bylchanged-progress").empty();
+                        $("#topauthors_m_gravatar").empty();
+                        $("#topauthors_m").empty();
+                        console.log(err);
+                    });
+            }
+            fill_top_authors_by_lchanged();
+
         } else {
             $("#empty-warning").show();
             $("#infos-duration").hide();
