@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_1500dea9",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 4
+      },
+      "lineNbr": 1247,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-02-13T10:59:35Z",
+      "side": 1,
+      "message": "nit: tab",
+      "range": {
+        "startLine": 1247,
+        "startChar": 0,
+        "endLine": 1247,
+        "endChar": 4
+      },
+      "revId": "dab391528e092d1f3f7b71c737e561ac4bfe17e7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
