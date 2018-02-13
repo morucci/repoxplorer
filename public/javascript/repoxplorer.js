@@ -217,10 +217,12 @@ function get_infos(pid, tid, cid, gid) {
                     ib_data.mails_amount = mails_amount;
                 }
                 fill_info_box(ib_data);
+                $("#infos-progress").empty();
             })
         .fail(
             function(err) {
                 console.log(err);
+                $("#infos-progress").empty();
                 if (err.status == 404) {
                     msg = '<string>' + err.responseJSON.message + '</strong>';
                     set_error_msg(msg);
