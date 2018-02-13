@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a016987_55ce565b",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-02-13T14:44:21Z",
+      "side": 1,
+      "message": "No, a recent change has changed how pages are served. The root / is no longer managed by pecan and the index.html (that is now a static html page) must be hit directly by the browser. gunicorn or even apache/nginx (whatever we put at front) should redirect / to /index.html. I\u0027ll have a look if gunicorn can do the job and improve in a follow up change if possible.",
+      "parentUuid": "7a016987_75a3929f",
+      "revId": "416bc91a4eaddf4f27ee28f65faab7bfbe57033d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a016987_55a09690",
         "filename": "public/javascript/repoxplorer.js",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2018-02-13T14:07:37Z",
       "side": 1,
       "message": "TODO for later? Why not now? :)",
+      "revId": "416bc91a4eaddf4f27ee28f65faab7bfbe57033d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_d5080694",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 5
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-02-13T14:44:21Z",
+      "side": 1,
+      "message": ":) Because it needs more refactoring and I want to deal with that in a specific change.",
+      "parentUuid": "7a016987_55a09690",
       "revId": "416bc91a4eaddf4f27ee28f65faab7bfbe57033d",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
