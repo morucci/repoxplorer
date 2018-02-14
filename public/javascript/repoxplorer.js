@@ -1222,7 +1222,7 @@ function project_page_init() {
                     $("#newsincerelease").val(rdate);
                     newsinceval = $('#newsincerelease').val();
                     dtoref_dfrom = moment(newsinceval, "YYYY-MM-DD");
-                    fill_top_new_authors(idata, dtoref_dfrom);
+                    fill_top_new_authors(idata, dtoref_dfrom, 10);
                 }
             });
             install_paginator(
