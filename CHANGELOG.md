@@ -2,6 +2,38 @@
 Release Notes
 =============
 
+1.2.0
+=====
+
+This release features a complete and documented REST API where all repoXplorer query types are exposed. The bundled web UI has been refactored to fully used the REST API. A new endpoint to request new contributors during a period compared to a reference period has been implemented. This feature is exposed in the web UI. Finally lot of small improvements have been merged but not listed in this changelog.
+
+
+New Features
+------------
+
+- Most of API endpoint can output to csv in addition to json.
+
+- Add the infos API endpoint.
+
+- Add version API endpoint.
+
+- Add status API endpoint.
+
+- Add the projects API endpoint.
+
+- Add the tops/authors tops/projects API endpoints.
+
+- Add the top/authors/diff endpoint.
+
+- A new REST endpoint infos/contributor has been added
+
+- Make the UI fully uses the REST API and remove make templating.
+
+- tops authors/diff endpoints take an optional limit parameter.
+
+- project pages have a new tool box to display new authors since a date or release date.
+
+
 1.1.1
 =====
 
@@ -230,4 +262,5 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
+
 
