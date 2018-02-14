@@ -1,7 +1,7 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
 - **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
-- **Last release**: [1.1.1](https://github.com/morucci/repoxplorer/releases/tag/1.1.1).
+- **Last release**: [1.2.0](https://github.com/morucci/repoxplorer/releases/tag/1.2.0).
 
 RepoXplorer provides a web UI and a REST API to browse statistics about:
 
@@ -44,9 +44,9 @@ repositories like for instance your Github organization.
 
 ## Quickstart script
 
-**repoxplorer-quickstart.sh** is a script to easily run repoXplorer locally without
-the need to install services on your system. No root access is needed for the setup
-and the installation is self-contained in **$HOME/.cache/repoxplorer**.
+**repoxplorer-quickstart.sh** is a script to easily run repoXplorer (master version)
+locally without the need to install services on your system. No root access is needed
+for the setup and the installation is self-contained in **$HOME/.cache/repoxplorer**.
 
 This quickstart script only support indexation of projects hosted on Github.
 
@@ -60,7 +60,7 @@ Github organization.
 curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/repoxplorer-quickstart.sh
 chmod +x ./repoxplorer-quickstart.sh
 ./repoxplorer-quickstart.sh morucci repoxplorer
-firefox http://localhost:51000
+firefox http://localhost:51000/index.html
 ```
 
 To index the whole organization do not append the repository name.
@@ -100,7 +100,7 @@ sudo systemctl start elasticsearch
 ```Shell
 # Some dependecies need to be fetched from EPEL
 sudo yum install -y epel-release
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.1.1/repoxplorer-1.1.1-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.2.0/repoxplorer-1.2.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
