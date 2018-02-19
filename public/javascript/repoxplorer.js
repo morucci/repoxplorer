@@ -45,7 +45,7 @@ function get_groups(nameonly, prefix) {
     var args = {};
     args['nameonly'] = nameonly;
     args['prefix'] = prefix;
-    return $.getJSON("api/v1/groups", args);
+    return $.getJSON("api/v1/groups/", args);
 }
 
 function fill_status() {
@@ -194,7 +194,7 @@ function get_infos(pid, tid, cid, gid) {
         gc_d = $.getJSON("api/v1/infos/contributor", {'cid': cid});
     }
     if (gid) {
-        gg_d = $.getJSON("api/v1/groups", args);
+        gg_d = $.getJSON("api/v1/groups/", args);
     }
 
     gi_d = $.getJSON("api/v1/infos/infos", args);
