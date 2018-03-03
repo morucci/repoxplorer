@@ -27,7 +27,6 @@ from repoxplorer.index.contributors import Contributors
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 
-indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
@@ -35,7 +34,7 @@ class GroupsController(object):
 
     @expose('json')
     def index(self, prefix=None, nameonly='false'):
-        ci = Commits(index.Connector(index=indexname))
+        ci = Commits(index.Connector())
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
         projects = Projects()

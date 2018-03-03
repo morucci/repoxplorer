@@ -24,7 +24,6 @@ from repoxplorer.controllers import utils
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.contributors import Contributors
 
-indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
@@ -32,7 +31,7 @@ class SearchController(object):
 
     @expose('json')
     def search_authors(self, query=""):
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         ret = c.es.search(
             index=c.index, doc_type=c.dbname,
             q=query, df="author_name", size=10000,

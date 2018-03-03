@@ -27,7 +27,6 @@ from repoxplorer.index.commits import PROPERTIES
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
-indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
@@ -39,7 +38,7 @@ class CommitsController(object):
                 dfrom=None, dto=None, inc_merge_commit=None,
                 inc_repos=None, metadata=None, exc_groups=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 

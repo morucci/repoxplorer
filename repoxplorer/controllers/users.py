@@ -24,7 +24,6 @@ from pecan.rest import RestController
 from repoxplorer import index
 from repoxplorer.index import users
 
-indexname = 'repoxplorer'
 endpoint_active = conf.get('users_endpoint', False)
 admin_token = conf.get('admin_token')
 
@@ -88,7 +87,7 @@ class UsersController(RestController):
     def get(self, uid):
         self._authorize(uid)
         _users = users.Users(
-            index.Connector(index=indexname, index_suffix='users'))
+            index.Connector(index_suffix='users'))
         u = _users.get(uid)
         if not u:
             abort(404)
@@ -98,7 +97,7 @@ class UsersController(RestController):
     def delete(self, uid):
         self._authorize()
         _users = users.Users(
-            index.Connector(index=indexname, index_suffix='users'))
+            index.Connector(index_suffix='users'))
         u = _users.get(uid)
         if not u:
             abort(404)
@@ -108,7 +107,7 @@ class UsersController(RestController):
     def put(self, uid):
         self._authorize()
         _users = users.Users(
-            index.Connector(index=indexname, index_suffix='users'))
+            index.Connector(index_suffix='users'))
         u = _users.get(uid)
         if u:
             abort(409)
@@ -124,7 +123,7 @@ class UsersController(RestController):
     def post(self, uid):
         self._authorize(uid)
         _users = users.Users(
-            index.Connector(index=indexname, index_suffix='users'))
+            index.Connector(index_suffix='users'))
         u = _users.get(uid)
         if not u:
             abort(404)

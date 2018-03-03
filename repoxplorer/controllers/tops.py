@@ -25,7 +25,6 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
-indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
@@ -88,7 +87,7 @@ class TopAuthorsController(object):
                    inc_repos=None, metadata=None, exc_groups=None,
                    limit=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 
@@ -105,7 +104,7 @@ class TopAuthorsController(object):
                   inc_repos=None, metadata=None, exc_groups=None,
                   limit=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 
@@ -133,7 +132,7 @@ class TopAuthorsController(object):
                          "reference period to compute new contributors")
 
         # Get contributors for the new period
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 
@@ -224,7 +223,7 @@ class TopProjectsController(object):
                    inc_repos=None, metadata=None, exc_groups=None,
                    inc_repos_detail=None, project_scope=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 
@@ -242,7 +241,7 @@ class TopProjectsController(object):
                   inc_repos=None, metadata=None, exc_groups=None,
                   inc_repos_detail=None, project_scope=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 

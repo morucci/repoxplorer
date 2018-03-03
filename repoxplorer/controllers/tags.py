@@ -20,15 +20,13 @@ from repoxplorer import index
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.tags import Tags
 
-indexname = 'repoxplorer'
-
 
 class TagsController(object):
 
     @expose('json')
     def tags(self, pid=None, tid=None,
              dfrom=None, dto=None, inc_repos=None):
-        t = Tags(index.Connector(index=indexname))
+        t = Tags(index.Connector())
         projects_index = Projects()
 
         query_kwargs = utils.resolv_filters(

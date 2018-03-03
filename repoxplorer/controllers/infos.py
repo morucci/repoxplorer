@@ -27,7 +27,6 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
-indexname = 'repoxplorer'
 xorkey = conf.get('xorkey') or 'default'
 
 
@@ -62,7 +61,7 @@ class InfosController(object):
               dfrom=None, dto=None, inc_merge_commit=None,
               inc_repos=None, metadata=None, exc_groups=None):
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         projects_index = Projects()
         idents = Contributors()
 
@@ -84,7 +83,7 @@ class InfosController(object):
         except Exception:
             abort(404,
                   detail="The cid is incorrectly formated")
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         idents = Contributors()
         projects = Projects()
         iid, ident = idents.get_ident_by_id(cid)

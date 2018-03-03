@@ -20,8 +20,6 @@ from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.contributors import Contributors
 
-indexname = 'repoxplorer'
-
 
 class HistoController(object):
 
@@ -38,7 +36,7 @@ class HistoController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         if not c.get_commits_amount(**query_kwargs):
             return []
         ret = c.get_authors_histo(**query_kwargs)[1]
@@ -69,7 +67,7 @@ class HistoController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups)
 
-        c = Commits(index.Connector(index=indexname))
+        c = Commits(index.Connector())
         if not c.get_commits_amount(**query_kwargs):
             return []
         ret = c.get_commits_histo(**query_kwargs)

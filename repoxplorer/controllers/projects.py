@@ -21,7 +21,6 @@ from pecan import expose
 from repoxplorer import version
 from repoxplorer.index.projects import Projects
 
-indexname = 'repoxplorer'
 rx_version = version.get_version()
 
 
