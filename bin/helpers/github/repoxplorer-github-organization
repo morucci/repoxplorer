@@ -33,6 +33,10 @@ parser.add_argument(
     required=False,
     help='Specify the repository name')
 parser.add_argument(
+    '--mt-stars', type=int,
+    required=False,
+    help='Only repositories in top N by stargazers count')
+parser.add_argument(
     '--output-path', type=str,
     help='yaml file path to register organization repositories details')
 parser.add_argument(
@@ -65,11 +69,21 @@ if __name__ == "__main__":
             "description": "The %s Github organization" % args.org,
         }
     }
+    if args.mt_stars:
+        stars = []
+        for r in repos:
+            stars.append((r.name, int(r.stargazers_count)))
+        stars_sorted = sorted(stars, key=lambda s: s[1], reverse=True)
+        top = stars_sorted[:args.mt_stars]
+        top = [t[0] for t in top]
     for r in repos:
         if r.fork and args.skip_fork:
             continue
         if args.repo and r.name != args.repo:
             continue
+        if args.mt_stars:
+            if r.name not in top:
+                continue
         data = {r.name: {"template": args.org}}
         if r.default_branch != 'master':
             data[r.name]['branches'] = [r.default_branch]
