@@ -93,7 +93,8 @@ class TopAuthorsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         return self.gbylchanged(c, idents, query_kwargs, limit)
 
@@ -110,7 +111,8 @@ class TopAuthorsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         return self.gbycommits(c, idents, query_kwargs, limit)
 
@@ -138,14 +140,16 @@ class TopAuthorsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         authors_new = self.gbycommits(c, idents, query_kwargs, top=-1)
 
         # Now get contributors for the old reference period
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfromref, dtoref, inc_repos, inc_merge_commit, None, exc_groups)
+            dfromref, dtoref, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         authors_old = self.gbycommits(c, idents, query_kwargs, top=-1)
 
@@ -229,7 +233,8 @@ class TopProjectsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         return self.gbylchanged(c, projects_index, query_kwargs,
                                 inc_repos_detail, project_scope)
@@ -247,7 +252,8 @@ class TopProjectsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, metadata,
+            exc_groups)
 
         return self.gbycommits(c, projects_index, query_kwargs,
                                inc_repos_detail, project_scope)
