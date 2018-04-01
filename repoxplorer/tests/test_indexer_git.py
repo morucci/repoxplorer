@@ -265,14 +265,22 @@ class TestRepoIndexer(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.cmts = commits.Commits(cls.con)
         indexer.conf['git_store'] = tempfile.mkdtemp()
+        indexer.conf['elasticsearch_index'] = 'repoxplorertest'
+        indexer.get_commits_desc = lambda path, shas: []
+        cls.con = index.Connector()
+        cls.cmts = commits.Commits(cls.con)
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(indexer.conf['git_store'])
         cls.con.ic.delete(index=cls.con.index)
+
+    def init_fake_process_commits_desc_output(self, pi, repo_commits):
+        to_create, _ = pi.compute_to_create_to_update()
+        to_create = [
+            c for c in repo_commits if c['sha'] in to_create]
+        indexer.process_commits_desc_output = lambda buf, ref_id: to_create
 
     def test_init(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1')
@@ -283,9 +291,6 @@ class TestRepoIndexer(TestCase):
     def test_index(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
                                  con=self.con)
-        pi.run_workers = \
-            lambda sha_list, _: [c for c in repo_commits
-                                 if c['sha'] in sha_list]
 
         # This is the initial commits list of a repository we
         # are going to index
@@ -309,6 +314,7 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
         # Check
         self.assertDictEqual(
@@ -336,6 +342,7 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
         # Check
         cmts = set([c['_source']['sha'] for c in
@@ -350,6 +357,7 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
         # Check
         self.assertDictEqual(
@@ -361,9 +369,7 @@ class TestRepoIndexer(TestCase):
         # Index p2 a fork of p1
         pi2 = indexer.RepoIndexer('p2', 'file:///tmp/p2',
                                   con=self.con)
-        pi2.run_workers = \
-            lambda sha_list, _: [c for c in repo2_commits
-                                 if c['sha'] in sha_list]
+
         repo2_commits = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
@@ -384,6 +390,7 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi2.get_current_commit_indexed()
         pi2.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi2, repo2_commits)
         pi2.index()
         # Check the commits has been marked belonging to both repos
         cmt = self.cmts.get_commit(repo2_commits[0]['sha'])
@@ -411,6 +418,7 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi2.get_current_commit_indexed()
         pi2.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi2, repo2_commits)
         pi2.index()
         # Check the commits has been marked belonging to both repos
         cmt = self.cmts.get_commit(repo2_commits[1]['sha'])
@@ -428,10 +436,6 @@ class TestRepoIndexer(TestCase):
             pi.get_tags()
             self.assertListEqual(
                 pi.tags, [['123', 'refs/tags/t1'], ['124', 'refs/tags/t2']])
-
-        pi.run_workers = \
-            lambda sha_list, _: [c for c in repo_commits
-                                 if c['sha'] in sha_list]
 
         # This is the initial commits list of a repository we
         # are going to index
@@ -468,6 +472,10 @@ class TestRepoIndexer(TestCase):
         # Start the indexation
         pi.get_current_commit_indexed()
         pi.compute_to_index_to_delete()
+        to_create, _ = pi.compute_to_create_to_update()
+        to_create = [
+            c for c in repo_commits if c['sha'] in to_create]
+        indexer.process_commits_desc_output = lambda buf, ref_id: to_create
         pi.index()
         # Start indexation of tags
         pi.index_tags()

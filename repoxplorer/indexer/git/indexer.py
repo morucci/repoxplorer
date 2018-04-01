@@ -267,11 +267,11 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
 
 def process_commits(options):
     path, ref_id, shas = options
-    logger.info("Worker %s started to extract %s commits" % (
+    c = Commits(index.Connector())
+    logger.info("Worker %s started to extract and index %s commits" % (
         mp.current_process(), len(shas)))
     buf = get_commits_desc(path, shas)
-    cmts = process_commits_desc_output(buf, ref_id)
-    return cmts
+    c.add_commits(process_commits_desc_output(buf, ref_id))
 
 
 class RepoIndexer():
@@ -355,15 +355,12 @@ class RepoIndexer():
                 # Add the rest
                 to_process.append(shas)
                 break
-        options = [(self.local, self.ref_id, stp) for stp in to_process]
+        options = [
+            (self.local, self.ref_id, stp) for stp in to_process]
         worker_pool = mp.Pool(workers)
-        extracted = worker_pool.map(process_commits, options)
+        worker_pool.map(process_commits, options)
         worker_pool.terminate()
         worker_pool.join()
-        ret = []
-        for r in extracted:
-            ret.extend(r)
-        return ret
 
     def get_current_commit_indexed(self):
         """ Fetch from the index commits mentionned for this repo
@@ -393,6 +390,16 @@ class RepoIndexer():
             "%s: Indexer will dereference %s commits." % (
                 self.name,
                 len(self.to_delete)))
+
+    def compute_to_create_to_update(self):
+        if self.to_index:
+            res = self.c.get_commits_by_id(list(self.to_index))
+            to_update = [c['_source'] for
+                         c in res['docs'] if c['found'] is True]
+            to_create = [c['_id'] for
+                         c in res['docs'] if c['found'] is False]
+            return to_create, to_update
+        return [], []
 
     def index_tags(self):
         def c_tid(t):
@@ -484,17 +491,12 @@ class RepoIndexer():
         # check whether a commit should be created or
         # updated by adding the repo into the repos field
         if self.to_index:
-            res = self.c.get_commits_by_id(list(self.to_index))
-            to_update = [c['_source'] for
-                         c in res['docs'] if c['found'] is True]
-            to_create = [c['_id'] for
-                         c in res['docs'] if c['found'] is False]
+            to_create, to_update = self.compute_to_create_to_update()
 
             if to_create:
                 logger.info("%s: %s commits will be created ..." % (
                     self.name, len(to_create)))
-                self.c.add_commits(
-                    self.run_workers(to_create, extract_workers))
+                self.run_workers(to_create, extract_workers)
 
             if to_update:
                 logger.info(
