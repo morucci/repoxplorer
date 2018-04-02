@@ -136,7 +136,7 @@ python setup.py install
 
 ```Shell
 cat > ~/start-ui.sh << EOF
-gunicorn_pecan --workers 1 --chdir / -b 0.0.0.0:51000 \
+gunicorn_pecan --workers 10 --chdir / -b 0.0.0.0:51000 \
  --name repoxplorer ~/repoxplorer/local/share/repoxplorer/config.py
 EOF
 chmod +x ~/start-ui.sh
