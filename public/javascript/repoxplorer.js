@@ -1520,7 +1520,7 @@ function get_metadata_keys(pid, tid, cid) {
                 });
                 $.each(temp, function(i, o) {
                     $('#metadata').append($('<option>', {
-                        text: o.k + " (" + o.v + " hits)",
+                        text: o.k,
                         value: o.k
                     }));
                 });

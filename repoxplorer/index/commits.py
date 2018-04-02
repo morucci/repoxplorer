@@ -541,12 +541,16 @@ class Commits(object):
                 uniq_keys[key] = 1
             else:
                 uniq_keys[key] += 1
-
-        ret = self.get_commits(mails, repos,
-                               fromdate, todate,
-                               merge_commit=merge_commit, scan=True,
-                               mails_neg=mails_neg, domains=domains)
-        keys = [c['_source'].keys() for c in ret]
+        # Query the last 10000 commits to find metadata keys
+        # This is not search accross the full set of commits
+        # because the goal is to find most used metadata keys so
+        # doing it on a limited set of commits is fine. And also
+        # it lets the endpoint return data far faster.
+        ret = self.get_commits(mails, repos, fromdate, todate,
+                               merge_commit=merge_commit,
+                               mails_neg=mails_neg, domains=domains,
+                               limit=10000)
+        keys = [c.keys() for c in ret[2]]
         map(storekey, [i for i in itertools.chain(*keys) if
                        i not in PROPERTIES])
         return uniq_keys
