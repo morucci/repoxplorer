@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a46c9f1_1e76cd3e",
+        "filename": "bin/helpers/redhatofficial/redhatoffical.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-03T09:25:37Z",
+      "side": 1,
+      "message": "This comment does not belong here (I\u0027m guessing wrong copy/paste)",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 26,
+        "endChar": 57
+      },
+      "revId": "7f39e4b0c4829428636a690110611756d60db5fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a46c9f1_3e73894f",
+        "filename": "bin/helpers/redhatofficial/redhatoffical.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-03T09:25:37Z",
+      "side": 1,
+      "message": "Was this test code?",
+      "range": {
+        "startLine": 75,
+        "startChar": 0,
+        "endLine": 76,
+        "endChar": 21
+      },
+      "revId": "7f39e4b0c4829428636a690110611756d60db5fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a46c9f1_de8e2527",
+        "filename": "bin/helpers/redhatofficial/redhatoffical.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-03T09:25:37Z",
+      "side": 1,
+      "message": "For python3 compatibility, I\u0027d suggest print(\"\")",
+      "range": {
+        "startLine": 111,
+        "startChar": 4,
+        "endLine": 111,
+        "endChar": 9
+      },
+      "revId": "7f39e4b0c4829428636a690110611756d60db5fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
