@@ -76,6 +76,12 @@ def process():
                         "requested branch %s" % (r.base_id, branch))
                     continue
                 r.set_branch(branch)
+                if r.is_branch_fully_indexed():
+                    logger.info("Repository branch fully indexed %s" % (
+                        r.ref_id))
+                    continue
+                logger.info("Start indexing repository branch %s" % r.ref_id)
+
                 logger.info("Start indexing repository branch %s" % r.ref_id)
                 try:
                     r.git_fetch_branch()
