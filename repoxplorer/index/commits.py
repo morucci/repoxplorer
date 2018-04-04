@@ -103,13 +103,15 @@ class Commits(object):
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
 
-    def get_commit(self, sha):
+    def get_commit(self, sha, silent=False):
         try:
             res = self.es.get(index=self.index,
                               doc_type=self.dbname,
                               id=sha)
             return res['_source']
         except Exception, e:
+            if silent:
+                pass
             logger.error('Unable to get commit (%s). %s' % (sha, e))
 
     def get_commits_by_id(self, sha_list):
