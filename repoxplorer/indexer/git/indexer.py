@@ -362,6 +362,15 @@ class RepoIndexer():
         worker_pool.terminate()
         worker_pool.join()
 
+    def is_branch_fully_indexed(self):
+        branch = [head for head in self.heads if
+                  head[1].endswith(self.branch)][0]
+        branch_tip_sha = branch[0]
+        cmt = self.c.get_commit(branch_tip_sha)
+        if cmt and self.ref_id in cmt['repos']:
+            return True
+        return False
+
     def get_current_commit_indexed(self):
         """ Fetch from the index commits mentionned for this repo
         and branch.
