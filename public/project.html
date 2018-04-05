@@ -131,9 +131,10 @@
       <div id="metadata-selected"></div>
      </div>
      <div class="col-md-3 form-group">
-      <label for="groups">Exclude a group</label>
-      <select id='groups' class="form-control">
-      </select>
+      <label for="groups">Filter by a group</label>
+      <select id='groups' class="form-control"></select>
+      <label><input id='inc_groups' type="radio" name="gradio" checked=""> Only include selected group</label>
+      <label><input id='exc_groups' type="radio" name="gradio"> Exclude selected group</label>
      </div>
     </div>
     <div><input id="filter" type="button" value="Apply filter" class="btn pull-right" /></div>

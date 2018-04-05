@@ -85,7 +85,7 @@ class TopAuthorsController(object):
     def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
                    dfrom=None, dto=None, inc_merge_commit=None,
                    inc_repos=None, metadata=None, exc_groups=None,
-                   limit=None):
+                   limit=None, inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -94,7 +94,7 @@ class TopAuthorsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         return self.gbylchanged(c, idents, query_kwargs, limit)
 
@@ -103,7 +103,7 @@ class TopAuthorsController(object):
     def bycommits(self, pid=None, tid=None, cid=None, gid=None,
                   dfrom=None, dto=None, inc_merge_commit=None,
                   inc_repos=None, metadata=None, exc_groups=None,
-                  limit=None):
+                  limit=None, inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -112,7 +112,7 @@ class TopAuthorsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         return self.gbycommits(c, idents, query_kwargs, limit)
 
@@ -121,7 +121,7 @@ class TopAuthorsController(object):
     def diff(self, pid=None, tid=None, cid=None, gid=None,
              dfrom=None, dto=None, dfromref=None, dtoref=None,
              inc_merge_commit=None, inc_repos=None, metadata=None,
-             exc_groups=None, limit=None):
+             exc_groups=None, limit=None, inc_groups=None):
 
         if not dfrom or not dto:
             abort(404,
@@ -141,7 +141,7 @@ class TopAuthorsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         authors_new = self.gbycommits(c, idents, query_kwargs, top=-1)
 
@@ -149,7 +149,7 @@ class TopAuthorsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfromref, dtoref, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         authors_old = self.gbycommits(c, idents, query_kwargs, top=-1)
 
@@ -171,12 +171,9 @@ class TopAuthorsController(object):
 class TopProjectsController(object):
 
     def gby(self, ci, pi, query_kwargs,
-            inc_repos_detail, project_scope, f1, f2):
+            inc_repos_detail, f1, f2):
         repos = f1(**query_kwargs)[1]
-        if project_scope:
-            projects = [project_scope]
-        else:
-            projects = utils.get_projects_from_references(pi, repos)
+        projects = utils.get_projects_from_references(pi, repos)
         if inc_repos_detail:
             repos_contributed = [
                 (p, ca) for p, ca in repos.items()]
@@ -205,18 +202,18 @@ class TopProjectsController(object):
         return ret
 
     def gbycommits(self, ci, pi, query_kwargs,
-                   inc_repos_detail, project_scope):
-        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail, project_scope,
+                   inc_repos_detail):
+        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail,
                        ci.get_repos, ci.get_commits_amount)
         return ret
 
     def gbylchanged(self, ci, pi, query_kwargs,
-                    inc_repos_detail, project_scope):
+                    inc_repos_detail):
 
         def f2(**kwargs):
             return ci.get_line_modifieds_stats(**kwargs)[1]['sum']
 
-        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail, project_scope,
+        ret = self.gby(ci, pi, query_kwargs, inc_repos_detail,
                        ci.get_top_repos_by_lines, f2)
         return ret
 
@@ -225,7 +222,7 @@ class TopProjectsController(object):
     def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
                    dfrom=None, dto=None, inc_merge_commit=None,
                    inc_repos=None, metadata=None, exc_groups=None,
-                   inc_repos_detail=None, project_scope=None):
+                   inc_repos_detail=None, inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -234,17 +231,17 @@ class TopProjectsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         return self.gbylchanged(c, projects_index, query_kwargs,
-                                inc_repos_detail, project_scope)
+                                inc_repos_detail)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')
     def bycommits(self, pid=None, tid=None, cid=None, gid=None,
                   dfrom=None, dto=None, inc_merge_commit=None,
                   inc_repos=None, metadata=None, exc_groups=None,
-                  inc_repos_detail=None, project_scope=None):
+                  inc_repos_detail=None, inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -253,10 +250,10 @@ class TopProjectsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
-            exc_groups)
+            exc_groups, inc_groups)
 
         return self.gbycommits(c, projects_index, query_kwargs,
-                               inc_repos_detail, project_scope)
+                               inc_repos_detail)
 
 
 class TopsController(object):
