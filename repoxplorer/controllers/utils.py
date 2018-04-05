@@ -77,10 +77,7 @@ def get_mail_filter(idents, cid=None, gid=None):
             ident = idents.get_ident_by_email(cid)
         return ident[1]['emails']
     elif gid:
-        gid, group = idents.get_group_by_id(gid)
-        if not group:
-            abort(404,
-                  detail="The group has not been found")
+        _, group = idents.get_group_by_id(gid)
         return group['emails']
     else:
         return {}
@@ -90,6 +87,11 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
                        cid=None, gid=None, dfrom=None, dto=None,
                        inc_merge_commit=None, inc_repos=None, metadata=None,
                        exc_groups=None):
+
+    if pid and tid:
+        abort(400, detail="pid and tid are exclusive")
+    if cid and gid:
+        abort(400, detail="cid and gid are exclusive")
 
     if pid:
         project = projects_index.get_projects().get(pid)
@@ -107,6 +109,12 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
         except Exception:
             abort(404,
                   detail="The cid is incorrectly formated")
+
+    if gid:
+        _, group = idents.get_group_by_id(gid)
+        if not group:
+            abort(404,
+                  detail="The group has not been found")
 
     try:
         if dfrom:
@@ -168,9 +176,10 @@ def resolv_filters(projects_index, idents, pid,
     if cid or gid:
         if cid:
             cid = decrypt(xorkey, cid)
-        mails = get_mail_filter(idents, cid, gid)
+            mails = get_mail_filter(idents, cid)
         if gid:
             _, group = idents.get_group_by_id(gid)
+            mails = get_mail_filter(idents, gid)
             domains.extend(group.get('domains', []))
 
     if dfrom:
