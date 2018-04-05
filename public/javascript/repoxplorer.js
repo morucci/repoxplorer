@@ -269,6 +269,7 @@ function set_error_msg(msg) {
     $("#top_projects_c_div").hide();
     $("#top_projects_lc_div").hide();
     $("#commits_listing_div").hide();
+    $("#top_authors_new").hide();
 }
 
 function create_alpha_index(groups) {
@@ -1369,6 +1370,7 @@ function project_page_init() {
             $("#top_authors_c_div").hide();
             $("#top_authors_lc_div").hide();
             $("#commits_listing_div").hide();
+            $("#top_authors_new").hide();
         }
     });
 }
