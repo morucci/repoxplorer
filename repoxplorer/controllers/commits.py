@@ -36,7 +36,8 @@ class CommitsController(object):
     def commits(self, pid=None, tid=None, cid=None, gid=None,
                 start=0, limit=10,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata=None, exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None,
+                inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -45,7 +46,7 @@ class CommitsController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
-            metadata, exc_groups)
+            metadata, exc_groups, inc_groups)
         query_kwargs.update(
             {'start': start, 'limit': limit})
 
