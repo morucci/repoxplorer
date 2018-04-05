@@ -27,7 +27,7 @@ class MetadataController(object):
     @expose('json')
     def metadata(self, key=None, pid=None, tid=None, cid=None, gid=None,
                  dfrom=None, dto=None, inc_merge_commit=None,
-                 inc_repos=None, exc_groups=None):
+                 inc_repos=None, exc_groups=None, inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -38,7 +38,8 @@ class MetadataController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
-            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups)
+            dfrom, dto, inc_repos, inc_merge_commit, None, exc_groups,
+            inc_groups)
         del query_kwargs['metadata']
 
         if not key:

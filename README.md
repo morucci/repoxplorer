@@ -1127,7 +1127,9 @@ Only one of:
 - **inc_repos**: A list of repository IDs to only include in the computation.
   example: 'barbican:master,python-barbicanclient:master'
 - **exc_groups**: group ID as in groups definitions to exclude from
-  the computation. Only one group is supported.
+  the computation. Can be used only with **pid** or **tid** Only one group is supported.
+- **inc_groups**: group ID as in groups definitions to only include in
+  the computation. Can be used only with **pid** or **tid** Only one group is supported.
 
 #### commits endpoint only
 

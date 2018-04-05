@@ -26,7 +26,8 @@ class HistoController(object):
     @expose('json')
     def authors(self, pid=None, tid=None, cid=None, gid=None,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata=None, exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None,
+                inc_groups=None):
 
         projects_index = Projects()
         idents = Contributors()
@@ -34,7 +35,7 @@ class HistoController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
-            metadata, exc_groups)
+            metadata, exc_groups, inc_groups)
 
         c = Commits(index.Connector())
         if not c.get_commits_amount(**query_kwargs):
@@ -57,7 +58,8 @@ class HistoController(object):
     @expose('json')
     def commits(self, pid=None, tid=None, cid=None, gid=None,
                 dfrom=None, dto=None, inc_merge_commit=None,
-                inc_repos=None, metadata=None, exc_groups=None):
+                inc_repos=None, metadata=None, exc_groups=None,
+                inc_groups=None):
 
         projects_index = Projects()
         idents = Contributors()
@@ -65,7 +67,7 @@ class HistoController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
-            metadata, exc_groups)
+            metadata, exc_groups, inc_groups)
 
         c = Commits(index.Connector())
         if not c.get_commits_amount(**query_kwargs):

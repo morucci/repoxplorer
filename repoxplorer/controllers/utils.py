@@ -86,12 +86,22 @@ def get_mail_filter(idents, cid=None, gid=None):
 def filters_validation(projects_index, idents, pid=None, tid=None,
                        cid=None, gid=None, dfrom=None, dto=None,
                        inc_merge_commit=None, inc_repos=None, metadata=None,
-                       exc_groups=None):
+                       exc_groups=None, inc_groups=None):
 
     if pid and tid:
         abort(400, detail="pid and tid are exclusive")
     if cid and gid:
         abort(400, detail="cid and gid are exclusive")
+
+    if (exc_groups or inc_groups) and not (pid or tid):
+        abort(400, detail=(
+            'exc_groups or inc_groups can only be used'
+            'with pid or tid parameters'))
+
+    if exc_groups and len(exc_groups.split(',')) > 1:
+        abort(400, detail="as of now exc_groups supports only one group")
+    if inc_groups and len(inc_groups.split(',')) > 1:
+        abort(400, detail="as of now inc_groups supports only one group")
 
     if pid:
         project = projects_index.get_projects().get(pid)
@@ -128,14 +138,19 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
 
 def resolv_filters(projects_index, idents, pid,
                    tid, cid, gid, dfrom, dto, inc_repos,
-                   inc_merge_commit, metadata, exc_groups):
+                   inc_merge_commit, metadata, exc_groups,
+                   inc_groups):
 
     projects_index._enrich_projects()
 
     filters_validation(
         projects_index, idents, pid=pid, tid=tid, cid=cid, gid=gid,
         dfrom=dfrom, dto=dto, inc_merge_commit=inc_merge_commit,
-        inc_repos=inc_repos, metadata=metadata, exc_groups=exc_groups)
+        inc_repos=inc_repos, metadata=metadata, exc_groups=exc_groups,
+        inc_groups=inc_groups)
+
+    mails = []
+    domains = []
 
     if pid:
         project = projects_index.get_projects().get(pid)
@@ -161,7 +176,7 @@ def resolv_filters(projects_index, idents, pid,
 
     mails_neg = False
 
-    if exc_groups:
+    if exc_groups and (pid or tid):
         mails_to_exclude = {}
         domains_to_exclude = []
         mails_neg = True
@@ -171,8 +186,13 @@ def resolv_filters(projects_index, idents, pid,
             mails_to_exclude.update(group['emails'])
             domains_to_exclude.extend(group.get('domains', []))
 
-    mails = []
-    domains = []
+    if inc_groups and (pid or tid):
+        groups_splitted = inc_groups.split(',')
+        for gid in groups_splitted:
+            _, group = idents.get_group_by_id(gid)
+            mails.update(group['emails'])
+            domains.extend(group.get('domains', []))
+
     if cid or gid:
         if cid:
             cid = decrypt(xorkey, cid)
