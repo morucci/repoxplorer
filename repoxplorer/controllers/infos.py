@@ -59,7 +59,8 @@ class InfosController(object):
     @expose('csv:', content_type='text/csv')
     def infos(self, pid=None, tid=None, cid=None, gid=None,
               dfrom=None, dto=None, inc_merge_commit=None,
-              inc_repos=None, metadata=None, exc_groups=None):
+              inc_repos=None, metadata=None, exc_groups=None,
+              inc_groups=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -68,7 +69,7 @@ class InfosController(object):
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,
             dfrom, dto, inc_repos, inc_merge_commit,
-            metadata, exc_groups)
+            metadata, exc_groups, inc_groups)
 
         return self.get_generic_infos(c, idents, query_kwargs)
 
@@ -110,9 +111,8 @@ class InfosController(object):
         }
 
         tops_ctl = tops.TopProjectsController()
-        top_projects = tops_ctl.gbycommits(c, projects, query_kwargs, None,
-                                           None)
-        top_repos = tops_ctl.gbycommits(c, projects, query_kwargs, True, None)
+        top_projects = tops_ctl.gbycommits(c, projects, query_kwargs, False)
+        top_repos = tops_ctl.gbycommits(c, projects, query_kwargs, True)
 
         infos = {}
         infos['name'] = name
