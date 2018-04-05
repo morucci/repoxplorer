@@ -100,6 +100,22 @@ COMMITS = [
     }]
 
 
+GROUPS = {
+    "grp1": {
+        "description": "The group 1",
+        "emails": {
+            "j.paul@joker.org": {},
+            }
+        },
+    "grp2": {
+        "description": "The group 2",
+        "emails": {
+            "n.suke@joker.org": {},
+            }
+        }
+    }
+
+
 def build_dict_from_csv(body):
     buf = StringIO(body)
     raw_fields = buf.readlines()[0]
@@ -1024,3 +1040,26 @@ class TestCommitsController(FunctionalTest):
                 'inc_merge_commit=on')
             assert response.status_int == 200
             self.assertEqual(response.json[1], 4)
+
+    def test_get_commits_with_groups_filter(self):
+        patches = [
+            patch.object(root.projects.Projects, 'get_projects'),
+            patch.object(root.groups.Contributors, 'get_groups')]
+        with nested(*patches) as (gp, gg):
+            root.commits.indexname = 'repoxplorertest'
+            gp.return_value = self.projects
+            gg.return_value = GROUPS
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&exc_groups=grp1')
+            assert response.status_int == 200
+            self.assertEqual(response.json[1], 1)
+            self.assertEqual(
+                response.json[2][0]['author_name'],
+                'Nakata Daisuke')
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test&inc_groups=grp2')
+            assert response.status_int == 200
+            self.assertEqual(response.json[1], 1)
+            self.assertEqual(
+                response.json[2][0]['author_name'],
+                'Nakata Daisuke')
