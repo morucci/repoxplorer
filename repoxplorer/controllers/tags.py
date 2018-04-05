@@ -31,7 +31,7 @@ class TagsController(object):
 
         query_kwargs = utils.resolv_filters(
             projects_index, None, pid, tid, None, None,
-            dfrom, dto, inc_repos, None, None, None)
+            dfrom, dto, inc_repos, None, None, None, None)
 
         p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]
         dfrom = query_kwargs['fromdate']
