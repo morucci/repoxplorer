@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a43c5e1_001d0873",
+        "filename": "repoxplorer/controllers/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-05T16:17:55Z",
+      "side": 0,
+      "message": "Why are we removing this check?",
+      "range": {
+        "startLine": 81,
+        "startChar": 0,
+        "endLine": 83,
+        "endChar": 56
+      },
+      "revId": "546c34cd424ea8af5a3969d0c29fb5044cad8826",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
