@@ -79,6 +79,7 @@ function get_histo(pid, tid, cid, gid, type) {
     args['inc_repos'] = getUrlParameter('inc_repos');
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
+    args['inc_groups'] = getUrlParameter('inc_groups');
     return $.getJSON("api/v1/histo/" + type, args);
 }
 
@@ -102,6 +103,7 @@ function get_top(pid, tid, cid, gid, type, stype, limit) {
         'inc_repos': getUrlParameter('inc_repos'),
         'metadata': getUrlParameter('metadata'),
         'exc_groups': getUrlParameter('exc_groups'),
+        'inc_groups': getUrlParameter('inc_groups'),
         'limit': limit
     };
     return $.getJSON("api/v1/tops/" + type + "/" + stype, args);
@@ -129,6 +131,7 @@ function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfromi, limit) {
         'inc_repos': getUrlParameter('inc_repos'),
         'metadata': getUrlParameter('metadata'),
         'exc_groups': getUrlParameter('exc_groups'),
+        'inc_groups': getUrlParameter('inc_groups'),
         'limit': limit
     };
     return $.getJSON("api/v1/tops/authors/diff", args);
@@ -182,6 +185,7 @@ function get_infos(pid, tid, cid, gid) {
     args['inc_repos'] = getUrlParameter('inc_repos');
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
+    args['inc_groups'] = getUrlParameter('inc_groups');
 
     gr_d = $.when();
     gc_d = $.when();
@@ -1074,6 +1078,19 @@ function project_page_init() {
         $('#inc_merge_commit').prop('checked', true);
     }
 
+    if (getUrlParameter('inc_') == 'on') {
+        $('#inc_merge_commit').prop('checked', true);
+    }
+    if (getUrlParameter('inc_merge_commit') == 'on') {
+        $('#inc_merge_commit').prop('checked', true);
+    }
+    if (getUrlParameter('inc_groups')) {
+        $('#inc_groups').prop('checked', true);
+    }
+    if (getUrlParameter('exc_groups')) {
+        $('#exc_groups').prop('checked', true);
+    }
+
     if (getUrlParameter('metadata')) {
         selected_metadata = getUrlParameter('metadata').split(',');
         $.each(selected_metadata, function(i, v) {
@@ -1103,7 +1120,12 @@ function project_page_init() {
             newlocation = newlocation + "&inc_repos=" + encodeURIComponent($('#repositories').val());
         }
         if ($('#groups').val() != "") {
+          if ($('#inc_groups').prop("checked")) {
+            newlocation = newlocation + "&inc_groups=" + encodeURIComponent($('#groups').val());
+          }
+          if ($('#exc_groups').prop("checked")) {
             newlocation = newlocation + "&exc_groups=" + encodeURIComponent($('#groups').val());
+          }
         }
         if (selected_metadata.length > 0) {
             newlocation = newlocation + "&metadata=" + encodeURIComponent(selected_metadata.toString());
@@ -1194,8 +1216,12 @@ function project_page_init() {
                 }));
             });
             if (getUrlParameter('exc_groups')) {
-                excluded_groups = getUrlParameter('exc_groups').split(',');
-                $('#groups').val(excluded_groups);
+                groups = getUrlParameter('exc_groups').split(',');
+                $('#groups').val(groups);
+            }
+            if (getUrlParameter('inc_groups')) {
+                groups = getUrlParameter('inc_groups').split(',');
+                $('#groups').val(groups);
             }
         }
     )
@@ -1553,6 +1579,7 @@ function get_commits(pid, tid, cid, gid, page, with_projects_c) {
     args['inc_repos'] = getUrlParameter('inc_repos');
     args['metadata'] = getUrlParameter('metadata');
     args['exc_groups'] = getUrlParameter('exc_groups');
+    args['inc_groups'] = getUrlParameter('inc_groups');
 
     $("#commits-table-progress").append(
         '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
