@@ -171,6 +171,24 @@ class TestErrorController(FunctionalTest):
             response.json['description'],
             'The cid is incorrectly formated')
 
+    def test_api_infos_exclusive_parameters(self):
+        with patch.object(root.projects.Projects, 'get_projects') as m:
+            root.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            headers = {'Accept': 'application/json'}
+            response = self.app.get(
+                '/api/v1/infos/infos?cid=XYZ&gid=ABC',
+                headers=headers, status='*')
+            self.assertEqual(response.status_int, 400)
+            self.assertEqual(
+                response.json['description'], 'cid and gid are exclusive')
+            response = self.app.get(
+                '/api/v1/infos/infos?pid=XYZ&tid=ABC',
+                headers=headers, status='*')
+            self.assertEqual(response.status_int, 400)
+            self.assertEqual(
+                response.json['description'], 'pid and tid are exclusive')
+
 
 class TestGroupsController(FunctionalTest):
 
