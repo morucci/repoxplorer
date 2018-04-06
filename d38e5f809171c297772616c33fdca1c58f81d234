@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a43c5e1_c3b88ae8",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-06T08:32:50Z",
+      "side": 0,
+      "message": "Is this related to the change?",
+      "range": {
+        "startLine": 174,
+        "startChar": 24,
+        "endLine": 179,
+        "endChar": 26
+      },
+      "revId": "d38e5f809171c297772616c33fdca1c58f81d234",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a43c5e1_e3b906ee",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 1132,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-06T08:32:50Z",
+      "side": 1,
+      "message": "Should inc_groups and exc_groups be mutually exclusive options? I guess so.",
+      "range": {
+        "startLine": 1129,
+        "startChar": 0,
+        "endLine": 1132,
+        "endChar": 88
+      },
+      "revId": "bf3305a5b1e58c091e53624ab8bcb853b6a9be23",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
