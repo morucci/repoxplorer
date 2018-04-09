@@ -477,6 +477,8 @@ class RepoIndexer():
                 self.c.del_commits(to_delete)
 
             if to_delete_update:
+                def update_func(d):
+                    d['repos'].remove(self.ref_id)
                 logger.info("%s: %s commits belonging to other repos "
                             "will be updated ..." % (
                                 self.name, len(to_delete_update)))
@@ -484,9 +486,8 @@ class RepoIndexer():
                 if res:
                     original_commits = [c['_source'] for
                                         c in res['docs']]
-                    for c in original_commits:
-                        c['repos'].remove(self.ref_id)
-                    self.c.update_commits(original_commits)
+                    self.c.update_commits(
+                        original_commits, update_func, field='repos')
 
         # check whether a commit should be created or
         # updated by adding the repo into the repos field
@@ -499,9 +500,10 @@ class RepoIndexer():
                 self.run_workers(to_create, extract_workers)
 
             if to_update:
+                def update_func(d):
+                    d['repos'].append(self.ref_id)
                 logger.info(
                     "%s: %s commits already indexed and need to be updated" % (
                         self.name, len(to_update)))
-                for c in to_update:
-                    c['repos'].append(self.ref_id)
-                self.c.update_commits(to_update)
+                self.c.update_commits(
+                    to_update, update_func, field='repos')

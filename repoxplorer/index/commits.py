@@ -84,7 +84,7 @@ class Commits(object):
         bulk(self.es, gen(source_it))
         self.es.indices.refresh(index=self.index)
 
-    def update_commits(self, source_it, field='repos'):
+    def update_commits(self, source_it, update_func, field='repos'):
         """ Take the sha from each doc and use
         it to reference the doc to update. This method only
         support updating a single field for now. The default one
@@ -98,6 +98,7 @@ class Commits(object):
                 d['_type'] = self.dbname
                 d['_op_type'] = 'update'
                 d['_id'] = source['sha']
+                update_func(source)
                 d['_source'] = {'doc': {field: source[field]}}
                 yield d
         bulk(self.es, gen(source_it))
