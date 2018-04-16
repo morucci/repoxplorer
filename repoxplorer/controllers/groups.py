@@ -78,10 +78,8 @@ class GroupsController(object):
                 'repos': p_filter,
             }
 
-            top_projects = tops_ctl.gbycommits(ci, projects, query_kwargs,
-                                               None, None)
-            top_repos = tops_ctl.gbycommits(ci, projects, query_kwargs,
-                                            True, None)
+            top_projects = tops_ctl.gbycommits(ci, projects, query_kwargs, False)
+            top_repos = tops_ctl.gbycommits(ci, projects, query_kwargs, True)
             rg['projects_amount'] = len(top_projects)
             rg['repos_amount'] = len(top_repos)
             ret_groups[group] = rg
