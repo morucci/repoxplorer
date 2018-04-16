@@ -33,7 +33,7 @@ xorkey = conf.get('xorkey') or 'default'
 class GroupsController(object):
 
     @expose('json')
-    def index(self, prefix=None, nameonly='false'):
+    def index(self, prefix=None, nameonly='false', withstats='false'):
         ci = Commits(index.Connector())
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
@@ -70,19 +70,22 @@ class GroupsController(object):
                 del member['default-email']
                 rg['members'][utils.encrypt(xorkey, id)] = member
 
-            # Fetch the number of projects and repos contributed to
-            p_filter = {}
-            query_kwargs = {
-                'mails': data['emails'],
-                'merge_commit': False,
-                'repos': p_filter,
-            }
+            if withstats == 'true':
+                # Fetch the number of projects and repos contributed to
+                p_filter = {}
+                query_kwargs = {
+                    'mails': data['emails'],
+                    'merge_commit': False,
+                    'repos': p_filter,
+                }
 
-            top_projects = tops_ctl.gbycommits(
-                ci, projects, query_kwargs, False)
-            top_repos = tops_ctl.gbycommits(
-                ci, projects, query_kwargs, True)
-            rg['projects_amount'] = len(top_projects)
-            rg['repos_amount'] = len(top_repos)
+                top_projects = tops_ctl.gbycommits(
+                    ci, projects, query_kwargs, False)
+                top_repos = tops_ctl.gbycommits(
+                    ci, projects, query_kwargs, True)
+                rg['projects_amount'] = len(top_projects)
+                rg['repos_amount'] = len(top_repos)
+
             ret_groups[group] = rg
+
         return ret_groups

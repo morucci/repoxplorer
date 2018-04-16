@@ -41,9 +41,10 @@ function install_date_pickers() {
     $("#todatepicker").datepicker('setDate', dto);
 }
 
-function get_groups(nameonly, prefix) {
+function get_groups(nameonly, withstats, prefix) {
     var args = {};
     args['nameonly'] = nameonly;
+    args['withstats'] = withstats;
     args['prefix'] = prefix;
     return $.getJSON("api/v1/groups/", args);
 }
@@ -506,7 +507,7 @@ function groups_page_init() {
     if (prefix === undefined) {
         prefix = 'a';
     }
-    var ggn_d = get_groups(true);
+    var ggn_d = get_groups('true');
     ggn_d
         .done(function(data) {
             ret = create_alpha_index(data);
@@ -524,7 +525,7 @@ function groups_page_init() {
         });
     $("#groups-table-progress").append(
         '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    var gg_d = get_groups(false, prefix);
+    var gg_d = get_groups('false', 'false', prefix);
     gg_d
         .done(
             function(data) {
@@ -1193,7 +1194,7 @@ function project_page_init() {
     }
 
     // Fill the groups selector
-    var defer = get_groups(true);
+    var defer = get_groups('true');
     defer.done(
         function(data) {
             $('#groups')

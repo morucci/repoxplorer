@@ -1072,7 +1072,6 @@ curl "http://localhost:51000/api/v1/groups/"
 {
   "Doe Organization": {
     "domains": [],
-    "projects_amount": 2,
     "description": "People from the Doe organization",
     "members": {
       "DhUDDxQsBgEBDgABQhcLCA--": {
@@ -1088,16 +1087,13 @@ curl "http://localhost:51000/api/v1/groups/"
         "name": "Doe John"
       }
     },
-    "repos_amount": 244
   },
   "redhatters": {
     "domains": [
       "redhat.com"
     ],
-    "projects_amount": 2,
     "description": "People from Red Hat",
     "members": {},
-    "repos_amount": 340
   }
 }
 ```
@@ -1151,6 +1147,7 @@ Only one of:
 
 - **prefix**: Return groups that start by `prefix`.
 - **nameonly**: if set to `true`, return only the group names. Otherwise, return all information.
+- **withstats**: if set to `true`, return the amount of projects and repos that the group have contributed on.
 
 #### tops/projects endpoint only
 

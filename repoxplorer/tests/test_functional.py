@@ -257,7 +257,7 @@ class TestGroupsController(FunctionalTest):
             gg.return_value = self.groups
             gi_by_email.side_effect = self.gi_by_email
             gca.return_value = self.gca
-            response = self.app.get('/api/v1/groups/')
+            response = self.app.get('/api/v1/groups/?withstats=true')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {
@@ -306,7 +306,8 @@ class TestGroupsController(FunctionalTest):
                 u'grp1': None,
             }
             self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get('/api/v1/groups/?prefix=grp2')
+            response = self.app.get(
+                '/api/v1/groups/?prefix=grp2')
             assert response.status_int == 200
             expected_ret = {
                 u'grp2': {
@@ -324,8 +325,6 @@ class TestGroupsController(FunctionalTest):
                             u'mails_amount': 1,
                             u'bounces': {}}
                     },
-                    u'projects_amount': 0,
-                    u'repos_amount': 0,
                 }
             }
             self.assertDictEqual(response.json, expected_ret)
