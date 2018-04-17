@@ -30,11 +30,22 @@ xorkey = conf.get('xorkey') or 'default'
 
 class TopAuthorsController(object):
 
+    def resolv_name(self, commits, authors):
+        name_to_requests = []
+        for v in authors:
+            if not v['name']:
+                name_to_requests.append(v['email'])
+        if name_to_requests:
+            raw_names = commits.get_commits_author_name_by_emails(
+                name_to_requests)
+        for v in authors:
+            v['name'] = v['name'] or raw_names[v['email']]
+
     def top_authors_sanitize(
-            self, idents, authors, commits, top):
+            self, idents, authors, commits, top,
+            resolv_name=True, clean_email=True):
         sanitized = utils.authors_sanitize(idents, authors)
         top_authors_s = []
-        raw_names = {}
         for email, v in sanitized.items():
             top_authors_s.append(
                 {'cid': utils.encrypt(xorkey, v[2]),
@@ -53,22 +64,21 @@ class TopAuthorsController(object):
         if top >= 0:
             top_authors_s_sorted = top_authors_s_sorted[:int(top)]
 
-        name_to_requests = []
-        for v in top_authors_s_sorted:
-            if not v['name']:
-                name_to_requests.append(v['email'])
-        if name_to_requests:
-            raw_names = commits.get_commits_author_name_by_emails(
-                name_to_requests)
-        for v in top_authors_s_sorted:
-            v['name'] = v['name'] or raw_names[v['email']]
-            del v['email']
+        if resolv_name:
+            self.resolv_name(commits, top_authors_s_sorted)
+
+        if clean_email:
+            for v in top_authors_s_sorted:
+                del v['email']
+
         return top_authors_s_sorted
 
-    def gbycommits(self, c, idents, query_kwargs, top):
+    def gbycommits(
+            self, c, idents, query_kwargs, top,
+            resolv_name=True, clean_email=True):
         authors = c.get_authors(**query_kwargs)[1]
         top_authors = self.top_authors_sanitize(
-            idents, authors, c, top)
+            idents, authors, c, top, resolv_name, clean_email)
 
         return top_authors
 
@@ -143,7 +153,9 @@ class TopAuthorsController(object):
             dfrom, dto, inc_repos, inc_merge_commit, metadata,
             exc_groups, inc_groups)
 
-        authors_new = self.gbycommits(c, idents, query_kwargs, top=-1)
+        authors_new = self.gbycommits(
+            c, idents, query_kwargs, top=-1,
+            resolv_name=False, clean_email=False)
 
         # Now get contributors for the old reference period
         query_kwargs = utils.resolv_filters(
@@ -151,7 +163,9 @@ class TopAuthorsController(object):
             dfromref, dtoref, inc_repos, inc_merge_commit, metadata,
             exc_groups, inc_groups)
 
-        authors_old = self.gbycommits(c, idents, query_kwargs, top=-1)
+        authors_old = self.gbycommits(
+            c, idents, query_kwargs, top=-1,
+            resolv_name=False, clean_email=False)
 
         # And compute the difference
         cids_new = set([auth['cid'] for auth in authors_new]) - \
@@ -165,6 +179,12 @@ class TopAuthorsController(object):
         # If limit set to a negative value all results will be returned
         if limit >= 0:
             authors_diff = authors_diff[:limit]
+
+        self.resolv_name(c, authors_diff)
+
+        for v in authors_diff:
+            del v['email']
+
         return authors_diff
 
 
