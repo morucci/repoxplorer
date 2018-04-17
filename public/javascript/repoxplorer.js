@@ -503,10 +503,9 @@ function projects_page_init() {
 function groups_page_init() {
     $("#page-title").append("[RepoXplorer] - Groups listing");
     fill_status();
+    $("#groups-table-progress").append(
+        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     var prefix = getUrlParameter('prefix');
-    if (prefix === undefined) {
-        prefix = 'a';
-    }
     var ggn_d = get_groups('true');
     ggn_d
         .done(function(data) {
@@ -523,46 +522,50 @@ function groups_page_init() {
         .fail(function(err) {
             console.log(err);
         });
-    $("#groups-table-progress").append(
-        '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    var gg_d = get_groups('false', 'false', prefix);
-    gg_d
-        .done(
-            function(data) {
-                $("#groups-table-progress").empty();
-                $("#groups-table").empty();
-                $("#groups-table").append("<table class=\"table table-striped\">");
-                var theader = "<tr>";
-                theader += "<th>Group name</th>";
-                theader += "<th>Group domains</th>";
-                theader += "<th>Group description</th>";
-                theader += "<th>Group members</th>";
-                $("#groups-table table").append(theader);
-                groups = [];
-                $.each(data, function(gid, gdata) {
-                    groups.push(gid);
-                });
-                groups.sort();
-                $.each(groups, function(i, gid) {
-                    var elm = "<tr>";
-                    elm += "<td><a href=group.html?gid=" + encodeURIComponent(gid) + ">" + gid + "</a></td>";
-                    elm += "<td>" + data[gid]['domains'] + "</td>";
-                    elm += "<td>" + data[gid]['description'] + "</td>";
-                    elm += "<td>";
-                    $.each(data[gid]['members'], function(cid, cdata) {
-                        elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
-                            cdata['gravatar'] + "?s=20'></span><span style='padding-right: 5px'>" +
-                            "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>";
+    $.when(ggn_d)
+        .done(function() {
+            if (prefix === undefined) {
+                prefix = sindex[0];
+            }
+            var gg_d = get_groups('false', 'false', prefix);
+            gg_d
+                .done(
+                    function(data) {
+                        $("#groups-table-progress").empty();
+                        $("#groups-table").empty();
+                        $("#groups-table").append("<table class=\"table table-striped\">");
+                        var theader = "<tr>";
+                        theader += "<th>Group name</th>";
+                        theader += "<th>Group domains</th>";
+                        theader += "<th>Group description</th>";
+                        theader += "<th>Group members</th>";
+                        $("#groups-table table").append(theader);
+                        groups = [];
+                        $.each(data, function(gid, gdata) {
+                            groups.push(gid);
+                        });
+                        groups.sort();
+                        $.each(groups, function(i, gid) {
+                            var elm = "<tr>";
+                            elm += "<td><a href=group.html?gid=" + encodeURIComponent(gid) + ">" + gid + "</a></td>";
+                            elm += "<td>" + data[gid]['domains'] + "</td>";
+                            elm += "<td>" + data[gid]['description'] + "</td>";
+                            elm += "<td>";
+                            $.each(data[gid]['members'], function(cid, cdata) {
+                                elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
+                                    cdata['gravatar'] + "?s=20'></span><span style='padding-right: 5px'>" +
+                                    "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>";
+                            });
+                            elm += "</td>";
+                            $("#groups-table table").append(elm);
+                        });
+                        $("#groups-table").append("</table>");
+                    })
+                .fail(
+                    function(err) {
+                        $("#groups-table-progress").empty();
+                        console.log(err);
                     });
-                    elm += "</td>";
-                    $("#groups-table table").append(elm);
-                });
-                $("#groups-table").append("</table>");
-            })
-        .fail(
-            function(err) {
-                $("#groups-table-progress").empty();
-                console.log(err);
             });
 }
 
