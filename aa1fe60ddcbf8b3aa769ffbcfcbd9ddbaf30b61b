@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa1b9901_ba0d7139",
+        "filename": "repoxplorer/controllers/tops.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-19T08:47:34Z",
+      "side": 1,
+      "message": "Why don\u0027t we make this part of resolv_name?",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 72,
+        "endChar": 30
+      },
+      "revId": "aa1fe60ddcbf8b3aa769ffbcfcbd9ddbaf30b61b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
