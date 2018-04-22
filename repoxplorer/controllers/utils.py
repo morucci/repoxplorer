@@ -39,10 +39,13 @@ def decrypt(key, ciphertext):
 
 def authors_sanitize(idents, authors):
     sanitized = {}
-    for email, match in authors.items():
-        iid, ident = idents.get_ident_by_email(email)
+    _idents = idents.get_idents_by_emails(authors.keys())
+    for iid, ident in _idents.items():
         main_email = ident['default-email']
         name = ident['name']
+        for ident_email in ident['emails'].keys():
+            if ident_email in authors.keys():
+                match = authors[ident_email]
         if main_email in sanitized:
             sanitized[main_email][0] += match
         else:
@@ -69,15 +72,16 @@ def get_references_filter(project, inc_references=None):
     return r_filter
 
 
-def get_mail_filter(idents, cid=None, gid=None):
+def get_mail_filter(idents, cid=None, gid=None, group=None):
     if cid:
-        ident = idents.get_ident_by_id(cid)
-        if not ident[1]:
+        id, ident = idents.get_ident_by_id(cid)
+        if not ident:
             # No ident has been declared for that contributor
-            ident = idents.get_ident_by_email(cid)
-        return ident[1]['emails']
+            ident = idents.get_idents_by_emails(cid).values()[0]
+        return ident['emails']
     elif gid:
-        _, group = idents.get_group_by_id(gid)
+        if not group:
+            _, group = idents.get_group_by_id(gid)
         return group['emails']
     else:
         return {}
@@ -199,10 +203,10 @@ def resolv_filters(projects_index, idents, pid,
     if cid or gid:
         if cid:
             cid = decrypt(xorkey, cid)
-            mails = get_mail_filter(idents, cid)
+            mails = get_mail_filter(idents, cid=cid)
         if gid:
             _, group = idents.get_group_by_id(gid)
-            mails = get_mail_filter(idents, gid)
+            mails = get_mail_filter(idents, gid=gid, group=group)
             domains.extend(group.get('domains', []))
 
     if dfrom:

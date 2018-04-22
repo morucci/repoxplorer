@@ -87,11 +87,11 @@ class InfosController(object):
         c = Commits(index.Connector())
         idents = Contributors()
         projects = Projects()
-        iid, ident = idents.get_ident_by_id(cid)
+        _, ident = idents.get_ident_by_id(cid)
 
         if not ident:
             # No ident has been declared for that contributor
-            iid, ident = idents.get_ident_by_email(cid)
+            ident = idents.get_idents_by_emails(cid).values()[0]
         mails = ident['emails']
         name = ident['name']
         if not name:
