@@ -17,7 +17,6 @@ from unittest import TestCase
 
 from repoxplorer import index
 from repoxplorer.index.users import Users
-from repoxplorer.index.users import Groups
 
 
 class TestUsers(TestCase):
@@ -51,6 +50,16 @@ class TestUsers(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
+
+    def setUp(self):
+        # Be sure users are deleted
+        self.c.delete(self.user['uid'])
+        self.c.delete(self.user2['uid'])
+
+    def tearDown(self):
+        # Be sure users are deleted
+        self.c.delete(self.user['uid'])
+        self.c.delete(self.user2['uid'])
 
     def test_user_crud(self):
         # Create and get a user
@@ -96,88 +105,3 @@ class TestUsers(TestCase):
         self.c.delete(self.user['uid'])
         self.assertEqual(
             self.c.get(self.user['uid']), None)
-
-
-class TestGroups(TestCase):
-
-    def setUp(self):
-        self.con = index.Connector(index='repoxplorertest',
-                                   index_suffix='users')
-        self.c = Groups(self.con)
-        self.cu = Users(self.con)
-        self.user = {
-            'uid': '234',
-            'name': 'Cactus Saboten',
-            'default-email': 'saboten@domain1',
-            'emails': [
-                {'email': 'saboten@domain1'},
-                {'email': 'saboten@domain2',
-                 'groups': [
-                     {'group': 'ugroup1',
-                      'start-date': '2016-01-01',
-                      'end-date': '2016-01-09'}],
-                 }],
-            'last_cnx': 1410456005}
-        self.cu.create(self.user)
-        self.group = {
-            'gid': 'ugroup1',
-            'description': 'ugroup',
-            'domains': ['ugroup.org', 'ugroup.com'],
-            'emails': [{'email': 'tokin@domain1'},
-                       {'email': 'kokin@domain2',
-                        'start-date': '2016-01-01',
-                        'end-date': '2016-01-09'}]}
-
-    def tearDown(self):
-        self.con.ic.delete(index=self.con.index)
-
-    def test_group_crud(self):
-        # Create and get a group
-        self.c.create(self.group)
-        ret = self.c.get(self.group['gid'])
-        expected = {
-            u'description': u'ugroup',
-            u'domains': [u'ugroup.org', u'ugroup.com'],
-            u'emails': [
-                {u'email': u'tokin@domain1'},
-                {u'start-date': u'2016-01-01',
-                 u'end-date': u'2016-01-09',
-                 u'email': u'kokin@domain2'},
-                {u'start-date': u'2016-01-01',
-                 u'end-date': u'2016-01-09',
-                 'email': u'saboten@domain2'}],
-            u'gid': u'ugroup1'}
-        self.assertDictEqual(ret, expected)
-
-        # Update and get a group
-        u_group = copy.deepcopy(self.group)
-        u_group['emails'] = [{'email': 'gokin@domain3'}]
-        u_group['description'] = 'New group description'
-        self.c.update(u_group)
-        ret = self.c.get(self.group['gid'])
-        expected = {
-            u'description': u'New group description',
-            u'domains': [u'ugroup.org', u'ugroup.com'],
-            u'emails': [
-                {u'email': u'gokin@domain3'},
-                {'email': u'saboten@domain2',
-                 u'start-date': u'2016-01-01',
-                 u'end-date': u'2016-01-09'}],
-            u'gid': u'ugroup1'}
-        self.assertDictEqual(ret, expected)
-
-        # Delete and get a group
-        self.c.delete(self.group['gid'])
-        self.assertEqual(
-            self.c.get(self.group['gid']), None)
-
-    def test_group_get_all(self):
-        # Create and get a group
-        group1 = copy.deepcopy(self.group)
-        group2 = copy.deepcopy(self.group)
-        group2['gid'] = 'ugroup2'
-        self.c.create(group1)
-        self.c.create(group2)
-        self.assertEqual(2, len(self.c.get_all()))
-        self.c.delete(group1['gid'])
-        self.c.delete(group2['gid'])

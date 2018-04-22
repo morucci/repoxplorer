@@ -42,11 +42,8 @@ class HistoController(object):
             return []
         ret = c.get_authors_histo(**query_kwargs)[1]
         for bucket in ret:
-            author_emails = set()
-            for author in bucket['authors_email']:
-                _, ident = idents.get_ident_by_email(author)
-                author_emails.add(ident['default-email'])
-            bucket['value'] = len(author_emails)
+            _idents = idents.get_idents_by_emails(bucket['authors_email'])
+            bucket['value'] = len(_idents)
             bucket['date'] = bucket['key_as_string']
             del bucket['authors_email']
             del bucket['doc_count']
