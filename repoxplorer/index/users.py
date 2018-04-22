@@ -15,6 +15,8 @@
 
 import logging
 
+from elasticsearch.exceptions import NotFoundError
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,13 +73,15 @@ class Users(object):
                        body={'doc': user})
         self.es.indices.refresh(index=self.index)
 
-    def get(self, uid):
+    def get(self, uid, silent=True):
         try:
             res = self.es.get(index=self.index,
                               doc_type=self.dbname,
                               id=uid)
             return res['_source']
         except Exception, e:
+            if silent:
+                return None
             logger.error('Unable to get user (%s). %s' % (uid, e))
 
     def get_ident_by_id(self, id):
@@ -106,7 +110,8 @@ class Users(object):
         }
         params['body'] = body
         ret = self.es.search(**params)['hits']['hits']
-        return [r['_source'] for r in ret]
+        ret = [r['_source'] for r in ret]
+        return ret
 
     def get_idents_in_group(self, group):
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -122,7 +127,9 @@ class Users(object):
                                     "query": {
                                         "bool": {"must": {
                                             "match": {
-                                                "emails.groups.group": group}}}
+                                                "emails.groups.group": group}
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -137,93 +144,8 @@ class Users(object):
         return [r['_source'] for r in ret]
 
     def delete(self, uid):
-        self.es.delete(self.index, self.dbname, uid)
-        self.es.indices.refresh(index=self.index)
-
-
-class Groups(object):
-
-    PROPERTIES = {
-        "gid": {"type": "string", "index": "not_analyzed"},
-        "description": {"type": "string", "index": "not_analyzed"},
-        "domains": {"type": "string", "index": "not_analyzed"},
-        "emails": {
-            "type": "nested",
-            "properties": {
-                "email": {"type": "string", "index": "not_analyzed"},
-                "begin-date": {"type": "string", "index": "not_analyzed"},
-                "end-date": {"type": "string", "index": "not_analyzed"}
-            },
-        },
-    }
-
-    def __init__(self, connector=None):
-        self.connector = connector
-        self.es = connector.es
-        self.ic = connector.ic
-        self.index = connector.index
-        self.dbname = 'groups'
-        self.mapping = {
-            self.dbname: {
-                "properties": self.PROPERTIES,
-            }
-        }
-        if not self.ic.exists_type(index=self.index,
-                                   doc_type=self.dbname):
-            self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
-
-    def create(self, group):
-        self.es.create(self.index, self.dbname,
-                       id=group['gid'],
-                       body=group)
-        self.es.indices.refresh(index=self.index)
-
-    def update(self, group):
-        self.es.update(self.index, self.dbname,
-                       id=group['gid'],
-                       body={'doc': group})
-        self.es.indices.refresh(index=self.index)
-
-    def _enrich(self, group, gid):
-        # Find user mail part of that group
-        users = Users(self.connector)
-        idents = users.get_idents_in_group(gid)
-        idents_emails = [ident['emails'] for ident in idents]
-        for ident_emails in idents_emails:
-            for ident_email in ident_emails:
-                if 'groups' in ident_email.keys():
-                    email = ident_email['email']
-                    for _group in ident_email['groups']:
-                        if _group['group'] == gid:
-                            elem = {'email': email}
-                            elem.update(_group)
-                            del elem['group']
-                            group['emails'].append(elem)
-        return group
-
-    def get(self, gid):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              id=gid)
-        except Exception, e:
-            logger.error('Unable to get group (%s). %s' % (gid, e))
-            return None
-        # We look also to the users index to find group membership
-        return self._enrich(res['_source'], gid)
-
-    def get_all(self):
-        params = {'index': self.index, 'doc_type': self.dbname}
-        body = {"query": {'matchAll': {}}}
-        params['body'] = body
-        params['size'] = 10000
-        return dict([(h['_id'], h['_source']) for h in
-                     self.es.search(**params)['hits']['hits']])
-
-    def get_group_by_id(self, id):
-        return self.get(id)
-
-    def delete(self, gid):
-        self.es.delete(self.index, self.dbname, gid)
-        self.es.indices.refresh(index=self.index)
+            self.es.delete(self.index, self.dbname, uid)
+            self.es.indices.refresh(index=self.index)
+        except NotFoundError:
+            pass

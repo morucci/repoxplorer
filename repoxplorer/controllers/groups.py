@@ -14,7 +14,6 @@
 #  limitations under the License.
 
 
-import copy
 import hashlib
 
 from pecan import conf
@@ -53,8 +52,9 @@ class GroupsController(object):
                   'description': data['description'],
                   'domains': data.get('domains', [])}
             for email, bounces in data['emails'].items():
-                id, member = contributors_index.get_ident_by_email(email)
-                member = copy.deepcopy(member)
+                members = contributors_index.get_idents_by_emails(email)
+                id = members.keys()[0]
+                member = members.values()[0]
                 member['gravatar'] = hashlib.md5(
                     member['default-email']).hexdigest()
                 member['bounces'] = bounces

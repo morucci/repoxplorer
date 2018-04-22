@@ -17,13 +17,15 @@
 import copy
 import logging
 
+from pecan import conf
+
 from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
 from repoxplorer.index import users
 from datetime import datetime
 
-
+user_endpoint_active = conf.get('users_endpoint', False)
 logger = logging.getLogger(__name__)
 
 contributors_schema = """
@@ -174,8 +176,6 @@ class Contributors(YAMLDefinition):
         if not vonly:
             self._users = users.Users(
                 index.Connector(index_suffix='users'))
-            self._groups = users.Groups(
-                index.Connector(index_suffix='users'))
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -199,7 +199,7 @@ class Contributors(YAMLDefinition):
 
     def _enrich_groups(self):
         """ Here we convert provided date to epoch and
-        groups are also populated by by idents defining
+        groups are also populated by idents defining
         an ownership to a group
         """
         def add_to_group(group, email, details):
@@ -215,10 +215,25 @@ class Contributors(YAMLDefinition):
                         data[key] = date2epoch(data[key])
                     else:
                         data[key] = None
-        for iid, id_data in self.idents.items():
-            for email, email_data in id_data['emails'].items():
-                for group, details in email_data.get('groups', {}).items():
-                    add_to_group(group, email, details)
+        # Here if the users elk backend is active we populate groups
+        # by querying the users index
+        if user_endpoint_active:
+            for gid, groups in self.groups.items():
+                idents = self._users.get_idents_in_group(gid)
+                for ident in idents:
+                    _, data = self.backend_convert_ident(ident)
+                    for email, email_data in data['emails'].items():
+                        for group, details in email_data.get(
+                                'groups', {}).items():
+                            if group == gid:
+                                add_to_group(group, email, details)
+        # If not regular yaml identities index is used
+        else:
+            for iid, id_data in self.idents.items():
+                for email, email_data in id_data['emails'].items():
+                    for group, details in email_data.get(
+                            'groups', {}).items():
+                        add_to_group(group, email, details)
         self.enriched_groups = True
 
     def _enrich_idents(self):
@@ -302,35 +317,14 @@ class Contributors(YAMLDefinition):
             self._enrich_idents()
         return self.idents
 
-    def backend_get_groups(self):
-        groups = self._groups.get_all()
-        # Transform the data structure to be compatible
-        mgroups = {}
-        for gid, data in groups.items():
-            mgroups[gid] = {}
-            mgroups[gid]['description'] = data['description']
-            mgroups[gid]['emails'] = {}
-            for email in data['emails']:
-                mgroups[gid]['emails'][email['email']] = {}
-                for k in ('start-date', 'end-date'):
-                    if k in email:
-                        mgroups[gid]['emails'][email['email']] = email[k]
-                if not mgroups[gid]['emails'][email['email']]:
-                    mgroups[gid]['emails'][email['email']] = None
-        return mgroups
-
-    def get_groups(self):
-        if not self.enriched_idents:
-            self._enrich_idents()
-        if not self.enriched_groups:
-            self._enrich_groups()
-        return self.groups
-
     def validate(self):
         validation_issues = []
         validation_issues.extend(self._validate_groups())
         validation_issues.extend(self._validate_idents())
         return validation_issues
+
+# Below are methods specific to elk users model to be compatible
+# with calling methods
 
     def backend_convert_ident(self, ident):
         # Transform the data structure to be compatible
@@ -349,49 +343,73 @@ class Contributors(YAMLDefinition):
                             groups[group['group']][elm] = group[elm]
         return ident['uid'], data
 
-    def get_ident_by_email(self, email):
-        # el_ident = self._users.get_ident_by_email(email)
-        el_ident = {}
-        if 'uid' in el_ident:
-            el_ident = self.backend_convert_ident(el_ident)
-        idents = self._get_idents()
-        selected = filter(lambda ident: email in ident[1].get('emails', []),
-                          idents.items())
-        if selected and el_ident:
-            ident = copy.deepcopy(selected[0])
-            ret = copy.deepcopy(el_ident)
-            ret[1].update(ident[1])
-            return ret
-        elif selected:
-            return copy.deepcopy(selected[0])
-        elif el_ident:
-            return el_ident
+# Below are top level methods for the yaml or the elk backend
+
+    def get_idents_by_emails(self, emails):
+        if not isinstance(emails, list):
+            emails = [emails]
+
+        _selecteds = []
+        if user_endpoint_active:
+            # Look at the elk backend
+            el_selecteds = self._users.get_idents_by_emails(emails)
+            print el_selecteds
+            emails_not_found = set(emails)
+            for ident in el_selecteds:
+                ident = self.backend_convert_ident(ident)
+                _selecteds.append(ident)
+                emails_not_found -= set(ident[1]['emails'].keys())
+            for email in emails_not_found:
+                _selecteds.append(
+                    (email, {'name': None,
+                             'default-email': email,
+                             'emails': {email: {}}})
+                    )
         else:
-            # Return a default ident
-            return email, {'name': None,
-                           'default-email': email,
-                           'emails': {email: {}}}
+            # Look at the yaml backend
+            idents = self._get_idents()
+            for email in emails:
+                found = False
+                for uid in idents:
+                    if email in idents[uid].get('emails', []):
+                        _selecteds.append((uid, idents[uid]))
+                        found = True
+                        break
+                if not found:
+                    _selecteds.append(
+                        (email, {'name': None,
+                                 'default-email': email,
+                                 'emails': {email: {}}})
+                    )
+
+        selecteds = {}
+        for uid, data in _selecteds:
+            selecteds[uid] = data
+
+        if len(emails) == 1 and len(selecteds) > 1:
+            raise Exception("More than one idents matched the requested email")
+        return selecteds
 
     def get_ident_by_id(self, id):
-        # el_ident = self._users.get_ident_by_id(id)
-        el_ident = {}
-        ident = self._get_idents().get(id)
-        if ident and el_ident:
-            ret = copy.deepcopy(el_ident)
-            ret.update(ident)
-            return id, ret
-        elif ident:
-            return id, copy.deepcopy(ident)
-        elif el_ident:
-            return id, el_ident
+        if user_endpoint_active:
+            ident = self._users.get_ident_by_id(id)
+            if ident:
+                id, ident = self.backend_convert_ident(ident)
         else:
-            # Return a default ident
+            ident = self._get_idents().get(id)
+            ident = copy.deepcopy(ident)
+        if not ident:
             return id, None
+        else:
+            return id, ident
+
+    def get_groups(self):
+        if not self.enriched_idents:
+            self._enrich_idents()
+        if not self.enriched_groups:
+            self._enrich_groups()
+        return self.groups
 
     def get_group_by_id(self, id):
         groups = self.get_groups()
-        # Query the EL groups backend and update the
-        # returned data struct by the YAML flat one
-        el_groups = self.backend_get_groups()
-        el_groups.update(groups)
-        return id, copy.deepcopy(el_groups.get(id))
+        return id, copy.deepcopy(groups.get(id))

@@ -111,7 +111,7 @@ class Commits(object):
             return res['_source']
         except Exception, e:
             if silent:
-                pass
+                return None
             logger.error('Unable to get commit (%s). %s' % (sha, e))
 
     def get_commits_by_id(self, sha_list):
@@ -228,6 +228,7 @@ class Commits(object):
                 )
         filter["bool"]["must"].append(must_metadata_clause)
 
+        logger.info(filter)
         return filter
 
     def get_commits(self, mails=[], repos=[],
