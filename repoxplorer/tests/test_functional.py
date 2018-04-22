@@ -211,9 +211,9 @@ class TestGroupsController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-        cls.gi_by_email_data = {
+        cls.gi_by_emails_data = {
             "ampanman@baikinman.io":
-                ("0000-0000", {
+                {"0000-0000": {
                     "name": "Ampanman",
                     "default-email": "ampanman@baikinman.io",
                     "emails": {
@@ -223,12 +223,13 @@ class TestGroupsController(FunctionalTest):
                             }
                         }
                     }
-                })
+                }}
         }
-        cls.gi_by_email = lambda _, email: cls.gi_by_email_data.get(email) or (
-            email, {'name': None,
-                    'default-email': email,
-                    'emails': {}})
+        cls.gi_by_emails = \
+            lambda _, email: cls.gi_by_emails_data.get(email) or {
+                email: {'name': None,
+                        'default-email': email,
+                        'emails': {}}}
         cls.groups = {
             "grp1": {
                 "description": "The group 1",
@@ -248,14 +249,14 @@ class TestGroupsController(FunctionalTest):
         patches = [patch.object(root.groups.Contributors,
                                 'get_groups'),
                    patch.object(root.groups.Contributors,
-                                'get_ident_by_email'),
+                                'get_idents_by_emails'),
                    patch.object(root.groups.Commits,
                                 'get_commits_author_name_by_emails'),
                    patch.object(root.groups.tops.TopProjectsController,
                                 'gbycommits')]
-        with nested(*patches) as (gg, gi_by_email, gca, gby_commits):
+        with nested(*patches) as (gg, gi_by_emails, gca, gby_commits):
             gg.return_value = self.groups
-            gi_by_email.side_effect = self.gi_by_email
+            gi_by_emails.side_effect = self.gi_by_emails
             gca.return_value = self.gca
             response = self.app.get('/api/v1/groups/?withstats=true')
             assert response.status_int == 200

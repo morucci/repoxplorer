@@ -40,7 +40,10 @@ def decrypt(key, ciphertext):
 def authors_sanitize(idents, authors):
     sanitized = {}
     for email, match in authors.items():
-        iid, ident = idents.get_ident_by_email(email)
+        # TODO(fbo): pass multiple emails at once
+        _idents = idents.get_idents_by_emails(email)
+        ident = _idents.values()[0]
+        iid = _idents.keys()[0]
         main_email = ident['default-email']
         name = ident['name']
         if main_email in sanitized:
@@ -74,8 +77,8 @@ def get_mail_filter(idents, cid=None, gid=None):
         ident = idents.get_ident_by_id(cid)
         if not ident[1]:
             # No ident has been declared for that contributor
-            ident = idents.get_ident_by_email(cid)
-        return ident[1]['emails']
+            ident = idents.get_idents_by_emails(cid).values()[0]
+        return ident['emails']
     elif gid:
         _, group = idents.get_group_by_id(gid)
         return group['emails']

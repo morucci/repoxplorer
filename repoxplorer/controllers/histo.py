@@ -44,7 +44,7 @@ class HistoController(object):
         for bucket in ret:
             author_emails = set()
             for author in bucket['authors_email']:
-                _, ident = idents.get_ident_by_email(author)
+                ident = idents.get_idents_by_emails(author).values()[0]
                 author_emails.add(ident['default-email'])
             bucket['value'] = len(author_emails)
             bucket['date'] = bucket['key_as_string']

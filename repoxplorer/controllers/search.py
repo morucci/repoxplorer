@@ -45,7 +45,10 @@ class SearchController(object):
                          d['_source']['author_name']) for d in ret])
         result = {}
         for email, name in authors.items():
-            iid, ident = idents.get_ident_by_email(email)
+            # TODO(fbo): do the search at once pass multiple emails
+            _idents = idents.get_idents_by_emails(email)
+            ident = _idents.values()[0]
+            iid = _idents.keys()[0]
             email = ident['default-email']
             name = ident['name'] or name
             result[utils.encrypt(xorkey, iid)] = {

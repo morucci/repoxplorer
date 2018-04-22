@@ -349,31 +349,53 @@ class Contributors(YAMLDefinition):
                             groups[group['group']][elm] = group[elm]
         return ident['uid'], data
 
-    def get_ident_by_email(self, email):
-        # el_ident = self._users.get_ident_by_email(email)
-        el_ident = {}
-        if 'uid' in el_ident:
-            el_ident = self.backend_convert_ident(el_ident)
+    def get_idents_by_emails(self, emails):
+        if not isinstance(emails, list):
+            emails = [emails]
+
+        # Look at the elk backend
+        el_selecteds = self._users.get_ident_by_emails(emails)
+        for ident in el_selecteds:
+            ident = self.backend_convert_ident(ident)
+
+        # Look at the yaml backend
         idents = self._get_idents()
-        selected = filter(lambda ident: email in ident[1].get('emails', []),
-                          idents.items())
-        if selected and el_ident:
-            ident = copy.deepcopy(selected[0])
-            ret = copy.deepcopy(el_ident)
-            ret[1].update(ident[1])
-            return ret
-        elif selected:
-            return copy.deepcopy(selected[0])
-        elif el_ident:
-            return el_ident
-        else:
-            # Return a default ident
-            return email, {'name': None,
-                           'default-email': email,
-                           'emails': {email: {}}}
+        yaml_selecteds = []
+        for email in emails:
+            found = False
+            for uid in idents:
+                if email in idents[uid].get('emails', []):
+                    yaml_selecteds.append((uid, idents[uid]))
+                    found = True
+                    break
+            if not found:
+                yaml_selecteds.append(
+                    (email, {'name': None,
+                             'default-email': email,
+                             'emails': {email: {}}})
+                )
+
+        selecteds = {}
+        # Fill return dict with elk backend results
+        for uid, data in el_selecteds:
+            selecteds[uid] = data
+
+        # Fill return dict with yaml backend results
+        # yaml backend results take precedence over elk one
+        for uid, data in yaml_selecteds:
+            if uid in selecteds:
+                # overwrite only if yaml backend have a real ident defined
+                if data['name'] is not None:
+                    selecteds[uid] = copy.deepcopy(data)
+            else:
+                selecteds[uid] = copy.deepcopy(data)
+
+        if len(emails) == 1 and len(selecteds) > 1:
+            raise Exception("More than one idents matched the requested email")
+        return selecteds
 
     def get_ident_by_id(self, id):
-        # el_ident = self._users.get_ident_by_id(id)
+        el_ident = self._users.get_ident_by_id(id)
         el_ident = {}
         ident = self._get_idents().get(id)
         if ident and el_ident:

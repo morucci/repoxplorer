@@ -495,7 +495,7 @@ groups:
                         'begin-date': 1420070400.0}}}}
         self.assertDictEqual(ret, expected_ret)
 
-    def test_get_ident_by_email(self):
+    def test_get_idents_by_emails(self):
         with patch.object(index.YAMLBackend, 'load_db'):
             with patch.object(contributors.Contributors, '_get_idents') as gi:
                 gi.return_value = {
@@ -505,20 +505,19 @@ groups:
                             'jane.doe@domain.com': {},
                             'jadoe@domain.com': {}}}}
                 c = contributors.Contributors(db_path="db_path")
-                cid, cdata = c.get_ident_by_email('jadoe@domain.com')
+                ret = c.get_idents_by_emails('jadoe@domain.com')
+                self.assertTrue(len(ret), 1)
                 self.assertDictEqual(
-                    cdata,
+                    ret['1234-1235'],
                     {'name': 'Jane Doe',
                      'emails': {'jadoe@domain.com': {},
                                 'jane.doe@domain.com': {}}})
-                self.assertEqual(cid, '1234-1235')
-                cid, cdata = c.get_ident_by_email('shimajiro@domain.com')
+                ret = c.get_idents_by_emails('shimajiro@domain.com')
                 self.assertDictEqual(
-                    cdata,
+                    ret['shimajiro@domain.com'],
                     {'name': None,
                      'default-email': 'shimajiro@domain.com',
                      'emails': {'shimajiro@domain.com': {}}})
-                self.assertEqual(cid, 'shimajiro@domain.com')
 
 #    def test_get_ident_by_email_with_user_backend(self):
 #        with patch.object(index.YAMLBackend, 'load_db'):
