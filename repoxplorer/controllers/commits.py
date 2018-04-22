@@ -69,10 +69,11 @@ class CommitsController(object):
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
-                _, c_data = idents.get_ident_by_email(cmt['%s_email' % elm])
-                cmt['%s_email' % elm] = c_data['default-email']
-                if c_data['name']:
-                    cmt['%s_name' % elm] = c_data['name']
+                ident = idents.get_idents_by_emails(
+                    cmt['%s_email' % elm]).values()[0]
+                cmt['%s_email' % elm] = ident['default-email']
+                if ident['name']:
+                    cmt['%s_name' % elm] = ident['name']
             # Convert the TTL to something human readable
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))
