@@ -7,7 +7,7 @@
     nodeset:
       nodes:
         - name: test-node
-          label: centos-oci
+          label: dib-centos-7
 
 - project:
     name: repoxplorer

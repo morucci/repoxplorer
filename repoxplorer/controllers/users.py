@@ -83,6 +83,8 @@ class UsersController(RestController):
                             return False
         return True
 
+    # curl -H 'Remote-User: admin' -H 'Admin-Token: abc' \
+    # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
     def get(self, uid):
         self._authorize(uid)
@@ -103,6 +105,11 @@ class UsersController(RestController):
             abort(404)
         _users.delete(uid)
 
+    # curl -X PUT -H 'Remote-User: admin' -H 'Admin-Token: abc' \
+    # -H "Content-Type: application/json" --data \
+    # '{"uid":"fabien","name":"Fabien Boucher","default-email": \
+    # "fboucher@redhat.com","emails": [{"email": "fboucher@redhat.com"}]}' \
+    # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
     def put(self, uid):
         self._authorize()
@@ -119,6 +126,12 @@ class UsersController(RestController):
         _users.create(infos)
         response.status = 201
 
+    # curl -X POST -H 'Remote-User: admin' -H 'Admin-Token: abc' \
+    # -H "Content-Type: application/json" --data \
+    # '{"uid":"fabien","name":"Fabien Boucher","default-email": \
+    # "fboucher@redhat.com","emails": [{"email": "fboucher@redhat.com"}, \
+    # {"email": "fabien.boucher@enovance.com"}]}' \
+    # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
     def post(self, uid):
         self._authorize(uid)
