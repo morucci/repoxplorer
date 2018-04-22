@@ -83,7 +83,9 @@ class Users(object):
     def get_ident_by_id(self, id):
         return self.get(id)
 
-    def get_ident_by_email(self, email):
+    def get_ident_by_emails(self, emails):
+        if not isinstance(emails, list):
+            emails = (emails,)
         params = {'index': self.index, 'doc_type': self.dbname}
         body = {
             "query": {"filtered": {
@@ -91,8 +93,11 @@ class Users(object):
                     "nested": {
                         "path": "emails",
                         "query": {
-                            "bool": {"must": [{
-                                "match": {"emails.email": email}}]
+                            "bool": {
+                                "should": [
+                                    {"match": {"emails.email": email}} for
+                                    email in emails
+                                ]
                             }
                         }
                     }
@@ -101,12 +106,7 @@ class Users(object):
         }
         params['body'] = body
         ret = self.es.search(**params)['hits']['hits']
-        if len(ret) > 1:
-            raise Exception("More than on user with an identical email")
-        if ret:
-            return ret[0]['_source']
-        else:
-            return {}
+        return [r['_source'] for r in ret]
 
     def get_idents_in_group(self, group):
         params = {'index': self.index, 'doc_type': self.dbname}
