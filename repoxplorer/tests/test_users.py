@@ -40,6 +40,13 @@ class TestUsers(TestCase):
                       'end-date': '2016-01-09'}],
                  }],
             'last_cnx': 1410456005}
+        cls.user2 = {
+            'uid': '124',
+            'name': 'ampanman',
+            'default-email': 'ampanman@domain1',
+            'emails': [
+                {'email': 'ampanman@domain1'}],
+            'last_cnx': 1410456006}
 
     @classmethod
     def tearDownClass(cls):
@@ -50,6 +57,9 @@ class TestUsers(TestCase):
         self.c.create(self.user)
         ret = self.c.get(self.user['uid'])
         self.assertDictEqual(ret, self.user)
+        self.c.create(self.user2)
+        ret = self.c.get(self.user2['uid'])
+        self.assertDictEqual(ret, self.user2)
 
         # Update and get a user
         u_user = copy.deepcopy(self.user)
@@ -62,8 +72,14 @@ class TestUsers(TestCase):
         ret = self.c.get(self.user['uid'])
         self.assertDictEqual(ret, u_user)
 
-        ret = self.c.get_ident_by_email('saboten@domain3')
-        self.assertDictEqual(ret, u_user)
+        ret = self.c.get_idents_by_emails('saboten@domain3')
+        self.assertDictEqual(ret[0], u_user)
+
+        ret = self.c.get_idents_by_emails(
+            ['saboten@domain3', 'ampanman@domain1'])
+        self.assertEqual(len(ret), 2)
+        self.assertIn('ampanman', [r['name'] for r in ret])
+        self.assertIn('Cactus Saboten Junior', [r['name'] for r in ret])
 
         idents_list = self.c.get_idents_in_group('ugroup2')
         self.assertListEqual(
