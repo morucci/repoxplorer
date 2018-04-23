@@ -22,6 +22,30 @@
       "revId": "f9ccf3cd8faad95316659adbb1ca90a2818f1de6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da20952f_f978d791",
+        "filename": "repoxplorer/index/users.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-04-23T10:00:45Z",
+      "side": 1,
+      "message": "No, call to that is commented because it was slow to query ELK each time we want to check if a commit email is defined into an identity. That\u0027s why I\u0027m refactoring that part to support multiple emails query.\n\nThere is another change but still a wip to make use of that:https://softwarefactory-project.io/r/#/c/12014/1/repoxplorer/index/contributors.py\n\nI need to rename it get_idents_by_emails instead.\n\nThe goal behind all this refactoring is to enable the use of the elk user backend and authentication via github.com to allow user to provide the list of emails that are attached to their identity. Cauth (maybe) will fetch user data on github and fill the elk user backend.",
+      "parentUuid": "da20952f_194b4b5b",
+      "range": {
+        "startLine": 86,
+        "startChar": 8,
+        "endLine": 86,
+        "endChar": 27
+      },
+      "revId": "f9ccf3cd8faad95316659adbb1ca90a2818f1de6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
