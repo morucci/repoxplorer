@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da20952f_194b4b5b",
+        "filename": "repoxplorer/index/users.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-04-23T09:34:20Z",
+      "side": 1,
+      "message": "Are we using this method anywhere? We are renaming it, but I can\u0027t see it being called anywhere with the new name.",
+      "range": {
+        "startLine": 86,
+        "startChar": 8,
+        "endLine": 86,
+        "endChar": 27
+      },
+      "revId": "f9ccf3cd8faad95316659adbb1ca90a2818f1de6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
