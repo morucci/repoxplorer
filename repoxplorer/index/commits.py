@@ -192,7 +192,7 @@ class Commits(object):
 
         must_project_clause = {
             "bool": {
-                 "should": []
+                "should": []
              }
         }
         for repo, paths in repos.items():
