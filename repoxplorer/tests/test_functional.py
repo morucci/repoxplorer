@@ -378,7 +378,9 @@ class TestUsersController(FunctionalTest):
         response = self.app.get(
             '/api/v1/users/1', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
-        self.assertDictEqual(response.json, data)
+        rdata = copy.deepcopy(data)
+        rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
+        self.assertDictEqual(response.json, rdata)
 
         # Update user details
         data['name'] = 'sabosan'
@@ -390,7 +392,9 @@ class TestUsersController(FunctionalTest):
         response = self.app.get(
             '/api/v1/users/1', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
-        self.assertDictEqual(response.json, data)
+        rdata = copy.deepcopy(data)
+        rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
+        self.assertDictEqual(response.json, rdata)
 
     def test_users_c_admin_wrong_token(self):
         data = {
@@ -418,18 +422,24 @@ class TestUsersController(FunctionalTest):
         self.app.put_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
         headers = {'REMOTE_USER': 'saboten'}
+
         response = self.app.get(
             '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
-        self.assertDictEqual(response.json, data)
+        rdata = copy.deepcopy(data)
+        rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
+        self.assertDictEqual(response.json, rdata)
+
         data['default-email'] = 'saboten@domain2'
         response = self.app.post_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
+
         headers = {'REMOTE_USER': 'tokin'}
         response = self.app.get(
             '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
+
         data['default-email'] = 'saboten@domain1'
         response = self.app.post_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
