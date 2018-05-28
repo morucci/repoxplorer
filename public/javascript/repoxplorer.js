@@ -369,6 +369,163 @@ function index_page_init() {
     fill_status();
 }
 
+function user_page_init() {
+  function get_user_infos(login) {
+    return $.getJSON("api/v1/users/" + login);
+  }
+  $("#user-settings-form").submit(function(event) {
+    // Make sure the browser does not honor the default submit behavior
+    event.preventDefault();
+
+    // Create the data structure from the form
+    var data = {
+      'uid': $("#username").val(),
+      'name': $("#fullname").val(),
+      'default-email': $("#demail").val(),
+      'emails': [],
+    }
+    $.each($("input[id='email']"), function(i, semail) {
+      email_obj = {
+        'email': semail.value,
+        'groups': [],
+      }
+      $.each($("select[id*='group ']"), function(i, sgroup) {
+        if (sgroup.id.split(' ')[1] != semail.value) { return; }
+        if (sgroup.value != '') {
+          group_obj = {'group': sgroup.value}
+          email_obj.groups.push(group_obj)
+        }
+      });
+      data.emails.push(email_obj);
+    });
+
+    // Send the data server side
+    // console.log('Sending ' + JSON.stringify(data))
+    $("#settings-progress").show();
+    $.ajax({
+      url: "api/v1/users/" + $("#username").val(),
+      type: "POST",
+      data: JSON.stringify(data),
+      contentType:"application/json; charset=utf-8",
+      dataType:"json",
+      success: function(){
+        $("#submit-msg").empty()
+        $("#submit-msg").addClass("alert-success");
+        $("#submit-msg").append("Your settings has been submitted successfuly");
+        $("#submit-box").show();
+        $("#settings-progress").hide();
+      },
+      error: function() {
+        $("#submit-msg").empty()
+        $("#submit-msg").addClass("alert-warning");
+        $("#submit-msg").append("Sorry, server side error");
+        $("#submit-box").show();
+        $("#settings-progress").hide();
+      }
+    })
+  });
+
+  // After we have fetched groups info and user info
+  gg_d = get_groups('true')
+  gui_d = get_user_infos('fabien')
+  return $.when(gg_d, gui_d)
+    .done(
+      function(gdata, udata) {
+        gdata = gdata[0]
+        udata = udata[0]
+
+        // Fill the jumbotron
+        $("#jumbotron_block").empty();
+        $("#jumbotron_block").append(
+            '<h2>Welcome ' + udata["name"] + '. You can modify your settings or directly access ' +
+            'your contributor <a href=contributor.html?cid=' + udata["cid"] + '> page</a></h2>'
+        );
+
+        $("#username").val(udata["uid"]);
+        $("#fullname").val(udata["name"]);
+        $("#demail").val(udata["default-email"]);
+
+        // For each email prepare the form
+        $.each(udata["emails"], function(i, obj) {
+          email_html_form = '<div class="form-group">' +
+          '<label for="email" class="col-md-4 control-label">Email ' + (i + 1) + '</label>' +
+          '<span class="col-md-2">' +
+          '<input class="form-control" id="email" type="text" value="' + obj.email + '" disabled>' +
+          '</span>' +
+          '<span class="col-md-2">' +
+          '<button type="button" class="btn btn-default" id="email-'+i+'" data-email="'+obj.email+'">Add group membership</button>' +
+          '</span>' +
+          '</div>'
+
+          // For each group add a selector to the form
+          email_html_form += '<div id="groups-list-'+i+'">'
+          $.each(obj.groups, function(i, group) {
+            email_html_form += '<div class="form-group">'
+            email_html_form += '<label for="group ' + obj.email + ' ' + i + '" class="col-md-5 control-label">Member of group</label>' +
+            '<div class="col-md-2">' +
+            '<select class="form-control" id="group ' + obj.email + ' ' + i +'">'
+            $.each(gdata, function(gname) {
+              selected = ''
+              if (gname == group.group) {
+                selected = "selected"
+              };
+              email_html_form += '<option value="' + gname + '"' + selected + '>' + gname + '</option>'
+            });
+            email_html_form += '</select></div>'
+            email_html_form += '<button id="remove-'+i+'" type="button" class="btn btn-default btn-md">'
+            email_html_form += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
+            email_html_form += '</button>'
+            email_html_form += '</div>'
+          });
+          email_html_form += '</div>'
+
+          $("#emails").append(email_html_form)
+
+          // do the remove selector bind afterward, to make it works
+          $.each(obj.groups, function(i, group) {
+            $("#remove-"+i).on("click", function(){
+              $(this).parent().remove();
+            });
+          });
+
+          // Add the binding to add new group selector
+          $("#email-"+i).on("click", function(e){
+            eindex = e.currentTarget.id.split('-')[1]
+            email = e.currentTarget.getAttribute("data-email")
+            group_selector = '<div class="form-group">'
+            mid = Math.floor(Math.random() * (1000 - 100) + 100);
+            group_selector += '<label for="group ' + email + ' ' + mid + '" class="col-md-5 control-label">Member of group</label>' +
+            '<div class="col-md-2">' +
+            '<select class="form-control" id="group ' + email + ' ' + mid +'">'
+            group_selector += '<option disabled selected value> -- select a group -- </option>'
+            $.each(gdata, function(gname) {
+              group_selector += '<option value="' + gname + '">' + gname + '</option>'
+            });
+            group_selector += '</select></div>'
+            group_selector += '<button id="remove-'+mid+'" type="button" class="btn btn-default btn-md">'
+            group_selector += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
+            group_selector += '</button>'
+            group_selector += '</div>'
+            $("#groups-list-"+eindex).append(group_selector)
+            $("#remove-"+mid).on("click", function(){
+              $(this).parent().remove();
+            });
+          });
+        });
+        $("#settings-progress").hide();
+      }
+    )
+  .fail(
+      function(err) {
+        $("#submit-msg").empty()
+        $("#submit-msg").addClass("alert-warning");
+        $("#submit-msg").append("Sorry, server side error");
+        $("#submit-box").show();
+        $("#settings-progress").hide();
+      }
+    );
+}
+
 function projects_page_init() {
     function fill_result(data) {
         $("#project-results").empty();
