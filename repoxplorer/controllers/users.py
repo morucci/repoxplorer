@@ -23,9 +23,11 @@ from pecan.rest import RestController
 
 from repoxplorer import index
 from repoxplorer.index import users
+from repoxplorer.controllers import utils
 
 endpoint_active = conf.get('users_endpoint', False)
 admin_token = conf.get('admin_token')
+xorkey = conf.get('xorkey') or 'default'
 
 
 class UsersController(RestController):
@@ -33,6 +35,8 @@ class UsersController(RestController):
     def _authorize(self, uid=None):
         if not endpoint_active:
             abort(403)
+        # Shortcircuit the authorization for testing purpose
+        # return
         if not request.remote_user:
             request.remote_user = request.headers.get('Remote-User')
         if request.remote_user == "admin":
@@ -93,7 +97,8 @@ class UsersController(RestController):
         u = _users.get(uid)
         if not u:
             abort(404)
-        return _users.get(uid)
+        u['cid'] = utils.encrypt(xorkey, u['default-email'])
+        return u
 
     @expose('json')
     def delete(self, uid):
