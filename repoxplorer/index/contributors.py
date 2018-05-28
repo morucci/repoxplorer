@@ -353,7 +353,6 @@ class Contributors(YAMLDefinition):
         if user_endpoint_active:
             # Look at the elk backend
             el_selecteds = self._users.get_idents_by_emails(emails)
-            print el_selecteds
             emails_not_found = set(emails)
             for ident in el_selecteds:
                 ident = self.backend_convert_ident(ident)

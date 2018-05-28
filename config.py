@@ -3,6 +3,7 @@ import sys
 
 from repoxplorer.controllers.renderers import CSVRenderer
 
+
 # RepoXplorer configuration file
 base_logging = {
     'version': 1,
