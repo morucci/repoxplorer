@@ -474,6 +474,7 @@ curl "http://localhost:51000/api/v1/status/status"
     "customtext": "",
     "projects": 2,
     "repos": 4,
+    "users_endpoint": False,
     "version": "1.2.0"
 }
 ```

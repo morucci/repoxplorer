@@ -580,6 +580,7 @@ class TestStatusController(FunctionalTest):
                 'version': version.get_version(),
                 'projects': 1,
                 'repos': 1,
+                'users_endpoint': False,
                 'customtext': ''
             }
             response = self.app.get('/api/v1/status/status')

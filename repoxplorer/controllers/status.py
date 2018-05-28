@@ -42,6 +42,7 @@ class StatusController(object):
         return {'customtext': index_custom_html,
                 'projects': num_projects,
                 'repos': num_repos,
+                'users_endpoint': conf.get('users_endpoint', False),
                 'version': rx_version}
 
     @expose('json')
