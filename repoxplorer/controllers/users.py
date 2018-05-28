@@ -33,6 +33,7 @@ class UsersController(RestController):
     def _authorize(self, uid=None):
         if not endpoint_active:
             abort(403)
+        return
         if not request.remote_user:
             request.remote_user = request.headers.get('Remote-User')
         if request.remote_user == "admin":

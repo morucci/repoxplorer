@@ -369,6 +369,44 @@ function index_page_init() {
     fill_status();
 }
 
+function user_page_init() {
+  var emails;
+  function get_user_infos(login) {
+    return $.getJSON("api/v1/users/" + login);
+  }
+  $("#user-settings-form").submit(function() {
+    var data = {
+      'uid': $("#username").val(),
+      'name': $("#fullname").val(),
+      'default-email': $("#email").val(),
+      'emails': emails,
+    }
+    alert('Submitting')
+    $.post("api/v1/users/" + $("#username").val(), data)
+    .done(function(data) {
+      alert('submitted');
+    })
+    .fail(function(err) {
+      console.log(err);
+    });
+  });
+  get_user_infos('fabien')
+  .done(
+      function(udata) {
+        console.log(udata)
+        $("#username").val(udata["uid"]);
+        $("#fullname").val(udata["name"]);
+        $("#email").val(udata["default-email"]);
+        var emails = udata["emails"]
+      }
+    )
+  .fail(
+      function(err) {
+        console.log(err);
+      }
+    );
+}
+
 function projects_page_init() {
     function fill_result(data) {
         $("#project-results").empty();
