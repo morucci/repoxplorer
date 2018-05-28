@@ -369,6 +369,26 @@ function index_page_init() {
     fill_status();
 }
 
+function user_page_init() {
+  function get_user_infos(login) {
+    return $.getJSON("api/v1/users/" + login);
+  }
+  get_user_infos('fabien')
+  .done(
+      function(udata) {
+        console.log(udata)
+        $("#username").val(udata["uid"]);
+        $("#fullname").val(udata["name"]);
+        $("#email").val(udata["default-email"]);
+      }
+    )
+  .fail(
+      function(err) {
+        console.log(err);
+      }
+    );
+}
+
 function projects_page_init() {
     function fill_result(data) {
         $("#project-results").empty();
