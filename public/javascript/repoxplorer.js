@@ -1,3 +1,37 @@
+function isCookiesEnabled() {
+    var isEnabled = (navigator.cookieEnabled) ? true : false;
+    if ( typeof navigator.cookieEnabled == "undefined" && !cookieEnabled ) {
+        document.cookie='test';
+        isEnabled = (document.cookie.indexOf('test')!=1) ? true : false;
+    }
+    return isEnabled;
+}
+
+function getValueOfKey(target, key) {
+    var tokens = target.split(/%3B/); // semi-colon
+    for ( var i = 0; i < tokens.length; i++ ) {
+        var keyvalue = tokens[i].split(/%3D/);
+        if ( key.indexOf(keyvalue[0]) == 0 ) {
+            return keyvalue[1];
+        }
+    }
+    return false;
+}
+
+function initAuth() {
+    if ( isCookiesEnabled() ) {
+        var tokens = document.cookie.split(';');
+        var username = '';
+        for ( var i = 0; i < tokens.length; i++ ) {
+            tokens[i] = tokens[i].trim();
+            if ( tokens[i].indexOf('auth_pubtkt') == 0 ) {
+                var username = getValueOfKey(tokens[i].substring(12), 'uid');
+            }
+        }
+    };
+    console.log("Logged in with: " + username)
+};
+
 function gen_histo(histo, id) {
     var svg_histo = dimple.newSvg("#"+id, '100%', 250);
     var chart_histo = new dimple.chart(svg_histo, histo);
