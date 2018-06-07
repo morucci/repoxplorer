@@ -89,6 +89,19 @@ class UsersController(RestController):
                             return False
         return True
 
+    def _modify_protected_fields(self, prev, new):
+        if new['uid'] != prev['uid']:
+            return True
+        if new['default-email'] != prev['default-email']:
+            return True
+        # Adding or removing emails is forbidden
+        prev_emails = set([e['email'] for e in prev['emails']])
+        new_emails = set([e['email'] for e in new['emails']])
+        if (not new_emails.issubset(prev_emails) or
+                not prev_emails.issubset(new_emails)):
+            return True
+        return False
+
     # curl -H 'Remote-User: admin' -H 'Admin-Token: abc' \
     # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
@@ -149,6 +162,14 @@ class UsersController(RestController):
             abort(404)
         infos = request.json if request.content_length else {}
         infos['uid'] = uid
+        # Can be provided by mistake, just remove it
+        if 'cid' in infos:
+            del infos['cid']
         if not self._validate(infos):
             abort(400)
+        if uid != 'admin':
+            # User is not allowed to modify some raw_fields
+            # like adding or removing emails ...
+            if self._modify_protected_fields(u, infos):
+                abort(400)
         _users.update(infos)
