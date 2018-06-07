@@ -354,12 +354,12 @@ class TestUsersController(FunctionalTest):
             'ADMIN_TOKEN': '12345'}
         # User should not exist
         response = self.app.get(
-            '/api/v1/users/1', headers=headers, status="*")
+            '/api/v1/users/admin', headers=headers, status="*")
         self.assertEqual(response.status_int, 404)
 
         # Push user details
         data = {
-            'uid': '1',
+            'uid': 'admin',
             'name': 'saboten',
             'default-email': 'saboten@domain1',
             'emails': [
@@ -371,12 +371,12 @@ class TestUsersController(FunctionalTest):
                  ]}
             ]}
         response = self.app.put_json(
-            '/api/v1/users/1', data, headers=headers, status="*")
+            '/api/v1/users/admin', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 201)
 
         # Get User details
         response = self.app.get(
-            '/api/v1/users/1', headers=headers, status="*")
+            '/api/v1/users/admin', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         rdata = copy.deepcopy(data)
         rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
@@ -385,12 +385,12 @@ class TestUsersController(FunctionalTest):
         # Update user details
         data['name'] = 'sabosan'
         response = self.app.post_json(
-            '/api/v1/users/1', data, headers=headers, status="*")
+            '/api/v1/users/admin', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
         # Get User details
         response = self.app.get(
-            '/api/v1/users/1', headers=headers, status="*")
+            '/api/v1/users/admin', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
         rdata = copy.deepcopy(data)
         rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
@@ -415,12 +415,23 @@ class TestUsersController(FunctionalTest):
             'uid': 'saboten',
             'name': 'Cactus Saboten',
             'default-email': 'saboten@domain1',
-            'emails': []}
+            'emails': [
+                {'email': 'saboten@domain1',
+                 'groups': [
+                    {'group': 'ugroup2',
+                     'start-date': '2016-01-01',
+                     'end-date': '2016-01-09'}
+                     ]
+                 }
+            ]
+        }
         headers = {
             'REMOTE_USER': 'admin',
             'ADMIN_TOKEN': '12345'}
         self.app.put_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
+
+        # Change as user
         headers = {'REMOTE_USER': 'saboten'}
 
         response = self.app.get(
@@ -430,17 +441,42 @@ class TestUsersController(FunctionalTest):
         rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
         self.assertDictEqual(response.json, rdata)
 
-        data['default-email'] = 'saboten@domain2'
+        # User is not authorized to change protected fields
+        ndata = copy.deepcopy(data)
+        ndata['default-email'] = 'saboten@domain2'
+        response = self.app.post_json(
+            '/api/v1/users/saboten', ndata, headers=headers, status="*")
+        self.assertEqual(response.status_int, 400)
+
+        # User is not authorized to change protected fields
+        ndata = copy.deepcopy(data)
+        ndata['emails'].append({'emails': 'new@email.com'})
+        response = self.app.post_json(
+            '/api/v1/users/saboten', ndata, headers=headers, status="*")
+        self.assertEqual(response.status_int, 400)
+
+        # Authorized to change its full name
+        data['name'] = 'John Doe'
         response = self.app.post_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
+        # Authorized to change its emails memberships
+        email = [e for e in data['emails'] if
+                 e['email'] == 'saboten@domain1'][0]
+        email['groups'][0]['group'] = 'ugroup3'
+        response = self.app.post_json(
+            '/api/v1/users/saboten', data, headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+
+        # Another user not authorized to get
         headers = {'REMOTE_USER': 'tokin'}
         response = self.app.get(
             '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
 
-        data['default-email'] = 'saboten@domain1'
+        # Another user not authorized to change
+        data['name'] = 'John Doe'
         response = self.app.post_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
