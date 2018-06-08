@@ -367,14 +367,16 @@ class Contributors(YAMLDefinition):
         else:
             # Look at the yaml backend
             idents = self._get_idents()
+            found = set()
             for email in emails:
-                found = False
+                if email in found:
+                    continue
                 for uid in idents:
-                    if email in idents[uid].get('emails', []):
-                        _selecteds.append((uid, idents[uid]))
-                        found = True
+                    if email in idents[uid].get('emails', {}):
+                        _selecteds.append((uid, copy.deepcopy(idents[uid])))
+                        found.add(email)
                         break
-                if not found:
+                if email not in found:
                     _selecteds.append(
                         (email, {'name': None,
                                  'default-email': email,
