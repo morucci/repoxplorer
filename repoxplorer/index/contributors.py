@@ -206,6 +206,7 @@ class Contributors(YAMLDefinition):
             if group not in self.groups.keys():
                 return
             self.groups[group]['emails'][email] = details
+
         for gid, groups in self.groups.items():
             for email, data in groups['emails'].items():
                 if not data:
@@ -352,29 +353,34 @@ class Contributors(YAMLDefinition):
         _selecteds = []
         if user_endpoint_active:
             # Look at the elk backend
-            el_selecteds = self._users.get_idents_by_emails(emails)
-            emails_not_found = set(emails)
-            for ident in el_selecteds:
-                ident = self.backend_convert_ident(ident)
-                _selecteds.append(ident)
-                emails_not_found -= set(ident[1]['emails'].keys())
-            for email in emails_not_found:
-                _selecteds.append(
-                    (email, {'name': None,
-                             'default-email': email,
-                             'emails': {email: {}}})
-                    )
+            if emails:
+                # Do not request if emails if empty (ELK backend will return
+                # all ident in that case)
+                el_selecteds = self._users.get_idents_by_emails(emails)
+                emails_not_found = set(emails)
+                for ident in el_selecteds:
+                    ident = self.backend_convert_ident(ident)
+                    _selecteds.append(ident)
+                    emails_not_found -= set(ident[1]['emails'].keys())
+                for email in emails_not_found:
+                    _selecteds.append(
+                        (email, {'name': None,
+                                 'default-email': email,
+                                 'emails': {email: {}}})
+                        )
         else:
             # Look at the yaml backend
             idents = self._get_idents()
+            found = set()
             for email in emails:
-                found = False
+                if email in found:
+                    continue
                 for uid in idents:
-                    if email in idents[uid].get('emails', []):
-                        _selecteds.append((uid, idents[uid]))
-                        found = True
+                    if email in idents[uid].get('emails', {}):
+                        _selecteds.append((uid, copy.deepcopy(idents[uid])))
+                        found.add(email)
                         break
-                if not found:
+                if email not in found:
                     _selecteds.append(
                         (email, {'name': None,
                                  'default-email': email,

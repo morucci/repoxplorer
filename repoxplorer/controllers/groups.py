@@ -36,7 +36,6 @@ class GroupsController(object):
         ci = Commits(index.Connector())
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
-        projects = Projects()
         if nameonly == 'true':
             ret = dict([(k, None) for k in groups.keys()])
             if prefix:
@@ -44,21 +43,20 @@ class GroupsController(object):
                             k.lower().startswith(prefix)])
             return ret
         ret_groups = {}
-        tops_ctl = tops.TopProjectsController()
         for group, data in groups.items():
-            if prefix and not group.lower().startswith(prefix):
+            if prefix and not group.lower().startswith(prefix.lower()):
                 continue
             rg = {'members': {},
                   'description': data['description'],
                   'domains': data.get('domains', [])}
-            for email, bounces in data['emails'].items():
-                members = contributors_index.get_idents_by_emails(email)
-                id = members.keys()[0]
-                member = members.values()[0]
+            emails = data['emails'].keys()
+            members = contributors_index.get_idents_by_emails(emails)
+            for id, member in members.items():
                 member['gravatar'] = hashlib.md5(
                     member['default-email']).hexdigest()
-                member['bounces'] = bounces
-                member['mails_amount'] = len(member['emails'])
+                # TODO(fbo): bounces should be a list of bounce
+                # Let's deactivate that for now
+                # member['bounces'] = bounces
                 del member['emails']
                 if not member['name']:
                     # Try to find it among commits
@@ -81,7 +79,8 @@ class GroupsController(object):
                     'merge_commit': False,
                     'repos': p_filter,
                 }
-
+                projects = Projects()
+                tops_ctl = tops.TopProjectsController()
                 top_projects = tops_ctl.gbycommits(
                     ci, projects, query_kwargs, False)
                 top_repos = tops_ctl.gbycommits(

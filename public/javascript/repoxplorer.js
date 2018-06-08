@@ -305,16 +305,9 @@ function get_infos(pid, tid, cid, gid) {
                 }
                 if (gid) {
                     ib_data.description = gdata[gid].description;
-                    var members_amount = 0;
-                    var mails_amount = 0;
-                    $.each(gdata[gid].members, function(key, value) {
-                        members_amount++;
-                        mails_amount += value.mails_amount;
-                    });
-                    ib_data.members_amount = members_amount;
+                    ib_data.members_amount = Object.keys(gdata[gid].members).length;
                     ib_data.projects_amount = gdata[gid].projects_amount;
                     ib_data.repos_amount = gdata[gid].repos_amount;
-                    ib_data.mails_amount = mails_amount;
                 }
                 fill_info_box(ib_data);
                 $("#infos-progress").empty();
