@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2ca52d_7ecb4573",
+        "filename": "repoxplorer/controllers/users.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-06-08T12:31:52Z",
+      "side": 1,
+      "message": "Nit: to make it a bit more compliant with http error codes, shouldn\u0027t this be 403?",
+      "range": {
+        "startLine": 173,
+        "startChar": 26,
+        "endLine": 174,
+        "endChar": 23
+      },
+      "revId": "cb52d4ade28b10f46401fa952d6bfe08bc547366",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
