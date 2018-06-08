@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2ca52d_beaf9d93",
+        "filename": "etc/projects.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-06-08T12:39:12Z",
+      "side": 1,
+      "message": "We can also add stable/queens now",
+      "revId": "a9ef2798e7f7a8403967790d78727228cfd2c1ee",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
