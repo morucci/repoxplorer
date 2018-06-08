@@ -71,6 +71,9 @@ class GroupsController(object):
                 rg['members'][utils.encrypt(xorkey, id)] = member
 
             if withstats == 'true':
+                # TODO(fbo): This endpoint needs to handle some filters like
+                # dates bounces to return more accurate stats
+
                 # Fetch the number of projects and repos contributed to
                 p_filter = {}
                 query_kwargs = {
