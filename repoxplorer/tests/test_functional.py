@@ -226,12 +226,20 @@ class TestGroupsController(FunctionalTest):
                     }
                 }}
         }
-        cls.gi_by_emails = \
-            lambda _, email: \
-            copy.deepcopy(cls.gi_by_emails_data.get(email)) or {
-                email: {'name': None,
-                        'default-email': email,
-                        'emails': {}}}
+
+        def fake_get_idents_by_emails(cls, emails):
+            ret = {}
+            for email in emails:
+                if email in cls.gi_by_emails_data.keys():
+                    ret.update(copy.deepcopy(cls.gi_by_emails_data[email]))
+                else:
+                    ret.update({
+                        email: {'name': None,
+                                'default-email': email,
+                                'emails': {}}})
+            return ret
+
+        cls.gi_by_emails = fake_get_idents_by_emails
         cls.groups = {
             "grp1": {
                 "description": "The group 1",
@@ -270,13 +278,13 @@ class TestGroupsController(FunctionalTest):
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            u'mails_amount': 0,
-                            u'bounces': {}},
+                            # u'bounces': {}},
+                            },
                         u'VFVWUVhcRFRV': {
                             u'name': u'Ampanman',
                             u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            u'mails_amount': 1,
-                            u'bounces': {}}
+                            # u'bounces': {}}
+                            }
                     },
                     u'projects_amount': 0,
                     u'repos_amount': 0,
@@ -288,14 +296,14 @@ class TestGroupsController(FunctionalTest):
                         u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'Jane Doe',
                             u'gravatar': u'98685715b08980dac8b2379097c332f4',
-                            u'mails_amount': 0,
-                            u'bounces': {
-                                'end-date': '2016-01-01'}},
+                            # u'bounces': {
+                            #    'end-date': '2016-01-01'}},
+                            },
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            u'mails_amount': 0,
-                            u'bounces': {}}
+                            # u'bounces': {}}
+                            }
                     },
                     u'projects_amount': 0,
                     u'repos_amount': 0,
@@ -320,13 +328,13 @@ class TestGroupsController(FunctionalTest):
                         u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
                             u'name': u'John Doe',
                             u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            u'mails_amount': 0,
-                            u'bounces': {}},
+                            # u'bounces': {}},
+                            },
                         u'VFVWUVhcRFRV': {
                             u'name': u'Ampanman',
                             u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            u'mails_amount': 1,
-                            u'bounces': {}}
+                            # u'bounces': {}}
+                            }
                     },
                 }
             }

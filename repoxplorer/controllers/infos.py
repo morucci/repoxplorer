@@ -88,7 +88,6 @@ class InfosController(object):
         idents = Contributors()
         projects = Projects()
         _, ident = idents.get_ident_by_id(cid)
-
         if not ident:
             # No ident has been declared for that contributor
             ident = idents.get_idents_by_emails(cid).values()[0]

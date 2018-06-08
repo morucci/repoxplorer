@@ -43,13 +43,11 @@ def authors_sanitize(idents, authors):
     for iid, ident in _idents.items():
         main_email = ident['default-email']
         name = ident['name']
+        match = 0
         for ident_email in ident['emails'].keys():
             if ident_email in authors.keys():
-                match = authors[ident_email]
-        if main_email in sanitized:
-            sanitized[main_email][0] += match
-        else:
-            sanitized[main_email] = [match, name, iid]
+                match += authors[ident_email]
+        sanitized[main_email] = [match, name, iid]
     return sanitized
 
 
