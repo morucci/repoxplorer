@@ -7,9 +7,8 @@ projects: {}
 #    uri: https://github.com/openstack/%(name)s
 #    branches:
 #    - master
-#    - stable/mitaka
-#    - stable/newton
 #    - stable/ocata
+#    - stable/pike
 #    tags:
 #      - python
 #    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
