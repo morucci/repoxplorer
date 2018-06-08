@@ -1076,14 +1076,10 @@ curl "http://localhost:51000/api/v1/groups/"
     "description": "People from the Doe organization",
     "members": {
       "DhUDDxQsBgEBDgABQhcLCA--": {
-        "bounces": null,
-        "mails_amount": 1,
         "gravatar": "659d8254ef5235d8a163734889131b0e",
         "name": "John Doe"
       },
       "DgQQCBAeWhQACAA1HhEADQcVWw8bCQ--": {
-        "bounces": null,
-        "mails_amount": 1,
         "gravatar": "b726b19f8e7c2e23e403e4b5d3ab4508",
         "name": "Doe John"
       }
