@@ -16,6 +16,24 @@
       "revId": "a9ef2798e7f7a8403967790d78727228cfd2c1ee",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2ca52d_09653944",
+        "filename": "etc/projects.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-06-11T15:11:35Z",
+      "side": 1,
+      "message": "Agree, I\u0027m removing ocata in that case. Thanks for the review.",
+      "parentUuid": "5a2ca52d_beaf9d93",
+      "revId": "a9ef2798e7f7a8403967790d78727228cfd2c1ee",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
