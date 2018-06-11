@@ -22,6 +22,30 @@
       "revId": "17b547e10645be37d7be4dbc38b8ed365bfe6b90",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2ca52d_e978fdfa",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-06-11T15:07:44Z",
+      "side": 1,
+      "message": "Good catch thanks :)",
+      "parentUuid": "5a2ca52d_3ec5cd5a",
+      "range": {
+        "startLine": 32,
+        "startChar": 4,
+        "endLine": 32,
+        "endChar": 22
+      },
+      "revId": "17b547e10645be37d7be4dbc38b8ed365bfe6b90",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
