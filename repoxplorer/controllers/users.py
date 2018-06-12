@@ -41,11 +41,16 @@ class UsersController(RestController):
             request.remote_user = request.headers.get('Remote-User')
         if not request.remote_user:
             request.remote_user = request.headers.get('X-Remote-User')
-        if request.remote_user == "admin":
+        if (request.remote_user == "admin" and
+                request.headers.get('Admin-Token')):
             sent_admin_token = request.headers.get('Admin-Token')
+            # If remote-user is admin and an admin-token is passed
+            # authorized if the token is correct
             if sent_admin_token == admin_token:
                 return
         else:
+            # If uid targeted by the request is the same
+            # as the requester then authorize
             if uid and uid == request.remote_user:
                 return
         abort(401)
@@ -117,7 +122,7 @@ class UsersController(RestController):
 
     @expose('json')
     def delete(self, uid):
-        self._authorize()
+        self._authorize(uid)
         _users = users.Users(
             index.Connector(index_suffix='users'))
         u = _users.get(uid)
@@ -132,6 +137,8 @@ class UsersController(RestController):
     # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
     def put(self, uid):
+        # We don't pass uid to authorize, then only admin logged with
+        # admin token will be authorized
         self._authorize()
         _users = users.Users(
             index.Connector(index_suffix='users'))

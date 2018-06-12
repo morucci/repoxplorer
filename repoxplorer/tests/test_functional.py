@@ -382,7 +382,7 @@ class TestUsersController(FunctionalTest):
             '/api/v1/users/admin', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 201)
 
-        # Get User details
+        # Get admin user details
         response = self.app.get(
             '/api/v1/users/admin', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
@@ -390,13 +390,22 @@ class TestUsersController(FunctionalTest):
         rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
         self.assertDictEqual(response.json, rdata)
 
-        # Update user details
+        # Update admin user details
         data['name'] = 'sabosan'
         response = self.app.post_json(
             '/api/v1/users/admin', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
-        # Get User details
+        # Get admin user details
+        response = self.app.get(
+            '/api/v1/users/admin', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        rdata = copy.deepcopy(data)
+        rdata['cid'] = utils.encrypt(xorkey, 'saboten@domain1')
+        self.assertDictEqual(response.json, rdata)
+
+        # Get admin user details w/o admin_token
+        headers = {'REMOTE_USER': 'admin'}
         response = self.app.get(
             '/api/v1/users/admin', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
@@ -433,13 +442,14 @@ class TestUsersController(FunctionalTest):
                  }
             ]
         }
+
         headers = {
             'REMOTE_USER': 'admin',
             'ADMIN_TOKEN': '12345'}
         self.app.put_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
 
-        # Change as user
+        # Change user
         headers = {'REMOTE_USER': 'saboten'}
 
         response = self.app.get(
@@ -477,8 +487,10 @@ class TestUsersController(FunctionalTest):
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
-        # Another user not authorized to get
+        # Change user
         headers = {'REMOTE_USER': 'tokin'}
+
+        # Another user not authorized to get
         response = self.app.get(
             '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
@@ -488,6 +500,19 @@ class TestUsersController(FunctionalTest):
         response = self.app.post_json(
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 401)
+
+        # Another user not authorized to delete
+        response = self.app.delete(
+            '/api/v1/users/saboten', headers=headers, status="*")
+        self.assertEqual(response.status_int, 401)
+
+        # Change user
+        headers = {'REMOTE_USER': 'saboten'}
+
+        # User authorized to delete itself
+        response = self.app.delete(
+            '/api/v1/users/saboten', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
 
 
 class TestHistoController(FunctionalTest):
