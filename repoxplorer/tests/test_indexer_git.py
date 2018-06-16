@@ -6,9 +6,11 @@ import cPickle
 import tempfile
 
 from unittest import TestCase
+from mock import patch
 
 from repoxplorer import index
 from repoxplorer.index import commits
+from repoxplorer.index import projects
 from repoxplorer.indexer.git import indexer
 
 
@@ -260,6 +262,140 @@ http://metavalue
             ]
 
         self.assertListEqual(output, expected)
+
+
+class TestRefsClean(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        indexer.conf['git_store'] = tempfile.mkdtemp()
+        indexer.conf['elasticsearch_index'] = 'repoxplorertest'
+        indexer.get_commits_desc = lambda path, shas: []
+        cls.con = index.Connector()
+        cls.cmts = commits.Commits(cls.con)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(indexer.conf['git_store'])
+        cls.con.ic.delete(index=cls.con.index)
+
+    def setUp(self):
+        if os.path.isfile(indexer.SEEN_REFS_CACHED_PATH):
+            os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+
+    def tearDown(self):
+        os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+
+    def init_fake_process_commits_desc_output(self, pi, repo_commits):
+        to_create, _ = pi.compute_to_create_to_update()
+        to_create = [
+            c for c in repo_commits if c['sha'] in to_create]
+        indexer.process_commits_desc_output = lambda buf, ref_id: to_create
+
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
+                                 con=self.con)
+
+    def test_cleaner(self):
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
+                                 con=self.con)
+        # This is the initial commits list of a repository we
+        # are going to index
+        repo_commits1 = [
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
+                'author_date': 1410456005,
+                'committer_date': 1410456005,
+                'author_name': 'Nakata Daisuke',
+                'committer_name': 'Nakata Daisuke',
+                'author_email': 'n.suke@joker.org',
+                'committer_email': 'n.suke@joker.org',
+                'repos': [
+                    'file:///tmp/p1:p1:master', ],
+                'line_modifieds': 10,
+                'commit_msg': 'Add init method',
+            },
+        ]
+        pi.commits = [rc['sha'] for rc in repo_commits1]
+        pi.set_branch('master')
+        # Start the indexation
+        pi.get_current_commit_indexed()
+        pi.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi, repo_commits1)
+        pi.index()
+        repo_commits2 = [
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b185',
+                'author_date': 1410456005,
+                'committer_date': 1410456005,
+                'author_name': 'Nakata Daisuke',
+                'committer_name': 'Nakata Daisuke',
+                'author_email': 'n.suke@joker.org',
+                'committer_email': 'n.suke@joker.org',
+                'repos': [
+                    'file:///tmp/p1:p1:devel', ],
+                'line_modifieds': 10,
+                'commit_msg': 'Add init method',
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b186',
+                'author_date': 1410456005,
+                'committer_date': 1410456005,
+                'author_name': 'Nakata Daisuke',
+                'committer_name': 'Nakata Daisuke',
+                'author_email': 'n.suke@joker.org',
+                'committer_email': 'n.suke@joker.org',
+                'repos': [
+                    'file:///tmp/p1:p1:devel',
+                    'file:///tmp/p1:p1:master'],
+                'line_modifieds': 10,
+                'commit_msg': 'Add init method',
+            },
+        ]
+        pi.commits = [rc['sha'] for rc in repo_commits2]
+        pi.set_branch('devel')
+        # Start the indexation
+        pi.get_current_commit_indexed()
+        pi.compute_to_index_to_delete()
+        self.init_fake_process_commits_desc_output(pi, repo_commits2)
+        pi.index()
+
+        shas = ['3597334f2cb10772950c97ddf2f6cc17b184',
+                '3597334f2cb10772950c97ddf2f6cc17b185',
+                '3597334f2cb10772950c97ddf2f6cc17b186']
+
+        # Check 2 commits are indexed
+        self.assertEqual(
+            len([c for c in self.cmts.get_commits_by_id(shas)['docs']
+                 if c['found']]), 3)
+        # Now create the RefsCleaner isinstance
+        # '3597334f2cb10772950c97ddf2f6cc17b185' will be removed
+        # '3597334f2cb10772950c97ddf2f6cc17b186' will be updated
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(projects.Projects, 'get_projects_raw') as gpr:
+                projects_index = projects.Projects('/tmp/fakepath')
+                gpr.return_value = {
+                    'p1': {
+                        'repos': {
+                            'p1': {
+                                'branches': ['master'],
+                                'uri': 'file:///tmp/p1',
+                                }
+                            }
+                        }
+                    }
+                rc = indexer.RefsCleaner(projects_index, con=self.con)
+                refs_to_clean = rc.find_refs_to_clean()
+                rc.clean(refs_to_clean)
+        # Only one commit must be in the db
+        cmts = self.cmts.get_commits_by_id(shas)['docs']
+        self.assertEqual(len([c for c in cmts if c['found']]), 2)
+        # Verify that remaining commits belong to ref
+        # 'file:///tmp/p1:p1:master' only
+        for cmt in cmts:
+            if not cmt['found']:
+                continue
+            self.assertTrue(len(cmt['_source']['repos']), 1)
+            self.assertIn('file:///tmp/p1:p1:master', cmt['_source']['repos'])
 
 
 class TestRepoIndexer(TestCase):

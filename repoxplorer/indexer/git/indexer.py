@@ -277,6 +277,71 @@ def process_commits(options):
     c.add_commits(process_commits_desc_output(buf, ref_id))
 
 
+def delete_commits(commits, name, to_delete, ref_id):
+    res = commits.get_commits_by_id(list(to_delete))
+    docs = [c['_source'] for
+            c in res['docs'] if c['found'] is True]
+    to_delete = [c['sha'] for
+                 c in docs if len(c['repos']) == 1]
+    to_delete_update = [c['sha'] for
+                        c in docs if len(c['repos']) > 1]
+
+    if to_delete:
+        logger.info("%s: %s commits will be deleted ..." % (
+            name, len(to_delete)))
+        commits.del_commits(to_delete)
+
+    if to_delete_update:
+        logger.info("%s: %s commits belonging to other repos "
+                    "will be updated ..." % (
+                        name, len(to_delete_update)))
+        res = commits.get_commits_by_id(to_delete_update)
+        if res:
+            original_commits = [c['_source'] for
+                                c in res['docs']]
+            for c in original_commits:
+                c['repos'].remove(ref_id)
+            commits.update_commits(original_commits)
+
+
+class RefsCleaner():
+    def __init__(self, projects, con=None, config=None):
+        if config:
+            configuration.set_config(config)
+        if not con:
+            self.con = index.Connector()
+        else:
+            self.con = con
+        self.projects = projects
+        self.c = Commits(self.con)
+        self.seen_refs_path = SEEN_REFS_CACHED_PATH
+
+    def find_refs_to_clean(self):
+        prjs = self.projects.get_projects_raw()
+        refs_ids = set()
+        for pid, data in prjs.items():
+            for rid, repo in data['repos'].items():
+                for branch in repo['branches']:
+                    refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
+        if not os.path.isfile(self.seen_refs_path):
+            data = set()
+        else:
+            data = cPickle.load(file(self.seen_refs_path))
+        refs_to_clean = data - refs_ids
+        return refs_to_clean
+
+    def clean(self, refs):
+        for ref in refs:
+            # Find ref's Commits
+            ids = [c['_id'] for c in
+                   self.c.get_commits(repos=[ref], scan=True)]
+            if not ids:
+                continue
+            logger.info("Ref %s no longer referenced. Clean %s cmts" %
+                        (ref, len(ids)))
+            delete_commits(self.c, ref, ids, ref)
+
+
 class RepoIndexer():
     def __init__(self, name, uri, parsers=None,
                  con=None, config=None):
@@ -489,30 +554,7 @@ class RepoIndexer():
         # check whether a commit should be completly deleted or
         # updated by removing the repo from the repos field
         if self.to_delete:
-            res = self.c.get_commits_by_id(list(self.to_delete))
-            docs = [c['_source'] for
-                    c in res['docs'] if c['found'] is True]
-            to_delete = [c['sha'] for
-                         c in docs if len(c['repos']) == 1]
-            to_delete_update = [c['sha'] for
-                                c in docs if len(c['repos']) > 1]
-
-            if to_delete:
-                logger.info("%s: %s commits will be delete ..." % (
-                    self.name, len(to_delete)))
-                self.c.del_commits(to_delete)
-
-            if to_delete_update:
-                logger.info("%s: %s commits belonging to other repos "
-                            "will be updated ..." % (
-                                self.name, len(to_delete_update)))
-                res = self.c.get_commits_by_id(to_delete_update)
-                if res:
-                    original_commits = [c['_source'] for
-                                        c in res['docs']]
-                    for c in original_commits:
-                        c['repos'].remove(self.ref_id)
-                    self.c.update_commits(original_commits)
+            delete_commits(self.c, self.name, self.to_delete, self.ref_id)
 
         # check whether a commit should be created or
         # updated by adding the repo into the repos field

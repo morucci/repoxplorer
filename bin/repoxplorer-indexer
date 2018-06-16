@@ -46,6 +46,16 @@ parser.add_argument(
 args = parser.parse_args()
 
 
+def clean():
+    logger.info("Start cleaning unreferenced projects")
+    projects_index = projects.Projects(conf.db_path,
+                                       conf.db_default_file)
+    rc = indexer.RefsCleaner(projects_index, config=args.config)
+    refs_to_clean = rc.find_refs_to_clean()
+    rc.clean(refs_to_clean)
+    logger.info("Done cleaning unreferenced projects")
+
+
 def process():
     projects_index = projects.Projects(conf.db_path,
                                        conf.db_default_file)
@@ -112,6 +122,7 @@ if __name__ == "__main__":
         while True:
             try:
                 process()
+                clean()
             except Exception:
                 logger.exception("Unexcepted error occured")
             if args.forever:
@@ -121,5 +132,6 @@ if __name__ == "__main__":
     else:
         try:
             process()
+            clean()
         except Exception:
             logger.exception("Unexcepted error occured")
