@@ -15,6 +15,7 @@
 import os
 import re
 import copy
+import cPickle
 import logging
 import subprocess
 import multiprocessing as mp
@@ -57,6 +58,8 @@ RESERVED_METADATA_KEYS = (
     T_PROPERTIES.keys() +
     EL_RESERVED_FIELDS
 )
+
+SEEN_REFS_CACHED_PATH = '/tmp/seen-refs.cached'
 
 
 def run(cmd, path):
@@ -290,6 +293,7 @@ class RepoIndexer():
         self.name = name
         self.uri = uri
         self.base_id = '%s:%s' % (self.uri, self.name)
+        self.seen_refs_path = SEEN_REFS_CACHED_PATH
         if not parsers:
             self.parsers = []
         else:
@@ -304,9 +308,22 @@ class RepoIndexer():
     def __str__(self):
         return 'Git indexer of %s' % self.ref_id
 
+    def save_seen_ref_in_cache(self):
+        # Keep a cache a each ref that have been indexed
+        # This is use later to discover seen refs no longer in projects.yaml
+        # In that case a removal from the backend will be performed
+        logger.debug("Save ref %s into seen_refs file" % self.uri)
+        if not os.path.isfile(self.seen_refs_path):
+            data = set()
+        else:
+            data = cPickle.load(file(self.seen_refs_path))
+        data.add(self.ref_id)
+        cPickle.dump(data, file(self.seen_refs_path, 'w'))
+
     def set_branch(self, branch):
         self.branch = branch
         self.ref_id = '%s:%s:%s' % (self.uri, self.name, self.branch)
+        self.save_seen_ref_in_cache()
 
     def git_init(self):
         logger.debug("Git init for %s:%s in %s" % (
