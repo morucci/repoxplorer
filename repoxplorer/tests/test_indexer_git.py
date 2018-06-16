@@ -2,6 +2,7 @@ import os
 import re
 import mock
 import shutil
+import cPickle
 import tempfile
 
 from unittest import TestCase
@@ -276,6 +277,13 @@ class TestRepoIndexer(TestCase):
         shutil.rmtree(indexer.conf['git_store'])
         cls.con.ic.delete(index=cls.con.index)
 
+    def setUp(self):
+        if os.path.isfile(indexer.SEEN_REFS_CACHED_PATH):
+            os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+
+    def tearDown(self):
+        os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+
     def init_fake_process_commits_desc_output(self, pi, repo_commits):
         to_create, _ = pi.compute_to_create_to_update()
         to_create = [
@@ -287,6 +295,9 @@ class TestRepoIndexer(TestCase):
         pi.set_branch('master')
         self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
+        seen_refs = cPickle.load(file(indexer.SEEN_REFS_CACHED_PATH))
+        self.assertTrue(len(seen_refs), 1)
+        self.assertIn('file:///tmp/p1', seen_refs)
 
     def test_index(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
