@@ -1,3 +1,0 @@
----
-features:
-  - tops authors/diff endpoints take an optional limit parameter.

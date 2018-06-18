@@ -1,3 +1,0 @@
----
-fixes:
-  - Fix yaml backend cache path that won't be writable in /etc/repoxplorer (installed by package)
