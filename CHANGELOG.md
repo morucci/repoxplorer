@@ -2,6 +2,49 @@
 Release Notes
 =============
 
+Master
+======
+
+New features
+------------
+
+Bug Fixes
+---------
+
+Other Notes
+-----------
+
+1.3.0
+=====
+
+This release brings some performance improvements and a user backend.
+
+New features
+------------
+
+- Add inc_groups query parameter to limit stat computing to only specific groups
+- Add users backend and user home page. This is a beta feature that needs
+  to be coupled with an authentication layer that will set the REMOTE-USER
+  header.
+- Indexer auto-detects commits objects to clean from the ELK backend by comparing
+  to the refs defined in projects.yaml.
+
+Bug Fixes
+---------
+
+- Custom elasticsearch index name was partially taken in account
+- Top controller ignored the metadata filter
+
+Other Notes
+-----------
+
+- Improved indexation of repositories by doing ELK indexing at each bulk read
+- Improved metadata endpoint by computing most common keyword on a limited set
+- Improved indexation by adding a step of check if tip of branch changed
+- Improved tops/diff endpoint by discovering authors full name at the
+  end of the compute process.
+
+
 1.2.0
 =====
 

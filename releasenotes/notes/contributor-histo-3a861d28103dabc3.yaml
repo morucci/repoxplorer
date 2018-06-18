@@ -1,4 +1,0 @@
----
-features:
-  - Project and Tag pages get a new contributors count histogram
-  - REST endpoints histo/commits and histo/authors have been added

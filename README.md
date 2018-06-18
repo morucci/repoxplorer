@@ -1,7 +1,7 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
 - **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
-- **Last release**: [1.2.0](https://github.com/morucci/repoxplorer/releases/tag/1.2.0).
+- **Last release**: [1.3.0](https://github.com/morucci/repoxplorer/releases/tag/1.3.0).
 
 RepoXplorer provides a web UI and a REST API to browse statistics about:
 
@@ -54,7 +54,8 @@ The Java Runtime Environment as well as Python and Python virtualenv are the onl
 dependencies needed.
 
 Let's try to index *this repository*. The repoxplorer repository from the morucci
-Github organization.
+Github organization. The repository argument is not mandatory and can be removed
+to index the whole organization.
 
 ```
 curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/repoxplorer-quickstart.sh
@@ -100,7 +101,7 @@ sudo systemctl start elasticsearch
 ```Shell
 # Some dependecies need to be fetched from EPEL
 sudo yum install -y epel-release
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.2.0/repoxplorer-1.2.0-1.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.3.0/repoxplorer-1.3.0-1.el7.centos.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
@@ -451,7 +452,6 @@ repoxplorer-config-validate
 
 ### Endpoints
 
-All features are exposed via the REST API since the version 1.2.0 (current master).
 All endpoints can be called with or without the suffix *.json*. If called without
 the *.json* suffix then the request's header *Accept: application/json* must be set.
 
@@ -475,7 +475,7 @@ curl "http://localhost:51000/api/v1/status/status"
     "projects": 2,
     "repos": 4,
     "users_endpoint": False,
-    "version": "1.2.0"
+    "version": "1.3.0"
 }
 ```
 
