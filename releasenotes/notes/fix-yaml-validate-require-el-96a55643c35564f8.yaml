@@ -1,2 +1,0 @@
-fixes:
-  - repoxplorer-config-validate (YAML validation) no longer requires EL to be up and running.

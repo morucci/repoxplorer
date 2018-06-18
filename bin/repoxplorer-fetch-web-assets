@@ -157,7 +157,7 @@ for path in (
         ('index.html',), ('contributor.html',),
         ('contributors.html',), ('group.html',),
         ('groups.html',), ('project.html',),
-        ('projects.html',)):
+        ('home.html',), ('projects.html',)):
     shutil.copy(os.path.join(args.path, *path),
                 os.path.join(td, *path))
     print "Copied %s" % str(path)

@@ -1,6 +1,0 @@
----
-fixes:
-  - Fix release date format in projects.yaml file. The format is now %m/%d/%Y.
-other:
-  - Rename tools used to create projects.yaml from a github org and from OpenStack
-    governance file.
