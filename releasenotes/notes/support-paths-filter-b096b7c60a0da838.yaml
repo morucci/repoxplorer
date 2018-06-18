@@ -1,4 +1,0 @@
----
-features:
-  - Projects definition can include a list of paths under the paths key.
-    This limit statistics computation to those paths.

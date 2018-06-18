@@ -15,8 +15,7 @@
 #  limitations under the License.
 
 set -e
-#version="1.1.0"
-version="master"
+version="${version:-master}"
 
 base="$HOME/.cache/repoxplorer"
 dwl="$base/dwl"
@@ -48,7 +47,7 @@ function extract_contents {
     if ! test -f "$elinst/elasticsearch-2.4.0/bin/elasticsearch"; then
         tar -xzf "$dwl/$(basename $el)" -C "$elinst"
     fi
-    if ! test -f "$repoxplorerinst/1.1.0/requirements.txt"; then
+    if ! test -f "$repoxplorerinst/repoxplorer-${version}/requirements.txt"; then
         tar -xzf "$dwl/$(basename $repoxplorer)" -C "$repoxplorerinst"
     fi
 }
@@ -79,7 +78,7 @@ function stop_el {
 }
 function start_el {
     if ! pgrep -f "org.elasticsearch.bootstrap.Elasticsearch start -d"; then
-        /home/fabien/.cache/repoxplorer/inst/el/elasticsearch-2.4.0/bin/elasticsearch -d
+        $elinst/elasticsearch-2.4.0/bin/elasticsearch -d
     fi
     while ! netstat -lptn | grep "127.0.0.1:9200"; do
         echo "Waiting for EL to be fully up ..."
@@ -120,6 +119,11 @@ function usage {
     echo "the 'morucci' organisation from Github run:"
     echo ""
     echo "$0 morucci repoxplorer"
+    echo ""
+    echo "For example in order to index the whole 'morucci'"
+    echo "organisation from Github run:"
+    echo ""
+    echo "$0 morucci"
     echo ""
     echo "To stop services run:"
     echo ""
@@ -167,5 +171,9 @@ else
     echo "Start repoXplorer indexer ..."
     repoxplorer-indexer
     echo ""
-    echo "Open your browser on http://localhost:51000"
+    echo "Open your browser on http://localhost:51000/index.html"
+    echo ""
+    echo "Remind that this tool is just a quickstart script."
+    echo "A real deployment of repoXplorer must follow deployment"
+    echo "steps from the README.md file."
 fi
