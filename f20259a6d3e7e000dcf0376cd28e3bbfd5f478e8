@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1fbab896_97c9709a",
+        "filename": "CHANGELOG.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-06-19T16:13:26Z",
+      "side": 1,
+      "message": "nit :)",
+      "revId": "f20259a6d3e7e000dcf0376cd28e3bbfd5f478e8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
