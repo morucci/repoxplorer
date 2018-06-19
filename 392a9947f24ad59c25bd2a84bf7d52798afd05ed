@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3f06194d_8f687122",
+        "filename": "repoxplorer/indexer/git/indexer.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-06-19T16:09:48Z",
+      "side": 1,
+      "message": "This will cause some issues when trying to port to Python 3 in the future, we may try to use six instead: https://pythonhosted.org/six/#module-six.moves\n\nAnyway, this could be a follow-up patch.",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 14
+      },
+      "revId": "392a9947f24ad59c25bd2a84bf7d52798afd05ed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
