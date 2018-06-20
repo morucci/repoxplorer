@@ -22,6 +22,30 @@
       "revId": "392a9947f24ad59c25bd2a84bf7d52798afd05ed",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e5842590_71045cac",
+        "filename": "repoxplorer/indexer/git/indexer.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-06-20T08:41:53Z",
+      "side": 1,
+      "message": "Yes, anyway I attempted to convert repoxplorer to python3 but there is many little places to fix. Let\u0027s do that for the 1.4 release.",
+      "parentUuid": "3f06194d_8f687122",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 14
+      },
+      "revId": "392a9947f24ad59c25bd2a84bf7d52798afd05ed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
