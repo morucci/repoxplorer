@@ -29,7 +29,7 @@ base_logging = {
         },
         'normal': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'level': 'DEBUG',
+            'level': 'INFO',
             'formatter': 'normal',
             'filename': '',
             'when': 'D',
@@ -43,12 +43,6 @@ base_logging = {
         'normal': {'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
                    '[%(threadName)s] %(message)s')},
     }
-}
-
-# Internal dev pecan server
-server = {
-    'port': '8080',
-    'host': '0.0.0.0'
 }
 
 # Pecan REST and rendering configuration
@@ -74,13 +68,15 @@ elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
 indexer_loop_delay = 60
 index_custom_html = ""
+users_backend = False
+admin_key = 'admin_key'
 
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
 logging['handlers']['normal']['filename'] = (
-    '/var/log/repoxplorer/repoxplorer-webui-debug.log')
+    '/var/log/repoxplorer/repoxplorer-webui.log')
 
 # Logging configuration for the indexer
 indexer_logging = copy.deepcopy(base_logging)
 indexer_logging['handlers']['normal']['filename'] = (
-    '/var/log/repoxplorer/repoxplorer-indexer-debug.log')
+    '/var/log/repoxplorer/repoxplorer-indexer.log')
