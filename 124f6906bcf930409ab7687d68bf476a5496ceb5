@@ -16,6 +16,24 @@
       "revId": "124f6906bcf930409ab7687d68bf476a5496ceb5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ca404057_533a017d",
+        "filename": "CHANGELOG.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-06-21T09:05:39Z",
+      "side": 1,
+      "message": "Oops, yes I did an edit with the Gerrit UI and push from my laptop another w/o refreshing. Good catch thanks.",
+      "parentUuid": "37bf056a_8a4797bd",
+      "revId": "124f6906bcf930409ab7687d68bf476a5496ceb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
