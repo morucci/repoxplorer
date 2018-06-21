@@ -7,7 +7,7 @@ RUN rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
 ADD elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo
 
 RUN yum -y install supervisor elasticsearch java-1.8.0-openjdk sudo
-RUN yum install -y https://github.com/morucci/repoxplorer/releases/download/1.2.0/repoxplorer-1.2.0-1.el7.centos.noarch.rpm
+RUN yum install -y https://github.com/morucci/repoxplorer/releases/download/1.3.0/repoxplorer-1.3.0-1.el7.noarch.rpm
 RUN yum -y update
 RUN yum clean all
 RUN rm -rf /var/cache/yum

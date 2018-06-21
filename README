@@ -15,8 +15,8 @@ chcon -Rt svirt_sandbox_file_t ./conf
 docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer
 
 # Access the UI
-firefox http://localhost:51000
+firefox http://localhost:51000/index.html
 
 # Check the indexer logs
 docker ps # get the <container-id>
-docker exec -ti <container-id> tail -f /var/log/repoxplorer/repoxplorer-indexer-debug.log
+docker exec -ti <container-id> tail -f /var/log/repoxplorer/repoxplorer-indexer.log
