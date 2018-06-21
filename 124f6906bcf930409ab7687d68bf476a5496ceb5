@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "37bf056a_8a4797bd",
+        "filename": "CHANGELOG.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-06-21T08:16:00Z",
+      "side": 1,
+      "message": "Have we gone back to patchset 2?",
+      "revId": "124f6906bcf930409ab7687d68bf476a5496ceb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
