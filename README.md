@@ -1,6 +1,6 @@
 # RepoXplorer - Statistics explorer for Git repositories
 
-- **Demo instance**: [demo](http://5.135.161.134/repoxplorer-demo/).
+- **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
 - **Last release**: [1.3.0](https://github.com/morucci/repoxplorer/releases/tag/1.3.0).
 
 RepoXplorer provides a web UI and a REST API to browse statistics about:
