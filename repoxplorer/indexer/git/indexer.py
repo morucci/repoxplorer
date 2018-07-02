@@ -104,7 +104,7 @@ def parse_commit_msg(msg, extra_parsers=None):
 
 
 def get_all_shas(path):
-    out = run(['git', 'log', '--format=format:%H'], path)
+    out = run(['git', 'log', '--format=format:%H', 'FETCH_HEAD'], path)
     shas = out.splitlines()
     return shas
 
@@ -396,7 +396,7 @@ class RepoIndexer():
     def git_init(self):
         logger.debug("Git init for %s:%s in %s" % (
             self.uri, self.name, self.local))
-        run(["git", "init", "."], self.local)
+        run(["git", "init", "--bare", "."], self.local)
         if "origin" not in run(["git", "remote", "-v"], self.local):
             run(["git", "remote", "add", "origin", self.uri], self.local)
 
@@ -406,8 +406,6 @@ class RepoIndexer():
         run(["git", "-c",
              "credential.helper=%s" % self.credentials_helper_path,
              "fetch", "origin", self.branch], self.local)
-        run(["git", "branch", "-f", self.branch, "FETCH_HEAD"], self.local)
-        run(["git", "checkout", "-f", "FETCH_HEAD"], self.local)
 
     def get_refs(self):
         refs = run([
