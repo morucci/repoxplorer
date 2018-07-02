@@ -103,8 +103,8 @@ def parse_commit_msg(msg, extra_parsers=None):
     return subject, metadatas
 
 
-def get_all_shas(path):
-    out = run(['git', 'log', '--format=format:%H'], path)
+def get_all_shas(path, branch):
+    out = run(['git', 'log', '--format=format:%H', branch], path)
     shas = out.splitlines()
     return shas
 
@@ -270,7 +270,7 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
 
 
 def process_commits(options):
-    path, ref_id, shas = options
+    path, ref_id, shas, branch = options
     c = Commits(index.Connector())
     logger.info("Worker %s started to extract and index %s commits" % (
         mp.current_process(), len(shas)))
@@ -396,7 +396,7 @@ class RepoIndexer():
     def git_init(self):
         logger.debug("Git init for %s:%s in %s" % (
             self.uri, self.name, self.local))
-        run(["git", "init", "."], self.local)
+        run(["git", "init", "--bare", "."], self.local)
         if "origin" not in run(["git", "remote", "-v"], self.local):
             run(["git", "remote", "add", "origin", self.uri], self.local)
 
@@ -406,8 +406,6 @@ class RepoIndexer():
         run(["git", "-c",
              "credential.helper=%s" % self.credentials_helper_path,
              "fetch", "origin", self.branch], self.local)
-        run(["git", "branch", "-f", self.branch, "FETCH_HEAD"], self.local)
-        run(["git", "checkout", "-f", "FETCH_HEAD"], self.local)
 
     def get_refs(self):
         refs = run([
@@ -426,7 +424,7 @@ class RepoIndexer():
             lambda x: x[1].startswith('refs/tags/'), self.refs)
 
     def git_get_commit_obj(self):
-        self.commits = get_all_shas(self.local)
+        self.commits = get_all_shas(self.local, 'origin/%s' % self.branch)
 
     def run_workers(self, shas, workers):
         BULK_CHUNK = 1000
@@ -444,7 +442,7 @@ class RepoIndexer():
                 to_process.append(shas)
                 break
         options = [
-            (self.local, self.ref_id, stp) for stp in to_process]
+            (self.local, self.ref_id, stp, self.branch) for stp in to_process]
         worker_pool = mp.Pool(workers)
         worker_pool.map(process_commits, options)
         worker_pool.terminate()
