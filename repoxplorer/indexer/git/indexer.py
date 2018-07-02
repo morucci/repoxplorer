@@ -15,6 +15,7 @@
 import os
 import re
 import copy
+import stat
 import cPickle
 import logging
 import subprocess
@@ -60,6 +61,11 @@ RESERVED_METADATA_KEYS = (
 )
 
 SEEN_REFS_CACHED_PATH = '/tmp/seen-refs.cached'
+
+CREDENTIALS_HELPER = """#!/usr/bin/env python
+print("username=fakeusername")
+print("password=fakepassword")
+"""
 
 
 def run(cmd, path):
@@ -369,6 +375,10 @@ class RepoIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
+        self.credentials_helper_path = os.path.join(
+            conf.git_store, 'chelper.py')
+        open(self.credentials_helper_path, "w").write(CREDENTIALS_HELPER)
+        os.chmod(self.credentials_helper_path, stat.S_IRWXU)
 
     def __str__(self):
         return 'Git indexer of %s' % self.ref_id
@@ -400,13 +410,16 @@ class RepoIndexer():
     def git_fetch_branch(self):
         logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
                                          self.branch))
-        run(["git", "fetch", "origin", self.branch], self.local)
+        run(["git", "-c",
+             "credential.helper=%s" % self.credentials_helper_path,
+             "fetch", "origin", self.branch], self.local)
         run(["git", "branch", "-f", self.branch, "FETCH_HEAD"], self.local)
         run(["git", "checkout", "-f", "FETCH_HEAD"], self.local)
 
     def get_refs(self):
-        refs = run(["git", "ls-remote",
-                   "origin"], self.local).splitlines()
+        refs = run([
+            "git", "-c", "credential.helper=%s" % self.credentials_helper_path,
+            "ls-remote", "origin"], self.local).splitlines()
         self.refs = []
         for r in refs:
             self.refs.append(r.split('\t'))
