@@ -14,6 +14,7 @@
 
 import os
 import re
+import sys
 import copy
 import cPickle
 import logging
@@ -369,6 +370,8 @@ class RepoIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
+        self.credentials_helper_path = os.path.join(
+            sys.prefix, 'bin', 'repoxplorer-git-credentials-helper')
 
     def __str__(self):
         return 'Git indexer of %s' % self.ref_id
@@ -400,13 +403,16 @@ class RepoIndexer():
     def git_fetch_branch(self):
         logger.debug("Fetch %s %s:%s" % (self.name, self.uri,
                                          self.branch))
-        run(["git", "fetch", "origin", self.branch], self.local)
+        run(["git", "-c",
+             "credential.helper=%s" % self.credentials_helper_path,
+             "fetch", "origin", self.branch], self.local)
         run(["git", "branch", "-f", self.branch, "FETCH_HEAD"], self.local)
         run(["git", "checkout", "-f", "FETCH_HEAD"], self.local)
 
     def get_refs(self):
-        refs = run(["git", "ls-remote",
-                   "origin"], self.local).splitlines()
+        refs = run([
+            "git", "-c", "credential.helper=%s" % self.credentials_helper_path,
+            "ls-remote", "origin"], self.local).splitlines()
         self.refs = []
         for r in refs:
             self.refs.append(r.split('\t'))
