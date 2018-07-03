@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1021d299_37b73f26",
+        "filename": "repoxplorer/indexer/git/indexer.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-07-03T09:14:54Z",
+      "side": 1,
+      "message": "Wouldn\u0027t it be easier to have a single credentials helper set up somewhere in the repoxplorer tree, and use that all the time, instead of deploying on every git store?",
+      "range": {
+        "startLine": 378,
+        "startChar": 0,
+        "endLine": 381,
+        "endChar": 60
+      },
+      "revId": "ff74f346f88d31cd70f9949a7210ba5204960e41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
