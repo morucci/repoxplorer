@@ -22,6 +22,30 @@
       "revId": "ff74f346f88d31cd70f9949a7210ba5204960e41",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "09ef8bce_3912c7b8",
+        "filename": "repoxplorer/indexer/git/indexer.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-07-03T12:51:56Z",
+      "side": 1,
+      "message": "Yes you are right, I amended the patch to install the helper by setup.py.",
+      "parentUuid": "1021d299_37b73f26",
+      "range": {
+        "startLine": 378,
+        "startChar": 0,
+        "endLine": 381,
+        "endChar": 60
+      },
+      "revId": "ff74f346f88d31cd70f9949a7210ba5204960e41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
