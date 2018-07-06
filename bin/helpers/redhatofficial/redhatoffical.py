@@ -17,13 +17,14 @@
 
 import os
 import sys
+import json
 import yaml
 import github3
 import argparse
 import requests
 
 # This is a small tool to read the redhatofficial project file
-# and create a repoXplorer compatible projects.yaml file.
+# and create a repoXplorer compatible projects.yaml files.
 
 INFO_URI = (
         "https://raw.githubusercontent.com/"
@@ -66,15 +67,14 @@ def fetch_repos(org, template, repo=None, query=None):
 
 
 if __name__ == "__main__":
-    gp = yaml.safe_load(requests.get(INFO_URI).text)
-
-    projects = {}
-    templates = {}
-    struct = {'projects': projects,
-              'project-templates': templates}
+    gp = json.loads(requests.get(INFO_URI).text)
 
     c = len(gp)
     for project in gp:
+        projects = {}
+        templates = {}
+        struct = {'projects': projects,
+                  'project-templates': templates}
         print(project)
         print("Remain: %d" % c)
         c -= 1
@@ -108,18 +108,14 @@ if __name__ == "__main__":
             "tags": [project['category']]
         }
 
-    path = 'redhatoffical.yaml'
-    if args.output_path:
-        path = os.path.join(os.path.expanduser(args.output_path), path)
+        path = '%s.yaml' % project['projectName'].replace('/', '-')
+        if args.output_path:
+            path = os.path.join(os.path.expanduser(args.output_path), path)
 
-    with open(path, 'w') as fd:
-        fd.write(yaml.safe_dump(struct,
-                                default_flow_style=False))
-    print("")
-    print("RedHatOffical source repositories details"
-          " has been written to %s" % path)
+        with open(path, 'w') as fd:
+            fd.write(yaml.safe_dump(struct,
+                                    default_flow_style=False))
 
-    print("Please edit the yaml file if needed (like adding additional"
-          " branches to index, defines custom releases, ...)")
+        print("Source repositories details has been written to %s" % path)
 
     sys.exit(0)
