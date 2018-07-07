@@ -26,6 +26,11 @@ import requests
 # This is a small tool to read the redhatofficial project file
 # and create a repoXplorer compatible projects.yaml files.
 
+
+class NoRepoException(Exception):
+    pass
+
+
 INFO_URI = (
         "https://raw.githubusercontent.com/"
         "RedHatOfficial/RedHatOfficial.github.io/"
@@ -63,6 +68,8 @@ def fetch_repos(org, template, repo=None, query=None):
             "branches": [r.default_branch],
         }
         data[r.name]["template"] = template
+    if not data:
+        raise NoRepoException()
     return data
 
 
@@ -97,10 +104,14 @@ if __name__ == "__main__":
             repo = uris[-1]
             orguri = "/".join(uris[0:-1])
 
-        projects[project['projectName']] = {
-            'repos': fetch_repos(org, project['projectName'], repo, query),
-            'description': project['projectDescription'],
-        }
+        try:
+            projects[project['projectName']] = {
+                'repos': fetch_repos(org, project['projectName'], repo, query),
+                'description': project['projectDescription'],
+            }
+        except NoRepoException:
+            print('No repository for this project. Skip')
+            continue
         templates[project['projectName']] = {
             "branches": ["master"],
             "uri": orguri + "/%(name)s",
