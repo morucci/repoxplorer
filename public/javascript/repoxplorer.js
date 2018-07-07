@@ -227,7 +227,7 @@ function fill_info_box(args) {
     $("#infos-last_commit").append('<b>Date of last commit:</b> ' + moment(args.last).format("YYYY-MM-DD HH:mm:ss"));
     $("#infos-lines_changed").append('<b>Lines changed:</b> ' + args.line_modifieds_amount);
     $("#infos-author_name").append('<b>Full Name:</b> ' + args.name);
-    $("#infos-gravatar").append('<img src="https://www.gravatar.com/avatar/' + args.gravatar + '?s=150" title="' + args.name + '">');
+    $("#infos-gravatar").append('<img class="img-responsive" src="https://www.gravatar.com/avatar/' + args.gravatar + '?s=150" title="' + args.name + '">');
     $("#infos-projects_amount").append('<b>Projects contributed:</b> ' + args.projects_amount);
     $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + args.repos_amount);
     $("#infos-known_emails").append('<b>Known emails:</b> ' + args.mails_amount);
@@ -367,7 +367,7 @@ function build_top_authors_head(top, label) {
         top_h += '<div align="center"><p><b><h3>' + pos + '</h3></b></p></div>';
         top_h += '<div align="center"><p><b><h4>' + top[i].amount + ' ' + label + ' </h4></b></p></div>';
         top_h += '<div align="center"><a href=contributor.html?cid=' + top[i].cid + '>' +
-            '<img src="https://www.gravatar.com/avatar/' +
+            '<img class="img-responsive" src="https://www.gravatar.com/avatar/' +
             top[i].gravatar + '?s=150" title=' + top[i].name + '></a></div>';
         top_h += '<div align="center"><p><b><h3><a href=contributor.html?cid=' +
             top[i].cid + '>' + top[i].name + '</a></h3></b></p></div>';
