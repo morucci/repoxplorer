@@ -77,6 +77,7 @@ class GroupsController(object):
                 query_kwargs = {
                     'mails': data['emails'],
                     'merge_commit': False,
+                    'domains': data.get('domains', []),
                     'repos': p_filter,
                 }
                 projects = Projects()
