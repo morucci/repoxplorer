@@ -185,7 +185,7 @@ class TopAuthorsController(object):
 class TopProjectsController(object):
 
     def gby(self, ci, pi, query_kwargs,
-            inc_repos_detail, f1, f2):
+            inc_repos_detail, f1, f2, limit):
         repos = f1(**query_kwargs)[1]
         projects = utils.get_projects_from_references(pi, repos)
         if inc_repos_detail:
@@ -213,20 +213,27 @@ class TopProjectsController(object):
                     pi, [item[0]])
             ret[-1]["name"] = ":".join(item[0].split(':')[-2:])
 
+        if limit is None:
+            limit = 10
+        else:
+            limit = int(limit)
+        # If limit set to a negative value all results will be returned
+        if limit >= 0:
+            ret = ret[:limit]
         return ret
 
-    def gbycommits(self, ci, pi, query_kwargs, inc_repos_detail):
+    def gbycommits(self, ci, pi, query_kwargs, inc_repos_detail, limit):
         ret = self.gby(ci, pi, query_kwargs, inc_repos_detail,
-                       ci.get_repos, ci.get_commits_amount)
+                       ci.get_repos, ci.get_commits_amount, limit)
         return ret
 
-    def gbylchanged(self, ci, pi, query_kwargs, inc_repos_detail):
+    def gbylchanged(self, ci, pi, query_kwargs, inc_repos_detail, limit):
 
         def f2(**kwargs):
             return ci.get_line_modifieds_stats(**kwargs)[1]['sum']
 
         ret = self.gby(ci, pi, query_kwargs, inc_repos_detail,
-                       ci.get_top_repos_by_lines, f2)
+                       ci.get_top_repos_by_lines, f2, limit)
         return ret
 
     @expose('json')
@@ -234,7 +241,7 @@ class TopProjectsController(object):
     def bylchanged(self, pid=None, tid=None, cid=None, gid=None,
                    dfrom=None, dto=None, inc_merge_commit=None,
                    inc_repos=None, metadata=None, exc_groups=None,
-                   inc_repos_detail=None, inc_groups=None):
+                   inc_repos_detail=None, inc_groups=None, limit=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -246,14 +253,14 @@ class TopProjectsController(object):
             exc_groups, inc_groups)
 
         return self.gbylchanged(c, projects_index, query_kwargs,
-                                inc_repos_detail)
+                                inc_repos_detail, limit)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')
     def bycommits(self, pid=None, tid=None, cid=None, gid=None,
                   dfrom=None, dto=None, inc_merge_commit=None,
                   inc_repos=None, metadata=None, exc_groups=None,
-                  inc_repos_detail=None, inc_groups=None):
+                  inc_repos_detail=None, inc_groups=None, limit=None):
 
         c = Commits(index.Connector())
         projects_index = Projects()
@@ -265,7 +272,7 @@ class TopProjectsController(object):
             exc_groups, inc_groups)
 
         return self.gbycommits(c, projects_index, query_kwargs,
-                               inc_repos_detail)
+                               inc_repos_detail, limit)
 
 
 class TopsController(object):

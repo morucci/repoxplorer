@@ -849,6 +849,11 @@ class TestTopsController(FunctionalTest):
             assert response.status_int == 200
             self.assertDictEqual(response.json[0], expected_top1_d)
             self.assertEqual(len(response.json), 1)
+            # Check the limit attribute
+            response = self.app.get(
+                '/api/v1/tops/projects/bycommits?cid=%s&limit=0' % cid)
+            assert response.status_int == 200
+            self.assertEqual(len(response.json), 0)
 
             # Validate the CSV endpoint mode
             # First convert all expected dict values to str
@@ -901,6 +906,11 @@ class TestTopsController(FunctionalTest):
             assert response.status_int == 200
             self.assertDictEqual(response.json[0], expected_top1_d)
             self.assertEqual(len(response.json), 1)
+            # Check the limit attribute
+            response = self.app.get(
+                '/api/v1/tops/projects/bylchanged?cid=%s&limit=0' % cid)
+            assert response.status_int == 200
+            self.assertEqual(len(response.json), 0)
 
             # Validate the CSV endpoint mode
             # First convert all expected dict values to str

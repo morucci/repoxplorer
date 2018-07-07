@@ -1150,6 +1150,7 @@ Only one of:
 
 - **inc_repos_detail**: Set to *true* or unset to include or not
   repositories details in the response.
+- **limit**: Max amount of items returned (default: 10).
 
 #### tops/authors endpoint only
 
