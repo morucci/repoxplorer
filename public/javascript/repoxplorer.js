@@ -399,7 +399,7 @@ function build_top_authors_body(top, btid_more, limit) {
     top_b += '<div class="col-md-5"></div>';
     return top_b;
 }
-function build_top_projects_table(top, inc_repos_detail) {
+function build_top_projects_table(top, inc_repos_detail, btid_more, limit) {
     top_b = '<table class="table table-striped">';
     if (inc_repos_detail == true) {
     top_b += '<tr><th class="col-md-1">Rank</th><th>Project</th><th>Name</th><th>Amount</th></tr>';
@@ -422,6 +422,11 @@ function build_top_projects_table(top, inc_repos_detail) {
         top_b += '</tr>';
     }
     top_b += '</table>';
+    top_b += '<div class="col-md-5"></div>';
+    top_b += '<div class="col-md-1">';
+    top_b += '<button type="button" id="' + btid_more + '" class="btn btn-link">display more</button>';
+    top_b += '</div>';
+    top_b += '<div class="col-md-5"></div>';
     return top_b;
 }
 
@@ -937,40 +942,56 @@ function contributor_page_init() {
                 });
 
             // Fill the top project by commits
-            $("#topprojects-bycommits-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_projects_commit_deferred = get_top(
-                pid, undefined, cid, undefined, 'projects', 'bycommits');
-            top_projects_commit_deferred
-                .done(function(top) {
-                    $("#topprojects-bycommits-progress").empty();
-                    top_t = build_top_projects_table(
-                        top, inc_repos_detail);
-                    $("#topprojects").append(top_t);
-                })
-                .fail(function(err) {
-                    $("#topprojects-bycommits-progress").empty();
-                    $("#topprojects").empty();
-                    console.log(err);
-                });
+            function fill_top_projects_by_commits(limit) {
+              $("#topprojects-bycommits-progress").append(
+                  '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+              var top_projects_commit_deferred = get_top(
+                  pid, undefined, cid, undefined, 'projects', 'bycommits', limit);
+              top_projects_commit_deferred
+                  .done(function(top) {
+                      $("#topprojects-bycommits-progress").empty();
+                      $("#topprojects").empty();
+                      top_t = build_top_projects_table(
+                          top, inc_repos_detail, 'tabpc-dmore');
+                      $("#topprojects").append(top_t);
+                      $('#tabpc-dmore').click(function() {
+                          limit = limit + 10;
+                          fill_top_projects_by_commits(limit);
+                      });
+                  })
+                  .fail(function(err) {
+                      $("#topprojects-bycommits-progress").empty();
+                      $("#topprojects").empty();
+                      console.log(err);
+                  });
+              }
+            fill_top_projects_by_commits(1);
 
             // Fill the top project by lines changed
-            $("#topprojects-bylchanged-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_projects_lchanged_deferred = get_top(
-                pid, undefined, cid, undefined, 'projects', 'bylchanged');
-            top_projects_lchanged_deferred
-                .done(function(top) {
-                    $("#topprojects-bylchanged-progress").empty();
-                    top_t = build_top_projects_table(
-                        top, inc_repos_detail);
-                    $("#topprojects_m").append(top_t);
-                })
-                .fail(function(err) {
-                    $("#topprojects-bylchanged-progress").empty();
-                    $("#topprojects_m").empty();
-                    console.log(err);
-                });
+            function fill_top_projects_by_lchanged(limit) {
+              $("#topprojects-bylchanged-progress").append(
+                  '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+              var top_projects_lchanged_deferred = get_top(
+                  pid, undefined, cid, undefined, 'projects', 'bylchanged', limit);
+              top_projects_lchanged_deferred
+                  .done(function(top) {
+                      $("#topprojects-bylchanged-progress").empty();
+                      $("#topprojects_m").empty();
+                      top_t = build_top_projects_table(
+                          top, inc_repos_detail, 'tabplc-dmore');
+                      $("#topprojects_m").append(top_t);
+                      $('#tabplc-dmore').click(function() {
+                          limit = limit + 10;
+                          fill_top_projects_by_lchanged(limit);
+                        });
+                  })
+                  .fail(function(err) {
+                      $("#topprojects-bylchanged-progress").empty();
+                      $("#topprojects_m").empty();
+                      console.log(err);
+                  });
+              }
+            fill_top_projects_by_lchanged(1);
         } else {
             $("#empty-warning").show();
             $("#infos-duration").hide();
@@ -1152,41 +1173,56 @@ function group_page_init(commits_amount) {
                 });
 
             // Fill the top project by commits
-            $("#topprojects-bycommits-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_projects_commit_deferred = get_top(
-                pid, undefined, undefined, gid, 'projects', 'bycommits');
-            top_projects_commit_deferred
-                .done(function(top) {
-                    $("#topprojects-bycommits-progress").empty();
-                    top_t = build_top_projects_table(
-                        top, inc_repos_detail);
-                    $("#topprojects").append(top_t);
-                })
-                .fail(function(err) {
-                    $("#topprojects-bycommits-progress").empty();
-                    $("#topprojects").empty();
-                    console.log(err);
-                });
+            function fill_top_projects_by_commits(limit) {
+              $("#topprojects-bycommits-progress").append(
+                  '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+              var top_projects_commit_deferred = get_top(
+                  pid, undefined, undefined, gid, 'projects', 'bycommits', limit);
+              top_projects_commit_deferred
+                  .done(function(top) {
+                      $("#topprojects-bycommits-progress").empty();
+                      $("#topprojects").empty();
+                      top_t = build_top_projects_table(
+                          top, inc_repos_detail, 'tabpc-dmore');
+                      $("#topprojects").append(top_t);
+                      $('#tabpc-dmore').click(function() {
+                          limit = limit + 10;
+                          fill_top_projects_by_commits(limit);
+                      });
+                  })
+                  .fail(function(err) {
+                      $("#topprojects-bycommits-progress").empty();
+                      $("#topprojects").empty();
+                      console.log(err);
+                  });
+              }
+            fill_top_projects_by_commits(10);
 
             // Fill the top project by lines changed
-            $("#topprojects-bylchanged-progress").append(
-                '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-            var top_projects_lchanged_deferred = get_top(
-                pid, undefined, undefined, gid, 'projects', 'bylchanged');
-            top_projects_lchanged_deferred
-                .done(function(top) {
-                    $("#topprojects-bylchanged-progress").empty();
-                    top_t = build_top_projects_table(
-                        top, inc_repos_detail);
-                    $("#topprojects_m").append(top_t);
-                })
-                .fail(function(err) {
-                    $("#topprojects-bylchanged-progress").empty();
-                    $("#topprojects_m").empty();
-                    console.log(err);
-                });
-
+            function fill_top_projects_by_lchanged(limit) {
+              $("#topprojects-bylchanged-progress").append(
+                  '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+              var top_projects_lchanged_deferred = get_top(
+                  pid, undefined, undefined, gid, 'projects', 'bylchanged', limit);
+              top_projects_lchanged_deferred
+                  .done(function(top) {
+                      $("#topprojects-bylchanged-progress").empty();
+                      $("#topprojects_m").empty();
+                      top_t = build_top_projects_table(
+                          top, inc_repos_detail, 'tabplc-dmore');
+                      $("#topprojects_m").append(top_t);
+                      $('#tabplc-dmore').click(function() {
+                          limit = limit + 10;
+                          fill_top_projects_by_lchanged(limit);
+                        });
+                  })
+                  .fail(function(err) {
+                      $("#topprojects-bylchanged-progress").empty();
+                      $("#topprojects_m").empty();
+                      console.log(err);
+                  });
+              }
+            fill_top_projects_by_lchanged(10);
 
             // Fill the top authors by commits
             function fill_top_authors_by_commits(limit) {
