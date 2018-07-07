@@ -110,8 +110,10 @@ class InfosController(object):
         }
 
         tops_ctl = tops.TopProjectsController()
-        top_projects = tops_ctl.gbycommits(c, projects, query_kwargs, False)
-        top_repos = tops_ctl.gbycommits(c, projects, query_kwargs, True)
+        top_projects = tops_ctl.gbycommits(
+            c, projects, query_kwargs, False, -1)
+        top_repos = tops_ctl.gbycommits(
+            c, projects, query_kwargs, True, -1)
 
         infos = {}
         infos['name'] = name

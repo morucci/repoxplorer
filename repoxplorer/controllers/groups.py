@@ -83,9 +83,9 @@ class GroupsController(object):
                 projects = Projects()
                 tops_ctl = tops.TopProjectsController()
                 top_projects = tops_ctl.gbycommits(
-                    ci, projects, query_kwargs, False)
+                    ci, projects, query_kwargs, False, -1)
                 top_repos = tops_ctl.gbycommits(
-                    ci, projects, query_kwargs, True)
+                    ci, projects, query_kwargs, True, -1)
                 rg['projects_amount'] = len(top_projects)
                 rg['repos_amount'] = len(top_repos)
 
