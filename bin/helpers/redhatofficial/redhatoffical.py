@@ -116,7 +116,6 @@ if __name__ == "__main__":
             "branches": ["master"],
             "uri": orguri + "/%(name)s",
             "gitweb": orguri + "/%(name)s/commit/%%(sha)s",
-            "tags": [project['category']]
         }
 
         path = '%s.yaml' % project['projectName'].replace('/', '-')
