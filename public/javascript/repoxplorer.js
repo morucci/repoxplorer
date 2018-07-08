@@ -457,6 +457,14 @@ function user_page_init() {
         if (sgroup.id.split(' ')[1] != semail.value) { return; }
         if (sgroup.value != '') {
           group_obj = {'group': sgroup.value}
+          dfrom = sgroup.parentNode.parentNode.parentNode.childNodes[1].childNodes[1].childNodes[0].value
+          if (dfrom != '') {
+            group_obj['start-date'] = moment(dfrom, "YYYY-MM-DD").valueOf() / 1000
+          }
+          dto = sgroup.parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value
+          if (dto != '') {
+            group_obj['end-date'] = moment(dto, "YYYY-MM-DD").valueOf() / 1000
+          }
           email_obj.groups.push(group_obj)
         }
       });
@@ -523,11 +531,11 @@ function user_page_init() {
 
           // For each group add a selector to the form
           email_html_form += '<div id="groups-list-'+i+'">'
-          $.each(obj.groups, function(i, group) {
-            email_html_form += '<div class="form-group">'
-            email_html_form += '<label for="group ' + obj.email + ' ' + i + '" class="col-md-5 control-label">Member of group</label>' +
+          $.each(obj.groups, function(j, group) {
+            email_html_form += '<div><div class="form-group">'
+            email_html_form += '<label for="group ' + obj.email + ' ' + j + '" class="col-md-5 control-label">Member of group</label>' +
             '<div class="col-md-2">' +
-            '<select class="form-control" id="group ' + obj.email + ' ' + i +'">'
+            '<select class="form-control" id="group ' + obj.email + ' ' + j +'">'
             $.each(gdata, function(gname) {
               selected = ''
               if (gname == group.group) {
@@ -536,9 +544,17 @@ function user_page_init() {
               email_html_form += '<option value="' + gname + '"' + selected + '>' + gname + '</option>'
             });
             email_html_form += '</select></div>'
-            email_html_form += '<button id="remove-'+i+'" type="button" class="btn btn-default btn-md">'
+            email_html_form += '<button id="remove-'+j+'" type="button" class="btn btn-default btn-md">'
             email_html_form += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
             email_html_form += '</button>'
+            email_html_form += '</div>'
+            email_html_form += '<div class="form-group">'
+            email_html_form += '<label class="col-md-5 control-label" for="fromdatepicker-' + i + '-' + j + '">From date</label>'
+            email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + i + '-' + j + '"></span>'
+            email_html_form += '</div>'
+            email_html_form += '<div class="form-group">'
+            email_html_form += '<label class="col-md-5 control-label" for="todatepicker-' + i + '-' + j + '">To date</label>'
+            email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + i + '-' + j + '"></span>'
             email_html_form += '</div>'
           });
           email_html_form += '</div>'
@@ -546,17 +562,29 @@ function user_page_init() {
           $("#emails").append(email_html_form)
 
           // do the remove selector bind afterward, to make it works
-          $.each(obj.groups, function(i, group) {
-            $("#remove-"+i).on("click", function(){
-              $(this).parent().remove();
+          $.each(obj.groups, function(j, group) {
+            $("#remove-"+j).on("click", function(){
+              $(this).parent().parent().remove();
             });
+            $("#fromdatepicker-" + i + '-' + j).datepicker(
+                {dateFormat: "yy-mm-dd",
+                 changeMonth: true,
+                 changeYear: true});
+            $("#fromdatepicker-" + i + '-' + j).datepicker(
+              'setDate', moment(group['start-date'] * 1000).format("YYYY-MM-DD"));
+            $("#todatepicker-" + i + '-' + j).datepicker(
+                {dateFormat: "yy-mm-dd",
+                 changeMonth: true,
+                 changeYear: true});
+            $("#todatepicker-" + i + '-' + j).datepicker(
+              'setDate', moment(group['end-date'] * 1000).format("YYYY-MM-DD"));
           });
 
           // Add the binding to add new group selector
           $("#email-"+i).on("click", function(e){
             eindex = e.currentTarget.id.split('-')[1]
             email = e.currentTarget.getAttribute("data-email")
-            group_selector = '<div class="form-group">'
+            group_selector = '<div><div class="form-group">'
             mid = Math.floor(Math.random() * (1000 - 100) + 100);
             group_selector += '<label for="group ' + email + ' ' + mid + '" class="col-md-5 control-label">Member of group</label>' +
             '<div class="col-md-2">' +
@@ -570,10 +598,30 @@ function user_page_init() {
             group_selector += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
             group_selector += '</button>'
             group_selector += '</div>'
+            group_selector += '<div class="form-group">'
+            group_selector += '<label class="col-md-5 control-label" for="fromdatepicker-' + mid + '">From date</label>'
+            group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + mid + '"></span>'
+            group_selector += '</div>'
+            group_selector += '<div class="form-group">'
+            group_selector += '<label class="col-md-5 control-label" for="todatepicker-' + mid + '">To date</label>'
+            group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + mid + '"></span>'
+            group_selector += '</div>'
+
+            group_selector += '</div>'
             $("#groups-list-"+eindex).append(group_selector)
             $("#remove-"+mid).on("click", function(){
-              $(this).parent().remove();
+              $(this).parent().parent().remove();
             });
+            $("#fromdatepicker-" + mid).datepicker(
+                {dateFormat: "yy-mm-dd",
+                 changeMonth: true,
+                 changeYear: true});
+            $("#fromdatepicker-" + mid).datepicker('setDate', undefined);
+            $("#todatepicker-" + mid).datepicker(
+                {dateFormat: "yy-mm-dd",
+                 changeMonth: true,
+                 changeYear: true});
+            $("#todatepicker-" + mid).datepicker('setDate', undefined);
           });
         });
         $("#settings-progress").hide();
