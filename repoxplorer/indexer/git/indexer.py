@@ -320,15 +320,16 @@ class RefsCleaner():
     def find_refs_to_clean(self):
         prjs = self.projects.get_projects_raw()
         refs_ids = set()
-        for pid, data in prjs.items():
-            for rid, repo in data['repos'].items():
+        for pid, pdata in prjs.items():
+            for rid, repo in pdata['repos'].items():
                 for branch in repo['branches']:
                     refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
         if not os.path.isfile(self.seen_refs_path):
-            data = set()
+            self.data = set()
         else:
-            data = cPickle.load(file(self.seen_refs_path))
-        refs_to_clean = data - refs_ids
+            self.data = cPickle.load(file(self.seen_refs_path))
+        refs_to_clean = self.data - refs_ids
+        logger.info("Found %s refs to clean." % len(refs_to_clean))
         return refs_to_clean
 
     def clean(self, refs):
@@ -337,10 +338,16 @@ class RefsCleaner():
             ids = [c['_id'] for c in
                    self.c.get_commits(repos=[ref], scan=True)]
             if not ids:
+                self.remove_from_seen_refs(ref)
                 continue
-            logger.info("Ref %s no longer referenced. Clean %s cmts" %
+            logger.info("Ref %s no longer referenced. Cleaning %s cmts." %
                         (ref, len(ids)))
             delete_commits(self.c, ref, ids, ref)
+            self.remove_from_seen_refs(ref)
+
+    def remove_from_seen_refs(self, ref_id):
+        self.data.remove(ref_id)
+        cPickle.dump(self.data, file(self.seen_refs_path, 'w'))
 
 
 class RepoIndexer():
@@ -380,7 +387,7 @@ class RepoIndexer():
         # Keep a cache a each ref that have been indexed
         # This is use later to discover seen refs no longer in projects.yaml
         # In that case a removal from the backend will be performed
-        logger.debug("Save ref %s into seen_refs file" % self.uri)
+        logger.debug("Save ref %s into seen_refs file" % self.ref_id)
         if not os.path.isfile(self.seen_refs_path):
             data = set()
         else:
