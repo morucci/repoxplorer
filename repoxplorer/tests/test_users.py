@@ -35,7 +35,7 @@ class TestUsers(TestCase):
                 {'email': 'saboten@domain2',
                  'groups': [
                      {'group': 'ugroup1',
-                      'start-date': '2016-01-01',
+                      'begin-date': '2016-01-01',
                       'end-date': '2016-01-09'}],
                  }],
             'last_cnx': 1410456005}

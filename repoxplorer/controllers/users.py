@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import base64
 
 from pecan import conf
 from pecan import abort
@@ -41,6 +42,11 @@ class UsersController(RestController):
             request.remote_user = request.headers.get('Remote-User')
         if not request.remote_user:
             request.remote_user = request.headers.get('X-Remote-User')
+        if request.remote_user == '(null)':
+            if request.headers.get('Authorization'):
+                auth_header = request.headers.get('Authorization').split()[1]
+                request.remote_user = base64.b64decode(
+                    auth_header).split(':')[0]
         if (request.remote_user == "admin" and
                 request.headers.get('Admin-Token')):
             sent_admin_token = request.headers.get('Admin-Token')
@@ -63,7 +69,7 @@ class UsersController(RestController):
             ('groups', False))
         group_keys = (
             ('group', True),
-            ('start-date', False),
+            ('begin-date', False),
             ('end-date', False))
         # All keys must be provided
         if set(data.keys()) != set(mandatory_keys):
