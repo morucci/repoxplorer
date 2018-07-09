@@ -1190,9 +1190,8 @@ function group_page_init(commits_amount) {
 
             // Fill the jumbotron
             $("#jumbotron_block").empty();
-            $("#jumbotron_block").append(
-                "<h2><a href=group.html?gid=" + gid + ">" + gid + "</a>'s group stats</h2>"
-            );
+            link = '<h2><a href="group.html?gid=' + gid + '">' + gid + '</a>\'s group stats</h2>'
+            $("#jumbotron_block").append(link);
 
             // Fill the histo commits selector
             $("#history-progress").append(
