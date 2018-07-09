@@ -14,6 +14,8 @@
 #  limitations under the License.
 
 
+import base64
+
 from pecan import conf
 from pecan import abort
 from pecan import expose
@@ -41,6 +43,11 @@ class UsersController(RestController):
             request.remote_user = request.headers.get('Remote-User')
         if not request.remote_user:
             request.remote_user = request.headers.get('X-Remote-User')
+        if request.remote_user == '(null)':
+            if request.headers.get('Authorization'):
+                auth_header = request.headers.get('Authorization').split()[1]
+                request.remote_user = base64.b64decode(
+                    auth_header).split(':')[0]
         if (request.remote_user == "admin" and
                 request.headers.get('Admin-Token')):
             sent_admin_token = request.headers.get('Admin-Token')
