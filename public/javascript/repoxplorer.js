@@ -483,7 +483,7 @@ function user_page_init() {
       success: function(){
         $("#submit-msg").empty()
         $("#submit-msg").addClass("alert-success");
-        $("#submit-msg").append("Your settings has been submitted successfuly");
+        $("#submit-msg").append("Your settings have been submitted successfuly");
         $("#submit-box").show();
         $("#settings-progress").hide();
       },
