@@ -339,7 +339,7 @@ class Contributors(YAMLDefinition):
             if 'groups' in email.keys():
                 for group in email['groups']:
                     groups[group['group']] = {}
-                    for elm in ('start-date', 'end-date'):
+                    for elm in ('begin-date', 'end-date'):
                         if elm in group.keys():
                             groups[group['group']][elm] = group[elm]
         return ident['uid'], data

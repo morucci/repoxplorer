@@ -374,8 +374,8 @@ class TestUsersController(FunctionalTest):
                 {'email': 'saboten@domain1',
                  'groups': [
                      {'group': 'ugroup2',
-                      'start-date': '2016-01-01',
-                      'end-date': '2016-01-09'}
+                      'begin-date': '1410456005',
+                      'end-date': '1410476005'}
                  ]}
             ]}
         response = self.app.put_json(
@@ -436,8 +436,8 @@ class TestUsersController(FunctionalTest):
                 {'email': 'saboten@domain1',
                  'groups': [
                     {'group': 'ugroup2',
-                     'start-date': '2016-01-01',
-                     'end-date': '2016-01-09'}
+                     'begin-date': '1410456005',
+                     'end-date': '1410476005'}
                      ]
                  }
             ]
