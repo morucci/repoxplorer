@@ -342,7 +342,16 @@ class RefsCleaner():
                 continue
             logger.info("Ref %s no longer referenced. Cleaning %s cmts." %
                         (ref, len(ids)))
-            delete_commits(self.c, ref, ids, ref)
+            # Do it by bulk of 10000 to not hurt memory
+            bulk = 10000
+            i = 0
+            while True:
+                _ids = ids[i:i+bulk]
+                if not _ids:
+                    break
+                else:
+                    delete_commits(self.c, ref, _ids, ref)
+                    i += bulk
             self.remove_from_seen_refs(ref)
 
     def remove_from_seen_refs(self, ref_id):
