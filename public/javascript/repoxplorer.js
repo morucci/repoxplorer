@@ -459,7 +459,7 @@ function user_page_init() {
           group_obj = {'group': sgroup.value}
           dfrom = sgroup.parentNode.parentNode.parentNode.childNodes[1].childNodes[1].childNodes[0].value
           if (dfrom != '') {
-            group_obj['start-date'] = moment(dfrom, "YYYY-MM-DD").valueOf() / 1000
+            group_obj['begin-date'] = moment(dfrom, "YYYY-MM-DD").valueOf() / 1000
           }
           dto = sgroup.parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value
           if (dto != '') {
@@ -570,9 +570,9 @@ function user_page_init() {
                 {dateFormat: "yy-mm-dd",
                  changeMonth: true,
                  changeYear: true});
-            if ('start-date' in group) {
+            if ('begin-date' in group) {
               $("#fromdatepicker-" + i + '-' + j).datepicker(
-                'setDate', moment(group['start-date'] * 1000).format("YYYY-MM-DD"));
+                'setDate', moment(group['begin-date'] * 1000).format("YYYY-MM-DD"));
             }
             $("#todatepicker-" + i + '-' + j).datepicker(
                 {dateFormat: "yy-mm-dd",

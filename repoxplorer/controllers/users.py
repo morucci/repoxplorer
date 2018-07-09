@@ -63,7 +63,7 @@ class UsersController(RestController):
             ('groups', False))
         group_keys = (
             ('group', True),
-            ('start-date', False),
+            ('begin-date', False),
             ('end-date', False))
         # All keys must be provided
         if set(data.keys()) != set(mandatory_keys):
