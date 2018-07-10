@@ -18,6 +18,23 @@ function get_value_of_key(target, key) {
     return false;
 }
 
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+function escapeHtml(string) {
+  return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
+}
+
 function get_username() {
     var username = '';
     if ( is_cookies_enabled() ) {
@@ -29,7 +46,7 @@ function get_username() {
             }
         }
     };
-    return username;
+    return escapeHtml(username);
 };
 
 function get_user_infos(login) {
@@ -297,14 +314,14 @@ function get_infos(pid, tid, cid, gid) {
                 ib_data.authors_amount = idata.authors_amount;
                 ib_data.line_modifieds_amount = idata.line_modifieds_amount;
                 if (cid) {
-                    ib_data.name = cdata.name;
-                    ib_data.gravatar = cdata.gravatar;
+                    ib_data.name = escapeHtml(cdata.name);
+                    ib_data.gravatar = escapeHtml(cdata.gravatar);
                     ib_data.projects_amount = cdata.projects_amount;
                     ib_data.repos_amount = cdata.repos_amount;
                     ib_data.mails_amount = cdata.mails_amount;
                 }
                 if (gid) {
-                    ib_data.description = gdata[gid].description;
+                    ib_data.description = escapeHtml(gdata[gid].description);
                     ib_data.members_amount = Object.keys(gdata[gid].members).length;
                     ib_data.projects_amount = gdata[gid].projects_amount;
                     ib_data.repos_amount = gdata[gid].repos_amount;
