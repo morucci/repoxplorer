@@ -479,6 +479,13 @@ class TestUsersController(FunctionalTest):
             '/api/v1/users/saboten', data, headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
 
+        # Not authorized to change its full name if > 100 chars
+        ndata = copy.deepcopy(data)
+        ndata['name'] = 'a'*101
+        response = self.app.post_json(
+            '/api/v1/users/saboten', ndata, headers=headers, status="*")
+        self.assertEqual(response.status_int, 400)
+
         # Authorized to change its emails memberships
         email = [e for e in data['emails'] if
                  e['email'] == 'saboten@domain1'][0]

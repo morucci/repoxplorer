@@ -79,6 +79,8 @@ class UsersController(RestController):
         if not isinstance(data['emails'], list):
             # Wrong data type for email
             return False
+        if len(data['name']) >= 100:
+            return False
         mekeys = set([mk[0] for mk in email_keys if mk[1]])
         mgkeys = set([mk[0] for mk in group_keys if mk[1]])
         if data['emails']:
