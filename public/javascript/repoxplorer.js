@@ -18,6 +18,23 @@ function get_value_of_key(target, key) {
     return false;
 }
 
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+function escapeHtml(string) {
+  return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+    return entityMap[s];
+  });
+}
+
 function get_username() {
     var username = '';
     if ( is_cookies_enabled() ) {
@@ -29,7 +46,7 @@ function get_username() {
             }
         }
     };
-    return username;
+    return escapeHtml(username);
 };
 
 function get_user_infos(login) {
@@ -297,14 +314,14 @@ function get_infos(pid, tid, cid, gid) {
                 ib_data.authors_amount = idata.authors_amount;
                 ib_data.line_modifieds_amount = idata.line_modifieds_amount;
                 if (cid) {
-                    ib_data.name = cdata.name;
+                    ib_data.name = escapeHtml(cdata.name);
                     ib_data.gravatar = cdata.gravatar;
                     ib_data.projects_amount = cdata.projects_amount;
                     ib_data.repos_amount = cdata.repos_amount;
                     ib_data.mails_amount = cdata.mails_amount;
                 }
                 if (gid) {
-                    ib_data.description = gdata[gid].description;
+                    ib_data.description = escapeHtml(gdata[gid].description);
                     ib_data.members_amount = Object.keys(gdata[gid].members).length;
                     ib_data.projects_amount = gdata[gid].projects_amount;
                     ib_data.repos_amount = gdata[gid].repos_amount;
@@ -368,9 +385,9 @@ function build_top_authors_head(top, label) {
         top_h += '<div align="center"><p><b><h4>' + top[i].amount + ' ' + label + ' </h4></b></p></div>';
         top_h += '<div align="center"><a href=contributor.html?cid=' + top[i].cid + '>' +
             '<img class="img-responsive" src="https://www.gravatar.com/avatar/' +
-            top[i].gravatar + '?s=150" title=' + top[i].name + '></a></div>';
+            top[i].gravatar + '?s=150" title=' + escapeHtml(top[i].name) + '></a></div>';
         top_h += '<div align="center"><p><b><h3><a href=contributor.html?cid=' +
-            top[i].cid + '>' + top[i].name + '</a></h3></b></p></div>';
+            top[i].cid + '>' + escapeHtml(top[i].name) + '</a></h3></b></p></div>';
         top_h += '</div>';
     };
     return top_h;
@@ -385,9 +402,9 @@ function build_top_authors_body(top, btid_more, limit) {
         top_b += '<td>' + rank + '</td>';
         top_b += '<td></span><span style="padding-right: 5px">' +
             '<img src="https://www.gravatar.com/avatar/' +
-            top[i].gravatar + '?s=25" title="' + top[i].name + '">' +
+            top[i].gravatar + '?s=25" title="' + escapeHtml(top[i].name) + '">' +
             '</span><span><b><a href=contributor.html?cid=' +
-            top[i].cid + '>' + top[i].name + '</a></b></span></td>';
+            top[i].cid + '>' + escapeHtml(top[i].name) + '</a></b></span></td>';
         top_b += '<td>' + top[i].amount + '</td>';
         top_b += '</tr>';
     }
@@ -510,11 +527,11 @@ function user_page_init() {
         // Fill the jumbotron
         $("#jumbotron_block").empty();
         $("#jumbotron_block").append(
-            '<h2>Welcome ' + udata["name"] + '. On this page you can modify your settings.'
+            '<h2>Welcome ' + escapeHtml(udata["name"]) + '. On this page you can modify your settings.'
         );
 
         $("#username").val(udata["uid"]);
-        $("#fullname").val(udata["name"]);
+        $("#fullname").val(escapeHtml(udata["name"]));
         $("#demail").val(udata["default-email"]);
 
         // For each email prepare the form
@@ -826,7 +843,7 @@ function groups_page_init() {
                             $.each(data[gid]['members'], function(cid, cdata) {
                                 elm += "<span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                                     cdata['gravatar'] + "?s=20'></span><span style='padding-right: 5px'>" +
-                                    "<a href=contributor.html?cid=" + cid + ">" + cdata['name'] + "</a></span>";
+                                    "<a href=contributor.html?cid=" + cid + ">" + escapeHtml(cdata['name']) + "</a></span>";
                             });
                             elm += "</td>";
                             $("#groups-table table").append(elm);
@@ -969,12 +986,12 @@ function contributor_page_init() {
             get_commits(pid, undefined, cid, undefined, undefined, true);
 
             // Fill the title
-            $("#page-title").append("[" + cdata.name + "] - Contributor stats");
+            $("#page-title").append("[" + escapeHtml(cdata.name) + "] - Contributor stats");
 
             // Fill the jumbotron
             $("#jumbotron_block").empty();
             $("#jumbotron_block").append(
-                "<h2><a href=contributor.html?cid=" + cid + ">" + cdata.name + "</a>'s contributor stats</h2>"
+                "<h2><a href=contributor.html?cid=" + cid + ">" + escapeHtml(cdata.name) + "</a>'s contributor stats</h2>"
             );
 
             // Fill the histo commits selector
@@ -1728,7 +1745,7 @@ function contributors_page_init() {
                 '<span style="padding-right: 5px"><img src="https://www.gravatar.com/avatar/' +
                 v.gravatar + '?s=20"></span>' +
                 '<span><a href=contributor.html?cid=' +
-                k + '>' + v.name + '</a></span></h3>' +
+                k + '>' + escapeHtml(v.name) + '</a></span></h3>' +
                 '</div></div></div>';
             $("#search-results").append(box);
         });
@@ -1928,11 +1945,11 @@ function get_commits(pid, tid, cid, gid, page, with_projects_c) {
             elm += "<td>" + refs + "</td>";
             elm += "<td><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                 v['author_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
-                v['cid'] + ">" + v['author_name'] + "</a></span>";
+                v['cid'] + ">" + escapeHtml(v['author_name']) + "</a></span>";
             if (v['ccid'] != v['cid']) {
                 elm += "<br><span style='padding-right: 5px'><img src='https://www.gravatar.com/avatar/" +
                     v['committer_gravatar'] + "?s=20'></span><span><a href=contributor.html?cid=" +
-                    v['ccid'] + ">" + v['committer_name'] + "</a><span>";
+                    v['ccid'] + ">" + escapeHtml(v['committer_name']) + "</a><span>";
             }
             elm += "</td>";
             // Just use the first gitweb link atm
