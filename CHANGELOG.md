@@ -14,6 +14,32 @@ Bug Fixes
 Other Notes
 -----------
 
+1.3.1
+=====
+
+This release mainly brings some performance improvements, and a security fix.
+
+New features
+------------
+
+- api/tops: Add the limit attribute to the tops/projects endpoint
+- ui: Complete the user setting page - enable bounced group memberships
+
+Bug Fixes
+---------
+
+- indexer: prevent to get stuck in case of private repositories on Github
+- api/groups: Fix missing domains args in filter
+
+Other Notes
+-----------
+
+- indexer: only use git bare repositories for repositories clones.
+- indexer: cleaner use delete by bulk to save memory
+- ui: gravatar responsive
+- ui: escape html for user-controlled input
+
+
 1.3.0
 =====
 
