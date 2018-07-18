@@ -1174,19 +1174,19 @@ If you find an issue please fill a bug report on Github:
 
 - [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
 
-RepoXplorer is hosted and developed via this Gerrit instance [Software Factory](http://softwarefactory-project.io).
+RepoXplorer is hosted and developed via this Gerrit instance [Software Factory](https://softwarefactory-project.io).
 Contributions should preferably be done via Gerrit but I will accept them on Github too :).
 
 If you want to help via Github then use the regular Github workflow.
 Below are instructions to follow if your prefer to use Gerrit:
 
 ```Shell
-git clone http://softwarefactory-project.io/r/repoxplorer
+git clone https://softwarefactory-project.io/r/repoxplorer
 git review -s # You should have login on Software Factory using your Github identity first
 ```
 
 Your local copy is now configured. Please read the following instructions to
-learn about Git review sub-command [git-review](http://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
+learn about Git review sub-command [git-review](https://softwarefactory-project.io/docs/submitpatches.html#initialize-the-git-remote-with-git-review).
 
 ```
 # make some changes
