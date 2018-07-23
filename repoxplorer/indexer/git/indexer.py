@@ -421,7 +421,8 @@ class RepoIndexer():
                                          self.branch))
         run(["git", "-c",
              "credential.helper=%s" % self.credentials_helper_path,
-             "fetch", "origin", self.branch], self.local)
+             "fetch", "-nk", "origin", "+%s:%s" % (self.branch, self.branch)],
+            self.local)
 
     def get_refs(self):
         refs = run([
