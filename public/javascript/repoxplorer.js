@@ -80,13 +80,13 @@ function init_menu() {
                   // Assume not logged, cookie no longer valid ?
                   $("#ls-switch").empty()
                   $("#contrib-page").empty()
-                  $("#ls-switch").append('<a href="home.html">Claim your contributions</a>')
+                  $("#ls-switch").append('<a href="home.html">Claim your contributions/Login</a>')
                 })
           } else {
             // Not logged
             $("#ls-switch").empty()
             $("#contrib-page").empty()
-            $("#ls-switch").append('<a href="home.html">Claim your contributions</a>')
+            $("#ls-switch").append('<a href="home.html">Claim your contributions/Login</a>')
           }
         }
     })
