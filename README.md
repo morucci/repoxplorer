@@ -50,13 +50,15 @@ The docker container bundles ElasticSearch + the last repoXplorer version.
 Simply run docker-compose to deploy.
 
 ```Shell
+git clone --depth 1 https://github.com/morucci/repoxplorer
+cd repoxplorer
 mkdir -p docker-data/conf
 docker-compose up -d
 firefox http://localhost:51000/index.html
 ```
 
 Then use the github helper to create the configuration file. Here we index
-the git github organization.
+the Github organization of the git project.
 
 ```Shell
 ./bin/helpers/github/repoxplorer-github-organization --org git --skip-fork --output-path docker-data/conf/git
@@ -78,7 +80,7 @@ The installation process described here is for **CentOS 7 only**.
 
 ### ElasticSearch
 
-repoXplorer relies on ElasticSearch. Below are the installation steps for
+RepoXplorer relies on ElasticSearch. Below are the installation steps for
 ElasticSearch 2.x:
 
 ```Shell
