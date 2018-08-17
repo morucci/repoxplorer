@@ -1,5 +1,7 @@
 import copy
 
+from repoxplorer.controllers.renderers import CSVRenderer
+
 # RepoXplorer configuration file
 base_logging = {
     'version': 1,
@@ -49,6 +51,7 @@ base_logging = {
 app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
+    'custom_renderers': {'csv': CSVRenderer},
     'static_root': '/usr/share/repoxplorer/public',
     'template_path': '/usr/share/repoxplorer/templates',
     'debug': False,
@@ -68,8 +71,8 @@ elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
 indexer_loop_delay = 60
 index_custom_html = ""
-users_backend = False
-admin_key = 'admin_key'
+users_endpoint = False
+admin_token = 'admin_token'
 
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
