@@ -101,7 +101,7 @@ sudo systemctl start elasticsearch
 ```Shell
 # Some dependecies need to be fetched from EPEL
 sudo yum install -y epel-release
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.3.1/repoxplorer-1.3.1-2.el7.centos.noarch.rpm
+sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.3.1/repoxplorer-1.3.1-2.el7.noarch.rpm
 # Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
 sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
 # Enable and start services
