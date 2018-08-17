@@ -1,0 +1,44 @@
+# Container build
+docker build -t repoxplorer .
+
+# Prepare env for configuration and set default repos to index
+mkdir conf
+cat << EOF | tee ./conf/projects.yaml
+project-templates: {}
+projects: {}
+identities: {}
+groups: {}
+EOF
+chcon -Rt svirt_sandbox_file_t ./conf
+
+# Run the container
+docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer
+
+# Access the UI
+firefox http://localhost:51000/index.html
+
+# You can set the projects you want to index in conf/projects.yaml.
+# Or as an example replace the default content of conf/projects.yaml with the yaml block below:
+
+identities: {}
+groups: {}
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
+    - master
+    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+
+projects:
+  Barbican:
+    description: The Barbican project
+    repos:
+      barbican:
+        template: default
+      python-barbicanclient:
+        template: default
+
+
+# Check the indexer logs to see the progress of the indexation
+docker ps # get the <container-id>
+docker exec -ti <container-id> tail -f /usr/local/share/repoxplorer/repoxplorer-indexer-debug.log

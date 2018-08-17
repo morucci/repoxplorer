@@ -1,0 +1,17 @@
+# Deploy last version of repoxlorer published on on docker hub.
+
+version: '3'
+services:
+  repoxplorer:
+    image: morucci/repoxplorer
+    container_name: repoxplorer
+    ports:
+      - 51000:51000
+    volumes:
+      - repoxplorer-data:/repoxplorer-data
+      - elasticsearch-data:/var/lib/elasticsearch
+      - $PWD/docker-data/conf:/etc/repoxplorer/defs:z
+volumes:
+  elasticsearch-data:
+  repoxplorer-data:
+

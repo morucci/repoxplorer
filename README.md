@@ -1,9 +1,9 @@
-# RepoXplorer - Statistics explorer for Git repositories
+# RepoXplorer - Stats explorer for Git repositories
 
 - **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
 - **Last release**: [1.3.1](https://github.com/morucci/repoxplorer/releases/tag/1.3.1).
 
-RepoXplorer provides a web UI and a REST API to browse statistics about:
+RepoXplorer provides a web UI and a REST API to browse git stats such as:
 
 - projects (composed of one or multiple repositories)
 - contributors
@@ -16,6 +16,7 @@ Stats for a project are such as:
 - date histogram of authors
 - top authors by commits
 - top authors by lines changed
+- top new authors by commits
 
 Stats for a contributor or a group are such as:
 
@@ -42,36 +43,36 @@ RepoXplorer is composed of:
 RepoXplorer is the right tool to continuously watch and index your
 repositories like for instance your Github organization.
 
-## Quickstart script
+## Quickstart - Use the RepoXplorer Docker container to index a Github organization
 
-**repoxplorer-quickstart.sh** is a script to easily run repoXplorer (master version)
-locally without the need to install services on your system. No root access is needed
-for the setup and the installation is self-contained in **$HOME/.cache/repoxplorer**.
+The docker container bundles ElasticSearch + the last repoXplorer version.
 
-This quickstart script only support indexation of projects hosted on Github.
+Simply run docker-compose to deploy.
 
-The Java Runtime Environment as well as Python and Python virtualenv are the only
-dependencies needed.
-
-Let's try to index *this repository*. The repoxplorer repository from the morucci
-Github organization. The repository argument is not mandatory and can be removed
-to index the whole organization.
-
-```
-curl -O https://raw.githubusercontent.com/morucci/repoxplorer/master/repoxplorer-quickstart.sh
-chmod +x ./repoxplorer-quickstart.sh
-./repoxplorer-quickstart.sh morucci repoxplorer
+```Shell
+mkdir -p docker-data/conf
+docker-compose up -d
 firefox http://localhost:51000/index.html
 ```
 
-To index the whole organization do not append the repository name.
+Then use the github helper to create the configuration file. Here we index
+the git github organization.
 
-## All In One Docker container
+```Shell
+./bin/helpers/github/repoxplorer-github-organization --org git --skip-fork --output-path docker-data/conf/git
+```
 
-A repoXplorer Docker image exists. Check it out there [repoXplorer docker image](https://hub.docker.com/r/morucci/repoxplorer/).
-This is a all-in-one container that bundles ElasticSearch + repoXplorer ready to use.
+Indexation will take between 2 and 5 minutes. See docker/README to see how to check indexation logs.
+Repoxplorer will check repositories every 60 seconds for news commits and index them if any.
 
-## Installation
+Stop the container. Data are stored in docker volumes so you can safely stop and restart the container.
+*docker-compose down -v* can be used to remove data.
+
+```Shell
+docker-compose down
+```
+
+## Standard installation
 
 The installation process described here is for **CentOS 7 only**.
 
@@ -95,26 +96,6 @@ sudo sed -i s/.*ES_HEAP_SIZE=.*/ES_HEAP_SIZE=2g/ /etc/sysconfig/elasticsearch
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
-
-### Using the RPM
-
-```Shell
-# Some dependecies need to be fetched from EPEL
-sudo yum install -y epel-release
-sudo yum install -y https://github.com/morucci/repoxplorer/releases/download/1.3.1/repoxplorer-1.3.1-3.el7.noarch.rpm
-# Fetch needed web assets (JQuery, JQuery-UI, Bootstrap, ...)
-sudo /usr/bin/repoxplorer-fetch-web-assets -p /usr/share/repoxplorer/public/
-# Enable and start services
-sudo systemctl enable repoxplorer
-sudo systemctl enable repoxplorer-webui
-sudo systemctl start repoxplorer
-sudo systemctl start repoxplorer-webui
-```
-
-Then open a Web browser to access http://localhost:51000/index.html
-
-The default index.yaml configuration file is available in /etc/repoxplorer.
-Please then follow the [Configuration section](#configuration).
 
 ### Using a Python virtualenv
 
@@ -456,7 +437,7 @@ All endpoints can be called with or without the suffix *.json*. If called withou
 the *.json* suffix then the request's header *Accept: application/json* must be set.
 
 Some endpoints can return CSV data by adding the suffix *.csv* or without the suffix
-but by adding the request's header *Accept: text/csv*.
+but by adding the request's header *Accept: text/csv* (curl -H "accept: text/csv").
 
 See [below](#parameters) for available parameters. Keep in mind that some
 parameters are mandatory, while some others are optional or only available
@@ -582,6 +563,8 @@ This endpoint can also output to CSV.
 
 ```Shell
 curl "http://localhost:51000/api/v1/infos/infos.csv?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+# or
+curl -H "accept: text/csv" "http://localhost:51000/api/v1/infos/infos?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
 ```
 ```
 last,authors_amount,commits_amount,ttl_average,duration,line_modifieds_amount,first
