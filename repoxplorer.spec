@@ -1,6 +1,6 @@
 Name:           repoxplorer
 Version:        1.3.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        RepoXplorer is a stats and charts utility for Git repositories
 
 License:        ASL 2.0
@@ -94,6 +94,9 @@ exit 0
 %attr(-, repoxplorer, repoxplorer) %{_var}/log/repoxplorer
 
 %changelog
+* Fri Aug 17 2018 Fabien Boucher <fabien.dot.boucher@gmail.com> - 1.3.1-3
+- Fix config error endpoint
+
 * Fri Aug 17 2018 Fabien Boucher <fabien.dot.boucher@gmail.com> - 1.3.1-2
 - Fix missing CSVRenderer config
 
