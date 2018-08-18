@@ -1,4 +1,4 @@
-# Deploy last version of repoxlorer published on on docker hub.
+# Deploy last version of repoXlorer published on docker hub.
 
 version: '3'
 services:
