@@ -8,7 +8,7 @@ services:
     ports:
       - 51000:51000
     volumes:
-      - repoxplorer-data:/repoxplorer-data
+      - repoxplorer-data:/usr/local/share/repoxplorer
       - elasticsearch-data:/var/lib/elasticsearch
       - $PWD/docker-data/conf:/etc/repoxplorer/defs:z
 volumes:
