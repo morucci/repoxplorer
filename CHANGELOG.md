@@ -15,6 +15,7 @@ Other Notes
 -----------
 
 - No longer use /tmp for the seen_refs cache instead store it in db_path.
+- ui: change button style of the filter box
 
 1.3.1
 =====
