@@ -60,7 +60,7 @@ RESERVED_METADATA_KEYS = (
     EL_RESERVED_FIELDS
 )
 
-SEEN_REFS_CACHED_PATH = '/tmp/seen-refs.cached'
+SEEN_REFS_CACHED = 'seen-refs.cached'
 
 
 def run(cmd, path):
@@ -315,7 +315,7 @@ class RefsCleaner():
             self.con = con
         self.projects = projects
         self.c = Commits(self.con)
-        self.seen_refs_path = SEEN_REFS_CACHED_PATH
+        self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
 
     def find_refs_to_clean(self):
         prjs = self.projects.get_projects_raw()
@@ -327,7 +327,11 @@ class RefsCleaner():
         if not os.path.isfile(self.seen_refs_path):
             self.data = set()
         else:
-            self.data = cPickle.load(file(self.seen_refs_path))
+            try:
+                self.data = cPickle.load(file(self.seen_refs_path))
+            except Exception:
+                # Protect against corrupted file
+                self.data = set()
         refs_to_clean = self.data - refs_ids
         logger.info("Found %s refs to clean." % len(refs_to_clean))
         return refs_to_clean
@@ -375,7 +379,7 @@ class RepoIndexer():
         self.name = name
         self.uri = uri
         self.base_id = '%s:%s' % (self.uri, self.name)
-        self.seen_refs_path = SEEN_REFS_CACHED_PATH
+        self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
         if not parsers:
             self.parsers = []
         else:
@@ -400,7 +404,11 @@ class RepoIndexer():
         if not os.path.isfile(self.seen_refs_path):
             data = set()
         else:
-            data = cPickle.load(file(self.seen_refs_path))
+            try:
+                data = cPickle.load(file(self.seen_refs_path))
+            except Exception:
+                # Protect against corrupted file
+                data = set()
         data.add(self.ref_id)
         cPickle.dump(data, file(self.seen_refs_path, 'w'))
 

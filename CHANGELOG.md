@@ -14,6 +14,8 @@ Bug Fixes
 Other Notes
 -----------
 
+- No longer use /tmp for the seen_refs cache instead store it in db_path.
+
 1.3.1
 =====
 

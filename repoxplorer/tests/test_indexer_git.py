@@ -269,6 +269,7 @@ class TestRefsClean(TestCase):
     @classmethod
     def setUpClass(cls):
         indexer.conf['git_store'] = tempfile.mkdtemp()
+        indexer.conf['db_path'] = tempfile.mkdtemp()
         indexer.conf['elasticsearch_index'] = 'repoxplorertest'
         indexer.get_commits_desc = lambda path, shas: []
         cls.con = index.Connector()
@@ -277,14 +278,17 @@ class TestRefsClean(TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(indexer.conf['git_store'])
+        shutil.rmtree(indexer.conf['db_path'])
         cls.con.ic.delete(index=cls.con.index)
 
     def setUp(self):
-        if os.path.isfile(indexer.SEEN_REFS_CACHED_PATH):
-            os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+        self.seen_refs = os.path.join(
+            indexer.conf['db_path'], indexer.SEEN_REFS_CACHED)
+        if os.path.isfile(self.seen_refs):
+            os.unlink(self.seen_refs)
 
     def tearDown(self):
-        os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+        os.unlink(self.seen_refs)
 
     def init_fake_process_commits_desc_output(self, pi, repo_commits):
         to_create, _ = pi.compute_to_create_to_update()
@@ -403,6 +407,7 @@ class TestRepoIndexer(TestCase):
     @classmethod
     def setUpClass(cls):
         indexer.conf['git_store'] = tempfile.mkdtemp()
+        indexer.conf['db_path'] = tempfile.mkdtemp()
         indexer.conf['elasticsearch_index'] = 'repoxplorertest'
         indexer.get_commits_desc = lambda path, shas: []
         cls.con = index.Connector()
@@ -411,14 +416,17 @@ class TestRepoIndexer(TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(indexer.conf['git_store'])
+        shutil.rmtree(indexer.conf['db_path'])
         cls.con.ic.delete(index=cls.con.index)
 
     def setUp(self):
-        if os.path.isfile(indexer.SEEN_REFS_CACHED_PATH):
-            os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+        self.seen_refs = os.path.join(
+            indexer.conf['db_path'], indexer.SEEN_REFS_CACHED)
+        if os.path.isfile(self.seen_refs):
+            os.unlink(self.seen_refs)
 
     def tearDown(self):
-        os.unlink(indexer.SEEN_REFS_CACHED_PATH)
+        os.unlink(self.seen_refs)
 
     def init_fake_process_commits_desc_output(self, pi, repo_commits):
         to_create, _ = pi.compute_to_create_to_update()
@@ -431,7 +439,7 @@ class TestRepoIndexer(TestCase):
         pi.set_branch('master')
         self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
-        seen_refs = cPickle.load(file(indexer.SEEN_REFS_CACHED_PATH))
+        seen_refs = cPickle.load(file(self.seen_refs))
         self.assertTrue(len(seen_refs), 1)
         self.assertIn('file:///tmp/p1:p1:master', seen_refs)
 
