@@ -31,6 +31,7 @@ class SearchController(object):
 
     @expose('json')
     def search_authors(self, query=""):
+        ret_limit = 100
         c = Commits(index.Connector())
         ret = c.es.search(
             index=c.index, doc_type=c.dbname,
@@ -44,7 +45,7 @@ class SearchController(object):
         authors = dict([(d['_source']['author_email'],
                          d['_source']['author_name']) for d in ret])
         result = {}
-        _idents = idents.get_idents_by_emails(authors.keys())
+        _idents = idents.get_idents_by_emails(authors.keys()[:ret_limit])
         for iid, ident in _idents.items():
             email = ident['default-email']
             name = ident['name'] or authors[email]
@@ -52,5 +53,5 @@ class SearchController(object):
                 'name': name,
                 'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest()}
         result = OrderedDict(
-            sorted(result.items(), key=lambda t: t[0]))
+            sorted(result.items(), key=lambda t: t[1]['name']))
         return result

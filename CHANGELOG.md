@@ -11,11 +11,16 @@ New features
 Bug Fixes
 ---------
 
+- fix contributors search results not sorted by alphabetical order
+
 Other Notes
 -----------
 
-- No longer use /tmp for the seen_refs cache instead store it in db_path.
+- no longer use /tmp for the seen_refs cache instead store it in db_path.
 - ui: change button style of the filter box
+- ui: specify that search is done on author's full name and wildcards authorized
+  in the search page.
+- api: limit authors search results to 100 items
 
 1.3.1
 =====
@@ -334,5 +339,3 @@ Bug Fixes
 ---------
 
 - Multiple fixes.
-
-

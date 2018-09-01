@@ -1023,7 +1023,7 @@ curl "http://localhost:51000/api/v1/metadata/metadata?pid=Barbican&key=Implement
 #### /api/v1/search/search_authors
 
 This endpoint can be used to search a commit's author. The search
-is performed against the full name.
+is performed against the full name and limited to 100 results.
 
 ```Shell
 curl "http://localhost:51000/api/v1/search/search_authors?query=john"
