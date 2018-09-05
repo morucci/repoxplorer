@@ -26,6 +26,10 @@ import requests
 # This is a small tool to read the redhatofficial project file
 # and create a repoXplorer compatible projects.yaml files.
 
+# Configuration file syntax
+# # GH API key needed to reduce rate limit issues
+# gh_api_key: ABC
+
 
 class NoRepoException(Exception):
     pass
@@ -41,20 +45,22 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--output-path', type=str,
     help='yaml file path to register organization repositories details')
+parser.add_argument(
+    '--config-path', type=str, default='rho-gh.yaml',
+    help='path to the yaml configuration')
 
 args = parser.parse_args()
 
 
-def fetch_repos(org, template, repo=None, query=None):
-    # anon = github3.GitHub()
-    anon = github3.GitHub('', token='')
-    orga = anon.organization(org)
+def fetch_repos(gh_api_key, org, template, repo=None, query=None):
+    gh = github3.GitHub('', token=gh_api_key)
+    orga = gh.organization(org)
     data = {}
     if not orga:
         print(
             "Org %s not found, try to find single"
             " user's repos ..." % org)
-        repos = anon.repositories_by(org)
+        repos = gh.repositories_by(org)
     else:
         repos = orga.repositories()
     for r in repos:
@@ -74,6 +80,16 @@ def fetch_repos(org, template, repo=None, query=None):
 
 
 if __name__ == "__main__":
+    if not os.path.isfile(args.config_path):
+        print("Unable to find %s" % args.config_path)
+    try:
+        with open(args.config_path) as cf:
+            conf = yaml.load(cf.read())
+    except Exception as e:
+        print("Unable to read %s" % args.config_path)
+        print e
+        sys.exit(-1)
+
     gp = json.loads(requests.get(INFO_URI).text)
 
     c = len(gp)
@@ -106,11 +122,13 @@ if __name__ == "__main__":
 
         try:
             projects[project['projectName']] = {
-                'repos': fetch_repos(org, project['projectName'], repo, query),
+                'repos': fetch_repos(conf.get('gh_api_key', ''), org,
+                                     project['projectName'], repo, query),
                 'description': project['projectDescription'],
             }
         except NoRepoException:
-            print('No repository for this project. Skip')
+            print('No repository for the project %s. Skip' % (
+                project['projectName']))
             continue
         templates[project['projectName']] = {
             "branches": ["master"],

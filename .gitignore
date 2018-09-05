@@ -10,3 +10,4 @@ MANIFEST
 htmlcov
 docker/conf
 docker-data
+bin/helpers/redhatofficial/rho-gh.yaml
