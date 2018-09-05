@@ -61,7 +61,7 @@ Then use the github helper to create the configuration file. Here we index
 the Github organization of the git project.
 
 ```Shell
-./bin/helpers/github/repoxplorer-github-organization --org git --skip-fork --output-path docker-data/conf/git
+./bin/repoxplorer-github-organization --org git --skip-fork --output-path docker-data/conf/git
 ```
 
 Indexation will take between 2 and 5 minutes. See docker/README to see how to check indexation logs.
