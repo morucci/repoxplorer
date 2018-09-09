@@ -208,7 +208,8 @@ def resolv_filters(projects_index, idents, pid,
         dfrom = datetime.strptime(dfrom, "%Y-%m-%d").strftime('%s')
 
     if dto:
-        dto = datetime.strptime(dto, "%Y-%m-%d").strftime('%s')
+        dto = str(
+            int(datetime.strptime(dto, "%Y-%m-%d").strftime('%s')) + 24 * 3600)
 
     if inc_merge_commit == 'on':
         # The None value will return all whatever

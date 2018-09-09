@@ -12,6 +12,7 @@ Bug Fixes
 ---------
 
 - fix contributors search results not sorted by alphabetical order
+- fix "To date" computation to include the selected day (also fix the top computation)
 
 Other Notes
 -----------
