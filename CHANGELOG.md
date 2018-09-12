@@ -22,6 +22,8 @@ Other Notes
 - ui: specify that search is done on author's full name and wildcards authorized
   in the search page.
 - api: limit authors search results to 100 items
+- refs cleaner removes repository related tags (from tags db) if it no longer
+  exists in project definition.
 
 1.3.1
 =====

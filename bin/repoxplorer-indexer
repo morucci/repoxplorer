@@ -47,13 +47,13 @@ args = parser.parse_args()
 
 
 def clean():
-    logger.info("Start cleaning unreferenced projects")
+    logger.info("Start cleaning no longer referenced refs and tags")
     projects_index = projects.Projects(conf.db_path,
                                        conf.db_default_file)
     rc = indexer.RefsCleaner(projects_index, config=args.config)
     refs_to_clean = rc.find_refs_to_clean()
     rc.clean(refs_to_clean)
-    logger.info("Done cleaning unreferenced projects")
+    logger.info("Done cleaning no longer referenced refs and tags")
 
 
 def process():

@@ -315,13 +315,18 @@ class RefsCleaner():
             self.con = con
         self.projects = projects
         self.c = Commits(self.con)
+        self.t = Tags(self.con)
         self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
+        self.base_ids = set()
 
     def find_refs_to_clean(self):
         prjs = self.projects.get_projects_raw()
         refs_ids = set()
         for pid, pdata in prjs.items():
             for rid, repo in pdata['repos'].items():
+                # Also compute all base_ids during that loop for
+                # tags removal
+                self.base_ids.add('%s:%s' % (repo['uri'], rid))
                 for branch in repo['branches']:
                     refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
         if not os.path.isfile(self.seen_refs_path):
@@ -335,6 +340,15 @@ class RefsCleaner():
         refs_to_clean = self.data - refs_ids
         logger.info("Found %s refs to clean." % len(refs_to_clean))
         return refs_to_clean
+
+    def clean_tags(self, base_id):
+        # Tags are indexed by repos (base_id) not by ref (ref_id)
+        tags = self.t.get_tags([base_id])
+        ids = [t['_id'] for t in tags]
+        if ids:
+            logger.info("Repo %s no longer referenced. Cleaning %s tags" % (
+                base_id, len(ids)))
+            self.t.del_tags(ids)
 
     def clean(self, refs):
         for ref in refs:
@@ -359,7 +373,15 @@ class RefsCleaner():
             self.remove_from_seen_refs(ref)
 
     def remove_from_seen_refs(self, ref_id):
+        # Remove from the struct to be dumped
         self.data.remove(ref_id)
+        # Compute the base_id from the ref_id
+        branch = ref_id.split(':')[-1]
+        base_id = ref_id.replace(":%s" % branch, "")
+        # If the base_id of the ref_id no longer in base_ids
+        # remove associated tags
+        if base_id not in self.base_ids:
+            self.clean_tags(base_id)
         cPickle.dump(self.data, file(self.seen_refs_path, 'w'))
 
 
