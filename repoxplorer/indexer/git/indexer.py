@@ -315,13 +315,18 @@ class RefsCleaner():
             self.con = con
         self.projects = projects
         self.c = Commits(self.con)
+        self.t = Tags(self.con)
         self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
+        self.current_base_ids = set()
 
     def find_refs_to_clean(self):
         prjs = self.projects.get_projects_raw()
         refs_ids = set()
         for pid, pdata in prjs.items():
             for rid, repo in pdata['repos'].items():
+                # Also compute all base_ids during that loop for
+                # tags removal
+                self.current_base_ids.add('%s:%s' % (repo['uri'], rid))
                 for branch in repo['branches']:
                     refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
         if not os.path.isfile(self.seen_refs_path):
@@ -333,32 +338,52 @@ class RefsCleaner():
                 # Protect against corrupted file
                 self.data = set()
         refs_to_clean = self.data - refs_ids
-        logger.info("Found %s refs to clean." % len(refs_to_clean))
+        if len(refs_to_clean):
+            logger.info("Found %s refs to clean." % len(refs_to_clean))
         return refs_to_clean
 
-    def clean(self, refs):
-        for ref in refs:
-            # Find ref's Commits
-            ids = [c['_id'] for c in
-                   self.c.get_commits(repos=[ref], scan=True)]
-            if not ids:
-                self.remove_from_seen_refs(ref)
-                continue
-            logger.info("Ref %s no longer referenced. Cleaning %s cmts." %
-                        (ref, len(ids)))
-            # Do it by bulk of 10000 to not hurt memory
-            bulk = 10000
-            i = 0
-            while True:
-                _ids = ids[i:i+bulk]
-                if not _ids:
-                    break
-                else:
-                    delete_commits(self.c, ref, _ids, ref)
-                    i += bulk
+    def clean_tags(self, base_id):
+        # Tags are indexed by repos (base_id) not by ref (ref_id)
+        tags = self.t.get_tags([base_id])
+        ids = [t['_id'] for t in tags]
+        if ids:
+            logger.info("Repo %s no longer referenced. Cleaning %s tags" % (
+                base_id, len(ids)))
+            self.t.del_tags(ids)
+
+    def clean_ref_cmts(self, ref):
+        # Find ref's Commits
+        ids = [c['_id'] for c in
+               self.c.get_commits(repos=[ref], scan=True)]
+        if not ids:
             self.remove_from_seen_refs(ref)
+            return
+        logger.info("Ref %s no longer referenced. Cleaning %s cmts." %
+                    (ref, len(ids)))
+        # Do it by bulk of 10000 to not hurt memory
+        bulk = 10000
+        i = 0
+        while True:
+            _ids = ids[i:i+bulk]
+            if not _ids:
+                break
+            else:
+                delete_commits(self.c, ref, _ids, ref)
+                i += bulk
+
+    def clean(self, refs):
+        base_ids = set()
+        for ref in refs:
+            self.clean_ref_cmts(ref)
+            self.remove_from_seen_refs(ref)
+            base_id = ref.replace(":%s" % ref.split(':')[-1], "")
+            if base_id not in self.current_base_ids:
+                base_ids.add(base_id)
+        for base_id in base_ids:
+            self.clean_tags(base_id)
 
     def remove_from_seen_refs(self, ref_id):
+        # Remove from the struct to be dumped
         self.data.remove(ref_id)
         cPickle.dump(self.data, file(self.seen_refs_path, 'w'))
 

@@ -367,13 +367,20 @@ class TestRefsClean(TestCase):
                 '3597334f2cb10772950c97ddf2f6cc17b185',
                 '3597334f2cb10772950c97ddf2f6cc17b186']
 
-        # Check 2 commits are indexed
+        pi.tags = [['3597334f2cb10772950c97ddf2f6cc17b184', 'refs/tags/t1'],
+                   ['3597334f2cb10772950c97ddf2f6cc17b185', 'refs/tags/t2']]
+        pi.index_tags()
+        self.assertEqual(len(pi.t.get_tags(['file:///tmp/p1:p1'])), 2)
+
+        # Check 3 commits are indexed
         self.assertEqual(
             len([c for c in self.cmts.get_commits_by_id(shas)['docs']
                  if c['found']]), 3)
-        # Now create the RefsCleaner isinstance
+
+        # Now create the RefsCleaner instance
         # '3597334f2cb10772950c97ddf2f6cc17b185' will be removed
         # '3597334f2cb10772950c97ddf2f6cc17b186' will be updated
+        # as the devel branch is no longer referenced
         with patch.object(index.YAMLBackend, 'load_db'):
             with patch.object(projects.Projects, 'get_projects_raw') as gpr:
                 projects_index = projects.Projects('/tmp/fakepath')
@@ -390,7 +397,7 @@ class TestRefsClean(TestCase):
                 rc = indexer.RefsCleaner(projects_index, con=self.con)
                 refs_to_clean = rc.find_refs_to_clean()
                 rc.clean(refs_to_clean)
-        # Only one commit must be in the db
+        # Two commits must be in the db (two was from the master branch)
         cmts = self.cmts.get_commits_by_id(shas)['docs']
         self.assertEqual(len([c for c in cmts if c['found']]), 2)
         # Verify that remaining commits belong to ref
@@ -400,6 +407,23 @@ class TestRefsClean(TestCase):
                 continue
             self.assertTrue(len(cmt['_source']['repos']), 1)
             self.assertIn('file:///tmp/p1:p1:master', cmt['_source']['repos'])
+
+        # Here make sure tags are still reference as the base_id still exists
+        self.assertEqual(len(pi.t.get_tags(['file:///tmp/p1:p1'])), 2)
+        # Reinstance a RefsCleaner with no repos
+        with patch.object(index.YAMLBackend, 'load_db'):
+            with patch.object(projects.Projects, 'get_projects_raw') as gpr:
+                projects_index = projects.Projects('/tmp/fakepath')
+                gpr.return_value = {
+                    'p1': {
+                        'repos': {}
+                        }
+                    }
+                rc = indexer.RefsCleaner(projects_index, con=self.con)
+                refs_to_clean = rc.find_refs_to_clean()
+                rc.clean(refs_to_clean)
+        # Make sure tags have been deleted
+        self.assertEqual(len(pi.t.get_tags(['file:///tmp/p1:p1'])), 0)
 
 
 class TestRepoIndexer(TestCase):
