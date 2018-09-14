@@ -42,6 +42,9 @@ parser.add_argument(
 parser.add_argument(
     '--project', type=str, default=None,
     help='Specify the project to index')
+parser.add_argument(
+    '--clean-orphan', action='store_true', default=False,
+    help="Clean refs and tags not known from the project's configuration")
 
 args = parser.parse_args()
 
@@ -117,6 +120,13 @@ def process():
 if __name__ == "__main__":
     conf = imp.load_source('config', args.config)
     logging.config.dictConfig(conf.indexer_logging)
+    if args.clean_orphan:
+        try:
+            clean()
+            sys.exit(0)
+        except Exception:
+            logger.exception("Unexcepted error occured")
+            sys.exit(-1)
     if args.forever:
         while True:
             try:
@@ -134,3 +144,4 @@ if __name__ == "__main__":
             clean()
         except Exception:
             logger.exception("Unexcepted error occured")
+            sys.exit(-1)
