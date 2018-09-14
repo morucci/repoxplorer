@@ -8,6 +8,9 @@ Master
 New features
 ------------
 
+- add indexer cli option *--clean-orphan* to clean no longer
+  referenced refs and tags
+
 Bug Fixes
 ---------
 
