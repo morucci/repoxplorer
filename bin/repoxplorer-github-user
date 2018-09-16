@@ -1,0 +1,169 @@
+#!/usr/bin/env python
+
+import pytz
+import requests
+import datetime
+import time
+import logging
+from bs4 import BeautifulSoup
+import github3
+import yaml
+import argparse
+
+logging.basicConfig(level=logging.INFO)
+utc = pytz.UTC
+url = ("https://github.com/users/%(username)s" +
+       "/created_commits?from=%(from)s&to=%(to)s")
+
+month = datetime.timedelta(30)
+
+struct = {'projects': {},
+          'project-templates': {},
+          'identities': {},
+          'groups': {}}
+
+
+def add_ident(gh, username, group):
+    user = gh.user(username)
+    email = user.email
+    if not email:
+        email = "%s@github.com" % username
+        logging.warning(
+            "%s email is private use placeholder: %s" % (username, email))
+    struct['identities'].update(
+        {
+            username: {
+                'name': user.name or username,
+                'default-email': email,
+                'emails': {
+                    email: {
+                        'groups': {
+                            group: {}
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+
+def add_template(org):
+    template = {
+        org: {
+            "uri": "http://github.com/%s/" % org +
+                   "%(name)s",
+            "gitweb": "http://github.com/%s/" % org +
+                      "%(name)s/commit/%%(sha)s"
+          }
+    }
+    struct['project-templates'].update(template)
+    print struct
+
+
+def add_repo(repo):
+    org, repo = repo.split('/')
+    if org not in struct['project-templates']:
+        add_template(org)
+    if org not in struct['projects']:
+        project = {
+            org: {
+                "repos": {},
+                "description": "The %s Github organization" % org,
+            }
+        }
+        struct['projects'].update(project)
+    if repo not in struct['projects'][org]['repos']:
+        struct['projects'][org]['repos'].update(
+            {repo: {'template': org}})
+
+
+def user_get_repos_contributed_to(username):
+    user = github3.user(username)
+    user_created_at = user.created_at
+
+    now = datetime.datetime.now()
+
+    to = now
+    dfrom = to
+
+    repos = set()
+    next_page = True
+
+    while True:
+        if next_page:
+            to = dfrom
+            dfrom = to - month
+
+        if utc.localize(to) < user_created_at:
+            logging.info('Finished looking for repos contributed')
+            break
+
+        params = {'to': to.strftime('%Y-%m-%d'),
+                  'from': dfrom.strftime('%Y-%m-%d'),
+                  'username': username}
+
+        logging.info('Getting %s' % (url % params))
+        resp = requests.get(url % params)
+        if resp.status_code == 429:
+            logging.info('Rate limited ... sleep for 60 seconds')
+            time.sleep(60)
+            next_page = False
+            continue
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        _repos = [a.text for a in
+                  filter(
+                    lambda n: not n.text.startswith('\n'),
+                    soup.find_all('a'))]
+        repos.update(_repos)
+        next_page = True
+        logging.info("Now %s repos discovered for %s" % (len(repos), username))
+        logging.info('Loop until %s' % user_created_at)
+        time.sleep(2)
+        break
+
+    return repos
+
+
+def add_group(name):
+    struct['groups'][name] = {
+        'description': 'Github team %s' % name,
+        'emails': {}
+    }
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Read a Github org members and create'
+                    'the repoXplorer description file')
+    parser.add_argument(
+        '--org', type=str,
+        required=True,
+        help='Specify the Github org name (will fetch members)')
+    parser.add_argument(
+        '--output-path', type=str,
+        help='Path to write the generated config file')
+    parser.add_argument(
+        '--token', type=str,
+        help='The github token')
+
+    args = parser.parse_args()
+
+    if not args.output_path:
+        args.output_path = '%s.yaml' % args.org
+
+    gh = github3.GitHub(token=args.token)
+    all_repos = set()
+    orgname = args.org
+    members = list(gh.organization(orgname).members())
+    logging.info("%s members to process ..." % len(members))
+    for member in members:
+        username = member.login
+        logging.info("Processing %s" % username)
+        add_ident(gh, username, orgname)
+        user_repos = user_get_repos_contributed_to(username)
+        all_repos.update(user_repos)
+    for repo in all_repos:
+        add_repo(repo)
+    add_group(args.org)
+    with open(args.output_path, 'w') as fd:
+        fd.write(yaml.safe_dump(struct))
