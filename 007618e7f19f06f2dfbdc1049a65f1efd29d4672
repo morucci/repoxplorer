@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f07a78cd_ffae37f2",
+        "filename": "public/javascript/repoxplorer.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 195,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2018-09-19T20:37:30Z",
+      "side": 1,
+      "message": "But we have a typo here :/ ?",
+      "range": {
+        "startLine": 195,
+        "startChar": 49,
+        "endLine": 195,
+        "endChar": 62
+      },
+      "revId": "007618e7f19f06f2dfbdc1049a65f1efd29d4672",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
