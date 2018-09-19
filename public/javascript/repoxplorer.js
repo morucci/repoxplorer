@@ -192,7 +192,7 @@ function get_top(pid, tid, cid, gid, type, stype, limit) {
     return $.getJSON("api/v1/tops/" + type + "/" + stype, args);
 }
 
-function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfromi, limit) {
+function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfrom, limit) {
     // TODO: move checkbox value retrieval outside
     if ($('#inc_merge_commit').prop('checked')) {
         var inc_merge_commit = 'on';
@@ -205,9 +205,9 @@ function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfromi, limit) {
         'tid': tid,
         'cid': cid,
         'gid': gid,
-        'dfromref': moment(infos.first * 1000).format("YYYY-MM-DD"),
-        'dtoref': dtoref_dfrom.format("YYYY-MM-DD"),
-        'dfrom': dtoref_dfrom.format("YYYY-MM-DD"),
+        'dfromref': dtoref_dfrom.format("YYYY-MM-DD"),
+        'dtoref': moment(infos.first * 1000).format("YYYY-MM-DD"),
+        'dfrom': moment(infos.first * 1000).format("YYYY-MM-DD"),
         'dto': moment(infos.last * 1000).format("YYYY-MM-DD"),
         'inc_merge_commit': inc_merge_commit,
         'inc_repos_detail': inc_repos_detail,
@@ -1499,7 +1499,7 @@ function project_page_init() {
                     dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
                     dto = moment(infos.last * 1000).format("YYYY-MM-DD");
                     $('#difftxt').text(
-                        "During the period from " + dtoref_dfrom + " to " + dto + " compared to the period from " + dfromref + " to " + dtoref_dfrom);
+                        "During the period from " + dfromref + " to " + dto + " compared to the period from " + dtoref_dfrom + " to " + dfromref);
                     $('#tna-dmore').click(function() {
                         limit = limit + 10;
                         fill_top_new_authors(infos, dtoref_dfrom_orig, limit);
@@ -1637,12 +1637,12 @@ function project_page_init() {
             // Fill the top new authors
             if (newsinceval === undefined) {
                 newsinceval = $('#newsince').val();
-                dtoref_dfrom = moment(idata.last * 1000).subtract(newsinceval, 'seconds');
+                dtoref_dfrom = moment(idata.first * 1000).subtract(newsinceval, 'seconds');
                 fill_top_new_authors(idata, dtoref_dfrom, 10);
             }
             $('#newsince').change(function() {
                 newsinceval = $('#newsince').val();
-                dtoref_dfrom = moment(idata.last * 1000).subtract(newsinceval, 'seconds');
+                dtoref_dfrom = moment(idata.first * 1000).subtract(newsinceval, 'seconds');
                 fill_top_new_authors(idata, dtoref_dfrom, 10);
             });
 
