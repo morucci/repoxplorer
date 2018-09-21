@@ -1482,28 +1482,37 @@ function project_page_init() {
     function fill_top_new_authors(infos, dtoref_dfrom, limit) {
         $("#topnewauthors-progress").append(
             '&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-        var top_new_authors_deferred = get_top_diff(
-            pid, tid, undefined, undefined, infos, dtoref_dfrom, limit);
+        if ($('#fromdatepicker').val() != '') {
+          var top_new_authors_deferred = get_top_diff(
+              pid, tid, undefined, undefined, infos, dtoref_dfrom, limit);
+        } else {
+          var top_new_authors_deferred = $.Deferred();
+          top_new_authors_deferred.resolve();
+        }
         top_new_authors_deferred
             .done(function(top) {
                 $("#topnewauthors_gravatar").empty();
                 $("#topnewauthors").empty();
                 $("#topnewauthors-progress").empty();
-                top_h = build_top_authors_head(top, 'commits');
-                $("#topnewauthors_gravatar").append(top_h);
-                if (top.length > 3) {
-                    top_b = build_top_authors_body(top, 'tna-dmore', limit);
-                    $("#topnewauthors").append(top_b);
-                    dtoref_dfrom_orig = dtoref_dfrom;
-                    dtoref_dfrom = dtoref_dfrom.format("YYYY-MM-DD");
-                    dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
-                    dto = moment(infos.last * 1000).format("YYYY-MM-DD");
-                    $('#difftxt').text(
-                        "During the period from " + dfromref + " to " + dto + " compared to the period from " + dtoref_dfrom + " to " + dfromref);
-                    $('#tna-dmore').click(function() {
-                        limit = limit + 10;
-                        fill_top_new_authors(infos, dtoref_dfrom_orig, limit);
-                    });
+                if ($('#fromdatepicker').val() != '') {
+                    top_h = build_top_authors_head(top, 'commits');
+                    $("#topnewauthors_gravatar").append(top_h);
+                    if (top.length > 3) {
+                        top_b = build_top_authors_body(top, 'tna-dmore', limit);
+                        $("#topnewauthors").append(top_b);
+                        dtoref_dfrom_orig = dtoref_dfrom;
+                        dtoref_dfrom = dtoref_dfrom.format("YYYY-MM-DD");
+                        dfromref = moment(infos.first * 1000).format("YYYY-MM-DD");
+                        dto = moment(infos.last * 1000).format("YYYY-MM-DD");
+                        $('#difftxt').text(
+                            "During the period from " + dfromref + " to " + dto + " compared to the period from " + dtoref_dfrom + " to " + dfromref);
+                        $('#tna-dmore').click(function() {
+                            limit = limit + 10;
+                            fill_top_new_authors(infos, dtoref_dfrom_orig, limit);
+                        });
+                    }
+                } else {
+                   $('#difftxt').text("No period selected. Please select an initial date in the Filters box to see new authors.");
                 }
             })
             .fail(function(err) {
