@@ -48,8 +48,7 @@ class TagsController(object):
             if 'releases' in repo:
                 for release in repo['releases']:
                     ur[release['name']] = {'name': release['name'],
-                                           'date': release['date'],
-                                           'repo': repo['name']}
+                                           'date': release['date']}
         for rel in ur.values():
             ret.append(rel)
         return ret

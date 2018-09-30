@@ -1802,8 +1802,13 @@ function get_releases(pid, tid) {
                 $.each(data, function(i, o) {
                     rdate = new Date(1000 * o.date);
                     rdate = moment(rdate);
+                    if (o.repo == undefined) {
+                      var text = rdate.format("YYYY-MM-DD") + " - " + o.name;
+                    } else {
+                      var text = rdate.format("YYYY-MM-DD") + " - " + o.name + " - " + o.repo;
+                    }
                     $('#releases').append($('<option>', {
-                        text: rdate.format("YYYY-MM-DD") + " - " + o.name + " - " + o.repo,
+                        text: text,
                         value: rdate.format("YYYY-MM-DD")
                     }));
                 });
