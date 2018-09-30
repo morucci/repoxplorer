@@ -196,19 +196,21 @@
    <div class="panel-body">
     <div class="col-md-6">
      <div id="topnew_selectors" class="form-group">
-      <label for="newsince">since</label>
+      <label for="newsince">since period</label>
       <select id="newsince" class="form-control">
        <option value="2629746">1 month</option>
        <option value="7889238">3 months</option>
        <option value="15778476" selected>6 months</option>
        <option value="31556952">1 year</option>
+       <option value="63113904">2 years</option>
+       <option value="94670856">3 years</option>
       </select>
      </div>
     </div>
     <div class="col-md-6">
      <div id="topnew_selectors" class="form-group">
-       <label for="newsincerelease">since release date</label><button type="button" id="pickuprelease" class="btn btn-link" data-toggle="modal" data-target="#releasesmodal" data-datetarget="newsincerelease">(pick one)</button>
-       <input type="text" class="form-control" id="newsincerelease" readonly>
+       <label for="newsincerelease">since date</label><button type="button" id="pickuprelease" class="btn btn-link" data-toggle="modal" data-target="#releasesmodal" data-datetarget="newsincerelease">(pick a release date)</button>
+       <input type="text" class="form-control" id="newsincerelease">
      </div>
     </div>
     <div>
