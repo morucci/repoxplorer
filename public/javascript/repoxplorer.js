@@ -1788,8 +1788,6 @@ function get_releases(pid, tid) {
     var args = {};
     args['pid'] = pid;
     args['tid'] = tid;
-    args['dfrom'] = getUrlParameter('dfrom');
-    args['dto'] = getUrlParameter('dto');
     args['inc_repos'] = getUrlParameter('inc_repos');
 
     var releases = [];
