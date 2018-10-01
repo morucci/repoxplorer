@@ -1371,7 +1371,10 @@ function project_page_init() {
     install_date_pickers();
 
     var selected_metadata = [];
-    $("#newsincerelease").val("");
+    $("#newsincerelease").datepicker(
+        {dateFormat: "yy-mm-dd",
+         changeMonth: true,
+         changeYear: true});
     var newsinceval;
 
     pid = getUrlParameter('pid');
@@ -1652,6 +1655,11 @@ function project_page_init() {
             $('#newsince').change(function() {
                 newsinceval = $('#newsince').val();
                 dtoref_dfrom = moment(idata.first * 1000).subtract(newsinceval, 'seconds');
+                fill_top_new_authors(idata, dtoref_dfrom, 10);
+            });
+            $('#newsincerelease').change(function() {
+                newsinceval = $('#newsincerelease').val();
+                dtoref_dfrom = moment(newsinceval, "YYYY-MM-DD");
                 fill_top_new_authors(idata, dtoref_dfrom, 10);
             });
 
