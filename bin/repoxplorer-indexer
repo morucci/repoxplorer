@@ -79,7 +79,8 @@ def process():
                                r.base_id, e))
                 continue
             r.get_heads()
-            r.get_tags()
+            if repo.get('index-tags') is True:
+                r.get_tags()
             for branch in repo['branches']:
                 if not [head for head in r.heads if
                         head[1].endswith(branch)]:
@@ -110,7 +111,20 @@ def process():
                     logger.exception("Exception is:")
                     continue
             try:
-                r.index_tags()
+                if repo.get('index-tags') is True:
+                    r.index_tags()
+                else:
+                    # Make sure to wipe tags for this repo if index-tags flag
+                    # is False.
+                    rc = indexer.RefsCleaner(
+                        projects_index, config=args.config)
+                    tags = rc.t.get_tags([r.base_id])
+                    ids = [t['_id'] for t in tags]
+                    if ids:
+                        logger.info(
+                            "Found %s tags for %s but index-tags is False. "
+                            "Wipe tags ..." % (len(ids), r.base_id))
+                        rc.t.del_tags(ids)
             except Exception, e:
                 logger.warning("Unable to index repository tags "
                                "%s: %s" % (r.base_id, e))

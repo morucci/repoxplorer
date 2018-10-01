@@ -10,6 +10,8 @@ New features
 
 - add indexer cli option *--clean-orphan* to clean no longer
   referenced refs and tags
+- add *index-tags* attribute in project-template definition. This
+  tells the indexer to not index repositories tags in the DB.
 
 Bug Fixes
 ---------

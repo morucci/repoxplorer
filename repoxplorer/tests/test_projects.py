@@ -51,6 +51,7 @@ class TestProjects(TestCase):
               date: 2016-12-20
             - name: 2.0
               date: 2016-12-31
+            index-tags: False
 
         projects:
           Barbican:
@@ -114,6 +115,7 @@ class TestProjects(TestCase):
                         'gitweb': 'https://github.com/openstack/openstack/'
                         'python-novaclient/commit/%(sha)s',
                         'releases': [],
+                        'index-tags': True,
                         'uri':
                         'https://github.com/openstack/python-novaclient'},
                     'openstack/nova': {
@@ -124,6 +126,7 @@ class TestProjects(TestCase):
                         'gitweb': 'https://github.com/openstack/openstack/'
                         'nova/commit/%(sha)s',
                         'releases': [],
+                        'index-tags': True,
                         'paths': ['tests/'],
                         'uri': 'https://github.com/openstack/nova'}},
             },
@@ -137,6 +140,7 @@ class TestProjects(TestCase):
                         'gitweb': 'https://github.com/openstack/openstack/'
                         'swift/commit/%(sha)s',
                         'releases': [],
+                        'index-tags': True,
                         'uri': 'https://github.com/openstack/swift'},
                     'openstack/python-swiftclient': {
                         'tags': ['openstack'],
@@ -146,6 +150,7 @@ class TestProjects(TestCase):
                         'gitweb': 'https://github.com/openstack/openstack/'
                         'python-swiftclient/commit/%(sha)s',
                         'releases': [],
+                        'index-tags': True,
                         'uri':
                         'https://github.com/openstack/python-swiftclient'}
                 },
@@ -159,6 +164,7 @@ class TestProjects(TestCase):
                         'barbican/commit/%(sha)s',
                         'uri': 'https://bitbucket.com/openstack/barbican',
                         'tags': [],
+                        'index-tags': False,
                         'releases': [
                             {'name': 1.0, 'date': 1482192000.0},
                             {'name': 2.0, 'date': 1483142400.0}]},
@@ -170,6 +176,7 @@ class TestProjects(TestCase):
                         'uri': 'https://bitbucket.com/openstack/'
                         'python-barbicanclient',
                         'tags': [],
+                        'index-tags': False,
                         'releases': [
                             {'name': 1.0, 'date': 1482192000.0},
                             {'name': 2.0, 'date': 1483142400.0}]}}}
