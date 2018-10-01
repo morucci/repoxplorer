@@ -18,6 +18,7 @@ Bug Fixes
 
 - fix contributors search results not sorted by alphabetical order
 - fix "To date" computation to include the selected day (also fix the top computation)
+- fix project page jumbotron link cut when name is multi words
 
 Other Notes
 -----------

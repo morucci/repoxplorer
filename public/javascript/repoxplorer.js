@@ -1392,12 +1392,12 @@ function project_page_init() {
     if (pid) {
         $("#page-title").append("[" + pid + "] - Project stats");
         $("#jumbotron_block").append(
-            "<h2><a href=project.html?pid=" + pid + ">" + pid + "</a>'s project stats</h2>"
+            '<h2><a href="project.html?pid=' + pid + '">' + pid + '</a>\'s project stats</h2>'
         );
     } else {
         $("#page-title").append("[" + tid + "] - Project tag stats");
         $("#jumbotron_block").append(
-            "<h2><a href=projects.html?cid=" + tid + ">" + tid + "</a>'s tag stats</h2>"
+            '<h2><a href="projects.html?cid=' + tid + '">' + tid + '</a>\'s tag stats</h2>'
         );
     }
 
