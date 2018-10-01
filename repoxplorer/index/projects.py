@@ -79,6 +79,8 @@ properties:
             type: array
             items:
               $ref: "#/definitions/release"
+          index-tags:
+            type: boolean
 """
 
 
@@ -105,6 +107,7 @@ templates:
     - type:cloud
     paths:
     - project/tests/
+    index-tags: true
 """
 
 projects_schema = """
@@ -252,6 +255,8 @@ class Projects(YAMLDefinition):
                     repo['parsers'] = []
                 if 'releases' not in repo:
                     repo['releases'] = []
+                if 'index-tags' not in repo:
+                    repo['index-tags'] = True
                 # Transform date to epoch
                 for release in repo['releases']:
                     release['date'] = date2epoch(release['date'])

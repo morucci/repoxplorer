@@ -267,6 +267,10 @@ release dates across all repositories defined in a project.
 Release dates with %Y-%m-%d format can be defined and will be merged with
 detected Git tags dates.
 
+Furthermore the **index-tags** flag could be set to **False** to tell the
+indexer to skip repositories tags indexation. Also the indexer will make sure to
+wipe already indexed tags for the project's repositories.
+
 ```YAML
 project-templates:
   default:
@@ -276,6 +280,7 @@ project-templates:
     releases:
       - name: 2.0
         date: 2016-12-20
+    index-tags: false
 
 projects:
   Barbican:
