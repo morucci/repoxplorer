@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "497838cd_9eaaec75",
+        "filename": "bin/repoxplorer-indexer",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2018-10-02T15:40:53Z",
+      "side": 1,
+      "message": "I think it would be cleaner if we did:\n\nif not hasattr(conf, \u0027indexer_skip_projects\u0027):\n    conf.indexer_skip_projects \u003d []\n\nYes, the internal implementation will use try-except, but... :)",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 71,
+        "endChar": 43
+      },
+      "revId": "0c284121c04e0084bee110b9a67d3169b5ccef03",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
