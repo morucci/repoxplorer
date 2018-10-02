@@ -228,6 +228,17 @@ class Commits(object):
                 )
         filter["bool"]["must"].append(must_metadata_clause)
 
+        # Exclude commits from 1970-01-01
+        boggus_date_clause = {
+            "range": {
+                "committer_date": {
+                    "gte": 86401,
+                }
+            }
+        }
+
+        filter["bool"]["must"].append(boggus_date_clause)
+
         return filter
 
     def get_commits(self, mails=[], repos=[],

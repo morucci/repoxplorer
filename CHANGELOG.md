@@ -30,6 +30,7 @@ Other Notes
 - api: limit authors search results to 100 items
 - refs cleaner removes repository related tags (from tags db) if it no longer
   exists in project definition.
+- discard 1970-01-01 commits from stats results.
 
 1.3.1
 =====

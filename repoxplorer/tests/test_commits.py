@@ -142,6 +142,23 @@ class TestCommits(TestCase):
                 'merge_commit': False,
                 'commit_msg': 'Add request customer feature 23',
                 'files_list': [],
+            },
+            {
+                'sha': '3597334f2cb10772950c97ddf2f6cc17b191',
+                'author_date': 46400,
+                'committer_date': 46400,
+                'ttl': 0,
+                'author_name': 'Marty Junior',
+                'committer_name': 'Marty Junior',
+                'author_email': 'mcfly@joker.org',
+                'author_email_domain': 'joker.org',
+                'committer_email': 'mcfly@joker.org',
+                'repos': [
+                    'https://github.com/amura/kotatsu.git:kotatsu:devel', ],
+                'line_modifieds': 400,
+                'merge_commit': False,
+                'commit_msg': 'Add request customer feature 23',
+                'files_list': [],
             }
         ]
         cls.c.add_commits(cls.commits)
