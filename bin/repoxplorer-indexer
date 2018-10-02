@@ -58,12 +58,18 @@ def clean():
     rc.clean(refs_to_clean)
 
 
-def process():
+def process(conf):
     projects_index = projects.Projects(conf.db_path,
                                        conf.db_default_file)
     prjs = projects_index.get_projects_raw()
     for pid, data in prjs.items():
         if args.project and args.project != pid:
+            continue
+        try:
+            getattr(conf, 'indexer_skip_projects')
+        except AttributeError:
+            conf.indexer_skip_projects = []
+        if not args.project and pid in conf.indexer_skip_projects:
             continue
         logger.info("Start indexing project %s" % pid)
         for rid, repo in data['repos'].items():
@@ -144,7 +150,7 @@ if __name__ == "__main__":
     if args.forever:
         while True:
             try:
-                process()
+                process(conf)
                 clean()
             except Exception:
                 logger.exception("Unexcepted error occured")
@@ -154,7 +160,7 @@ if __name__ == "__main__":
                 time.sleep(conf.indexer_loop_delay)
     else:
         try:
-            process()
+            process(conf)
             clean()
         except Exception:
             logger.exception("Unexcepted error occured")

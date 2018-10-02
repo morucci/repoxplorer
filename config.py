@@ -77,6 +77,7 @@ elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorer'
 indexer_loop_delay = 60
+indexer_skip_projects = []
 index_custom_html = ""
 users_endpoint = False
 admin_token = 'admin_token'
