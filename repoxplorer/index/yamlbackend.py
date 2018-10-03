@@ -67,6 +67,8 @@ class YAMLBackend(object):
 
         self.default_data = None
         self.data = []
+        # List of hashes
+        self.hashes = []
 
     def load_db(self):
         def check_ext(f):
@@ -87,12 +89,18 @@ class YAMLBackend(object):
                 if cached_hash == hash:
                     logger.debug("Reading %s from cache ..." % path)
                     data = cPickle.load(file(cached_data_path))
+                    self.hashes.append(hash)
             if not data:
                 try:
                     logger.debug("Reading %s from file ..." % path)
                     data = yaml.load(file(path), Loader=NoDatesSafeLoader)
-                    cPickle.dump(data, file(cached_data_path, 'w'))
-                    cPickle.dump(hash, file(cached_hash_path, 'w'))
+                    cPickle.dump(
+                        data, file(cached_data_path, 'w'),
+                        cPickle.HIGHEST_PROTOCOL)
+                    cPickle.dump(
+                        hash, file(cached_hash_path, 'w'),
+                        cPickle.HIGHEST_PROTOCOL)
+                    self.hashes.append(hash)
                 except Exception, e:
                     raise YAMLDBException(
                         "YAML format corrupted in file %s (%s)" % (path, e))
