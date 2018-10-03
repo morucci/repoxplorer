@@ -20,6 +20,9 @@ import logging
 
 from Crypto.Hash import SHA
 
+from pecan import conf
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -73,8 +76,10 @@ class YAMLBackend(object):
             data = None
             logger.debug("Check cache for %s ..." % path)
             basename = os.path.basename(path)
-            cached_hash_path = os.path.join('/tmp', basename + '.hash')
-            cached_data_path = os.path.join('/tmp', basename + '.cached')
+            if not os.path.isdir(conf.db_path):
+                os.makedirs(conf.db_path)
+            cached_hash_path = os.path.join(conf.db_path, basename + '.hash')
+            cached_data_path = os.path.join(conf.db_path, basename + '.cached')
             hash = SHA.new(file(path).read()).hexdigest()
             if (os.path.isfile(cached_hash_path) and
                     os.path.isfile(cached_data_path)):
