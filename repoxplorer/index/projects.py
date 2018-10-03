@@ -13,9 +13,12 @@
 #  limitations under the License.
 
 
+import os
 import copy
 import logging
+import cPickle
 
+from pecan import conf
 
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
@@ -187,10 +190,17 @@ class Projects(YAMLDefinition):
         self.gitweb_lookup = {}
         self.flatten = {}
         self.ref2projects_lookup = {}
+        self.cache_hash_path = os.path.join(
+            conf.db_path, 'projects.hashed')
+        self.cached_projects_enriched_path = os.path.join(
+            conf.db_path, 'projects-enriched.cache')
+        self.cached_projects_flatten_path = os.path.join(
+            conf.db_path, 'projects-flatten.cache')
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
         """
+        # TODO(fbo): This could even be put in cache
         merged_templates = {}
         merged_projects = {}
         for d in self.data:
@@ -212,9 +222,32 @@ class Projects(YAMLDefinition):
         self.templates.update(merged_templates)
         self.projects.update(merged_projects)
 
+    def _save_to_cache(self, path, hash, data):
+        ddata = (hash, data)
+        if not os.path.isdir(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+        cPickle.dump(ddata, open(path, 'w'))
+
+    def _read_from_cache(self, path, hash):
+        try:
+            registered_hash, data = cPickle.load(open(path))
+        except Exception as err:
+            logger.debug('Unable to read cache %s: %s' % (path, err))
+            return None
+        if hash == registered_hash:
+            return data
+        return None
+
     def _enrich_projects(self):
+        cached_data = self._read_from_cache(
+            self.cached_projects_enriched_path, self.hashes_str)
+        if cached_data is not None:
+            self.projects = cached_data
+            self.enriched = True
+            logger.debug('Read projects enriched from cache %s' % (
+                self.cached_projects_enriched_path))
         if self.enriched:
-            return  # cannot enrich twice
+            return
         # First resolve templates references
         for pid, detail in self.projects.items():
             for rid, repo in detail['repos'].items():
@@ -264,6 +297,10 @@ class Projects(YAMLDefinition):
                 if 'gitweb' in repo:
                     su = '%s:%s' % (repo['uri'], rid)
                     self.gitweb_lookup[su] = repo['gitweb']
+        self._save_to_cache(
+            self.cached_projects_enriched_path, self.hashes_str, self.projects)
+        logger.debug('Saved projects enriched cache in %s' % (
+            self.cached_projects_enriched_path))
         self.enriched = True
 
     def _validate_templates(self):
@@ -321,6 +358,13 @@ class Projects(YAMLDefinition):
         return self.projects
 
     def get_projects(self):
+        cached_data = self._read_from_cache(
+            self.cached_projects_flatten_path, self.hashes_str)
+        if cached_data is not None:
+            self.flatten = cached_data
+            logger.debug('Read projects flatten from cache %s' % (
+                self.cached_projects_flatten_path))
+            return self.flatten
         if not self.enriched:
             self._enrich_projects()
         if self.flatten:
@@ -342,6 +386,10 @@ class Projects(YAMLDefinition):
                     r['branch'] = branch
                     del r['branches']
                     self.flatten[pid]['repos'].append(r)
+        self._save_to_cache(
+            self.cached_projects_flatten_path, self.hashes_str, self.flatten)
+        logger.debug('Saved projects flatten cache in %s' % (
+            self.cached_projects_flatten_path))
         return self.flatten
 
     def get_tags(self):
