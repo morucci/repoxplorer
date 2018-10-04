@@ -119,6 +119,8 @@ class InfosController(object):
         infos['name'] = name
         infos['mails_amount'] = len(mails)
         infos['projects_amount'] = len(top_projects)
-        infos['repos_amount'] = len(top_repos)
+        infos['repos_amount'] = len(
+            filter(lambda r: not r['name'].startswith('meta_ref: '),
+                   top_repos))
         infos['gravatar'] = hashlib.md5(ident['default-email']).hexdigest()
         return infos

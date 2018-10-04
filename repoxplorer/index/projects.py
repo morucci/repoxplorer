@@ -131,6 +131,8 @@ properties:
             type: string
           logo:
             type: string
+          meta-ref:
+            type: boolean
           repos:
             type: object
             additionalProperties: false
@@ -250,6 +252,8 @@ class Projects(YAMLDefinition):
             return
         # First resolve templates references
         for pid, detail in self.projects.items():
+            if 'meta-ref' not in detail:
+                detail['meta-ref'] = False
             for rid, repo in detail['repos'].items():
                 # Save tags mentioned for a repo
                 tags = []

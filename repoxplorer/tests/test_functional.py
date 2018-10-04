@@ -45,7 +45,8 @@ COMMITS = [
         'author_email': 'j.paul@joker.org',
         'committer_email': 'j.paul@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: test'],
         'line_modifieds': 8,
         'merge_commit': False,
         'commit_msg': 'Test commit',
@@ -61,7 +62,8 @@ COMMITS = [
         'author_email': 'n.suke@joker.org',
         'committer_email': 'n.suke@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: test'],
         'line_modifieds': 10,
         'merge_commit': False,
         'commit_msg': 'Add init method',
@@ -94,7 +96,8 @@ COMMITS = [
         'author_email': 'j.paul@joker.org',
         'committer_email': 'j.paul@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta-ref: test'],
         'line_modifieds': 0,
         'merge_commit': True,
         'commit_msg': 'Merge: something',
@@ -623,6 +626,23 @@ class TestInfosController(FunctionalTest):
             expected = dict((k, str(v)) for k, v in expected.items())
             self.assertDictEqual(csvret[0], expected)
             self.assertEqual(len(csvret), 1)
+
+            # Make an attempt by setting meta ref to True
+            expected = {
+                'first': 1393860653,
+                'last': 1410456005,
+                'commits_amount': 2,
+                'authors_amount': 2,
+                'line_modifieds_amount': 18,
+                'duration': 16595352,
+                'ttl_average': 0
+            }
+            projects_with_meta_ref = copy.deepcopy(self.projects)
+            projects_with_meta_ref['test']['meta_ref'] = True
+            m.return_value = projects_with_meta_ref
+            response = self.app.get('/api/v1/infos/infos?pid=test')
+            self.assertEqual(response.status_int, 200)
+            self.assertDictEqual(response.json, expected)
 
     def test_get_infos_contributor(self):
         expected = {

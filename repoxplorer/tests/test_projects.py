@@ -55,6 +55,7 @@ class TestProjects(TestCase):
 
         projects:
           Barbican:
+            meta-ref: True
             repos:
               openstack/barbican:
                 template: mytemplate
@@ -106,6 +107,7 @@ class TestProjects(TestCase):
         ret = p.get_projects_raw()
         expected_ret = {
             'Nova': {
+                'meta-ref': False,
                 'repos': {
                     'openstack/python-novaclient': {
                         'tags': ['openstack'],
@@ -131,6 +133,7 @@ class TestProjects(TestCase):
                         'uri': 'https://github.com/openstack/nova'}},
             },
             'Swift': {
+                'meta-ref': False,
                 'repos': {
                     'openstack/swift': {
                         'tags': ['openstack'],
@@ -156,6 +159,7 @@ class TestProjects(TestCase):
                 },
             },
             'Barbican': {
+                'meta-ref': True,
                 'repos': {
                     'openstack/barbican': {
                         'branches': ['master'],
