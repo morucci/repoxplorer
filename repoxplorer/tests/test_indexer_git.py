@@ -101,7 +101,7 @@ http://metavalue
         raw = file(
             os.path.join(cd, 'gitshow.sample')).read().splitlines()
         output = indexer.process_commits_desc_output(
-            raw, 'file:///gitshow.sample')
+            raw, ['file:///gitshow.sample'])
         expected = [
             {'ttl': 487,
              'line_modifieds': 10,
@@ -296,9 +296,6 @@ class TestRefsClean(TestCase):
             c for c in repo_commits if c['sha'] in to_create]
         indexer.process_commits_desc_output = lambda buf, ref_id: to_create
 
-        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
-                                 con=self.con)
-
     def test_cleaner(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
                                  con=self.con)
@@ -336,7 +333,7 @@ class TestRefsClean(TestCase):
                 'author_email': 'n.suke@joker.org',
                 'committer_email': 'n.suke@joker.org',
                 'repos': [
-                    'file:///tmp/p1:p1:devel', ],
+                    'file:///tmp/p1:p1:devel', 'meta_ref: Fedora'],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
             },
@@ -350,7 +347,8 @@ class TestRefsClean(TestCase):
                 'committer_email': 'n.suke@joker.org',
                 'repos': [
                     'file:///tmp/p1:p1:devel',
-                    'file:///tmp/p1:p1:master'],
+                    'file:///tmp/p1:p1:master',
+                    'meta_ref: Fedora'],
                 'line_modifieds': 10,
                 'commit_msg': 'Add init method',
             },
@@ -405,8 +403,10 @@ class TestRefsClean(TestCase):
         for cmt in cmts:
             if not cmt['found']:
                 continue
-            self.assertTrue(len(cmt['_source']['repos']), 1)
-            self.assertIn('file:///tmp/p1:p1:master', cmt['_source']['repos'])
+            self.assertIn(
+                'file:///tmp/p1:p1:master', cmt['_source']['repos'])
+            self.assertNotIn(
+                'file:///tmp/p1:p1:devel', cmt['_source']['repos'])
 
         # Here make sure tags are still reference as the base_id still exists
         self.assertEqual(len(pi.t.get_tags(['file:///tmp/p1:p1'])), 2)
@@ -464,6 +464,17 @@ class TestRepoIndexer(TestCase):
         self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
         seen_refs = cPickle.load(file(self.seen_refs))
+        self.assertTrue(len(seen_refs), 1)
+        self.assertIn('file:///tmp/p1:p1:master', seen_refs)
+
+    def test_init_with_meta_ref(self):
+        pi = indexer.RepoIndexer('p1', 'file:///tmp/p1', meta_ref='Fedora')
+        pi.set_branch('master')
+        self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
+        self.assertEqual(pi.meta_ref, 'meta-ref: Fedora')
+        self.assertTrue(os.path.isdir(indexer.conf['git_store']))
+        seen_refs = cPickle.load(file(self.seen_refs))
+        # The meta-ref is not added to seen refs store
         self.assertTrue(len(seen_refs), 1)
         self.assertIn('file:///tmp/p1:p1:master', seen_refs)
 
