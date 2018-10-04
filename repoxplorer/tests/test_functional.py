@@ -45,7 +45,8 @@ COMMITS = [
         'author_email': 'j.paul@joker.org',
         'committer_email': 'j.paul@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: Fedora'],
         'line_modifieds': 8,
         'merge_commit': False,
         'commit_msg': 'Test commit',
@@ -61,7 +62,8 @@ COMMITS = [
         'author_email': 'n.suke@joker.org',
         'committer_email': 'n.suke@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: Fedora'],
         'line_modifieds': 10,
         'merge_commit': False,
         'commit_msg': 'Add init method',
@@ -77,7 +79,8 @@ COMMITS = [
         'author_email': 'j.paul@joker.org',
         'committer_email': 'j.paul@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: Fedora'],
         'line_modifieds': 11,
         'merge_commit': False,
         'commit_msg': 'Add feature 36',
@@ -94,7 +97,8 @@ COMMITS = [
         'author_email': 'j.paul@joker.org',
         'committer_email': 'j.paul@joker.org',
         'repos': [
-            'https://github.com/nakata/monkey.git:monkey:master', ],
+            'https://github.com/nakata/monkey.git:monkey:master',
+            'meta_ref: Fedora'],
         'line_modifieds': 0,
         'merge_commit': True,
         'commit_msg': 'Merge: something',
