@@ -238,7 +238,6 @@ class Commits(object):
         }
 
         filter["bool"]["must"].append(boggus_date_clause)
-
         return filter
 
     def get_commits(self, mails=[], repos=[],

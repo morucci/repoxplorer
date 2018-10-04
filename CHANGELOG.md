@@ -12,6 +12,9 @@ New features
   referenced refs and tags
 - add *index-tags* attribute in project-template definition. This
   tells the indexer to not index repositories tags in the DB.
+- Add beta feature meta-ref to handle projects composed of
+  thousands of repository. For now this feature remain not
+  documented.
 
 Bug Fixes
 ---------

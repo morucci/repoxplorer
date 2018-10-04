@@ -80,7 +80,8 @@ class GroupsController(object):
                     'repos': p_filter,
                 }
                 projects = Projects()
-                repos = ci.get_repos(**query_kwargs)[1]
+                repos = filter(lambda r: not r.startswith('meta_ref: '),
+                               ci.get_repos(**query_kwargs)[1])
                 projects = utils.get_projects_from_references(projects, repos)
                 rg['repos_amount'] = len(repos)
                 rg['projects_amount'] = len(projects)

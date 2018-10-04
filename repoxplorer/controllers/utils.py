@@ -58,12 +58,22 @@ def get_projects_from_references(pi, references):
 
 def get_references_filter(project, inc_references=None):
     r_filter = {}
+    can_use_meta_ref = True
+    if inc_references:
+        # The use of the meta ref is possible if we want stats of the complete
+        # project
+        can_use_meta_ref = False
     if "repos" in project:
         for r in project['repos']:
             if inc_references:
                 if not "%(name)s:%(branch)s" % r in inc_references:
                     continue
             r_filter["%(uri)s:%(name)s:%(branch)s" % r] = r.get('paths')
+            if r.get('paths'):
+                # There is a path restriction then we cannot use the meta ref
+                can_use_meta_ref = False
+    if can_use_meta_ref and project.get('meta-ref', False):
+        r_filter = {'meta_ref: %s' % project['name']: None}
     return r_filter
 
 
@@ -156,9 +166,11 @@ def resolv_filters(projects_index, idents, pid,
 
     if pid:
         project = projects_index.get_projects().get(pid)
+        project['name'] = pid
         p_filter = get_references_filter(project, inc_repos)
     elif tid:
         project = projects_index.get_tags().get(tid)
+        project['name'] = pid
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []

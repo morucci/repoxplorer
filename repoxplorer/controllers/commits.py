@@ -65,6 +65,8 @@ class CommitsController(object):
             cmt['projects'] = utils.get_projects_from_references(
                 projects_index, cmt['repos'])
             # Also remove the URI part
+            cmt['repos'] = filter(lambda r: not r.startswith('meta_ref: '),
+                                  cmt['repos'])
             cmt['repos'] = [":".join(p.split(':')[-2:]) for
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email

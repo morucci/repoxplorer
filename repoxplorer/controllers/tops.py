@@ -189,13 +189,15 @@ class TopProjectsController(object):
         repos = f1(**query_kwargs)[1]
         if inc_repos_detail:
             repos_contributed = [
-                (p, ca) for p, ca in repos.items()]
+                (p, ca) for p, ca in repos.items() if not
+                p.startswith('meta_ref: ')]
         else:
             repos_contributed = []
             projects = utils.get_projects_from_references(pi, repos)
             for pname in projects:
-                p_repos = pi.get_projects()[pname]
-                p_filter = utils.get_references_filter(p_repos)
+                project = pi.get_projects()[pname]
+                project['name'] = pname
+                p_filter = utils.get_references_filter(project)
                 _query_kwargs = copy.deepcopy(query_kwargs)
                 _query_kwargs['repos'] = p_filter
                 ca = int(f2(**_query_kwargs) or 0)
