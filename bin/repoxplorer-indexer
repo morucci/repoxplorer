@@ -70,11 +70,15 @@ def process(conf):
         if not args.project and pid in conf.indexer_skip_projects:
             continue
         logger.info("Start indexing project %s" % pid)
+        meta_ref = None
+        if data.get('meta-ref') is True:
+            meta_ref = pid
         for rid, repo in data['repos'].items():
             r = indexer.RepoIndexer(rid,
                                     repo['uri'],
                                     parsers=repo['parsers'],
-                                    config=args.config)
+                                    config=args.config,
+                                    meta_ref=meta_ref)
             r.git_init()
             try:
                 r.get_refs()

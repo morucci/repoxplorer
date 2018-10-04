@@ -240,7 +240,7 @@ def parse_commit(input, offset, extra_parsers=None):
     return cmt, offset + i
 
 
-def process_commits_desc_output(input, ref_id, extra_parsers=None):
+def process_commits_desc_output(input, ref_ids, extra_parsers=None):
     ret = []
     offset = 0
     while True:
@@ -250,7 +250,7 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
             break
         try:
             cmt, offset = parse_commit(input, offset, extra_parsers)
-            cmt['repos'] = [ref_id, ]
+            cmt['repos'] = ref_ids
             # Remove atm un-supported fields
             for f in ("author_date_tz", "committer_date_tz",
                       "committer_email_domain", "files_stats",
@@ -270,22 +270,43 @@ def process_commits_desc_output(input, ref_id, extra_parsers=None):
 
 
 def process_commits(options):
-    path, ref_id, shas = options
+    path, ref_ids, shas = options
+    if not isinstance(ref_ids, list):
+        ref_ids = [ref_ids]
     c = Commits(index.Connector())
     logger.info("Worker %s started to extract and index %s commits" % (
         mp.current_process(), len(shas)))
     buf = get_commits_desc(path, shas)
-    c.add_commits(process_commits_desc_output(buf, ref_id))
+    c.add_commits(process_commits_desc_output(buf, ref_ids))
 
 
 def delete_commits(commits, name, to_delete, ref_id):
     res = commits.get_commits_by_id(list(to_delete))
     docs = [c['_source'] for
             c in res['docs'] if c['found'] is True]
-    to_delete = [c['sha'] for
-                 c in docs if len(c['repos']) == 1]
-    to_delete_update = [c['sha'] for
-                        c in docs if len(c['repos']) > 1]
+    # If it remains the meta_ref + ref (to delete) we can process
+    # with the deletion
+    to_delete = [
+        c['sha'] for c in docs if (
+            len(c['repos']) == 1 or
+            (len(c['repos']) == 2 and
+             filter(lambda x: x.startswith('meta_ref: '),
+                    c['repos'])
+             )
+        )
+    ]
+    to_delete_update = [
+        c['sha'] for c in docs if (
+            (len(c['repos']) > 1 and not
+             filter(lambda x: x.startswith('meta_ref: '),
+                    c['repos'])
+             ) or
+            (len(c['repos']) > 2 and
+             filter(lambda x: x.startswith('meta_ref: '),
+                    c['repos'])
+             )
+         )
+    ]
 
     if to_delete:
         logger.info("%s: %s commits will be deleted ..." % (
@@ -390,7 +411,7 @@ class RefsCleaner():
 
 class RepoIndexer():
     def __init__(self, name, uri, parsers=None,
-                 con=None, config=None):
+                 con=None, config=None, meta_ref=None):
         if config:
             configuration.set_config(config)
         if not con:
@@ -405,6 +426,11 @@ class RepoIndexer():
         self.uri = uri
         self.base_id = '%s:%s' % (self.uri, self.name)
         self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
+        if meta_ref:
+            self.meta_ref = 'meta_ref: %s' % meta_ref
+        else:
+            self.meta_ref = None
+
         if not parsers:
             self.parsers = []
         else:
@@ -491,8 +517,11 @@ class RepoIndexer():
                 # Add the rest
                 to_process.append(shas)
                 break
+        ref_ids = [self.ref_id]
+        if self.meta_ref:
+            ref_ids.append(self.meta_ref)
         options = [
-            (self.local, self.ref_id, stp) for stp in to_process]
+            (self.local, ref_ids, stp) for stp in to_process]
         worker_pool = mp.Pool(workers)
         worker_pool.map(process_commits, options)
         worker_pool.terminate()
