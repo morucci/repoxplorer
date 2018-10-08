@@ -61,7 +61,7 @@ class YAMLBackend(object):
             by the caller and could overwrite data from the
             default_file.
         """
-        self.db_path = db_path
+        self.db_path = db_path or conf.db_path
 
         self.db_default_file = db_default_file
 
@@ -76,10 +76,10 @@ class YAMLBackend(object):
             data = None
             logger.debug("Check cache for %s ..." % path)
             basename = os.path.basename(path)
-            if not os.path.isdir(conf.db_path):
-                os.makedirs(conf.db_path)
-            cached_hash_path = os.path.join(conf.db_path, basename + '.hash')
-            cached_data_path = os.path.join(conf.db_path, basename + '.cached')
+            if not os.path.isdir(self.db_path):
+                os.makedirs(self.db_path)
+            cached_hash_path = os.path.join(self.db_path, basename + '.hash')
+            cached_data_path = os.path.join(self.db_path, basename + '.cached')
             hash = SHA.new(file(path).read()).hexdigest()
             if (os.path.isfile(cached_hash_path) and
                     os.path.isfile(cached_data_path)):
