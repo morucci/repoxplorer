@@ -20,7 +20,6 @@ from pecan import conf
 from pecan import expose
 
 from repoxplorer import index
-from repoxplorer.controllers import tops
 from repoxplorer.controllers import utils
 from repoxplorer.index.contributors import Contributors
 from repoxplorer.index.commits import Commits
@@ -81,13 +80,10 @@ class GroupsController(object):
                     'repos': p_filter,
                 }
                 projects = Projects()
-                tops_ctl = tops.TopProjectsController()
-                top_projects = tops_ctl.gbycommits(
-                    ci, projects, query_kwargs, False, -1)
-                top_repos = tops_ctl.gbycommits(
-                    ci, projects, query_kwargs, True, -1)
-                rg['projects_amount'] = len(top_projects)
-                rg['repos_amount'] = len(top_repos)
+                repos = ci.get_repos(**query_kwargs)[1]
+                projects = utils.get_projects_from_references(projects, repos)
+                rg['repos_amount'] = len(repos)
+                rg['projects_amount'] = len(projects)
 
             ret_groups[group] = rg
 

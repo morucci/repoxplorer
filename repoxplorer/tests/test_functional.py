@@ -262,12 +262,12 @@ class TestGroupsController(FunctionalTest):
                                 'get_idents_by_emails'),
                    patch.object(root.groups.Commits,
                                 'get_commits_author_name_by_emails'),
-                   patch.object(root.groups.tops.TopProjectsController,
-                                'gbycommits')]
-        with nested(*patches) as (gg, gi_by_emails, gca, gby_commits):
+                   patch.object(root.groups.Commits, 'get_repos')]
+        with nested(*patches) as (gg, gi_by_emails, gca, gr):
             gg.return_value = self.groups
             gi_by_emails.side_effect = self.gi_by_emails
             gca.return_value = self.gca
+            gr.return_value = (None, [])
             response = self.app.get('/api/v1/groups/?withstats=true')
             assert response.status_int == 200
             expected_ret = {

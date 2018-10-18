@@ -31,6 +31,7 @@ Other Notes
 - refs cleaner removes repository related tags (from tags db) if it no longer
   exists in project definition.
 - discard 1970-01-01 commits from stats results.
+- improved groups endpoint response time when withstats to True.
 
 1.3.1
 =====

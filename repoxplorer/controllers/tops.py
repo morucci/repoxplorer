@@ -187,12 +187,12 @@ class TopProjectsController(object):
     def gby(self, ci, pi, query_kwargs,
             inc_repos_detail, f1, f2, limit):
         repos = f1(**query_kwargs)[1]
-        projects = utils.get_projects_from_references(pi, repos)
         if inc_repos_detail:
             repos_contributed = [
                 (p, ca) for p, ca in repos.items()]
         else:
             repos_contributed = []
+            projects = utils.get_projects_from_references(pi, repos)
             for pname in projects:
                 p_repos = pi.get_projects()[pname]
                 p_filter = utils.get_references_filter(p_repos)
