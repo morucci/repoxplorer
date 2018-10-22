@@ -54,12 +54,12 @@ class UsersController(RestController):
             # If remote-user is admin and an admin-token is passed
             # authorized if the token is correct
             if sent_admin_token == admin_token:
-                return
+                return 'admin'
         else:
             # If uid targeted by the request is the same
             # as the requester then authorize
             if uid and uid == request.remote_user:
-                return
+                return uid
         abort(401)
 
     def _validate(self, data):
@@ -170,7 +170,7 @@ class UsersController(RestController):
     # "http://localhost:51000/api/v1/users/fabien"
     @expose('json')
     def post(self, uid):
-        self._authorize(uid)
+        requester = self._authorize(uid)
         _users = users.Users(
             index.Connector(index_suffix='users'))
         u = _users.get(uid)
@@ -183,7 +183,7 @@ class UsersController(RestController):
             del infos['cid']
         if not self._validate(infos):
             abort(400)
-        if uid != 'admin':
+        if requester != 'admin':
             # User is not allowed to modify some raw_fields
             # like adding or removing emails ...
             if self._modify_protected_fields(u, infos):
