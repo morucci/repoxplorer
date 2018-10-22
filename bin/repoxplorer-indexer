@@ -43,6 +43,12 @@ parser.add_argument(
     '--project', type=str, default=None,
     help='Specify the project to index')
 parser.add_argument(
+    '--logfile', type=str, default=None,
+    help='Override the logging file from config')
+parser.add_argument(
+    '--loglevel', type=str, default=None,
+    help='Override the logging level from config')
+parser.add_argument(
     '--clean-orphan', action='store_true', default=False,
     help="Clean refs and tags not known from the project's configuration")
 
@@ -141,6 +147,11 @@ def process(conf):
 
 if __name__ == "__main__":
     conf = imp.load_source('config', args.config)
+    if args.logfile:
+        conf.indexer_logging['handlers']['normal']['filename'] = args.logfile
+    if args.loglevel:
+        conf.indexer_logging['handlers']['normal']['level'] = args.loglevel
+        conf.indexer_logging['handlers']['console']['level'] = args.loglevel
     logging.config.dictConfig(conf.indexer_logging)
     if args.clean_orphan:
         try:
