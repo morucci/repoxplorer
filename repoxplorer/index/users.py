@@ -109,6 +109,8 @@ class Users(object):
             }}
         }
         params['body'] = body
+        # TODO(fbo): Improve by doing it by bulk instead
+        params['size'] = 10000
         ret = self.es.search(**params)['hits']['hits']
         ret = [r['_source'] for r in ret]
         return ret
@@ -140,6 +142,8 @@ class Users(object):
             }}
         }
         params['body'] = body
+        # TODO(fbo): Improve by doing it by bulk instead
+        params['size'] = 10000
         ret = self.es.search(**params)['hits']['hits']
         return [r['_source'] for r in ret]
 

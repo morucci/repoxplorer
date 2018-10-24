@@ -354,7 +354,7 @@ class Contributors(YAMLDefinition):
         if user_endpoint_active:
             # Look at the elk backend
             if emails:
-                # Do not request if emails if empty (ELK backend will return
+                # Do not request if emails is empty (ELK backend will return
                 # all ident in that case)
                 el_selecteds = self._users.get_idents_by_emails(emails)
                 emails_not_found = set(emails)
