@@ -74,19 +74,26 @@ class InfosController(object):
         return self.get_generic_infos(c, idents, query_kwargs)
 
     @expose('json')
-    def contributor(self, cid=None):
+    @expose('csv:', content_type='text/csv')
+    def contributor(self, pid=None, tid=None, cid=None, gid=None,
+                    dfrom=None, dto=None, inc_merge_commit=None,
+                    inc_repos=None, metadata=None, exc_groups=None,
+                    inc_groups=None):
         if not cid:
             abort(404,
                   detail="No contributor specified")
+
+        c = Commits(index.Connector())
+        idents = Contributors()
+        projects = Projects()
+        ecid = cid
 
         try:
             cid = utils.decrypt(xorkey, cid)
         except Exception:
             abort(404,
                   detail="The cid is incorrectly formated")
-        c = Commits(index.Connector())
-        idents = Contributors()
-        projects = Projects()
+
         _, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
@@ -102,12 +109,9 @@ class InfosController(object):
             else:
                 name = raw_names[cid]
 
-        p_filter = {}
-        query_kwargs = {
-            'mails': mails,
-            'merge_commit': False,
-            'repos': p_filter,
-        }
+        query_kwargs = utils.resolv_filters(
+            projects, idents, pid, None, ecid, None,
+            dfrom, dto, None, inc_merge_commit, None, None, None)
 
         tops_ctl = tops.TopProjectsController()
         top_projects = tops_ctl.gbycommits(

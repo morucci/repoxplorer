@@ -657,7 +657,7 @@ class TestInfosController(FunctionalTest):
             root.infos.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get(
-                '/api/v1/infos/contributor?cid=%s' % cid)
+                '/api/v1/infos/contributor', {'cid': cid})
             self.assertEqual(response.status_int, 200)
             self.assertDictEqual(response.json, expected)
 

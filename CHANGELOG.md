@@ -9,28 +9,30 @@ New features
 ------------
 
 - add indexer cli option *--clean-orphan* to clean no longer
-  referenced refs and tags
+  referenced refs and tags.
 - add *index-tags* attribute in project-template definition. This
   tells the indexer to not index repositories tags in the DB.
 - Add beta feature meta-ref to handle projects composed of
   thousands of repository. For now this feature remain not
   documented.
+- Add CSV support to infos/contributor endpoint.
 
 Bug Fixes
 ---------
 
-- fix contributors search results not sorted by alphabetical order
-- fix "To date" computation to include the selected day (also fix the top computation)
-- fix project page jumbotron link cut when name is multi words
+- fix contributors search results not sorted by alphabetical order.
+- fix "To date" computation to include the selected day (also fix the top computation).
+- fix project page jumbotron link cut when name is multi words.
+- fix infos/contributor endpoint that ignored dto/dfrom.
 
 Other Notes
 -----------
 
 - no longer use /tmp for the seen_refs cache instead store it in db_path.
-- ui: change button style of the filter box
+- ui: change button style of the filter box.
 - ui: specify that search is done on author's full name and wildcards authorized
   in the search page.
-- api: limit authors search results to 100 items
+- api: limit authors search results to 100 items.
 - refs cleaner removes repository related tags (from tags db) if it no longer
   exists in project definition.
 - discard 1970-01-01 commits from stats results.

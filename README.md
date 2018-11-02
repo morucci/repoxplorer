@@ -588,13 +588,24 @@ curl "http://localhost:51000/api/v1/infos/contributor?cid=DwAQCBtCFg0WDg4FLAYFBg
 ```
 ```Python
 { "repos_amount": 75,
-  "name": "rdo-trunk",
+  "name": "John Doe",
   "mails_amount": 1,
   "gravatar": "b726b19f8e7c2e23e403e4b5d3ab4508",
   "projects_amount": 2
 }
 ```
 
+This endpoint can also output to CSV.
+
+```Shell
+curl "http://localhost:51000/api/v1/infos/contributor.csv?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+# or
+curl -H "accept: text/csv" "http://localhost:51000/api/v1/infos/contributor?cid=DwAQCBtCFg0WDg4FLAYFBg0SBQ0XAUsFDhg-"
+```
+```
+gravatar,mails_amount,name,projects_amount,repos_amount
+a08de2c8fe4fb685409091d3b6dbd0bf,1,John Doe,2,75
+```
 
 #### /api/v1/commits/commits
 
