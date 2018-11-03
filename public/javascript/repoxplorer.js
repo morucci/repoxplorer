@@ -281,9 +281,9 @@ function get_infos(pid, tid, cid, gid) {
         gc_d = $.getJSON("api/v1/infos/contributor", args);
     }
     if (gid) {
-        // TODO(fbo): also send args to honor filters. Endpoint needs an update
-        gg_d = $.getJSON("api/v1/groups/",
-                         {'prefix': gid, 'withstats': 'true'});
+        args['prefix'] = gid
+        args['withstats'] = 'true'
+        gg_d = $.getJSON("api/v1/groups/", args);
     }
 
     gi_d = $.getJSON("api/v1/infos/infos", args);

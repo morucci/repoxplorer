@@ -31,10 +31,13 @@ xorkey = conf.get('xorkey') or 'default'
 class GroupsController(object):
 
     @expose('json')
-    def index(self, prefix=None, nameonly='false', withstats='false'):
+    def index(self, prefix=None, nameonly='false', withstats='false',
+              pid=None, dfrom=None, dto=None, inc_merge_commit=None):
         ci = Commits(index.Connector())
         contributors_index = Contributors()
         groups = contributors_index.get_groups()
+        if withstats == 'true':
+            projects_index = Projects()
         if nameonly == 'true':
             ret = dict([(k, None) for k in groups.keys()])
             if prefix:
@@ -62,27 +65,21 @@ class GroupsController(object):
                     suggested = ci.get_commits_author_name_by_emails(
                         [member['default-email']])
                     name = suggested.get(member['default-email'],
-                                         'Unknown name')
+                                         'Unnamed')
                     member['name'] = name
                 del member['default-email']
                 rg['members'][utils.encrypt(xorkey, id)] = member
 
             if withstats == 'true':
-                # TODO(fbo): This endpoint needs to handle some filters like
-                # dates bounces to return more accurate stats
-
                 # Fetch the number of projects and repos contributed to
-                p_filter = {}
-                query_kwargs = {
-                    'mails': data['emails'],
-                    'merge_commit': False,
-                    'domains': data.get('domains', []),
-                    'repos': p_filter,
-                }
-                projects = Projects()
+                query_kwargs = utils.resolv_filters(
+                    projects_index, contributors_index, pid, None, None, group,
+                    dfrom, dto, None, inc_merge_commit, None, None, None)
+
                 repos = filter(lambda r: not r.startswith('meta_ref: '),
                                ci.get_repos(**query_kwargs)[1])
-                projects = utils.get_projects_from_references(projects, repos)
+                projects = utils.get_projects_from_references(
+                    projects_index, repos)
                 rg['repos_amount'] = len(repos)
                 rg['projects_amount'] = len(projects)
 
