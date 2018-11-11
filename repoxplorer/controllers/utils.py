@@ -170,10 +170,17 @@ def resolv_filters(projects_index, idents, pid,
         p_filter = get_references_filter(project, inc_repos)
     elif tid:
         project = projects_index.get_tags().get(tid)
-        project['name'] = pid
+        project['name'] = tid
         p_filter = get_references_filter(project, inc_repos)
     else:
         p_filter = []
+
+    blacklisted_mails = []
+    if pid:
+        bots_group = project.get('bots-group')
+        if bots_group:
+            _, group = idents.get_group_by_id(bots_group)
+            blacklisted_mails = group['emails']
 
     _metadata = []
     if not metadata:
@@ -243,5 +250,6 @@ def resolv_filters(projects_index, idents, pid,
         'todate': dto,
         'merge_commit': inc_merge_commit,
         'metadata': _metadata,
+        'blacklisted_mails': blacklisted_mails,
     }
     return query_kwargs
