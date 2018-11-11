@@ -133,6 +133,8 @@ properties:
             type: string
           meta-ref:
             type: boolean
+          bots-group:
+            type: string
           repos:
             type: object
             additionalProperties: false
@@ -163,6 +165,8 @@ properties:
 projects_example = """
 projects:
   Barbican:
+    description: The Barbican project
+    bots-group: openstack-ci-bots
     repos:
       openstack/barbican:
         template: default
@@ -383,7 +387,8 @@ class Projects(YAMLDefinition):
                 'meta-ref': detail.get('meta-ref'),
                 'repos': [],
                 'description': detail.get('description'),
-                'logo': detail.get('logo')
+                'logo': detail.get('logo'),
+                'bots-group': detail.get('bots-group'),
             }
             for rid, repo in detail['repos'].items():
                 for branch in repo['branches']:
