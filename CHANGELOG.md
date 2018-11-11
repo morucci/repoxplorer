@@ -12,10 +12,13 @@ New features
   referenced refs and tags.
 - add *index-tags* attribute in project-template definition. This
   tells the indexer to not index repositories tags in the DB.
-- Add beta feature meta-ref to handle projects composed of
+- add beta feature meta-ref to handle projects composed of
   thousands of repository. For now this feature remain not
   documented.
-- Add CSV support to infos/contributor endpoint.
+- add CSV support to infos/contributor endpoint.
+- add bots-group project attribute that can be used to
+  define project' bots and exclude bots' commits from
+  stats results.
 
 Bug Fixes
 ---------

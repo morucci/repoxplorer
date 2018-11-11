@@ -62,6 +62,7 @@ class TestProjects(TestCase):
               openstack/python-barbicanclient:
                 template: mytemplate
           Swift:
+            bots-group: openstack-ci-bots
             repos:
               openstack/swift:
                 template: default
@@ -134,6 +135,7 @@ class TestProjects(TestCase):
             },
             'Swift': {
                 'meta-ref': False,
+                'bots-group': 'openstack-ci-bots',
                 'repos': {
                     'openstack/swift': {
                         'tags': ['openstack'],
