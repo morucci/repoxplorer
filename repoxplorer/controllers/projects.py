@@ -41,18 +41,23 @@ class ProjectsController(object):
                   detail='Project ID or Tag ID has not been found')
         return repos
 
-    def get_projects(self):
+    def get_projects(self, pid=None):
         projects_index = Projects()
         projects = projects_index.get_projects()
-        projects = OrderedDict(
-            sorted(projects.items(), key=lambda t: t[0]))
-        tags = projects_index.get_tags()
-        return {'projects': projects,
-                'tags': tags.keys()}
+        if pid:
+            if pid not in projects:
+                abort(404, detail="Project ID has not been found")
+            return {pid: projects.get(pid)}
+        else:
+            projects = OrderedDict(
+                sorted(projects.items(), key=lambda t: t[0]))
+            tags = projects_index.get_tags()
+            return {'projects': projects,
+                    'tags': tags.keys()}
 
     @expose('json')
-    def projects(self):
-        return self.get_projects()
+    def projects(self, pid=None):
+        return self.get_projects(pid)
 
     @expose('json')
     def repos(self, pid=None, tid=None):
