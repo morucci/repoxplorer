@@ -538,8 +538,34 @@ curl "http://localhost:51000/api/v1/projects/projects"
                 }
             ]
         }
-    }
+    },
+    "tags": [],
 }
+```
+
+The **pid** parameter can be passed to request only a project.
+
+
+```Shell
+curl "http://localhost:51000/api/v1/projects/projects?pid=Barbican"
+```
+
+```
+{"Barbican": {
+    "description": "The barbican project",
+    "repos": [
+        {
+            "branch": "master",
+            "gitweb": "https://github.com/openstack/barbican/commit/%(sha)s",
+            "name": "barbican",
+            "parsers": [],
+            "releases": [],
+            "tags": [],
+            "uri": "https://github.com/openstack/barbican"
+        },
+        ...
+    ]
+}}
 ```
 
 #### /api/v1/projects/repos

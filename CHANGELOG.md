@@ -19,6 +19,7 @@ New features
 - add bots-group project attribute that can be used to
   define project' bots and exclude bots' commits from
   stats results.
+- the *pid* parameter can be passed to the projects endpoint.
 
 Bug Fixes
 ---------
