@@ -250,6 +250,9 @@ function fill_info_box(args) {
     $("#infos-known_emails").append('<b>Known emails:</b> ' + args.mails_amount);
     $("#infos-description").append('<b>Description:</b> ' + args.description);
     $("#infos-members_amount").append('<b>Members:</b> ' + args.members_amount);
+    if (args.bots_group) {
+        $("#infos-bots-group").append('<b>Bots group:</b> ' + "<a href='group.html?gid=" + args.bots_group + "'>" + args.bots_group + '</a>');
+    }
 }
 
 function get_infos(pid, tid, cid, gid) {
@@ -273,9 +276,14 @@ function get_infos(pid, tid, cid, gid) {
     gr_d = $.when();
     gc_d = $.when();
     gg_d = $.when();
+    gp_d = $.when();
+
     if(pid || tid) {
         gr_d = $.getJSON("api/v1/projects/repos",
                          {'pid': pid, 'tid': tid});
+    }
+    if (pid) {
+        gp_d = $.getJSON("api/v1/projects/projects", {'pid': pid});
     }
     if(cid) {
         gc_d = $.getJSON("api/v1/infos/contributor", args);
@@ -287,9 +295,9 @@ function get_infos(pid, tid, cid, gid) {
     }
 
     gi_d = $.getJSON("api/v1/infos/infos", args);
-    return $.when(gr_d, gi_d, gc_d, gg_d)
+    return $.when(gr_d, gi_d, gc_d, gg_d, gp_d)
         .done(
-            function(rdata, idata, cdata, gdata) {
+            function(rdata, idata, cdata, gdata, pdata) {
                 if (pid || tid) {
                     rdata = rdata[0];
                 }
@@ -297,7 +305,10 @@ function get_infos(pid, tid, cid, gid) {
                     cdata = cdata[0];
                 }
                 if (gid) {
-                    gdata = gdata[0];
+                    gdata = gdata[0][gid];
+                }
+                if (pid) {
+                    pdata = pdata[0][pid];
                 }
                 idata = idata[0];
                 var ib_data = {};
@@ -321,10 +332,14 @@ function get_infos(pid, tid, cid, gid) {
                     ib_data.mails_amount = cdata.mails_amount;
                 }
                 if (gid) {
-                    ib_data.description = escapeHtml(gdata[gid].description);
-                    ib_data.members_amount = Object.keys(gdata[gid].members).length;
-                    ib_data.projects_amount = gdata[gid].projects_amount;
-                    ib_data.repos_amount = gdata[gid].repos_amount;
+                    ib_data.description = escapeHtml(gdata.description);
+                    ib_data.members_amount = Object.keys(gdata.members).length;
+                    ib_data.projects_amount = gdata.projects_amount;
+                    ib_data.repos_amount = gdata.repos_amount;
+                }
+                if (pid) {
+                  ib_data.description = pdata.description;
+                  ib_data.bots_group = pdata['bots-group'];
                 }
                 fill_info_box(ib_data);
                 $("#infos-progress").empty();
