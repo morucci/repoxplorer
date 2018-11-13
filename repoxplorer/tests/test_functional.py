@@ -607,50 +607,77 @@ class TestInfosController(FunctionalTest):
             'authors_amount': 2,
             'line_modifieds_amount': 29,
             'duration': 16595352,
-            'ttl_average': 0
+            'ttl_average': 0,
+            'projects_amount': 1,
+            'repos_amount': 1,
         }
         with patch.object(root.projects.Projects, 'get_projects') as m:
             root.infos.indexname = 'repoxplorertest'
             m.return_value = self.projects
             response = self.app.get('/api/v1/infos/infos?pid=test')
-            self.assertEqual(response.status_int, 200)
-            self.assertDictEqual(response.json, expected)
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
 
-            # Check endpoint CSV mode
+        # Check endpoint CSV mode
+        with patch.object(root.projects.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
+            m.return_value = self.projects
             response = self.app.get(
                 '/api/v1/infos/infos?pid=test',
                 headers={'Accept': 'text/csv'})
-            self.assertEqual(response.status_int, 200)
-            csvret = build_dict_from_csv(response.body)
-            # Convert all dict values to str
-            expected = dict((k, str(v)) for k, v in expected.items())
-            self.assertDictEqual(csvret[0], expected)
-            self.assertEqual(len(csvret), 1)
+        self.assertEqual(response.status_int, 200)
+        csvret = build_dict_from_csv(response.body)
+        # Convert all dict values to str
+        expected = dict((k, str(v)) for k, v in expected.items())
+        self.assertDictEqual(csvret[0], expected)
+        self.assertEqual(len(csvret), 1)
 
-            # Make an attempt by setting meta ref to True
-            expected = {
-                'first': 1393860653,
-                'last': 1410456005,
-                'commits_amount': 2,
-                'authors_amount': 2,
-                'line_modifieds_amount': 18,
-                'duration': 16595352,
-                'ttl_average': 0
-            }
-            projects_with_meta_ref = copy.deepcopy(self.projects)
-            projects_with_meta_ref['test']['meta-ref'] = True
+        # Make an attempt by setting meta ref to True
+        expected = {
+            'first': 1393860653,
+            'last': 1410456005,
+            'commits_amount': 2,
+            'authors_amount': 2,
+            'line_modifieds_amount': 18,
+            'duration': 16595352,
+            'ttl_average': 0,
+            'projects_amount': 1,
+            'repos_amount': 1,
+        }
+        projects_with_meta_ref = copy.deepcopy(self.projects)
+        projects_with_meta_ref['test']['meta-ref'] = True
+        with patch.object(root.projects.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
             m.return_value = projects_with_meta_ref
             response = self.app.get('/api/v1/infos/infos?pid=test')
-            self.assertEqual(response.status_int, 200)
-            self.assertDictEqual(response.json, expected)
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
+
+        # Test with a cid
+        expected = {
+            'projects_amount': 1,
+            'first': 1410456005,
+            'line_modifieds_amount': 10,
+            'duration': 0,
+            'commits_amount': 1,
+            'ttl_average': 0,
+            'last': 1410456005,
+            'authors_amount': 1,
+            'repos_amount': 1
+        }
+        cid = utils.encrypt(xorkey, 'n.suke@joker.org')
+        with patch.object(root.projects.Projects, 'get_projects') as m:
+            root.infos.indexname = 'repoxplorertest'
+            m.return_value = self.projects
+            response = self.app.get('/api/v1/infos/infos', {'cid': cid})
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
 
     def test_get_infos_contributor(self):
         expected = {
-            'repos_amount': 1,
             'name': 'Nakata Daisuke',
             'mails_amount': 1,
             'gravatar': '505dcbea438008f24001e2928cdc0678',
-            'projects_amount': 1
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
         with patch.object(root.projects.Projects, 'get_projects') as m:

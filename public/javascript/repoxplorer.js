@@ -221,7 +221,6 @@ function get_top_diff(pid, tid, cid, gid, infos, dtoref_dfrom, limit) {
 }
 
 function fill_info_box(args) {
-    $("#infos-repo_refs").empty();
     $("#infos-commits_amount").empty();
     $("#infos-authors_amount").empty();
     $("#infos-duration").empty();
@@ -232,12 +231,12 @@ function fill_info_box(args) {
     $("#infos-gravatar").empty();
     $("#infos-projects_amount").empty();
     $("#infos-repos_amount").empty();
+    $("#infos-repos_amount-alt").empty();
     $("#infos-known_emails").empty();
     $("#infos-description").empty();
     $("#infos-members_amount").empty();
 
 
-    $("#infos-repo_refs").append('<b>Repository refs:</b> ' + args.repo_refs);
     $("#infos-commits_amount").append('<b>Commits:</b> ' + args.commits_amount);
     $("#infos-authors_amount").append('<b>Authors:</b> ' + args.authors_amount);
     $("#infos-duration").append('<b>Activity duration:</b> ' + args.duration + ' days');
@@ -248,6 +247,7 @@ function fill_info_box(args) {
     $("#infos-gravatar").append('<img class="img-responsive" src="https://www.gravatar.com/avatar/' + args.gravatar + '?s=150" title="' + args.name + '">');
     $("#infos-projects_amount").append('<b>Projects contributed:</b> ' + args.projects_amount);
     $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + args.repos_amount);
+    $("#infos-repos_amount-alt").append('<b>Repository refs:</b> ' + args.repos_amount);
     $("#infos-known_emails").append('<b>Known emails:</b> ' + args.mails_amount);
     $("#infos-description").append('<b>Description:</b> ' + args.description);
     $("#infos-members_amount").append('<b>Members:</b> ' + args.members_amount);
@@ -288,21 +288,16 @@ function get_infos(pid, tid, cid, gid) {
         gp_d = $.getJSON("api/v1/projects/projects", {'pid': pid});
     }
     if(cid) {
-        gc_d = $.getJSON("api/v1/infos/contributor", args);
+        gc_d = $.getJSON("api/v1/infos/contributor", {'cid': cid});
     }
     if (gid) {
-        args['prefix'] = gid
-        args['withstats'] = 'true'
-        gg_d = $.getJSON("api/v1/groups/", args);
+        gg_d = $.getJSON("api/v1/groups/", {'prefix': gid});
     }
 
     gi_d = $.getJSON("api/v1/infos/infos", args);
     return $.when(gr_d, gi_d, gc_d, gg_d, gp_d)
         .done(
             function(rdata, idata, cdata, gdata, pdata) {
-                if (pid || tid) {
-                    rdata = rdata[0];
-                }
                 if (cid) {
                     cdata = cdata[0];
                 }
@@ -314,30 +309,23 @@ function get_infos(pid, tid, cid, gid) {
                 }
                 idata = idata[0];
                 var ib_data = {};
-                var repo_refs = 0;
-                if (pid || tid) {
-                    repo_refs = rdata.length;
-                }
 
-                ib_data.repo_refs = repo_refs;
                 ib_data.duration = parseInt(moment.duration(1000 * idata.duration).asDays());
                 ib_data.first = new Date(1000 * idata.first);
                 ib_data.last = new Date(1000 * idata.last);
                 ib_data.commits_amount = idata.commits_amount;
                 ib_data.authors_amount = idata.authors_amount;
                 ib_data.line_modifieds_amount = idata.line_modifieds_amount;
+                ib_data.projects_amount = idata.projects_amount;
+                ib_data.repos_amount = idata.repos_amount;
                 if (cid) {
                     ib_data.name = escapeHtml(cdata.name);
                     ib_data.gravatar = cdata.gravatar;
-                    ib_data.projects_amount = cdata.projects_amount;
-                    ib_data.repos_amount = cdata.repos_amount;
                     ib_data.mails_amount = cdata.mails_amount;
                 }
                 if (gid) {
                     ib_data.description = escapeHtml(gdata.description);
                     ib_data.members_amount = Object.keys(gdata.members).length;
-                    ib_data.projects_amount = gdata.projects_amount;
-                    ib_data.repos_amount = gdata.repos_amount;
                 }
                 if (pid) {
                   ib_data.description = pdata.description;

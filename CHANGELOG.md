@@ -27,8 +27,8 @@ Bug Fixes
 - fix contributors search results not sorted by alphabetical order.
 - fix "To date" computation to include the selected day (also fix the top computation).
 - fix project page jumbotron link cut when name is multi words.
-- fix infos/contributor endpoint that ignored dto/dfrom.
 - fix groups endpoint that ignored dto/dfrom.
+- fix project info box not computed based on filters.
 
 Other Notes
 -----------
