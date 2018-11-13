@@ -8,6 +8,19 @@ Master
 New features
 ------------
 
+Bug Fixes
+---------
+
+Other Notes
+-----------
+
+
+1.4.0
+=====
+
+New features
+------------
+
 - add indexer cli option *--clean-orphan* to clean no longer
   referenced refs and tags.
 - add *index-tags* attribute in project-template definition. This
