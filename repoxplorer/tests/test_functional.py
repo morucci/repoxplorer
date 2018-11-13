@@ -697,13 +697,18 @@ class TestProjectsController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master',
-                     'tags': ['python']}
-                ]
+            'test': {'repos': [
+                {'uri': 'https://github.com/nakata/monkey.git',
+                 'name': 'monkey',
+                 'branch': 'master',
+                 'tags': ['python']}
+                 ]
+            },
+            'test2': {'repos': [
+                {'uri': 'https://github.com/nakata/monkey.git',
+                 'name': 'monkey',
+                 'branch': 'master'}
+                 ]
             }
         }
 
@@ -713,6 +718,13 @@ class TestProjectsController(FunctionalTest):
             response = self.app.get('/api/v1/projects/projects')
             assert response.status_int == 200
             self.assertIn('test', response.json['projects'])
+            self.assertIn('test2', response.json['projects'])
+
+            response = self.app.get('/api/v1/projects/projects?pid=test')
+            assert response.status_int == 200
+            project = copy.deepcopy(self.projects)
+            del project['test2']
+            self.assertDictEqual(project, response.json)
 
     def test_get_repos(self):
         with patch.object(root.projects.Projects, 'get_projects') as m:
