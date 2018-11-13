@@ -21,7 +21,6 @@ from pecan import expose
 from pecan import conf
 
 from repoxplorer import index
-from repoxplorer.controllers import tops
 from repoxplorer.controllers import utils
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.projects import Projects
@@ -32,7 +31,8 @@ xorkey = conf.get('xorkey') or 'default'
 
 class InfosController(object):
 
-    def get_generic_infos(self, commits_index, idents, query_kwargs):
+    def get_generic_infos(
+            self, projects_index, commits_index, idents, query_kwargs):
         infos = {}
         infos['commits_amount'] = commits_index.get_commits_amount(
             **query_kwargs)
@@ -53,6 +53,13 @@ class InfosController(object):
 
         infos['line_modifieds_amount'] = int(
             commits_index.get_line_modifieds_stats(**query_kwargs)[1]['sum'])
+
+        repos = filter(lambda r: not r.startswith('meta_ref: '),
+                       commits_index.get_repos(**query_kwargs)[1])
+        projects = utils.get_projects_from_references(
+            projects_index, repos)
+        infos['repos_amount'] = len(repos)
+        infos['projects_amount'] = len(projects)
         return infos
 
     @expose('json')
@@ -71,20 +78,17 @@ class InfosController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups, inc_groups)
 
-        return self.get_generic_infos(c, idents, query_kwargs)
+        return self.get_generic_infos(projects_index, c, idents, query_kwargs)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')
-    def contributor(self, pid=None, tid=None, cid=None, gid=None,
-                    dfrom=None, dto=None, inc_merge_commit=None):
+    def contributor(self, cid=None):
         if not cid:
             abort(404,
                   detail="No contributor specified")
 
         c = Commits(index.Connector())
         idents = Contributors()
-        projects = Projects()
-        ecid = cid
 
         try:
             cid = utils.decrypt(xorkey, cid)
@@ -107,22 +111,8 @@ class InfosController(object):
             else:
                 name = raw_names[cid]
 
-        query_kwargs = utils.resolv_filters(
-            projects, idents, pid, None, ecid, None,
-            dfrom, dto, None, inc_merge_commit, None, None, None)
-
-        tops_ctl = tops.TopProjectsController()
-        top_projects = tops_ctl.gbycommits(
-            c, projects, query_kwargs, False, -1)
-        top_repos = tops_ctl.gbycommits(
-            c, projects, query_kwargs, True, -1)
-
         infos = {}
         infos['name'] = name
         infos['mails_amount'] = len(mails)
-        infos['projects_amount'] = len(top_projects)
-        infos['repos_amount'] = len(
-            filter(lambda r: not r['name'].startswith('meta_ref: '),
-                   top_repos))
         infos['gravatar'] = hashlib.md5(ident['default-email']).hexdigest()
         return infos
