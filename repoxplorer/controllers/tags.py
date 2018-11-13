@@ -19,6 +19,7 @@ from repoxplorer.controllers import utils
 from repoxplorer import index
 from repoxplorer.index.projects import Projects
 from repoxplorer.index.tags import Tags
+from repoxplorer.index.contributors import Contributors
 
 
 class TagsController(object):
@@ -28,9 +29,10 @@ class TagsController(object):
              dfrom=None, dto=None, inc_repos=None):
         t = Tags(index.Connector())
         projects_index = Projects()
+        idents = Contributors()
 
         query_kwargs = utils.resolv_filters(
-            projects_index, None, pid, tid, None, None,
+            projects_index, idents, pid, tid, None, None,
             dfrom, dto, inc_repos, None, None, None, None)
 
         p_filter = [":".join(r.split(':')[:-1]) for r in query_kwargs['repos']]

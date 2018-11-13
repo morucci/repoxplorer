@@ -31,10 +31,7 @@ class MetadataController(object):
 
         c = Commits(index.Connector())
         projects_index = Projects()
-        idents = None
-
-        if cid or gid:
-            idents = Contributors()
+        idents = Contributors()
 
         query_kwargs = utils.resolv_filters(
             projects_index, idents, pid, tid, cid, gid,

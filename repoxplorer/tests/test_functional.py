@@ -1182,3 +1182,28 @@ class TestCommitsController(FunctionalTest):
             self.assertEqual(
                 response.json[2][0]['author_name'],
                 'Nakata Daisuke')
+
+    def test_get_commits_with_bot_groups(self):
+        custom_projects = {
+            'test': {
+                'bots-group': 'grp1',
+                'repos': [
+                    {'uri': 'https://github.com/nakata/monkey.git',
+                     'name': 'monkey',
+                     'branch': 'master'}]
+            }
+        }
+        patches = [
+            patch.object(root.projects.Projects, 'get_projects'),
+            patch.object(root.groups.Contributors, 'get_groups')]
+        with nested(*patches) as (gp, gg):
+            root.commits.indexname = 'repoxplorertest'
+            gp.return_value = custom_projects
+            gg.return_value = GROUPS
+            response = self.app.get(
+                '/api/v1/commits/commits?pid=test')
+            assert response.status_int == 200
+            self.assertEqual(response.json[1], 1)
+            self.assertEqual(
+                response.json[2][0]['author_name'],
+                'Nakata Daisuke')

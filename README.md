@@ -316,6 +316,25 @@ projects:
         - barbicanclient/tests/
 ```
 
+A group can be given to the **bots-group** project's attribute. When
+set and target an existing group then commits from this group members
+are excluded from the project's stats computation.
+
+```YAML
+groups:
+  ci-bots:
+    emails:
+      ci@server.com: {}
+      langbot@server.com: {}
+
+projects:
+  Barbican:
+    bots-group: ci-bots
+    repos:
+      barbican:
+        template: default
+```
+
 It is also possible to define **metadata parsers**. Please refer to
 the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
