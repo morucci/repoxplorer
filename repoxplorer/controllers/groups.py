@@ -49,7 +49,7 @@ class GroupsController(object):
             if prefix and not group.lower().startswith(prefix.lower()):
                 continue
             rg = {'members': {},
-                  'description': data['description'],
+                  'description': data.get('description', ''),
                   'domains': data.get('domains', [])}
             emails = data['emails'].keys()
             members = contributors_index.get_idents_by_emails(emails)
