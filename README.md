@@ -1,7 +1,7 @@
 # RepoXplorer - Stats explorer for Git repositories
 
 - **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
-- **Last release**: [1.3.1](https://github.com/morucci/repoxplorer/releases/tag/1.3.1).
+- **Last release**: [1.4.0](https://github.com/morucci/repoxplorer/releases/tag/1.4.0).
 
 RepoXplorer provides a web UI and a REST API to browse git stats such as:
 
@@ -482,7 +482,7 @@ curl "http://localhost:51000/api/v1/status/status"
     "projects": 2,
     "repos": 4,
     "users_endpoint": False,
-    "version": "1.3.1"
+    "version": "1.4.0"
 }
 ```
 

@@ -1,7 +1,7 @@
 FROM centos:7
 LABEL maintainer="fabien.dot.boucher@gmail.com"
 
-ARG version=1.3.1
+ARG version=1.4.0
 
 RUN rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
 ADD elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo
