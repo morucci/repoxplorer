@@ -52,7 +52,7 @@ class YAMLDBException(Exception):
 
 
 class YAMLBackend(object):
-    def __init__(self, db_path, db_default_file=None):
+    def __init__(self, db_path, db_default_file=None, db_cache_path=None):
         """ Class to read YAML files from a DB path.
         db_default_file: is the path to a trusted file usually
             computed from an already verified data source.
@@ -60,10 +60,12 @@ class YAMLBackend(object):
             supposed to be user provided data to be verified
             by the caller and could overwrite data from the
             default_file.
+        db_cache_path: directory to store cache files
         """
-        self.db_path = db_path or conf.db_path
-
+        self.db_path = db_path or conf.get('db_path')
         self.db_default_file = db_default_file
+        self.db_cache_path = (
+            db_cache_path or conf.get('db_cache_path') or self.db_path)
 
         self.default_data = None
         self.data = []
@@ -80,8 +82,12 @@ class YAMLBackend(object):
             basename = os.path.basename(path)
             if not os.path.isdir(self.db_path):
                 os.makedirs(self.db_path)
-            cached_hash_path = os.path.join(self.db_path, basename + '.hash')
-            cached_data_path = os.path.join(self.db_path, basename + '.cached')
+            if self.db_cache_path and not os.path.isdir(self.db_cache_path):
+                os.makedirs(self.db_cache_path)
+            cached_hash_path = os.path.join(
+                self.db_cache_path, basename + '.hash')
+            cached_data_path = os.path.join(
+                self.db_cache_path, basename + '.cached')
             hash = SHA.new(file(path).read()).hexdigest()
             if (os.path.isfile(cached_hash_path) and
                     os.path.isfile(cached_data_path)):

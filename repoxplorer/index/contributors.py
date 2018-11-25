@@ -169,8 +169,9 @@ class Contributors(YAMLDefinition):
     """ This class manages definition of contributors as
     individual and group level
     """
-    def __init__(self, db_path=None, db_default_file=None, vonly=False):
-        YAMLDefinition.__init__(self, db_path, db_default_file)
+    def __init__(self, db_path=None, db_default_file=None, vonly=False,
+                 db_cache_path=None):
+        YAMLDefinition.__init__(self, db_path, db_default_file, db_cache_path)
         self.enriched_groups = False
         self.enriched_idents = False
         if not vonly:

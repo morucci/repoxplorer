@@ -191,17 +191,18 @@ projects:
 class Projects(YAMLDefinition):
     """ This class manages definition of projects
     """
-    def __init__(self, db_path=None, db_default_file=None):
-        YAMLDefinition.__init__(self, db_path, db_default_file)
+    def __init__(self, db_path=None, db_default_file=None, db_cache_path=None):
+        YAMLDefinition.__init__(self, db_path, db_default_file, db_cache_path)
         self.enriched = False
         self.gitweb_lookup = {}
         self.flatten = {}
         self.ref2projects_lookup = {}
-        db_path = db_path or conf.db_path
+        db_path = db_path or conf.get('db_path')
+        db_cache_path = db_cache_path or conf.get('db_cache_path') or db_path
         self.cached_projects_enriched_path = os.path.join(
-            db_path, 'projects-enriched.cache')
+            db_cache_path, 'projects-enriched.cache')
         self.cached_projects_flatten_path = os.path.join(
-            db_path, 'projects-flatten.cache')
+            db_cache_path, 'projects-flatten.cache')
 
     def _merge(self):
         """ Merge self.data and inherites from default_data

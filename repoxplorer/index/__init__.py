@@ -58,10 +58,13 @@ class Connector(object):
 
 
 class YAMLDefinition(object):
-    def __init__(self, db_path=None, db_default_file=None):
+    def __init__(self, db_path=None, db_default_file=None,
+                 db_cache_path=None):
+        db_cache_path = db_cache_path or conf.get('db_cache_path') or db_path
         self.yback = YAMLBackend(
-            db_path or conf.db_path,
-            db_default_file=db_default_file or conf.get('db_default_file'))
+            db_path or conf.get('db_path'),
+            db_default_file=db_default_file or conf.get('db_default_file'),
+            db_cache_path=db_cache_path)
         self.yback.load_db()
         self.hashes_str = "".join(self.yback.hashes)
         self.default_data, self.data = self.yback.get_data()

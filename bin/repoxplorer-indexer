@@ -55,10 +55,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-def clean():
+def clean(conf):
     logger.info("Start cleaning no longer referenced refs and tags")
     projects_index = projects.Projects(conf.db_path,
-                                       conf.db_default_file)
+                                       conf.db_default_file,
+                                       getattr(conf, 'db_cache_path', None))
     rc = indexer.RefsCleaner(projects_index, config=args.config)
     refs_to_clean = rc.find_refs_to_clean()
     rc.clean(refs_to_clean)
@@ -66,7 +67,8 @@ def clean():
 
 def process(conf):
     projects_index = projects.Projects(conf.db_path,
-                                       conf.db_default_file)
+                                       conf.db_default_file,
+                                       getattr(conf, 'db_cache_path', None))
     prjs = projects_index.get_projects_raw()
     for pid, data in prjs.items():
         if args.project and args.project != pid:
@@ -155,7 +157,7 @@ if __name__ == "__main__":
     logging.config.dictConfig(conf.indexer_logging)
     if args.clean_orphan:
         try:
-            clean()
+            clean(conf)
             sys.exit(0)
         except Exception:
             logger.exception("Unexcepted error occured")
@@ -164,7 +166,7 @@ if __name__ == "__main__":
         while True:
             try:
                 process(conf)
-                clean()
+                clean(conf)
             except Exception:
                 logger.exception("Unexcepted error occured")
             if args.forever:
@@ -174,7 +176,7 @@ if __name__ == "__main__":
     else:
         try:
             process(conf)
-            clean()
+            clean(conf)
         except Exception:
             logger.exception("Unexcepted error occured")
             sys.exit(-1)

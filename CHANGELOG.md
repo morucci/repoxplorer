@@ -14,6 +14,9 @@ Bug Fixes
 Other Notes
 -----------
 
+- add *db_cache_path* in config to specify directory where to store
+  cache files.
+
 
 1.4.0
 =====

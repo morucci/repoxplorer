@@ -71,6 +71,7 @@ app = {
 # Additional RepoXplorer configurations
 db_default_file = None
 db_path = '%s/local/share/repoxplorer/' % sys.prefix
+db_cache_path = db_path
 git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix
 xorkey = None
 elasticsearch_host = 'localhost'
