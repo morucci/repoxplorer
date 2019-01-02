@@ -20,8 +20,12 @@ import cPickle
 
 from datetime import datetime
 
+from elasticsearch.helpers import bulk
+from elasticsearch.helpers import scan as scanner
+
 from pecan import conf
 
+from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
 
@@ -188,10 +192,155 @@ projects:
 """
 
 
+class EProjects(object):
+
+    PROPERTIES = {
+        "version": {"type": "string", "index": "not_analyzed"},
+        "aname": {"type": "string"},
+        "name": {"type": "string", "index": "not_analyzed"},
+        "description": {"type": "string"},
+        "logo": {"type": "binary"},
+        "meta-ref": {"type": "boolean", "index": "not_analyzed"},
+        "bots-group": {"type": "string", "index": "not_analyzed"},
+        "index-tags": {"type": "boolean", "index": "not_analyzed"},
+        "refs": {
+            "type": "nested",
+            "properties": {
+                "uri": {"type": "string", "index": "not_analyzed"},
+                "gitweb": {"type": "string", "index": "not_analyzed"},
+                "branch": {"type": "string", "index": "not_analyzed"},
+                "tags": {"type": "string", "index": "not_analyzed"},
+                "fullrid": {"type": "string", "index": "not_analyzed"},
+                "paths": {"type": "string", "index": "not_analyzed"},
+                "parsers": {"type": "string", "index": "not_analyzed"},
+                "index-tags": {"type": "boolean", "index": "not_analyzed"},
+                },
+            },
+        "releases": {
+            "type": "nested",
+            "properties": {
+                "name": {"type": "string", "index": "not_analyzed"},
+                "date": {"type": "string", "index": "not_analyzed"},
+                }
+            }
+        }
+
+    def __init__(self, connector=None):
+        self.es = connector.es
+        self.ic = connector.ic
+        self.index = connector.index
+        self.dbname = 'projects'
+        self.mapping = {
+            self.dbname: {
+                "properties": self.PROPERTIES,
+            }
+        }
+        if not self.ic.exists_type(index=self.index,
+                                   doc_type=self.dbname):
+            self.ic.put_mapping(index=self.index, doc_type=self.dbname,
+                                body=self.mapping)
+
+    def create(self, projects):
+        def gen(docs):
+            for pid, doc in docs:
+                _doc = copy.deepcopy(doc)
+                _doc['name'] = pid
+                _doc['aname'] = pid
+                _doc['refs'] = doc['repos']
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'create'
+                d['_id'] = pid
+                d['_source'] = _doc
+                yield d
+        bulk(self.es, gen(projects))
+        self.es.indices.refresh(index=self.index)
+
+    def delete_all(self):
+        def gen(docs):
+            for doc in docs:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = self.dbname
+                d['_op_type'] = 'delete'
+                d['_id'] = doc['_id']
+                yield d
+        bulk(self.es, gen(self.get_all()))
+        self.es.indices.refresh(index=self.index)
+
+    def load(self, projects):
+        self.delete_all()
+        self.create(projects.iteritems())
+
+    def get_all(self):
+        query = {
+            'query': {
+                'match_all': {}
+            }
+        }
+        return scanner(self.es, query=query, index=self.index,
+                       doc_type=self.dbname)
+
+    def get_by_id(self, id):
+        try:
+            res = self.es.get(index=self.index,
+                              doc_type=self.dbname,
+                              _source=True,
+                              id=id)
+            return res['_source']
+        except Exception, e:
+            logger.error('Unable to get the doc. %s' % e)
+
+    def get_by_attr_match(self, attribute, value):
+        params = {'index': self.index, 'doc_type': self.dbname}
+
+        body = {
+            "query": {
+                "match": {
+                    attribute: value
+                }
+            }
+        }
+        params['body'] = body
+        res = self.es.search(**params)
+        took = res['took']
+        hits = res['hits']['total']
+        docs = [r['_source'] for r in res['hits']['hits']]
+        return took, hits, docs
+
+    def get_pid_by_fullrid(self, fullrids):
+        if not isinstance(fullrids, list):
+            fullrids = (fullrids,)
+        params = {'index': self.index, 'doc_type': self.dbname}
+        body = {
+            "query": {
+                "nested": {
+                    "path": "refs",
+                    "query": {
+                        "bool": {
+                            "should": [
+                                {"match": {"refs.fullrid": fullrid}} for
+                                fullrid in fullrids
+                                ]
+                        }
+                    }
+                }
+            }
+        }
+        params['body'] = body
+        res = self.es.search(**params)
+        took = res['took']
+        hits = res['hits']['total']
+        docs = [r['_source'] for r in res['hits']['hits']]
+        return took, hits, docs
+
+
 class Projects(YAMLDefinition):
     """ This class manages definition of projects
     """
-    def __init__(self, db_path=None, db_default_file=None, db_cache_path=None):
+    def __init__(self, db_path=None, db_default_file=None, db_cache_path=None,
+                 con=None):
         YAMLDefinition.__init__(self, db_path, db_default_file, db_cache_path)
         self.enriched = False
         self.gitweb_lookup = {}
@@ -203,6 +352,7 @@ class Projects(YAMLDefinition):
             db_cache_path, 'projects-enriched.cache')
         self.cached_projects_flatten_path = os.path.join(
             db_cache_path, 'projects-flatten.cache')
+        self.eprojects = EProjects(con or index.Connector())
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
@@ -398,9 +548,12 @@ class Projects(YAMLDefinition):
                     r['name'] = rid
                     r['branch'] = branch
                     del r['branches']
+                    r['fullrid'] = "%s:%s:%s" % (
+                        r['uri'], r['name'], r['branch'])
                     self.flatten[pid]['repos'].append(r)
         self._save_to_cache(
             self.cached_projects_flatten_path, self.hashes_str, self.flatten)
+        self.eprojects.load(self.flatten)
         logger.debug('Saved projects flatten cache in %s' % (
             self.cached_projects_flatten_path))
         return self.flatten

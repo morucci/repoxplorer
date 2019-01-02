@@ -51,8 +51,27 @@ parser.add_argument(
 parser.add_argument(
     '--clean-orphan', action='store_true', default=False,
     help="Clean refs and tags not known from the project's configuration")
+parser.add_argument(
+    '--load-index-conf', action='store_true', default=False,
+    help="Load projects index configuration into the EL database")
 
 args = parser.parse_args()
+
+
+def load_index_conf(conf):
+    logger.info("Start loading projects index configuration into EL")
+    projects_index = projects.Projects(conf.db_path,
+                                       conf.db_default_file,
+                                       getattr(conf, 'db_cache_path', None))
+    flattened = projects_index.get_projects()
+    projects_index.eprojects.load(flattened)
+    # b = projects_index.eprojects.get_by_id('Barbican')
+    # a = projects_index.eprojects.get_pid_by_fullrid(
+    #     ['https://github.com/openstack/python-swiftclient:python-swiftclient:stable/queens',
+    #      'https://github.com/openstack/python-swiftclient:python-swiftclient:stable/pike',
+    #      'https://github.com/openstack/python-barbicanclient:python-barbicanclient:stable/pike'])
+    # print b
+    # print a
 
 
 def clean(conf):
@@ -155,6 +174,9 @@ if __name__ == "__main__":
         conf.indexer_logging['handlers']['normal']['level'] = args.loglevel
         conf.indexer_logging['handlers']['console']['level'] = args.loglevel
     logging.config.dictConfig(conf.indexer_logging)
+    if args.load_index_conf:
+        load_index_conf(conf)
+        sys.exit()
     if args.clean_orphan:
         try:
             clean(conf)

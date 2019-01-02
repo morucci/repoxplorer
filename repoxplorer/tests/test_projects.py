@@ -12,6 +12,14 @@ from repoxplorer import index
 
 class TestProjects(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.con = index.Connector(index='repoxplorertest')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.con.ic.delete(index=cls.con.index)
+
     def setUp(self):
         self.dbs = []
         self.maxDiff = None
@@ -104,7 +112,7 @@ class TestProjects(TestCase):
         db = self.create_db(files)
         index.conf['db_default_file'] = os.path.join(db,
                                                      'default.yaml')
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         ret = p.get_projects_raw()
         expected_ret = {
             'Nova': {
@@ -209,7 +217,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1, 'f2.yaml': f2}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         issues = p.validate()
         self.assertIn("Project ID 'Barbican' Repo ID 'openstack/barbican' "
                       "references an unknown template mytemplate",
@@ -231,7 +239,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         issues = p.validate()
         self.assertIn('Wrong date format wrong defined in template default',
                       issues)
@@ -246,7 +254,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         issues = p.validate()
         self.assertIn("'branches' is a required property",
                       issues)
@@ -263,7 +271,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         issues = p.validate()
         self.assertIn("Additional properties are not allowed"
                       " ('uri' was unexpected)",
@@ -303,7 +311,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         self.assertEqual(len(p.get_projects()['Swift']['repos']), 5)
         self.assertEqual(len(p.get_projects()['Barbican']['repos']), 4)
         branches = [
@@ -353,7 +361,7 @@ class TestProjects(TestCase):
         files = {'f1.yaml': f1}
         db = self.create_db(files)
         index.conf['db_default_file'] = None
-        p = projects.Projects(db_path=db)
+        p = projects.Projects(db_path=db, con=self.con)
         tags = p.get_tags()
         self.assertEqual(len(tags['credentials']['repos']), 4)
         self.assertEqual(len(tags['storage']['repos']), 4)
