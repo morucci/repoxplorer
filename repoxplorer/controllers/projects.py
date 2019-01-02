@@ -49,10 +49,10 @@ class ProjectsController(object):
                 abort(404, detail="Project ID has not been found")
             return {pid: projects.get(pid)}
         else:
-            projects = OrderedDict(
+            _projects = OrderedDict(
                 sorted(projects.items(), key=lambda t: t[0]))
             tags = projects_index.get_tags()
-            return {'projects': projects,
+            return {'projects': _projects,
                     'tags': tags.keys()}
 
     @expose('json')
@@ -61,4 +61,4 @@ class ProjectsController(object):
 
     @expose('json')
     def repos(self, pid=None, tid=None):
-        return self.get_repos(pid, tid)['repos']
+        return self.get_repos(pid, tid)['refs']
