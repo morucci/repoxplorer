@@ -15,10 +15,14 @@
 
 import csv
 import copy
+import os
+import shutil
+import tempfile
 
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.projects import Projects
 from repoxplorer.index.tags import Tags
 
 from repoxplorer import version
@@ -97,7 +101,7 @@ COMMITS = [
         'committer_email': 'j.paul@joker.org',
         'repos': [
             'https://github.com/nakata/monkey.git:monkey:master',
-            'meta-ref: test'],
+            'meta_ref: test'],
         'line_modifieds': 0,
         'merge_commit': True,
         'commit_msg': 'Merge: something',
@@ -584,20 +588,43 @@ class TestInfosController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.con = index.Connector(index='repoxplorertest')
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
         cls.c = Commits(cls.con)
         cls.c.add_commits(COMMITS)
+        cls.projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        cls.files = {'projects.yaml': cls.projects_file}
 
     @classmethod
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
+
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.create_db(self.files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_infos(self):
         expected = {
@@ -611,20 +638,14 @@ class TestInfosController(FunctionalTest):
             'projects_amount': 1,
             'repos_amount': 1,
         }
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/infos/infos?pid=test')
+        response = self.app.get('/api/v1/infos/infos?pid=test')
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
         # Check endpoint CSV mode
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/infos/infos?pid=test',
-                headers={'Accept': 'text/csv'})
+        response = self.app.get(
+            '/api/v1/infos/infos?pid=test',
+            headers={'Accept': 'text/csv'})
         self.assertEqual(response.status_int, 200)
         csvret = build_dict_from_csv(response.body)
         # Convert all dict values to str
@@ -633,6 +654,24 @@ class TestInfosController(FunctionalTest):
         self.assertEqual(len(csvret), 1)
 
         # Make an attempt by setting meta ref to True
+        new_projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            meta-ref: true
+            repos:
+              monkey:
+                template: default
+        """
+
+        file(os.path.join(self.db, 'projects.yaml'), 'w+').write(
+            new_projects_file)
+
         expected = {
             'first': 1393860653,
             'last': 1410456005,
@@ -644,12 +683,7 @@ class TestInfosController(FunctionalTest):
             'projects_amount': 1,
             'repos_amount': 1,
         }
-        projects_with_meta_ref = copy.deepcopy(self.projects)
-        projects_with_meta_ref['test']['meta-ref'] = True
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = projects_with_meta_ref
-            response = self.app.get('/api/v1/infos/infos?pid=test')
+        response = self.app.get('/api/v1/infos/infos?pid=test')
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
@@ -666,10 +700,7 @@ class TestInfosController(FunctionalTest):
             'repos_amount': 1
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/infos/infos', {'cid': cid})
+        response = self.app.get('/api/v1/infos/infos', {'cid': cid})
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
@@ -680,13 +711,10 @@ class TestInfosController(FunctionalTest):
             'gravatar': '505dcbea438008f24001e2928cdc0678',
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/infos/contributor', {'cid': cid})
-            self.assertEqual(response.status_int, 200)
-            self.assertDictEqual(response.json, expected)
+        response = self.app.get(
+            '/api/v1/infos/contributor', {'cid': cid})
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
 
 
 class TestStatusController(FunctionalTest):
@@ -1128,84 +1156,96 @@ class TestCommitsController(FunctionalTest):
         cls.con = index.Connector(index='repoxplorertest')
         cls.c = Commits(cls.con)
         cls.c.add_commits(COMMITS)
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+        cls.projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        cls.files = {'projects.yaml': cls.projects_file}
 
     @classmethod
     def tearDownClass(cls):
         cls.con.ic.delete(index=cls.con.index)
 
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.create_db(self.files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
+
     def test_input_filter_validation(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.commits.indexname = 'repoxplorertest'
-            m.return_value = self.projects
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=invalid', status="*")
+        assert response.status_int == 404
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=invalid', status="*")
-            assert response.status_int == 404
-
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&dfrom=invalid', status="*")
-            assert response.status_int == 400
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&dfrom=invalid', status="*")
+        assert response.status_int == 400
 
     def test_get_commits(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.commits.indexname = 'repoxplorertest'
-            m.return_value = self.projects
+        response = self.app.get('/api/v1/commits/commits?pid=test')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Nakata Daisuke')
+        self.assertIn('test', response.json[2][0]['projects'])
+        self.assertEqual(len(response.json[2][0]['projects']), 1)
 
-            response = self.app.get('/api/v1/commits/commits?pid=test')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Nakata Daisuke')
-            self.assertIn('test', response.json[2][0]['projects'])
-            self.assertEqual(len(response.json[2][0]['projects']), 1)
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:feature 35')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Nakata Daisuke')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:feature 35')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Nakata Daisuke')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:feature 36')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Jean Paul')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:feature 36')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Jean Paul')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&metadata='
+            'implement:feature 36,close-bug:18')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Jean Paul')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&metadata='
-                'implement:feature 36,close-bug:18')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Jean Paul')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:*')
+        assert response.status_int == 200
+        self.assertEqual(response.json[1], 3)
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:*')
-            assert response.status_int == 200
-            self.assertEqual(response.json[1], 3)
-
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'inc_merge_commit=on')
-            assert response.status_int == 200
-            self.assertEqual(response.json[1], 4)
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'inc_merge_commit=on')
+        assert response.status_int == 200
+        self.assertEqual(response.json[1], 4)
 
     def test_get_commits_with_groups_filter(self):
         patches = [
-            patch.object(root.projects.Projects, 'get_projects'),
             patch.object(root.groups.Contributors, 'get_groups')]
-        with nested(*patches) as (gp, gg):
-            root.commits.indexname = 'repoxplorertest'
-            gp.return_value = self.projects
+        with nested(*patches) as (gg, ):
             gg.return_value = GROUPS
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test&exc_groups=grp1')
@@ -1223,21 +1263,27 @@ class TestCommitsController(FunctionalTest):
                 'Nakata Daisuke')
 
     def test_get_commits_with_bot_groups(self):
-        custom_projects = {
-            'test': {
-                'bots-group': 'grp1',
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+        new_projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            bots-group: grp1
+            repos:
+              monkey:
+                template: default
+        """
+
+        file(os.path.join(self.db, 'projects.yaml'), 'w+').write(
+            new_projects_file)
+
         patches = [
-            patch.object(root.projects.Projects, 'get_projects'),
             patch.object(root.groups.Contributors, 'get_groups')]
-        with nested(*patches) as (gp, gg):
-            root.commits.indexname = 'repoxplorertest'
-            gp.return_value = custom_projects
+        with nested(*patches) as (gg, ):
             gg.return_value = GROUPS
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test')

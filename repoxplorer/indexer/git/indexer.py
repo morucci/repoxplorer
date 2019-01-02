@@ -341,15 +341,12 @@ class RefsCleaner():
         self.current_base_ids = set()
 
     def find_refs_to_clean(self):
-        prjs = self.projects.get_projects_raw()
+        prjs = self.projects.get_projects()
         refs_ids = set()
         for pid, pdata in prjs.items():
-            for rid, repo in pdata['repos'].items():
-                # Also compute all base_ids during that loop for
-                # tags removal
-                self.current_base_ids.add('%s:%s' % (repo['uri'], rid))
-                for branch in repo['branches']:
-                    refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
+            for ref in pdata['refs']:
+                self.current_base_ids.add(ref['shortrid'])
+                refs_ids.add(ref['fullrid'])
         if not os.path.isfile(self.seen_refs_path):
             self.data = set()
         else:
