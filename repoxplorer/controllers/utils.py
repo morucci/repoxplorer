@@ -49,10 +49,7 @@ def authors_sanitize(idents, authors):
 
 
 def get_projects_from_references(pi, references):
-    projects = set()
-    lookup = pi.get_ref2projects_lookup()
-    for ref in references:
-        projects.update(lookup.get(ref, []))
+    projects = pi.get_projects_from_references(references)
     return list(projects)
 
 
@@ -63,8 +60,8 @@ def get_references_filter(project, inc_references=None):
         # The use of the meta ref is possible if we want stats of the complete
         # project
         can_use_meta_ref = False
-    if "repos" in project:
-        for r in project['repos']:
+    if "refs" in project:
+        for r in project['refs']:
             if inc_references:
                 if not "%(name)s:%(branch)s" % r in inc_references:
                     continue
@@ -153,7 +150,7 @@ def resolv_filters(projects_index, idents, pid,
                    inc_merge_commit, metadata, exc_groups,
                    inc_groups):
 
-    projects_index._enrich_projects()
+    # projects_index._enrich_projects()
 
     filters_validation(
         projects_index, idents, pid=pid, tid=tid, cid=cid, gid=gid,
