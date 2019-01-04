@@ -51,26 +51,41 @@ parser.add_argument(
 parser.add_argument(
     '--clean-orphan', action='store_true', default=False,
     help="Clean refs and tags not known from the project's configuration")
+parser.add_argument(
+    '--refresh-projects-index', action='store_true', default=False,
+    help="Refresh projects index into the Elastic database")
 
 args = parser.parse_args()
 
 
+def refresh_projects_index(conf):
+    logger.info("Start loading projects index configuration into EL")
+    projects.Projects(
+        conf.db_path, conf.db_default_file,
+        getattr(conf, 'db_cache_path', None),
+        dump_yaml_in_index=True)
+
+
 def clean(conf):
     logger.info("Start cleaning no longer referenced refs and tags")
-    projects_index = projects.Projects(conf.db_path,
-                                       conf.db_default_file,
-                                       getattr(conf, 'db_cache_path', None))
+    projects_index = projects.Projects(
+        conf.db_path, conf.db_default_file,
+        getattr(conf, 'db_cache_path', None),
+        dump_yaml_in_index=True)
     rc = indexer.RefsCleaner(projects_index, config=args.config)
     refs_to_clean = rc.find_refs_to_clean()
     rc.clean(refs_to_clean)
 
 
 def process(conf):
-    projects_index = projects.Projects(conf.db_path,
-                                       conf.db_default_file,
-                                       getattr(conf, 'db_cache_path', None))
-    prjs = projects_index.get_projects_raw()
-    for pid, data in prjs.items():
+    projects_index = projects.Projects(
+        conf.db_path,
+        conf.db_default_file,
+        getattr(conf, 'db_cache_path', None),
+        dump_yaml_in_index=True)
+    prjs = projects_index.get_projects(source=['name', 'refs', 'meta-ref'])
+    for project in prjs.values():
+        pid = project['name']
         if args.project and args.project != pid:
             continue
         if not hasattr(conf, 'indexer_skip_projects'):
@@ -79,12 +94,12 @@ def process(conf):
             continue
         logger.info("Start indexing project %s" % pid)
         meta_ref = None
-        if data.get('meta-ref') is True:
+        if project.get('meta-ref') is True:
             meta_ref = pid
-        for rid, repo in data['repos'].items():
-            r = indexer.RepoIndexer(rid,
-                                    repo['uri'],
-                                    parsers=repo['parsers'],
+        for ref in project['refs']:
+            r = indexer.RepoIndexer(ref['name'],
+                                    ref['uri'],
+                                    parsers=ref['parsers'],
                                     config=args.config,
                                     meta_ref=meta_ref)
             r.git_init()
@@ -95,39 +110,38 @@ def process(conf):
                                r.base_id, e))
                 continue
             r.get_heads()
-            if repo.get('index-tags') is True:
+            if ref.get('index-tags') is True:
                 r.get_tags()
-            for branch in repo['branches']:
-                if not [head for head in r.heads if
-                        head[1].endswith(branch)]:
-                    logger.warning(
-                        "Repository %s does not have the "
-                        "requested branch %s" % (r.base_id, branch))
-                    continue
-                r.set_branch(branch)
-                if r.is_branch_fully_indexed():
-                    logger.info("Repository branch fully indexed %s" % (
-                        r.ref_id))
-                    continue
-                logger.info("Start indexing repository branch %s" % r.ref_id)
-                try:
-                    r.git_fetch_branch()
-                except Exception, e:
-                    logger.warning("Unable to fetch repository "
-                                   "branch %s: %s" % (r.ref_id, e))
-                    continue
-                try:
-                    r.git_get_commit_obj()
-                    r.get_current_commit_indexed()
-                    r.compute_to_index_to_delete()
-                    r.index(args.extract_workers)
-                except Exception, e:
-                    logger.warning("Unable to index repository "
-                                   "branch %s: %s" % (r.ref_id, e))
-                    logger.exception("Exception is:")
-                    continue
+            if not [head for head in r.heads if
+                    head[1].endswith(ref['branch'])]:
+                logger.warning(
+                    "Repository %s does not have the "
+                    "requested branch %s" % (r.base_id, ref['branch']))
+                continue
+            r.set_branch(ref['branch'])
+            if r.is_branch_fully_indexed():
+                logger.info("Repository branch fully indexed %s" % (
+                    r.ref_id))
+                continue
+            logger.info("Start indexing repository branch %s" % r.ref_id)
             try:
-                if repo.get('index-tags') is True:
+                r.git_fetch_branch()
+            except Exception, e:
+                logger.warning("Unable to fetch repository "
+                               "branch %s: %s" % (r.ref_id, e))
+                continue
+            try:
+                r.git_get_commit_obj()
+                r.get_current_commit_indexed()
+                r.compute_to_index_to_delete()
+                r.index(args.extract_workers)
+            except Exception, e:
+                logger.warning("Unable to index repository "
+                               "branch %s: %s" % (r.ref_id, e))
+                logger.exception("Exception is:")
+                continue
+            try:
+                if ref.get('index-tags') is True:
                     r.index_tags()
                 else:
                     # Make sure to wipe tags for this repo if index-tags flag
@@ -155,6 +169,9 @@ if __name__ == "__main__":
         conf.indexer_logging['handlers']['normal']['level'] = args.loglevel
         conf.indexer_logging['handlers']['console']['level'] = args.loglevel
     logging.config.dictConfig(conf.indexer_logging)
+    if args.refresh_projects_index:
+        refresh_projects_index(conf)
+        sys.exit()
     if args.clean_orphan:
         try:
             clean(conf)
