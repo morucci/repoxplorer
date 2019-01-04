@@ -32,7 +32,7 @@ xorkey = conf.get('xorkey') or 'default'
 class InfosController(object):
 
     def get_generic_infos(
-            self, projects_index, commits_index, idents, query_kwargs):
+            self, projects_index, commits_index, idents, pid, query_kwargs):
         infos = {}
         infos['commits_amount'] = commits_index.get_commits_amount(
             **query_kwargs)
@@ -56,8 +56,11 @@ class InfosController(object):
 
         repos = filter(lambda r: not r.startswith('meta_ref: '),
                        commits_index.get_repos(**query_kwargs)[1])
-        projects = utils.get_projects_from_references(
-            projects_index, repos)
+        if pid:
+            projects = (pid,)
+        else:
+            projects = utils.get_projects_from_references(
+                projects_index, repos)
         infos['repos_amount'] = len(repos)
         infos['projects_amount'] = len(projects)
         return infos
@@ -78,7 +81,8 @@ class InfosController(object):
             dfrom, dto, inc_repos, inc_merge_commit,
             metadata, exc_groups, inc_groups)
 
-        return self.get_generic_infos(projects_index, c, idents, query_kwargs)
+        return self.get_generic_infos(
+            projects_index, c, idents, pid, query_kwargs)
 
     @expose('json')
     @expose('csv:', content_type='text/csv')

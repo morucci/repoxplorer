@@ -56,17 +56,16 @@ class CommitsController(object):
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())
             cmt['metadata'] = list(extra)
+            cmt['repos'] = filter(lambda r: not r.startswith('meta_ref: '),
+                                  cmt['repos'])
             # Compute link to access commit diff based on the
             # URL template provided in projects.yaml
-            cmt['gitwebs'] = [projects_index.get_gitweb_link(
-                              ":".join(p.split(':')[0:-1])) %
-                              {'sha': cmt['sha']} for
-                              p in cmt['repos']]
+            cmt['gitwebs'] = [
+                projects_index.get_gitweb_link(r) %
+                {'sha': cmt['sha']} for r in cmt['repos']]
             cmt['projects'] = utils.get_projects_from_references(
                 projects_index, cmt['repos'])
             # Also remove the URI part
-            cmt['repos'] = filter(lambda r: not r.startswith('meta_ref: '),
-                                  cmt['repos'])
             cmt['repos'] = [":".join(p.split(':')[-2:]) for
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email

@@ -33,12 +33,12 @@ class StatusController(object):
 
     def get_status(self):
         projects_index = Projects()
-        projects = projects_index.get_projects()
+        projects = projects_index.get_projects(source=['name', 'refs'])
         num_projects = len(projects)
         num_repos = len(set([
             ref['name'] for
             ref in itertools.chain(
-                *[p['repos'] for p in projects.values()])]))
+                *[p['refs'] for p in projects.values()])]))
         return {'customtext': index_custom_html,
                 'projects': num_projects,
                 'repos': num_repos,
