@@ -249,7 +249,9 @@ function fill_info_box(args) {
     $("#infos-repos_amount").append('<b>Repository refs contributed:</b> ' + args.repos_amount);
     $("#infos-repos_amount-alt").append('<b>Repository refs:</b> ' + args.repos_amount);
     $("#infos-known_emails").append('<b>Known emails:</b> ' + args.mails_amount);
-    $("#infos-description").append('<b>Description:</b> ' + args.description);
+    if (args.description) {
+        $("#infos-description").append('<b>Description:</b> ' + args.description);
+    }
     $("#infos-members_amount").append('<b>Members:</b> ' + args.members_amount);
     if (args.bots_group) {
         $("#infos-bots-group").empty();
@@ -733,7 +735,7 @@ function projects_page_init() {
                 middle += '</tr>';
 
                 var repos = {};
-                $.each(v.value['repos'], function(key, repo) {
+                $.each(v.value['refs'], function(key, repo) {
                     if (!(repo.name in repos)) {
                         repos[repo.name] = [];
                         repos[repo.name].push(repo.branch);
