@@ -15,10 +15,14 @@
 
 import csv
 import copy
+import os
+import shutil
+import tempfile
 
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
 from repoxplorer.index.commits import Commits
+from repoxplorer.index.projects import Projects
 from repoxplorer.index.tags import Tags
 
 from repoxplorer import version
@@ -97,7 +101,7 @@ COMMITS = [
         'committer_email': 'j.paul@joker.org',
         'repos': [
             'https://github.com/nakata/monkey.git:monkey:master',
-            'meta-ref: test'],
+            'meta_ref: test'],
         'line_modifieds': 0,
         'merge_commit': True,
         'commit_msg': 'Merge: something',
@@ -134,80 +138,85 @@ def build_dict_from_csv(body):
 
 class TestErrorController(FunctionalTest):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.c = Commits(cls.con)
-        cls.c.add_commits(COMMITS)
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.con.ic.delete(index=cls.con.index)
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_api_infos_pid_not_found(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            headers = {'Accept': 'application/json'}
-            response = self.app.get(
-                '/api/v1/infos/infos?pid=notexists',
-                headers=headers, status='*')
+        headers = {'Accept': 'application/json'}
+        response = self.app.get(
+            '/api/v1/infos/infos?pid=notexists',
+            headers=headers, status='*')
         self.assertEqual(response.status_int, 404)
         self.assertEqual(
             response.json['description'],
             'The project has not been found')
 
     def test_api_project_repos_pid_not_found(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            headers = {'Accept': 'application/json'}
-            response = self.app.get(
-                '/api/v1/projects/repos?pid=notexists',
-                headers=headers, status='*')
+        headers = {'Accept': 'application/json'}
+        response = self.app.get(
+            '/api/v1/projects/repos?pid=notexists',
+            headers=headers, status='*')
         self.assertEqual(response.status_int, 404)
         self.assertEqual(
             response.json['description'],
             'Project ID or Tag ID has not been found')
 
     def test_api_infos_cid_bad(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            headers = {'Accept': 'application/json'}
-            response = self.app.get(
-                '/api/v1/infos/infos?cid=XYZ',
-                headers=headers, status='*')
+        headers = {'Accept': 'application/json'}
+        response = self.app.get(
+            '/api/v1/infos/infos?cid=XYZ',
+            headers=headers, status='*')
         self.assertEqual(response.status_int, 404)
         self.assertEqual(
             response.json['description'],
             'The cid is incorrectly formated')
 
     def test_api_infos_exclusive_parameters(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            headers = {'Accept': 'application/json'}
-            response = self.app.get(
-                '/api/v1/infos/infos?cid=XYZ&gid=ABC',
-                headers=headers, status='*')
-            self.assertEqual(response.status_int, 400)
-            self.assertEqual(
-                response.json['description'], 'cid and gid are exclusive')
-            response = self.app.get(
-                '/api/v1/infos/infos?pid=XYZ&tid=ABC',
-                headers=headers, status='*')
-            self.assertEqual(response.status_int, 400)
-            self.assertEqual(
-                response.json['description'], 'pid and tid are exclusive')
+        headers = {'Accept': 'application/json'}
+        response = self.app.get(
+            '/api/v1/infos/infos?cid=XYZ&gid=ABC',
+            headers=headers, status='*')
+        self.assertEqual(response.status_int, 400)
+        self.assertEqual(
+            response.json['description'], 'cid and gid are exclusive')
+        response = self.app.get(
+            '/api/v1/infos/infos?pid=XYZ&tid=ABC',
+            headers=headers, status='*')
+        self.assertEqual(response.status_int, 400)
+        self.assertEqual(
+            response.json['description'], 'pid and tid are exclusive')
 
 
 class TestGroupsController(FunctionalTest):
@@ -527,45 +536,59 @@ class TestUsersController(FunctionalTest):
 
 class TestHistoController(FunctionalTest):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
-        cls.c = Commits(cls.con)
-        cls.c.add_commits(COMMITS)
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.con.ic.delete(index=cls.con.index)
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_authors_histo(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.histo.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/histo/authors?pid=test')
+        response = self.app.get('/api/v1/histo/authors?pid=test')
         assert response.status_int == 200
         self.assertEqual(response.json[0]['value'], 1)
         self.assertEqual(response.json[0]['date'], '2014-03-01')
 
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.histo.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/histo/authors?pid=unknown', status="*")
+        # with patch.object(root.projects.Projects, 'get_projects') as m:
+        #     root.histo.indexname = 'repoxplorertest'
+        #     m.return_value = self.projects
+        response = self.app.get(
+            '/api/v1/histo/authors?pid=unknown', status="*")
         assert response.status_int == 404
 
     def test_get_commits_histo(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.histo.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/histo/commits?pid=test')
+        # with patch.object(root.projects.Projects, 'get_projects') as m:
+        #     root.histo.indexname = 'repoxplorertest'
+        #     m.return_value = self.projects
+        response = self.app.get('/api/v1/histo/commits?pid=test')
         assert response.status_int == 200
         self.assertListEqual(
             response.json,
@@ -581,23 +604,40 @@ class TestHistoController(FunctionalTest):
 
 class TestInfosController(FunctionalTest):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
-        cls.c = Commits(cls.con)
-        cls.c.add_commits(COMMITS)
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.con.ic.delete(index=cls.con.index)
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_infos(self):
         expected = {
@@ -611,20 +651,14 @@ class TestInfosController(FunctionalTest):
             'projects_amount': 1,
             'repos_amount': 1,
         }
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/infos/infos?pid=test')
+        response = self.app.get('/api/v1/infos/infos?pid=test')
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
         # Check endpoint CSV mode
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/infos/infos?pid=test',
-                headers={'Accept': 'text/csv'})
+        response = self.app.get(
+            '/api/v1/infos/infos?pid=test',
+            headers={'Accept': 'text/csv'})
         self.assertEqual(response.status_int, 200)
         csvret = build_dict_from_csv(response.body)
         # Convert all dict values to str
@@ -633,6 +667,25 @@ class TestInfosController(FunctionalTest):
         self.assertEqual(len(csvret), 1)
 
         # Make an attempt by setting meta ref to True
+        new_projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            meta-ref: true
+            repos:
+              monkey:
+                template: default
+        """
+
+        file(os.path.join(self.db, 'projects.yaml'), 'w+').write(
+            new_projects_file)
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
         expected = {
             'first': 1393860653,
             'last': 1410456005,
@@ -644,12 +697,7 @@ class TestInfosController(FunctionalTest):
             'projects_amount': 1,
             'repos_amount': 1,
         }
-        projects_with_meta_ref = copy.deepcopy(self.projects)
-        projects_with_meta_ref['test']['meta-ref'] = True
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = projects_with_meta_ref
-            response = self.app.get('/api/v1/infos/infos?pid=test')
+        response = self.app.get('/api/v1/infos/infos?pid=test')
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
@@ -666,10 +714,7 @@ class TestInfosController(FunctionalTest):
             'repos_amount': 1
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/infos/infos', {'cid': cid})
+        response = self.app.get('/api/v1/infos/infos', {'cid': cid})
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
@@ -680,26 +725,48 @@ class TestInfosController(FunctionalTest):
             'gravatar': '505dcbea438008f24001e2928cdc0678',
         }
         cid = utils.encrypt(xorkey, 'n.suke@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.infos.indexname = 'repoxplorertest'
-            m.return_value = self.projects
-            response = self.app.get(
-                '/api/v1/infos/contributor', {'cid': cid})
-            self.assertEqual(response.status_int, 200)
-            self.assertDictEqual(response.json, expected)
+        response = self.app.get(
+            '/api/v1/infos/contributor', {'cid': cid})
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
 
 
 class TestStatusController(FunctionalTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_version(self):
         expected = version.get_version()
@@ -707,301 +774,321 @@ class TestStatusController(FunctionalTest):
         self.assertEqual(expected, response.json['version'])
 
     def test_get_status(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            expected = {
-                'version': version.get_version(),
-                'projects': 1,
-                'repos': 1,
-                'users_endpoint': False,
-                'customtext': ''
-            }
-            response = self.app.get('/api/v1/status/status')
-            self.assertEqual(expected, response.json)
+        expected = {
+            'version': version.get_version(),
+            'projects': 1,
+            'repos': 1,
+            'users_endpoint': False,
+            'customtext': ''
+        }
+        response = self.app.get('/api/v1/status/status')
+        self.assertEqual(expected, response.json)
 
 
 class TestProjectsController(FunctionalTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.projects = {
-            'test': {'repos': [
-                {'uri': 'https://github.com/nakata/monkey.git',
-                 'name': 'monkey',
-                 'branch': 'master',
-                 'tags': ['python']}
-                 ]
-            },
-            'test2': {'repos': [
-                {'uri': 'https://github.com/nakata/monkey.git',
-                 'name': 'monkey',
-                 'branch': 'master'}
-                 ]
-            }
-        }
+
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+          test2:
+            repos:
+              monkey:
+                template: default
+                tags:
+                  - python
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_projects(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/projects/projects')
-            assert response.status_int == 200
-            self.assertIn('test', response.json['projects'])
-            self.assertIn('test2', response.json['projects'])
+        response = self.app.get('/api/v1/projects/projects')
+        assert response.status_int == 200
+        self.assertIn('test', response.json['projects'])
+        self.assertIn('test2', response.json['projects'])
 
-            response = self.app.get('/api/v1/projects/projects?pid=test')
-            assert response.status_int == 200
-            project = copy.deepcopy(self.projects)
-            del project['test2']
-            self.assertDictEqual(project, response.json)
+        response = self.app.get('/api/v1/projects/projects?pid=test')
+        assert response.status_int == 200
+        self.assertIn('test', response.json)
+        self.assertNotIn('test2', response.json)
 
     def test_get_repos(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            response = self.app.get('/api/v1/projects/repos?pid=test')
-            assert response.status_int == 200
-            self.assertEqual(len(response.json), 1)
-            self.assertEqual(response.json[0]['name'], 'monkey')
-            response = self.app.get('/api/v1/projects/repos?tid=python')
-            assert response.status_int == 200
-            self.assertEqual(len(response.json), 1)
-            self.assertEqual(response.json[0]['name'], 'monkey')
+        response = self.app.get('/api/v1/projects/repos?pid=test')
+        assert response.status_int == 200
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]['name'], 'monkey')
+        response = self.app.get('/api/v1/projects/repos?tid=python')
+        assert response.status_int == 200
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]['name'], 'monkey')
 
 
 class TestTopsController(FunctionalTest):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
-        cls.c = Commits(cls.con)
-        cls.c.add_commits(COMMITS)
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.con.ic.delete(index=cls.con.index)
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_get_tops_authors_bylchanged(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            expected_top1 = {
-                'amount': 19,
-                'gravatar': 'c184ebe163aa66b25668757000116849',
-                'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
-                'name': 'Jean Paul'
-            }
-            expected_top2 = {
-                'amount': 10,
-                'gravatar': '505dcbea438008f24001e2928cdc0678',
-                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
-                'name': 'Nakata Daisuke'
-            }
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get('/api/v1/tops/authors/bylchanged?pid=test')
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertDictEqual(response.json[1], expected_top2)
-            self.assertEqual(len(response.json), 2)
-            # Same request but with a limit set to 1
-            response = self.app.get(
-                '/api/v1/tops/authors/bylchanged?pid=test&limit=1')
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertEqual(len(response.json), 1)
+        expected_top1 = {
+            'amount': 19,
+            'gravatar': 'c184ebe163aa66b25668757000116849',
+            'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
+            'name': 'Jean Paul'
+        }
+        expected_top2 = {
+            'amount': 10,
+            'gravatar': '505dcbea438008f24001e2928cdc0678',
+            'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+            'name': 'Nakata Daisuke'
+        }
+        response = self.app.get('/api/v1/tops/authors/bylchanged?pid=test')
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertDictEqual(response.json[1], expected_top2)
+        self.assertEqual(len(response.json), 2)
+        # Same request but with a limit set to 1
+        response = self.app.get(
+            '/api/v1/tops/authors/bylchanged?pid=test&limit=1')
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertEqual(len(response.json), 1)
 
-            # Validate the CSV endpoint mode
-            # First convert all expected dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
-            response = self.app.get(
-                '/api/v1/tops/authors/bylchanged?pid=test',
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1)
-            self.assertDictEqual(csvret[1], expected_top2)
-            self.assertEqual(len(csvret), 2)
+        # Validate the CSV endpoint mode
+        # First convert all expected dict values to str
+        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+        expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+        response = self.app.get(
+            '/api/v1/tops/authors/bylchanged?pid=test',
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1)
+        self.assertDictEqual(csvret[1], expected_top2)
+        self.assertEqual(len(csvret), 2)
 
     def test_get_tops_authors_bycommits(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            expected_top1 = {
-                'gravatar': 'c184ebe163aa66b25668757000116849',
-                'amount': 3,
-                'name': 'Jean Paul',
-                'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
-            }
-            expected_top2 = {
-                'gravatar': '505dcbea438008f24001e2928cdc0678',
-                'amount': 1,
-                'name': 'Nakata Daisuke',
-                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
-            }
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get(
-                '/api/v1/tops/authors/bycommits?pid=test&inc_merge_commit=on')
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertDictEqual(response.json[1], expected_top2)
-            self.assertEqual(len(response.json), 2)
-            # Same request but with a limit set to 1
-            response = self.app.get(
-                '/api/v1/tops/authors/bycommits?pid=test'
-                '&inc_merge_commit=on&limit=1')
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertEqual(len(response.json), 1)
+        expected_top1 = {
+            'gravatar': 'c184ebe163aa66b25668757000116849',
+            'amount': 3,
+            'name': 'Jean Paul',
+            'cid': utils.encrypt(xorkey, 'j.paul@joker.org'),
+        }
+        expected_top2 = {
+            'gravatar': '505dcbea438008f24001e2928cdc0678',
+            'amount': 1,
+            'name': 'Nakata Daisuke',
+            'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+        }
+        response = self.app.get(
+            '/api/v1/tops/authors/bycommits?pid=test&inc_merge_commit=on')
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertDictEqual(response.json[1], expected_top2)
+        self.assertEqual(len(response.json), 2)
+        # Same request but with a limit set to 1
+        response = self.app.get(
+            '/api/v1/tops/authors/bycommits?pid=test'
+            '&inc_merge_commit=on&limit=1')
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertEqual(len(response.json), 1)
 
-            # Validate the CSV endpoint mode
-            # First convert all expected dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
-            response = self.app.get(
-                '/api/v1/tops/authors/bycommits?'
-                'pid=test&inc_merge_commit=on',
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1)
-            self.assertDictEqual(csvret[1], expected_top2)
-            self.assertEqual(len(csvret), 2)
+        # Validate the CSV endpoint mode
+        # First convert all expected dict values to str
+        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+        expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+        response = self.app.get(
+            '/api/v1/tops/authors/bycommits?'
+            'pid=test&inc_merge_commit=on',
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1)
+        self.assertDictEqual(csvret[1], expected_top2)
+        self.assertEqual(len(csvret), 2)
 
     def test_get_tops_authors_diff(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            expected_diff = {
-                'gravatar': '505dcbea438008f24001e2928cdc0678',
-                'amount': 1,
-                'name': 'Nakata Daisuke',
-                'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
-            }
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get(
-                '/api/v1/tops/authors/diff?pid=test&dfromref=2014-01-01'
-                '&dtoref=2014-09-03&dfrom=2014-09-04&dto=2017-01-01'
-                '&inc_merge_commit=on&limit=1')
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_diff)
-            self.assertEqual(len(response.json), 1)
+        # with patch.object(root.projects.Projects, 'get_projects') as m:
+        expected_diff = {
+            'gravatar': '505dcbea438008f24001e2928cdc0678',
+            'amount': 1,
+            'name': 'Nakata Daisuke',
+            'cid': utils.encrypt(xorkey, 'n.suke@joker.org'),
+        }
+        response = self.app.get(
+            '/api/v1/tops/authors/diff?pid=test&dfromref=2014-01-01'
+            '&dtoref=2014-09-03&dfrom=2014-09-04&dto=2017-01-01'
+            '&inc_merge_commit=on&limit=1')
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_diff)
+        self.assertEqual(len(response.json), 1)
 
     def test_get_tops_projects_bycommits(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get(
-                '/api/v1/tops/projects/bycommits?cid=%s' % cid)
-            expected_top1 = {
-                'amount': 2,
-                'name': 'test'
-            }
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertEqual(len(response.json), 1)
-            # Ask repo details
-            response = self.app.get(
-                '/api/v1/tops/projects/bycommits?cid='
-                '%s&inc_repos_detail=true' % cid)
-            expected_top1_d = {
-                'amount': 2,
-                'name': 'monkey:master',
-                'projects': ['test']
-            }
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1_d)
-            self.assertEqual(len(response.json), 1)
-            # Check the limit attribute
-            response = self.app.get(
-                '/api/v1/tops/projects/bycommits?cid=%s&limit=0' % cid)
-            assert response.status_int == 200
-            self.assertEqual(len(response.json), 0)
+        response = self.app.get(
+            '/api/v1/tops/projects/bycommits?cid=%s' % cid)
+        expected_top1 = {
+            'amount': 2,
+            'name': 'test'
+        }
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertEqual(len(response.json), 1)
+        # Ask repo details
+        response = self.app.get(
+            '/api/v1/tops/projects/bycommits?cid='
+            '%s&inc_repos_detail=true' % cid)
+        expected_top1_d = {
+            'amount': 2,
+            'name': 'monkey:master',
+            'projects': ['test']
+        }
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1_d)
+        self.assertEqual(len(response.json), 1)
+        # Check the limit attribute
+        response = self.app.get(
+            '/api/v1/tops/projects/bycommits?cid=%s&limit=0' % cid)
+        assert response.status_int == 200
+        self.assertEqual(len(response.json), 0)
 
-            # Validate the CSV endpoint mode
-            # First convert all expected dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            for k, v in expected_top1_d.items():
-                if isinstance(v, list):
-                    # A list, that will be semi column separated, can be return
-                    # when inc_repos_detail is passed to this endpoint
-                    expected_top1_d[k] = ";".join(v)
-                else:
-                    expected_top1_d[k] = str(v)
-            response = self.app.get(
-                '/api/v1/tops/projects/bycommits?'
-                'cid=%s' % cid,
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1)
-            response = self.app.get(
-                '/api/v1/tops/projects/bycommits?'
-                'cid=%s&inc_repos_detail=true' % cid,
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1_d)
+        # Validate the CSV endpoint mode
+        # First convert all expected dict values to str
+        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+        for k, v in expected_top1_d.items():
+            if isinstance(v, list):
+                # A list, that will be semi column separated, can be return
+                # when inc_repos_detail is passed to this endpoint
+                expected_top1_d[k] = ";".join(v)
+            else:
+                expected_top1_d[k] = str(v)
+        response = self.app.get(
+            '/api/v1/tops/projects/bycommits?'
+            'cid=%s' % cid,
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1)
+        response = self.app.get(
+            '/api/v1/tops/projects/bycommits?'
+            'cid=%s&inc_repos_detail=true' % cid,
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1_d)
 
     def test_get_tops_projects_bylchanged(self):
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            m.return_value = self.projects
-            root.tops.indexname = 'repoxplorertest'
-            response = self.app.get(
-                '/api/v1/tops/projects/bylchanged?cid=%s' % cid)
-            expected_top1 = {
-                'amount': 19,
-                'name': 'test'
-            }
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1)
-            self.assertEqual(len(response.json), 1)
-            # Ask repo details
-            response = self.app.get(
-                '/api/v1/tops/projects/bylchanged?cid='
-                '%s&inc_repos_detail=true' % cid)
-            expected_top1_d = {
-                'amount': 19,
-                'name': 'monkey:master',
-                'projects': ['test']
-            }
-            assert response.status_int == 200
-            self.assertDictEqual(response.json[0], expected_top1_d)
-            self.assertEqual(len(response.json), 1)
-            # Check the limit attribute
-            response = self.app.get(
-                '/api/v1/tops/projects/bylchanged?cid=%s&limit=0' % cid)
-            assert response.status_int == 200
-            self.assertEqual(len(response.json), 0)
+        response = self.app.get(
+            '/api/v1/tops/projects/bylchanged?cid=%s' % cid)
+        expected_top1 = {
+            'amount': 19,
+            'name': 'test'
+        }
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1)
+        self.assertEqual(len(response.json), 1)
+        # Ask repo details
+        response = self.app.get(
+            '/api/v1/tops/projects/bylchanged?cid='
+            '%s&inc_repos_detail=true' % cid)
+        expected_top1_d = {
+            'amount': 19,
+            'name': 'monkey:master',
+            'projects': ['test']
+        }
+        assert response.status_int == 200
+        self.assertDictEqual(response.json[0], expected_top1_d)
+        self.assertEqual(len(response.json), 1)
+        # Check the limit attribute
+        response = self.app.get(
+            '/api/v1/tops/projects/bylchanged?cid=%s&limit=0' % cid)
+        assert response.status_int == 200
+        self.assertEqual(len(response.json), 0)
 
-            # Validate the CSV endpoint mode
-            # First convert all expected dict values to str
-            expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-            for k, v in expected_top1_d.items():
-                if isinstance(v, list):
-                    # A list, that will be semi column separated, can be return
-                    # when inc_repos_detail is passed to this endpoint
-                    expected_top1_d[k] = ";".join(v)
-                else:
-                    expected_top1_d[k] = str(v)
-            response = self.app.get(
-                '/api/v1/tops/projects/bylchanged?'
-                'cid=%s' % cid,
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1)
-            response = self.app.get(
-                '/api/v1/tops/projects/bylchanged?'
-                'cid=%s&inc_repos_detail=true' % cid,
-                headers={'Accept': 'text/csv'})
-            assert response.status_int == 200
-            csvret = build_dict_from_csv(response.body)
-            self.assertDictEqual(csvret[0], expected_top1_d)
+        # Validate the CSV endpoint mode
+        # First convert all expected dict values to str
+        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
+        for k, v in expected_top1_d.items():
+            if isinstance(v, list):
+                # A list, that will be semi column separated, can be return
+                # when inc_repos_detail is passed to this endpoint
+                expected_top1_d[k] = ";".join(v)
+            else:
+                expected_top1_d[k] = str(v)
+        response = self.app.get(
+            '/api/v1/tops/projects/bylchanged?'
+            'cid=%s' % cid,
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1)
+        response = self.app.get(
+            '/api/v1/tops/projects/bylchanged?'
+            'cid=%s&inc_repos_detail=true' % cid,
+            headers={'Accept': 'text/csv'})
+        assert response.status_int == 200
+        csvret = build_dict_from_csv(response.body)
+        self.assertDictEqual(csvret[0], expected_top1_d)
 
 
 class TestSearchController(FunctionalTest):
@@ -1123,89 +1210,95 @@ class TestTagsController(FunctionalTest):
 
 class TestCommitsController(FunctionalTest):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
-        cls.c = Commits(cls.con)
-        cls.c.add_commits(COMMITS)
-        cls.projects = {
-            'test': {
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+    def setUp(self):
+        FunctionalTest.setUp(self)
+        self.con = index.Connector(index='repoxplorertest')
+        c = Commits(self.con)
+        c.add_commits(COMMITS)
+        projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.con.ic.delete(index=cls.con.index)
+        projects:
+          test:
+            repos:
+              monkey:
+                template: default
+        """
+        files = {'projects.yaml': projects_file}
+        self.create_db(files)
+        index.conf['db_path'] = self.db
+        index.conf['db_default_file'] = None
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
+    def tearDown(self):
+        FunctionalTest.tearDown(self)
+        self.con.ic.delete(index=self.con.index)
+        if os.path.isdir(self.db):
+            shutil.rmtree(self.db)
+
+    def create_db(self, files):
+        self.db = tempfile.mkdtemp()
+        for filename, content in files.items():
+            file(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_input_filter_validation(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.commits.indexname = 'repoxplorertest'
-            m.return_value = self.projects
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=invalid', status="*")
+        assert response.status_int == 404
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=invalid', status="*")
-            assert response.status_int == 404
-
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&dfrom=invalid', status="*")
-            assert response.status_int == 400
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&dfrom=invalid', status="*")
+        assert response.status_int == 400
 
     def test_get_commits(self):
-        with patch.object(root.projects.Projects, 'get_projects') as m:
-            root.commits.indexname = 'repoxplorertest'
-            m.return_value = self.projects
+        response = self.app.get('/api/v1/commits/commits?pid=test')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Nakata Daisuke')
+        self.assertIn('test', response.json[2][0]['projects'])
+        self.assertEqual(len(response.json[2][0]['projects']), 1)
 
-            response = self.app.get('/api/v1/commits/commits?pid=test')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Nakata Daisuke')
-            self.assertIn('test', response.json[2][0]['projects'])
-            self.assertEqual(len(response.json[2][0]['projects']), 1)
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:feature 35')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Nakata Daisuke')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:feature 35')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Nakata Daisuke')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:feature 36')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Jean Paul')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:feature 36')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Jean Paul')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&metadata='
+            'implement:feature 36,close-bug:18')
+        assert response.status_int == 200
+        self.assertEqual(response.json[2][0]['author_name'],
+                         'Jean Paul')
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&metadata='
-                'implement:feature 36,close-bug:18')
-            assert response.status_int == 200
-            self.assertEqual(response.json[2][0]['author_name'],
-                             'Jean Paul')
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'metadata=implement:*')
+        assert response.status_int == 200
+        self.assertEqual(response.json[1], 3)
 
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'metadata=implement:*')
-            assert response.status_int == 200
-            self.assertEqual(response.json[1], 3)
-
-            response = self.app.get(
-                '/api/v1/commits/commits?pid=test&'
-                'inc_merge_commit=on')
-            assert response.status_int == 200
-            self.assertEqual(response.json[1], 4)
+        response = self.app.get(
+            '/api/v1/commits/commits?pid=test&'
+            'inc_merge_commit=on')
+        assert response.status_int == 200
+        self.assertEqual(response.json[1], 4)
 
     def test_get_commits_with_groups_filter(self):
         patches = [
-            patch.object(root.projects.Projects, 'get_projects'),
             patch.object(root.groups.Contributors, 'get_groups')]
-        with nested(*patches) as (gp, gg):
-            root.commits.indexname = 'repoxplorertest'
-            gp.return_value = self.projects
+        with nested(*patches) as (gg, ):
             gg.return_value = GROUPS
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test&exc_groups=grp1')
@@ -1223,21 +1316,28 @@ class TestCommitsController(FunctionalTest):
                 'Nakata Daisuke')
 
     def test_get_commits_with_bot_groups(self):
-        custom_projects = {
-            'test': {
-                'bots-group': 'grp1',
-                'repos': [
-                    {'uri': 'https://github.com/nakata/monkey.git',
-                     'name': 'monkey',
-                     'branch': 'master'}]
-            }
-        }
+        new_projects_file = """
+        project-templates:
+          default:
+            uri: https://github.com/nakata/%(name)s.git
+            branches:
+            - master
+
+        projects:
+          test:
+            bots-group: grp1
+            repos:
+              monkey:
+                template: default
+        """
+
+        file(os.path.join(self.db, 'projects.yaml'), 'w+').write(
+            new_projects_file)
+        Projects(db_path=self.db, con=self.con, dump_yaml_in_index=True)
+
         patches = [
-            patch.object(root.projects.Projects, 'get_projects'),
             patch.object(root.groups.Contributors, 'get_groups')]
-        with nested(*patches) as (gp, gg):
-            root.commits.indexname = 'repoxplorertest'
-            gp.return_value = custom_projects
+        with nested(*patches) as (gg, ):
             gg.return_value = GROUPS
             response = self.app.get(
                 '/api/v1/commits/commits?pid=test')
