@@ -36,7 +36,7 @@ METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 AUTHOR_RE = re.compile('author (.*) <(.*)> (.*) (.*)')
 COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
 STATSL_RE = re.compile('(.*)\t(.*)\t(.*)')
-FILE_RENAME_RE = re.compile("(.*){(.*)\s=>\s(.*)}(.*)")
+FILE_RENAME_RE = re.compile(r"(.*){(.*)\s=>\s(.*)}(.*)")
 
 EL_RESERVED_FIELDS = [
     '_index',
@@ -341,15 +341,12 @@ class RefsCleaner():
         self.current_base_ids = set()
 
     def find_refs_to_clean(self):
-        prjs = self.projects.get_projects_raw()
+        projects = self.projects.get_projects(source=['refs'])
         refs_ids = set()
-        for pid, pdata in prjs.items():
-            for rid, repo in pdata['repos'].items():
-                # Also compute all base_ids during that loop for
-                # tags removal
-                self.current_base_ids.add('%s:%s' % (repo['uri'], rid))
-                for branch in repo['branches']:
-                    refs_ids.add('%s:%s:%s' % (repo['uri'], rid, branch))
+        for project in projects.values():
+            for ref in project['refs']:
+                self.current_base_ids.add(ref['shortrid'])
+                refs_ids.add(ref['fullrid'])
         if not os.path.isfile(self.seen_refs_path):
             self.data = set()
         else:
