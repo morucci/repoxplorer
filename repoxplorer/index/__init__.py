@@ -20,6 +20,8 @@ import datetime
 
 from pecan import conf
 
+from Crypto.Hash import SHA
+
 from elasticsearch import client
 from jsonschema import validate as schema_validate
 
@@ -66,7 +68,7 @@ class YAMLDefinition(object):
             db_default_file=db_default_file or conf.get('db_default_file'),
             db_cache_path=db_cache_path)
         self.yback.load_db()
-        self.hashes_str = "".join(self.yback.hashes)
+        self.hashes_str = SHA.new("".join(self.yback.hashes)).hexdigest()
         self.default_data, self.data = self.yback.get_data()
         self._merge()
 
