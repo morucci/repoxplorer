@@ -58,10 +58,10 @@ class CommitsController(object):
             cmt['metadata'] = list(extra)
             # Compute link to access commit diff based on the
             # URL template provided in projects.yaml
-            cmt['gitwebs'] = [projects_index.get_gitweb_link(
-                              ":".join(p.split(':')[0:-1])) %
-                              {'sha': cmt['sha']} for
-                              p in cmt['repos']]
+            cmt['gitwebs'] = [
+                projects_index.get_gitweb_link(r) %
+                {'sha': cmt['sha']} for r in cmt['repos']
+                if not r.startswith('meta_ref: ')]
             cmt['projects'] = utils.get_projects_from_references(
                 projects_index, cmt['repos'])
             # Also remove the URI part

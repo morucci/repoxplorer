@@ -45,10 +45,10 @@ class TagsController(object):
             return ret
         # now append user defined releases
         ur = {}
-        project = projects_index.get_projects()[pid]
-        for repo in project['repos']:
-            if 'releases' in repo:
-                for release in repo['releases']:
+        project = projects_index.get(pid, source=['refs'])
+        for ref in project['refs']:
+            if 'releases' in ref:
+                for release in ref['releases']:
                     ur[release['name']] = {'name': release['name'],
                                            'date': release['date']}
         for rel in ur.values():
