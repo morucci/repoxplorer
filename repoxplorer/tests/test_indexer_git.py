@@ -380,18 +380,18 @@ class TestRefsClean(TestCase):
         # '3597334f2cb10772950c97ddf2f6cc17b186' will be updated
         # as the devel branch is no longer referenced
         with patch.object(index.YAMLBackend, 'load_db'):
-            with patch.object(projects.Projects, 'get_projects_raw') as gpr:
+            with patch.object(projects.Projects, 'get_projects') as gp:
                 projects_index = projects.Projects('/tmp/fakepath')
-                gpr.return_value = {
+                gp.return_value = {
                     'p1': {
-                        'repos': {
-                            'p1': {
-                                'branches': ['master'],
-                                'uri': 'file:///tmp/p1',
-                                }
-                            }
-                        }
+                        'refs': [
+                            {'branch': 'master',
+                             'shortrid': 'file:///tmp/p1:p1',
+                             'fullrid': 'file:///tmp/p1:p1:master',
+                             'uri': 'file:///tmp/p1'}
+                         ]
                     }
+                }
                 rc = indexer.RefsCleaner(projects_index, con=self.con)
                 refs_to_clean = rc.find_refs_to_clean()
                 rc.clean(refs_to_clean)
@@ -412,11 +412,11 @@ class TestRefsClean(TestCase):
         self.assertEqual(len(pi.t.get_tags(['file:///tmp/p1:p1'])), 2)
         # Reinstance a RefsCleaner with no repos
         with patch.object(index.YAMLBackend, 'load_db'):
-            with patch.object(projects.Projects, 'get_projects_raw') as gpr:
+            with patch.object(projects.Projects, 'get_projects') as gp:
                 projects_index = projects.Projects('/tmp/fakepath')
-                gpr.return_value = {
+                gp.return_value = {
                     'p1': {
-                        'repos': {}
+                        'refs': []
                         }
                     }
                 rc = indexer.RefsCleaner(projects_index, con=self.con)
