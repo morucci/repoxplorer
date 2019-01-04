@@ -82,6 +82,7 @@ indexer_skip_projects = []
 index_custom_html = ""
 users_endpoint = False
 admin_token = 'admin_token'
+auto_load_projects_index = True
 
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
