@@ -53,6 +53,13 @@ function get_user_infos(login) {
   return $.getJSON("api/v1/users/" + login);
 }
 
+function delete_user(login) {
+    return $.ajax({
+        url: "api/v1/users/" + login,
+        type: 'DELETE',
+    });
+}
+
 function init_menu() {
   $.getJSON("api/v1/status/status")
     .done(function(status) {
