@@ -76,7 +76,7 @@ def get_references_filter(project, inc_references=None):
 
 def get_mail_filter(idents, cid=None, gid=None, group=None):
     if cid:
-        id, ident = idents.get_ident_by_id(cid)
+        _, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
             ident = idents.get_idents_by_emails(cid).values()[0]

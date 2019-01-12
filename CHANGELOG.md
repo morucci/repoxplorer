@@ -8,6 +8,8 @@ Master
 New features
 ------------
 
+- Added an account deletion button in the user home page.
+
 Bug Fixes
 ---------
 
