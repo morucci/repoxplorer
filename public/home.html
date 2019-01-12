@@ -52,6 +52,7 @@
       <div class="col-md-1"></div>
 
       <div class="col-md-10">
+
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title text-left">
@@ -62,34 +63,55 @@
             </h3>
           </div>
 
-        <div class="panel-body">
-         <form class="form-horizontal" id="user-settings-form">
-           <div class="form-group">
-             <label for="username" class="col-md-4 control-label">Username</label>
-             <div class="col-md-4">
-               <input class="form-control" id="username" type="text" disabled>
-             </div>
-           </div>
-           <div class="form-group">
-             <label for="fullname" class="col-md-4 control-label">Full name</label>
-             <div class="col-md-4">
-               <input class="form-control" id="fullname" type="text" maxlength="100">
-             </div>
-           </div>
-           <div class="form-group">
-             <label for="demail" class="col-md-4 control-label">Default email</label>
-             <div class="col-md-4">
-               <input class="form-control" id="demail" type="text" disabled>
-             </div>
-           </div>
-           <div id="emails"></div>
-           <div class="form-group">
-             <div class="col-md-offset-4 col-md-4">
-               <button type="submit" class="btn btn-default">Apply settings</button>
-             </div>
-           </div>
-         </form>
+          <div class="panel-body">
+            <form class="form-horizontal" id="user-settings-form">
+              <div class="form-group">
+                <label for="username" class="col-md-4 control-label">Username</label>
+                <div class="col-md-4">
+                  <input class="form-control" id="username" type="text" disabled>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="fullname" class="col-md-4 control-label">Full name</label>
+                <div class="col-md-4">
+                  <input class="form-control" id="fullname" type="text" maxlength="100">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="demail" class="col-md-4 control-label">Default email</label>
+                <div class="col-md-4">
+                  <input class="form-control" id="demail" type="text" disabled>
+                </div>
+              </div>
+              <div id="emails"></div>
+              <div class="form-group">
+                <div class="col-md-offset-4 col-md-4">
+                  <button type="submit" class="btn btn-default">Apply settings</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title text-left">
+              <b>Request account deletion</b>
+            </h3>
+          </div>
+
+          <div class="panel-body">
+            <div style="text-align: center">
+              <p>
+                Click on the button below to delete your user account. This user account and associated emails will be delete from the database.
+              </p>
+              <button type="button" id='delete-user-button' class="btn btn-default">Delete my user account</button>
+            </div>
+          </div>
+        </div>
+
        </div>
+
      </div>
    </div>
 

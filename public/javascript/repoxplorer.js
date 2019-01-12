@@ -46,11 +46,19 @@ function get_username() {
             }
         }
     };
+//    return 'mhuin';
     return escapeHtml(username);
 };
 
 function get_user_infos(login) {
   return $.getJSON("api/v1/users/" + login);
+}
+
+function delete_user(login) {
+    return $.ajax({
+        url: "api/v1/users/" + login,
+        type: 'DELETE',
+    });
 }
 
 function init_menu() {
@@ -519,6 +527,21 @@ function user_page_init() {
         $("#settings-progress").hide();
       }
     })
+  });
+
+  $("#delete-user-button").on("click", function(event) {
+    $.when(delete_user(get_username()))
+    .done(
+        function(data) {
+            // TODO: display notification in the UI
+            // TODO: set the cookie expiration
+            console.log('User deleted');
+        })
+    .fail(
+        function(err) {
+            // TODO: display notification in the UI
+            console.log(err);
+        });
   });
 
   // After we have fetched groups info and user info
