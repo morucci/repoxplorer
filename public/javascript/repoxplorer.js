@@ -53,6 +53,13 @@ function get_user_infos(login) {
   return $.getJSON("api/v1/users/" + login);
 }
 
+function delete_user(login) {
+    return $.ajax({
+        url: "api/v1/users/" + login,
+        type: 'DELETE',
+    });
+}
+
 function init_menu() {
   $.getJSON("api/v1/status/status")
     .done(function(status) {
@@ -519,6 +526,31 @@ function user_page_init() {
         $("#settings-progress").hide();
       }
     })
+  });
+
+  $("#delete-user-button").on("click", function(event) {
+    del_deferred = delete_user(get_username())
+    $("#settings-progress").show();
+    $.when(del_deferred)
+    .done(
+        function(data) {
+            $("#submit-msg").empty()
+            $("#submit-msg").addClass("alert-success");
+            $("#submit-msg").append("Your account has been deleted");
+            $("#submit-box").show();
+            $("#settings-progress").hide();
+            document.cookie = 'auth_pubtkt' + '=; Max-Age=-99999999;';
+        })
+    .fail(
+        function(err) {
+            $("#submit-msg").empty()
+            $("#submit-msg").addClass("alert-warning");
+            $("#submit-msg").append(
+                "Sorry, unable to delete your account. " +
+                "Please contact the platform administrator.");
+            $("#submit-box").show();
+            $("#settings-progress").hide();
+        });
   });
 
   // After we have fetched groups info and user info
