@@ -22,6 +22,8 @@ import logging
 import argparse
 import logging.config
 
+from pecan import configuration
+
 from repoxplorer.indexer.git import indexer
 from repoxplorer.index import projects
 
@@ -58,31 +60,21 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-def refresh_projects_index(conf):
+def refresh_projects_index():
     logger.info("Start loading projects index configuration into EL")
-    projects.Projects(
-        conf.db_path, conf.db_default_file,
-        getattr(conf, 'db_cache_path', None),
-        dump_yaml_in_index=True)
+    projects.Projects(dump_yaml_in_index=True)
 
 
 def clean(conf):
     logger.info("Start cleaning no longer referenced refs and tags")
-    projects_index = projects.Projects(
-        conf.db_path, conf.db_default_file,
-        getattr(conf, 'db_cache_path', None),
-        dump_yaml_in_index=True)
-    rc = indexer.RefsCleaner(projects_index, config=args.config)
+    projects_index = projects.Projects()
+    rc = indexer.RefsCleaner(projects_index)
     refs_to_clean = rc.find_refs_to_clean()
     rc.clean(refs_to_clean)
 
 
 def process(conf):
-    projects_index = projects.Projects(
-        conf.db_path,
-        conf.db_default_file,
-        getattr(conf, 'db_cache_path', None),
-        dump_yaml_in_index=True)
+    projects_index = projects.Projects()
     prjs = projects_index.get_projects(source=['name', 'refs', 'meta-ref'])
     for project in prjs.values():
         pid = project['name']
@@ -100,7 +92,6 @@ def process(conf):
             r = indexer.RepoIndexer(ref['name'],
                                     ref['uri'],
                                     parsers=ref['parsers'],
-                                    config=args.config,
                                     meta_ref=meta_ref)
             try:
                 r.git_init()
@@ -168,6 +159,7 @@ def process(conf):
 
 if __name__ == "__main__":
     conf = imp.load_source('config', args.config)
+    configuration.set_config(args.config)
     if args.logfile:
         conf.indexer_logging['handlers']['normal']['filename'] = args.logfile
     if args.loglevel:
@@ -175,10 +167,11 @@ if __name__ == "__main__":
         conf.indexer_logging['handlers']['console']['level'] = args.loglevel
     logging.config.dictConfig(conf.indexer_logging)
     if args.refresh_projects_index:
-        refresh_projects_index(conf)
+        refresh_projects_index()
         sys.exit()
     if args.clean_orphan:
         try:
+            refresh_projects_index()
             clean(conf)
             sys.exit(0)
         except Exception:
@@ -187,6 +180,7 @@ if __name__ == "__main__":
     if args.forever:
         while True:
             try:
+                refresh_projects_index()
                 process(conf)
                 clean(conf)
             except Exception:
@@ -197,6 +191,7 @@ if __name__ == "__main__":
                 time.sleep(conf.indexer_loop_delay)
     else:
         try:
+            refresh_projects_index()
             process(conf)
             clean(conf)
         except Exception:

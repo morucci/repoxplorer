@@ -22,7 +22,6 @@ import subprocess
 import multiprocessing as mp
 
 from pecan import conf
-from pecan import configuration
 
 from repoxplorer import index
 from repoxplorer.index.tags import Tags
@@ -327,9 +326,7 @@ def delete_commits(commits, name, to_delete, ref_id):
 
 
 class RefsCleaner():
-    def __init__(self, projects, con=None, config=None):
-        if config:
-            configuration.set_config(config)
+    def __init__(self, projects, con=None):
         if not con:
             self.con = index.Connector()
         else:
@@ -408,9 +405,7 @@ class RefsCleaner():
 
 class RepoIndexer():
     def __init__(self, name, uri, parsers=None,
-                 con=None, config=None, meta_ref=None):
-        if config:
-            configuration.set_config(config)
+                 con=None, meta_ref=None):
         if not con:
             self.con = index.Connector()
         else:
