@@ -41,10 +41,9 @@ base_logging = {
         },
     },
     'formatters': {
-        'console': {'format': ('%(levelname)-5.5s [%(name)s]'
-                    '[%(threadName)s] %(message)s')},
+        'console': {'format': ('%(levelname)-5.5s [%(name)s] %(message)s')},
         'normal': {'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
-                   '[%(threadName)s] %(message)s')},
+                              ' %(message)s')},
     }
 }
 
