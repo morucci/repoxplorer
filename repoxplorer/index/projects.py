@@ -119,6 +119,19 @@ templates:
 projects_schema = r"""
 $schema: http://json-schema.org/draft-04/schema
 
+definitions:
+  release:
+    type: object
+    additionalProperties: false
+    required:
+    - name
+    - date
+    properties:
+      name:
+        type: string
+      date:
+        type: string
+
 type: object
 properties:
   projects:
@@ -137,6 +150,10 @@ properties:
             type: boolean
           bots-group:
             type: string
+          releases:
+            type: array
+            items:
+              $ref: "#/definitions/release"
           repos:
             type: object
             additionalProperties: false
@@ -169,6 +186,9 @@ projects:
   Barbican:
     description: The Barbican project
     bots-group: openstack-ci-bots
+    releases:
+    - name: ocata
+      date: 2017-02-22
     repos:
       openstack/barbican:
         template: default
@@ -200,6 +220,13 @@ class EProjects(object):
         "meta-ref": {"type": "boolean", "index": "not_analyzed"},
         "bots-group": {"type": "string", "index": "not_analyzed"},
         "index-tags": {"type": "boolean", "index": "not_analyzed"},
+        "releases": {
+            "type": "nested",
+            "properties": {
+                "name": {"type": "string", "index": "not_analyzed"},
+                "date": {"type": "string", "index": "not_analyzed"},
+            }
+        },
         "refs": {
             "type": "nested",
             "properties": {
@@ -445,7 +472,7 @@ class Projects(YAMLDefinition):
         self.projects.update(merged_projects)
 
     def _enrich_projects(self):
-        for pid, detail in self.projects.items():
+        for detail in self.projects.values():
             if 'meta-ref' not in detail:
                 detail['meta-ref'] = False
             for rid, repo in detail['repos'].items():
@@ -504,7 +531,10 @@ class Projects(YAMLDefinition):
                 'description': detail.get('description'),
                 'logo': detail.get('logo'),
                 'bots-group': detail.get('bots-group'),
+                'releases': detail.get('releases', []),
             }
+            for release in flatten[pid]['releases']:
+                release['date'] = date2epoch(release['date'])
             for rid, repo in detail['repos'].items():
                 for branch in repo['branches']:
                     r = {}

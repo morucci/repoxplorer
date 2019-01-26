@@ -1122,6 +1122,9 @@ class TestTagsController(FunctionalTest):
 
         projects:
           test:
+            releases:
+            - name: ocata
+              date: 2017-02-22
             repos:
               monkey:
                 template: default
@@ -1129,9 +1132,11 @@ class TestTagsController(FunctionalTest):
         self.db = set_projects_definition(self.conp, new_projects_file)
         response = self.app.get('/api/v1/tags/tags?pid=test')
         assert response.status_int == 200
-        self.assertEqual(len(response.json), 3)
+        self.assertEqual(len(response.json), 4)
         udt = [t for t in response.json if t['name'] == '1.0'][0]
+        udt2 = [t for t in response.json if t['name'] == 'ocata'][0]
         self.assertEqual('1.0', udt['name'])
+        self.assertEqual('ocata', udt2['name'])
 
 
 class TestCommitsController(FunctionalTest):

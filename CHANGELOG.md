@@ -9,6 +9,7 @@ New features
 ------------
 
 - Added an account deletion button in the user home page.
+- Allow project's releases definition at project level.
 
 Bug Fixes
 ---------
@@ -16,6 +17,8 @@ Bug Fixes
 Other Notes
 -----------
 
+- Removed the cache system for projects. Now all projects are dumped
+  and queried from the Elastic index.
 - add *db_cache_path* in config to specify directory where to store
   cache files.
 
