@@ -263,7 +263,8 @@ projects:
 ```
 
 A list of **releases** can be defined. It is useful when you want to define
-release dates across all repositories defined in a project.
+release dates across all repositories defined in a project or for a specific
+repository.
 Release dates with %Y-%m-%d format can be defined and will be merged with
 detected Git tags dates.
 
@@ -284,6 +285,9 @@ project-templates:
 
 projects:
   Barbican:
+    releases:
+      - name: Ocata
+        date: 2017-02-22
     repos:
       barbican:
         template: default
