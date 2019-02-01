@@ -1,0 +1,17 @@
+---
+- hosts: test-node
+  tasks:
+    - name: "Install some required packages"
+      package:
+        name: which
+        state: latest
+      become: true
+    - name: Extract ElasticSearch 2.4.0 archive
+      unarchive:
+        src: https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
+        dest: "{{ ansible_user_dir }}"
+        remote_src: yes
+    - name: Start ElasticSearch
+      command: "{{ ansible_user_dir }}/elasticsearch-2.4.0/bin/elasticsearch -d"
+    - name: Get processes list
+      command: ps axf
