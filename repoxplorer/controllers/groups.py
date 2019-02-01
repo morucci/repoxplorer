@@ -39,21 +39,21 @@ class GroupsController(object):
         if withstats == 'true':
             projects_index = Projects()
         if nameonly == 'true':
-            ret = dict([(k, None) for k in groups.keys()])
+            ret = dict([(k, None) for k in list(groups.keys())])
             if prefix:
-                ret = dict([(k, None) for k in ret.keys() if
+                ret = dict([(k, None) for k in list(ret.keys()) if
                             k.lower().startswith(prefix)])
             return ret
         ret_groups = {}
-        for group, data in groups.items():
+        for group, data in list(groups.items()):
             if prefix and not group.lower().startswith(prefix.lower()):
                 continue
             rg = {'members': {},
                   'description': data.get('description', ''),
                   'domains': data.get('domains', [])}
-            emails = data['emails'].keys()
+            emails = list(data['emails'].keys())
             members = contributors_index.get_idents_by_emails(emails)
-            for id, member in members.items():
+            for id, member in list(members.items()):
                 member['gravatar'] = hashlib.md5(
                     member['default-email']).hexdigest()
                 # TODO(fbo): bounces should be a list of bounce
@@ -76,8 +76,7 @@ class GroupsController(object):
                     projects_index, contributors_index, pid, None, None, group,
                     dfrom, dto, None, inc_merge_commit, None, None, None)
 
-                repos = filter(lambda r: not r.startswith('meta_ref: '),
-                               ci.get_repos(**query_kwargs)[1])
+                repos = [r for r in ci.get_repos(**query_kwargs)[1] if not r.startswith('meta_ref: ')]
                 projects = utils.get_projects_from_references(
                     projects_index, repos)
                 rg['repos_amount'] = len(repos)

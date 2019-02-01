@@ -27,6 +27,7 @@ class TestCSVRenderer(TestCase):
     def test_rendering(self):
         data = {'f1': 'd1', 'f2': 2}
         output = self.csvrender.render(None, data)
+        print(output)
         self.assertTrue(
             output == "f1,f2\r\nd1,2\r\n")
 

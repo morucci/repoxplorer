@@ -2,18 +2,25 @@
 - job:
     name: repoxplorer-unittests
     parent: base
-    description: This is running the unittests for this project
+    description: Base job for repoXplorer unittests
     run: playbooks/unittests.yaml
+
+- job:
+    name: repoxplorer-unittests-py37
+    parent: repoxplorer-unittests
+    description: repoXplorer unittests for Python 3.7
+    vars:
+      tox_target: py37
     nodeset:
       nodes:
         - name: test-node
-          label: dib-centos-7
+          label: runc-fedora-29
 
 - project:
     name: repoxplorer
     check:
       jobs:
-        - repoxplorer-unittests
+        - repoxplorer-unittests-py37
     gate:
       jobs:
-        - repoxplorer-unittests
+        - repoxplorer-unittests-py37
