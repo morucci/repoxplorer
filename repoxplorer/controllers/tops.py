@@ -47,7 +47,7 @@ class TopAuthorsController(object):
             resolv_name=True, clean_email=True):
         sanitized = utils.authors_sanitize(idents, authors)
         top_authors_s = []
-        for email, v in sanitized.items():
+        for email, v in list(sanitized.items()):
             top_authors_s.append(
                 {'cid': utils.encrypt(xorkey, v[2]),
                  'email': email,
@@ -189,12 +189,12 @@ class TopProjectsController(object):
         repos = f1(**query_kwargs)[1]
         if inc_repos_detail:
             repos_contributed = [
-                (p, ca) for p, ca in repos.items()
+                (p, ca) for p, ca in list(repos.items())
                 if not p.startswith('meta_ref: ')]
         else:
             repos_contributed = []
             projects = utils.get_projects_from_references(
-                pi, [r for r in repos.keys()
+                pi, [r for r in list(repos.keys())
                      if not r.startswith('meta_ref: ')])
             for pname in projects:
                 project = pi.get(pname, source=['name', 'meta-ref', 'refs'])

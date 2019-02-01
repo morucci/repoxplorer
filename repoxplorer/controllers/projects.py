@@ -38,7 +38,7 @@ class ProjectsController(object):
             projects = projects_index.get_projects(
                 source=['name', 'description', 'logo', 'refs'])
             _projects = OrderedDict(
-                sorted(projects.items(), key=lambda t: t[0]))
+                sorted(list(projects.items()), key=lambda t: t[0]))
             return {'projects': _projects,
                     'tags': projects_index.get_tags()}
 

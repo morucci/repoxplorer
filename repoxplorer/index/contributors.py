@@ -204,12 +204,12 @@ class Contributors(YAMLDefinition):
         an ownership to a group
         """
         def add_to_group(group, email, details):
-            if group not in self.groups.keys():
+            if group not in list(self.groups.keys()):
                 return
             self.groups[group]['emails'][email] = details
 
-        for gid, groups in self.groups.items():
-            for email, data in groups['emails'].items():
+        for gid, groups in list(self.groups.items()):
+            for email, data in list(groups['emails'].items()):
                 if not data:
                     continue
                 for key in ('begin-date', 'end-date'):
@@ -220,30 +220,30 @@ class Contributors(YAMLDefinition):
         # Here if the users elk backend is active we populate groups
         # by querying the users index
         if user_endpoint_active:
-            for gid, groups in self.groups.items():
+            for gid, groups in list(self.groups.items()):
                 idents = self._users.get_idents_in_group(gid)
                 for ident in idents:
                     _, data = self.backend_convert_ident(ident)
-                    for email, email_data in data['emails'].items():
-                        for group, details in email_data.get(
-                                'groups', {}).items():
+                    for email, email_data in list(data['emails'].items()):
+                        for group, details in list(email_data.get(
+                                'groups', {}).items()):
                             if group == gid:
                                 add_to_group(group, email, details)
         # If not regular yaml identities index is used
         else:
-            for iid, id_data in self.idents.items():
-                for email, email_data in id_data['emails'].items():
-                    for group, details in email_data.get(
-                            'groups', {}).items():
+            for iid, id_data in list(self.idents.items()):
+                for email, email_data in list(id_data['emails'].items()):
+                    for group, details in list(email_data.get(
+                            'groups', {}).items()):
                         add_to_group(group, email, details)
         self.enriched_groups = True
 
     def _enrich_idents(self):
         """ Here we convert provided date to epoch
         """
-        for iid, id_data in self.idents.items():
-            for email, email_data in id_data['emails'].items():
-                for group, data in email_data.get('groups', {}).items():
+        for iid, id_data in list(self.idents.items()):
+            for email, email_data in list(id_data['emails'].items()):
+                for group, data in list(email_data.get('groups', {}).items()):
                     if not data:
                         continue
                     for key in ('begin-date', 'end-date'):
@@ -262,23 +262,23 @@ class Contributors(YAMLDefinition):
         if issues:
             return issues
         # Check uncovered by the schema validator
-        known_groups = self.groups.keys()
+        known_groups = list(self.groups.keys())
         for d in self.data:
             idents = d.get('identities', {})
-            for iid, id_data in idents.items():
-                if (id_data['default-email'] not in id_data['emails'].keys()):
+            for iid, id_data in list(idents.items()):
+                if (id_data['default-email'] not in list(id_data['emails'].keys())):
                     issues.append("Identity %s default an unknown "
                                   "default-email" % iid)
-                _groups = [g.get('groups', {}).keys() for g in
-                           id_data['emails'].values()]
+                _groups = [list(g.get('groups', {}).keys()) for g in
+                           list(id_data['emails'].values())]
                 groups = set()
                 for gs in _groups:
                     groups.update(set(gs))
                 if not groups.issubset(set(known_groups)):
                     issues.append("Identity %s declares membership to "
                                   "an unknown group" % iid)
-                for email, email_data in id_data['emails'].items():
-                    for group, data in email_data.get('groups', {}).items():
+                for email, email_data in list(id_data['emails'].items()):
+                    for group, data in list(email_data.get('groups', {}).items()):
                         if not data:
                             continue
                         try:
@@ -300,8 +300,8 @@ class Contributors(YAMLDefinition):
         if issues:
             return issues
         # Check uncovered by the schema validator
-        for gid, groups in self.groups.items():
-            for email, data in groups['emails'].items():
+        for gid, groups in list(self.groups.items()):
+            for email, data in list(groups['emails'].items()):
                 if not data:
                     continue
                 try:
@@ -337,11 +337,11 @@ class Contributors(YAMLDefinition):
         for email in ident['emails']:
             groups = {}
             data['emails'][email['email']] = {'groups': groups}
-            if 'groups' in email.keys():
+            if 'groups' in list(email.keys()):
                 for group in email['groups']:
                     groups[group['group']] = {}
                     for elm in ('begin-date', 'end-date'):
-                        if elm in group.keys():
+                        if elm in list(group.keys()):
                             groups[group['group']][elm] = group[elm]
         return ident['uid'], data
 
