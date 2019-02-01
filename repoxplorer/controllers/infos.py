@@ -54,8 +54,8 @@ class InfosController(object):
         infos['line_modifieds_amount'] = int(
             commits_index.get_line_modifieds_stats(**query_kwargs)[1]['sum'])
 
-        repos = filter(lambda r: not r.startswith('meta_ref: '),
-                       commits_index.get_repos(**query_kwargs)[1])
+        repos = [r for r in commits_index.get_repos(**query_kwargs)[1]
+                 if not r.startswith('meta_ref: ')]
         if pid:
             projects = (pid,)
         else:
@@ -103,7 +103,7 @@ class InfosController(object):
         _, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
-            ident = idents.get_idents_by_emails(cid).values()[0]
+            ident = list(idents.get_idents_by_emails(cid).values())[0]
         mails = ident['emails']
         name = ident['name']
         if not name:
@@ -118,5 +118,6 @@ class InfosController(object):
         infos = {}
         infos['name'] = name
         infos['mails_amount'] = len(mails)
-        infos['gravatar'] = hashlib.md5(ident['default-email']).hexdigest()
+        infos['gravatar'] = hashlib.md5(
+            ident['default-email'].encode(errors='ignore')).hexdigest()
         return infos

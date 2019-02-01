@@ -460,7 +460,7 @@ class Commits(object):
         mails = deque(mails)
         while True:
             _mails = []
-            for _ in xrange(amount):
+            for _ in range(amount):
                 try:
                     _mails.append(mails.pop())
                 except IndexError:
@@ -576,9 +576,9 @@ class Commits(object):
                                mails_neg=mails_neg, domains=domains,
                                blacklisted_mails=blacklisted_mails,
                                limit=10000)
-        keys = [c.keys() for c in ret[2]]
-        map(storekey, [i for i in itertools.chain(*keys) if
-                       i not in PROPERTIES])
+        keys = [list(c.keys()) for c in ret[2]]
+        list(map(storekey, [i for i in itertools.chain(*keys) if
+                            i not in PROPERTIES]))
         return uniq_keys
 
     def get_metadata_key_values(self, key, mails=[], repos=[],

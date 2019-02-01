@@ -325,8 +325,8 @@ class EProjects(object):
 
     def load(self, projects, rid2projects):
         self.delete_all()
-        self.create(projects.iteritems(), self.dbname)
-        self.create(rid2projects.iteritems(), "rid2%s" % self.dbname)
+        self.create(projects.items(), self.dbname)
+        self.create(rid2projects.items(), "rid2%s" % self.dbname)
 
     def get_all(self, source=True, type=None):
         query = {
@@ -472,10 +472,10 @@ class Projects(YAMLDefinition):
         self.projects.update(merged_projects)
 
     def _enrich_projects(self):
-        for detail in self.projects.values():
+        for detail in list(self.projects.values()):
             if 'meta-ref' not in detail:
                 detail['meta-ref'] = False
-            for rid, repo in detail['repos'].items():
+            for rid, repo in list(detail['repos'].items()):
                 # Save tags mentioned for a repo
                 tags = []
                 if 'tags' in repo and repo['tags']:

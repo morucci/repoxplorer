@@ -38,7 +38,7 @@ class StatusController(object):
         num_repos = len(set([
             ref['name'] for
             ref in itertools.chain(
-                *[p['refs'] for p in projects.values()])]))
+                *[p['refs'] for p in list(projects.values())])]))
         return {'customtext': index_custom_html,
                 'projects': num_projects,
                 'repos': num_repos,

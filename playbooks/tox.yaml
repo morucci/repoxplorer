@@ -1,0 +1,7 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Run tox
+      command: tox -e {{ tox_target }}
+      args:
+        chdir: "{{ zuul.project.src_dir }}/"

@@ -32,7 +32,7 @@ def create_random_str(lenght=6):
 
 def gen_emails(amount):
     ret = []
-    for i in xrange(amount):
+    for i in range(amount):
         email = "%s@%s.%s" % (
             create_random_str(8),
             create_random_str(5),
@@ -48,11 +48,11 @@ def gen_emails(amount):
 
 def gen_commit_msg():
     return " ".join([create_random_str(random.randint(0, 10))
-                     for _ in xrange(5)])
+                     for _ in range(5)])
 
 
 def gen_fake_commits(amount=10000):
-    print "Start generation of %s fake commits" % amount
+    print("Start generation of %s fake commits" % amount)
     email_amount = amount * 0.03
     email_amount = int(email_amount)
     if not email_amount:
@@ -62,7 +62,7 @@ def gen_fake_commits(amount=10000):
         'https://github.com/openstack/test',
         'test', 'master')
     ret = []
-    for i in xrange(amount):
+    for i in range(amount):
         author_date = random.randint(
             epoch_start, epoch_start + 1000000)
         author = emails[random.randint(0, email_amount - 1)]
@@ -82,7 +82,7 @@ def gen_fake_commits(amount=10000):
         c['merge_commit'] = False
         c['projects'] = [project, ]
         ret.append(c)
-    print "Generation of %s fake commits done." % amount
+    print("Generation of %s fake commits done." % amount)
     return ret
 
 
@@ -90,4 +90,4 @@ if __name__ == '__main__':
     amount = 100000
     c = Commits(index.Connector())
     c.add_commits(gen_fake_commits(amount))
-    print "Indexation done."
+    print("Indexation done.")
