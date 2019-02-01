@@ -45,13 +45,14 @@ class SearchController(object):
         authors = dict([(d['_source']['author_email'],
                          d['_source']['author_name']) for d in ret])
         result = {}
-        _idents = idents.get_idents_by_emails(authors.keys()[:ret_limit])
+        _idents = idents.get_idents_by_emails(list(authors.keys())[:ret_limit])
         for iid, ident in _idents.items():
             email = ident['default-email']
             name = ident['name'] or authors[email]
             result[utils.encrypt(xorkey, iid)] = {
                 'name': name,
-                'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest()}
+                'gravatar': hashlib.md5(
+                    email.encode(errors='ignore')).hexdigest()}
         result = OrderedDict(
-            sorted(result.items(), key=lambda t: t[1]['name']))
+            sorted(list(result.items()), key=lambda t: t[1]['name']))
         return result

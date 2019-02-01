@@ -33,7 +33,7 @@ class TestYAMLBackend(TestCase):
     def create_db(self, files):
         self.db = tempfile.mkdtemp()
         for filename, content in files.items():
-            file(os.path.join(self.db, filename), 'w+').write(content)
+            open(os.path.join(self.db, filename), 'w+').write(content)
 
     def test_yamlbackend_load(self):
         f1 = """

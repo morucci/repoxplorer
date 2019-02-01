@@ -51,7 +51,8 @@ class TopAuthorsController(object):
             top_authors_s.append(
                 {'cid': utils.encrypt(xorkey, v[2]),
                  'email': email,
-                 'gravatar': hashlib.md5(email.encode('utf-8')).hexdigest(),
+                 'gravatar': hashlib.md5(
+                     email.encode(errors='ignore')).hexdigest(),
                  'amount': int(v[0]),
                  'name': v[1]})
         top_authors_s_sorted = sorted(top_authors_s,

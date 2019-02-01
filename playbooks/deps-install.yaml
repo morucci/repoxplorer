@@ -1,0 +1,16 @@
+---
+- hosts: test-node
+  tasks:
+    - name: "Install some distro required packages"
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - git
+        - gcc
+        - python3-tox
+        - python3-virtualenv
+        - libffi-devel
+        - openssl-devel
+        - python3-devel
+      become: true

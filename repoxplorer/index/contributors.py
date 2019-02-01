@@ -262,14 +262,14 @@ class Contributors(YAMLDefinition):
         if issues:
             return issues
         # Check uncovered by the schema validator
-        known_groups = self.groups.keys()
+        known_groups = list(self.groups.keys())
         for d in self.data:
             idents = d.get('identities', {})
             for iid, id_data in idents.items():
                 if (id_data['default-email'] not in id_data['emails'].keys()):
                     issues.append("Identity %s default an unknown "
                                   "default-email" % iid)
-                _groups = [g.get('groups', {}).keys() for g in
+                _groups = [list(g.get('groups', {}).keys()) for g in
                            id_data['emails'].values()]
                 groups = set()
                 for gs in _groups:
