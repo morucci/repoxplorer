@@ -2,7 +2,7 @@ import os
 import re
 import mock
 import shutil
-import cPickle
+import pickle
 import tempfile
 
 from unittest import TestCase
@@ -28,7 +28,7 @@ metakey: metavalue
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn((u'metakey', u'metavalue'), metadatas)
+        self.assertIn(('metakey', 'metavalue'), metadatas)
         self.assertTrue(len(metadatas) == 1)
         msg = """cmt subject
 
@@ -39,8 +39,8 @@ metakey: metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn((u'metakey', u'metavalue'), metadatas)
-        self.assertIn((u'metakey', u'metavalue2'), metadatas)
+        self.assertIn(('metakey', 'metavalue'), metadatas)
+        self.assertIn(('metakey', 'metavalue2'), metadatas)
         self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
@@ -52,8 +52,8 @@ metakey2: metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn((u'metakey', u'metavalue'), metadatas)
-        self.assertIn((u'metakey2', u'metavalue2'), metadatas)
+        self.assertIn(('metakey', 'metavalue'), metadatas)
+        self.assertIn(('metakey2', 'metavalue2'), metadatas)
         self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
@@ -65,8 +65,8 @@ metakey2:#metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn((u'metakey', u'metavalue'), metadatas)
-        self.assertIn((u'metakey2', u'metavalue2'), metadatas)
+        self.assertIn(('metakey', 'metavalue'), metadatas)
+        self.assertIn(('metakey2', 'metavalue2'), metadatas)
         self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
@@ -92,8 +92,8 @@ http://metavalue
         subject, metadatas = indexer.parse_commit_msg(
             msg, extra_parsers=parsers)
         self.assertEqual(subject, 'Implement feature bp-feature-cool')
-        self.assertIn((u'blueprint', u'bp-feature-cool'), metadatas)
-        self.assertIn((u'bug', u'bz16'), metadatas)
+        self.assertIn(('blueprint', 'bp-feature-cool'), metadatas)
+        self.assertIn(('bug', 'bz16'), metadatas)
         self.assertTrue(len(metadatas) == 2)
 
     def test_parse_commit_desc_output(self):
@@ -105,7 +105,7 @@ http://metavalue
         expected = [
             {'ttl': 487,
              'line_modifieds': 10,
-             'commit_msg': u'Make playbook and task in topic singular',
+             'commit_msg': 'Make playbook and task in topic singular',
              'sha': '1ef6088bb6678b78993672ffdec93c7c99a0405d',
              'repos': ['file:///gitshow.sample'],
              'merge_commit': False,
@@ -118,15 +118,15 @@ http://metavalue
                  'modules/openstack_project/files',
                  'modules/openstack_project/files/puppetmaster',
                  'modules/openstack_project/files/puppetmaster/mqtt.py'],
-             u'Change-Id': [
-                 u'I3e6240560ad562e8f41f7e314ef7a4b0b1178e32'],
-             'author_name': u'Author A',
-             'committer_name': u'Author A',
+             'Change-Id': [
+                 'I3e6240560ad562e8f41f7e314ef7a4b0b1178e32'],
+             'author_name': 'Author A',
+             'committer_name': 'Author A',
              'author_email': 'author.a@test',
              'author_email_domain': 'test'},
             {'ttl': 0,
              'line_modifieds': 0,
-             'commit_msg': u'Merge "Cast the playbook uuid as a string"',
+             'commit_msg': 'Merge "Cast the playbook uuid as a string"',
              'sha': '0e58c2fd54a50362138849a20bced510480dac8d',
              'repos': ['file:///gitshow.sample'],
              'merge_commit': True,
@@ -134,13 +134,13 @@ http://metavalue
              'author_date': 1493423272,
              'committer_email': 'review@openstack.org',
              'files_list': [],
-             'author_name': u'Jenkins',
-             'committer_name': u'Gerrit Code Review',
+             'author_name': 'Jenkins',
+             'committer_name': 'Gerrit Code Review',
              'author_email': 'jenkins@review.openstack.org',
              'author_email_domain': 'review.openstack.org'},
             {'ttl': 0,
              'line_modifieds': 0,
-             'commit_msg': u'Merge "Add subunit gearman worker '
+             'commit_msg': 'Merge "Add subunit gearman worker '
              'mqtt info to firehose docs"',
              'sha': 'fb7d2712a907f8f01b817889e88abaf0dad6a109',
              'repos': ['file:///gitshow.sample'],
@@ -149,20 +149,20 @@ http://metavalue
              'author_date': 1493413511,
              'committer_email': 'review@openstack.org',
              'files_list': [],
-             'author_name': u'Jenkins',
-             'committer_name': u'Gerrit Code Review',
+             'author_name': 'Jenkins',
+             'committer_name': 'Gerrit Code Review',
              'author_email': 'jenkins@review.openstack.org',
              'author_email_domain': 'review.openstack.org'},
             {'ttl': 1651141,
              'line_modifieds': 64,
-             'commit_msg': u'Add firehose schema docs',
+             'commit_msg': 'Add firehose schema docs',
              'sha': 'd9fda5b81f6c8d64fda2ca2c08246492e800292f',
              'repos': ['file:///gitshow.sample'],
              'merge_commit': False,
              'committer_date': 1493244209,
              'author_date': 1491593068,
              'committer_email': 'author.b@test',
-             u'Change-Id': [u'I2157f702c87f32055ba2fad842a05e31539bc857'],
+             'Change-Id': ['I2157f702c87f32055ba2fad842a05e31539bc857'],
              'files_list': [
                  'doc',
                  'doc/source',
@@ -170,20 +170,20 @@ http://metavalue
                  'doc/source/firehose.rst',
                  'doc/source/firehose_schema.rst',
                  'doc/source/systems.rst'],
-             'author_name': u'Author A',
-             'committer_name': u'Author B',
+             'author_name': 'Author A',
+             'committer_name': 'Author B',
              'author_email': 'author.a@test',
              'author_email_domain': 'test'},
             {'ttl': 0,
              'line_modifieds': 2,
-             'commit_msg': u'Fix use of _ that should be - in mqtt-ca_certs',
+             'commit_msg': 'Fix use of _ that should be - in mqtt-ca_certs',
              'sha': '8cb34d026e9c290b83c52301d82b2011406fc7d8',
              'repos': ['file:///gitshow.sample'],
              'merge_commit': False,
              'committer_date': 1493240029,
              'author_date': 1493240029,
              'committer_email': 'author.c@test',
-             u'Change-Id': [u'I4155bdd80523b73fdc69f45d6120e8eec986dda7'],
+             'Change-Id': ['I4155bdd80523b73fdc69f45d6120e8eec986dda7'],
              'files_list': [
                  'modules',
                  'modules/openstack_project',
@@ -191,19 +191,19 @@ http://metavalue
                  'modules/openstack_project/templates/logstash',
                  'modules/openstack_project/templates/logstash/' +
                  'jenkins-subunit-worker.yaml.erb'],
-             'author_name': u'Author C',
-             'committer_name': u'Author C',
+             'author_name': 'Author C',
+             'committer_name': 'Author C',
              'author_email': 'author.c@test',
              'author_email_domain': 'test'},
             {'author_date': 1493240029,
-             'author_email': u'author.c@test',
-             'author_email_domain': u'test',
-             'author_name': u'Author C',
-             'commit_msg': u'Add type declarations for Windows API calls as '
+             'author_email': 'author.c@test',
+             'author_email_domain': 'test',
+             'author_name': 'Author C',
+             'commit_msg': 'Add type declarations for Windows API calls as '
              'found in jaraco.windows 3.6.1. Fixes #758.',
              'committer_date': 1493240029,
-             'committer_email': u'author.c@test',
-             'committer_name': u'Author C',
+             'committer_email': 'author.c@test',
+             'committer_name': 'Author C',
              'files_list': [
                  'paramiko',
                  'paramiko/_winapi.py',
@@ -216,14 +216,14 @@ http://metavalue
              'sha': '88364beba125cc8e6e314885db1c909b3d526340',
              'ttl': 0},
             {'author_date': 1493240029,
-             'author_email': u'author.c@test',
-             'author_email_domain': u'test',
-             'author_name': u'Author C',
-             'commit_msg': u'windows linefeed was breaking /usr/bin/env from '
+             'author_email': 'author.c@test',
+             'author_email_domain': 'test',
+             'author_name': 'Author C',
+             'commit_msg': 'windows linefeed was breaking /usr/bin/env from '
              'executing correctly :/s/',
              'committer_date': 1493240029,
-             'committer_email': u'author.c@test',
-             'committer_name': u'Author C',
+             'committer_email': 'author.c@test',
+             'committer_name': 'Author C',
              'line_modifieds': 2,
              'merge_commit': False,
              'files_list': ['SickBeard.py'],
@@ -231,14 +231,14 @@ http://metavalue
              'sha': 'f5d7eb5b623b625062cf0d3d8d552ee0ea9000dd',
              'ttl': 0},
             {'author_date': 1493240029,
-             'author_email': u'author.c@test',
-             'author_email_domain': u'test',
-             'author_name': u'Author C',
-             'commit_msg': u'Merge pull request #13155 from '
+             'author_email': 'author.c@test',
+             'author_email_domain': 'test',
+             'author_name': 'Author C',
+             'commit_msg': 'Merge pull request #13155 from '
              'coolljt0725/fix_validate_tag_name',
              'committer_date': 1493240029,
-             'committer_email': u'author.c@test',
-             'committer_name': u'Author C',
+             'committer_email': 'author.c@test',
+             'committer_name': 'Author C',
              'line_modifieds': 0,
              'files_list': [],
              'merge_commit': True,
@@ -246,13 +246,13 @@ http://metavalue
              'sha': '8e1cc08e799a83ace198ee7a3c6f9169635e7f46',
              'ttl': 0},
             {'author_date': 1352117713,
-             'author_email': u'',
-             'author_email_domain': u'',
-             'author_name': u'mysql-builder@oracle.com',
+             'author_email': '',
+             'author_email_domain': '',
+             'author_name': 'mysql-builder@oracle.com',
              'commit_msg': '',
              'committer_date': 1352117713,
-             'committer_email': u'',
-             'committer_name': u'mysql-builder@oracle.com',
+             'committer_email': '',
+             'committer_name': 'mysql-builder@oracle.com',
              'files_list': [],
              'line_modifieds': 0,
              'merge_commit': False,
@@ -463,7 +463,7 @@ class TestRepoIndexer(TestCase):
         pi.set_branch('master')
         self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
-        seen_refs = cPickle.load(file(self.seen_refs))
+        seen_refs = pickle.load(file(self.seen_refs))
         self.assertTrue(len(seen_refs), 1)
         self.assertIn('file:///tmp/p1:p1:master', seen_refs)
 
@@ -473,7 +473,7 @@ class TestRepoIndexer(TestCase):
         self.assertEqual(pi.ref_id, 'file:///tmp/p1:p1:master')
         self.assertEqual(pi.meta_ref, 'meta_ref: Fedora')
         self.assertTrue(os.path.isdir(indexer.conf['git_store']))
-        seen_refs = cPickle.load(file(self.seen_refs))
+        seen_refs = pickle.load(file(self.seen_refs))
         # The meta-ref is not added to seen refs store
         self.assertTrue(len(seen_refs), 1)
         self.assertIn('file:///tmp/p1:p1:master', seen_refs)
