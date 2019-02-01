@@ -30,9 +30,8 @@ from repoxplorer.controllers import root
 from repoxplorer.controllers import utils
 
 from mock import patch
-from contextlib import nested
 
-from StringIO import StringIO
+from io import StringIO
 
 from pecan import conf
 
@@ -246,7 +245,7 @@ class TestGroupsController(FunctionalTest):
         def fake_get_idents_by_emails(cls, emails):
             ret = {}
             for email in emails:
-                if email in cls.gi_by_emails_data.keys():
+                if email in list(cls.gi_by_emails_data.keys()):
                     ret.update(copy.deepcopy(cls.gi_by_emails_data[email]))
                 else:
                     ret.update({
@@ -272,89 +271,107 @@ class TestGroupsController(FunctionalTest):
                    "jane.doe@server.com": "Jane Doe"}
 
     def test_get_groups(self):
-        patches = [patch.object(root.groups.Contributors,
-                                'get_groups'),
-                   patch.object(root.groups.Contributors,
-                                'get_idents_by_emails'),
-                   patch.object(root.groups.Commits,
-                                'get_commits_author_name_by_emails'),
-                   patch.object(root.groups.Commits, 'get_repos')]
-        with nested(*patches) as (gg, gi_by_emails, gca, gr):
-            gg.return_value = self.groups
-            gi_by_emails.side_effect = self.gi_by_emails
-            gca.return_value = self.gca
-            gr.return_value = (None, [])
-            response = self.app.get('/api/v1/groups/?withstats=true')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': {
-                    u'description': u'The group 2',
-                    u'domains': [],
-                    u'members': {
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}},
-                            },
-                        u'VFVWUVhcRFRV': {
-                            u'name': u'Ampanman',
-                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            # u'bounces': {}}
-                            }
-                    },
-                    u'projects_amount': 0,
-                    u'repos_amount': 0,
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        gg.return_value = self.groups
+                        gi_by_emails.side_effect = self.gi_by_emails
+                        gca.return_value = self.gca
+                        gr.return_value = (None, [])
+                        response = self.app.get(
+                            '/api/v1/groups/?withstats=true')
+        assert response.status_int == 200
+        expected_ret = {
+            'grp2': {
+                'description': 'The group 2',
+                'domains': [],
+                'members': {
+                    'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        'name': 'John Doe',
+                        'gravatar': '46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}},
+                        },
+                    'VFVWUVhcRFRV': {
+                        'name': 'Ampanman',
+                        'gravatar': 'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                        # u'bounces': {}}
+                        }
                 },
-                u'grp1': {
-                    u'description': u'The group 1',
-                    u'domains': [],
-                    u'members': {
-                        u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'Jane Doe',
-                            u'gravatar': u'98685715b08980dac8b2379097c332f4',
-                            # u'bounces': {
-                            #    'end-date': '2016-01-01'}},
-                            },
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}}
-                            }
-                    },
-                    u'projects_amount': 0,
-                    u'repos_amount': 0,
-                }
+                'projects_amount': 0,
+                'repos_amount': 0,
+            },
+            'grp1': {
+                'description': 'The group 1',
+                'domains': [],
+                'members': {
+                    'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
+                        'name': 'Jane Doe',
+                        'gravatar': '98685715b08980dac8b2379097c332f4',
+                        # u'bounces': {
+                        #    'end-date': '2016-01-01'}},
+                        },
+                    'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        'name': 'John Doe',
+                        'gravatar': '46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}}
+                        }
+                },
+                'projects_amount': 0,
+                'repos_amount': 0,
             }
-            self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get('/api/v1/groups/?nameonly=true')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': None,
-                u'grp1': None,
+        }
+        self.assertDictEqual(response.json, expected_ret)
+
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        response = self.app.get('/api/v1/groups/?nameonly=true')
+        assert response.status_int == 200
+        expected_ret = {
+            'grp2': None,
+            'grp1': None,
+        }
+        self.assertDictEqual(response.json, expected_ret)
+
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        response = self.app.get('/api/v1/groups/?prefix=grp2')
+        assert response.status_int == 200
+        expected_ret = {
+            'grp2': {
+                'description': 'The group 2',
+                'domains': [],
+                'members': {
+                    'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        'name': 'John Doe',
+                        'gravatar': '46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}},
+                        },
+                    'VFVWUVhcRFRV': {
+                        'name': 'Ampanman',
+                        'gravatar': 'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                        # u'bounces': {}}
+                        }
+                },
             }
-            self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get(
-                '/api/v1/groups/?prefix=grp2')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': {
-                    u'description': u'The group 2',
-                    u'domains': [],
-                    u'members': {
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}},
-                            },
-                        u'VFVWUVhcRFRV': {
-                            u'name': u'Ampanman',
-                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            # u'bounces': {}}
-                            }
-                    },
-                }
-            }
-            self.assertDictEqual(response.json, expected_ret)
+        }
+        self.assertDictEqual(response.json, expected_ret)
 
 
 class TestUsersController(FunctionalTest):
@@ -568,13 +585,13 @@ class TestHistoController(FunctionalTest):
         assert response.status_int == 200
         self.assertListEqual(
             response.json,
-            [{u'date': u'2014-03-01', u'value': 1},
-             {u'date': u'2014-04-01', u'value': 0},
-             {u'date': u'2014-05-01', u'value': 0},
-             {u'date': u'2014-06-01', u'value': 0},
-             {u'date': u'2014-07-01', u'value': 0},
-             {u'date': u'2014-08-01', u'value': 0},
-             {u'date': u'2014-09-01', u'value': 2}]
+            [{'date': '2014-03-01', 'value': 1},
+             {'date': '2014-04-01', 'value': 0},
+             {'date': '2014-05-01', 'value': 0},
+             {'date': '2014-06-01', 'value': 0},
+             {'date': '2014-07-01', 'value': 0},
+             {'date': '2014-08-01', 'value': 0},
+             {'date': '2014-09-01', 'value': 2}]
         )
 
 
@@ -619,7 +636,7 @@ class TestInfosController(FunctionalTest):
         self.assertEqual(response.status_int, 200)
         csvret = build_dict_from_csv(response.body)
         # Convert all dict values to str
-        expected = dict((k, str(v)) for k, v in expected.items())
+        expected = dict((k, str(v)) for k, v in list(expected.items()))
         self.assertDictEqual(csvret[0], expected)
         self.assertEqual(len(csvret), 1)
 
@@ -824,8 +841,8 @@ class TestTopsController(FunctionalTest):
 
         # Validate the CSV endpoint mode
         # First convert all expected dict values to str
-        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-        expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+        expected_top1 = dict((k, str(v)) for k, v in list(expected_top1.items()))
+        expected_top2 = dict((k, str(v)) for k, v in list(expected_top2.items()))
         response = self.app.get(
             '/api/v1/tops/authors/bylchanged?pid=test',
             headers={'Accept': 'text/csv'})
@@ -864,8 +881,8 @@ class TestTopsController(FunctionalTest):
 
         # Validate the CSV endpoint mode
         # First convert all expected dict values to str
-        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-        expected_top2 = dict((k, str(v)) for k, v in expected_top2.items())
+        expected_top1 = dict((k, str(v)) for k, v in list(expected_top1.items()))
+        expected_top2 = dict((k, str(v)) for k, v in list(expected_top2.items()))
         response = self.app.get(
             '/api/v1/tops/authors/bycommits?'
             'pid=test&inc_merge_commit=on',
@@ -923,8 +940,8 @@ class TestTopsController(FunctionalTest):
 
         # Validate the CSV endpoint mode
         # First convert all expected dict values to str
-        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-        for k, v in expected_top1_d.items():
+        expected_top1 = dict((k, str(v)) for k, v in list(expected_top1.items()))
+        for k, v in list(expected_top1_d.items()):
             if isinstance(v, list):
                 # A list, that will be semi column separated, can be return
                 # when inc_repos_detail is passed to this endpoint
@@ -977,8 +994,8 @@ class TestTopsController(FunctionalTest):
 
         # Validate the CSV endpoint mode
         # First convert all expected dict values to str
-        expected_top1 = dict((k, str(v)) for k, v in expected_top1.items())
-        for k, v in expected_top1_d.items():
+        expected_top1 = dict((k, str(v)) for k, v in list(expected_top1.items()))
+        for k, v in list(expected_top1_d.items()):
             if isinstance(v, list):
                 # A list, that will be semi column separated, can be return
                 # when inc_repos_detail is passed to this endpoint
@@ -1018,8 +1035,8 @@ class TestSearchController(FunctionalTest):
         response = self.app.get('/api/v1/search/search_authors?query=jean')
         cid = utils.encrypt(xorkey, 'j.paul@joker.org')
         expected = {
-            cid: {u'name': 'Jean Paul',
-                  u'gravatar': u'c184ebe163aa66b25668757000116849'}}
+            cid: {'name': 'Jean Paul',
+                  'gravatar': 'c184ebe163aa66b25668757000116849'}}
         self.assertDictEqual(response.json, expected)
 
 
@@ -1046,7 +1063,7 @@ class TestMetadataController(FunctionalTest):
         assert response.status_int == 200
         self.assertDictEqual(
             response.json,
-            {u'implement': 3, u'close-bug': 1})
+            {'implement': 3, 'close-bug': 1})
         response = self.app.get(
             '/api/v1/metadata/metadata?key=implement&pid=test')
         assert response.status_int == 200
@@ -1097,17 +1114,17 @@ class TestTagsController(FunctionalTest):
         tag1 = [t for t in response.json if t['name'] == 'tag1'][0]
         tag2 = [t for t in response.json if t['name'] == 'tag2'][0]
         self.assertDictEqual(tag2, {
-            u'name': u'tag2',
-            u'sha': u'3597334f2cb10772950c97ddf2f6cc17b1845',
-            u'date': 1410456005,
-            u'repo':
-                u'https://github.com/nakata/monkey.git:monkey'})
+            'name': 'tag2',
+            'sha': '3597334f2cb10772950c97ddf2f6cc17b1845',
+            'date': 1410456005,
+            'repo':
+                'https://github.com/nakata/monkey.git:monkey'})
         self.assertDictEqual(tag1, {
-            u'name': u'tag1',
-            u'sha': u'3597334f2cb10772950c97ddf2f6cc17b184',
-            u'date': 1410456005,
-            u'repo':
-                u'https://github.com/nakata/monkey.git:monkey'})
+            'name': 'tag1',
+            'sha': '3597334f2cb10772950c97ddf2f6cc17b184',
+            'date': 1410456005,
+            'repo':
+                'https://github.com/nakata/monkey.git:monkey'})
 
     def test_get_tags_with_user_def_releases(self):
         new_projects_file = """

@@ -19,6 +19,6 @@
     - name: Get processes list
       command: ps axf
     - name: Run unit tests
-      command: tox
+      command: tox -e{{ tox_target }}
       args:
         chdir: "{{ zuul.project.src_dir }}/"

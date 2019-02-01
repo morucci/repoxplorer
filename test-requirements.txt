@@ -10,3 +10,4 @@ PyYAML
 pycrypto
 jsonschema
 pytz
+future
