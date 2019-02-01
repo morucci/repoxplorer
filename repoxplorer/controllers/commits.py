@@ -56,8 +56,7 @@ class CommitsController(object):
             # Get extra metadata keys
             extra = set(cmt.keys()) - set(PROPERTIES.keys())
             cmt['metadata'] = list(extra)
-            cmt['repos'] = filter(lambda r: not r.startswith('meta_ref: '),
-                                  cmt['repos'])
+            cmt['repos'] = [r for r in cmt['repos'] if not r.startswith('meta_ref: ')]
             # Compute link to access commit diff based on the
             # URL template provided in projects.yaml
             cmt['gitwebs'] = [
@@ -70,8 +69,8 @@ class CommitsController(object):
                             p in cmt['repos']]
             # Request the ident index to fetch author/committer name/email
             for elm in ('author', 'committer'):
-                ident = idents.get_idents_by_emails(
-                    cmt['%s_email' % elm]).values()[0]
+                ident = list(idents.get_idents_by_emails(
+                    cmt['%s_email' % elm]).values())[0]
                 cmt['%s_email' % elm] = ident['default-email']
                 if ident['name']:
                     cmt['%s_name' % elm] = ident['name']
@@ -79,9 +78,11 @@ class CommitsController(object):
             cmt['ttl'] = str((datetime.fromtimestamp(cmt['ttl']) -
                               datetime.fromtimestamp(0)))
             cmt['author_gravatar'] = \
-                hashlib.md5(cmt['author_email']).hexdigest()
+                hashlib.md5(cmt['author_email'].encode(
+                    'utf-8', errors='ignore')).hexdigest()
             cmt['committer_gravatar'] = \
-                hashlib.md5(cmt['committer_email']).hexdigest()
+                hashlib.md5(cmt['committer_email'].encode(
+                    'utf-8', errors='ignore')).hexdigest()
             if len(cmt['commit_msg']) > 80:
                 cmt['commit_msg'] = cmt['commit_msg'][0:76] + '...'
             # Add cid and ccid
