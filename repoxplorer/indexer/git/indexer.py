@@ -16,7 +16,7 @@ import os
 import re
 import sys
 import copy
-import cPickle
+import pickle
 import logging
 import subprocess
 import multiprocessing as mp
@@ -54,8 +54,8 @@ EL_RESERVED_FIELDS = [
 ]
 
 RESERVED_METADATA_KEYS = (
-    C_PROPERTIES.keys() +
-    T_PROPERTIES.keys() +
+    list(C_PROPERTIES.keys()) +
+    list(T_PROPERTIES.keys()) +
     EL_RESERVED_FIELDS
 )
 
@@ -120,10 +120,6 @@ def get_commits_desc(path, shas):
     return out.splitlines()
 
 
-def _decode(s):
-    return s.decode('utf-8', errors="replace")
-
-
 def parse_commit(input, offset, extra_parsers=None):
     cmt = {}
     cmt['sha'] = input[offset].split()[-1]
@@ -148,9 +144,9 @@ def parse_commit(input, offset, extra_parsers=None):
     for i, r, field in ((0, AUTHOR_RE, 'author'),
                         (1, COMMITTER_RE, 'committer')):
         m = re.match(r, input[offset+i])
-        cmt['%s_name' % field] = _decode(m.groups()[0])
-        cmt['%s_email' % field] = _decode(m.groups()[1])
-        cmt['%s_email_domain' % field] = _decode(m.groups()[1].split('@')[-1])
+        cmt['%s_name' % field] = m.groups()[0]
+        cmt['%s_email' % field] = m.groups()[1]
+        cmt['%s_email_domain' % field] = m.groups()[1].split('@')[-1]
         cmt['%s_date' % field] = int(m.groups()[2])
         cmt['%s_date_tz' % field] = m.groups()[3]
     cmt['ttl'] = cmt['committer_date'] - cmt['author_date']
@@ -195,8 +191,8 @@ def parse_commit(input, offset, extra_parsers=None):
             if m or input[offset + i].startswith('commit'):
                 break
         i += 1
-    cmt['commit_msg_full'] = _decode("\n".join(
-        [l.strip() for l in input[offset:offset+i]]))
+    cmt['commit_msg_full'] = "\n".join(
+        [l.strip() for l in input[offset:offset+i]])
     subject, metadatas = parse_commit_msg(
         cmt['commit_msg_full'], extra_parsers)
     cmt['commit_msg'] = subject
@@ -228,7 +224,7 @@ def parse_commit(input, offset, extra_parsers=None):
                 file = FILE_RENAME_RE.sub(r'\1\3\4', file)
                 cmt['files_list'].add(file)
                 pe = file.split('/')
-                for pei in xrange(1, len(pe)+1):
+                for pei in range(1, len(pe)+1):
                     cmt['files_list'].add('/'.join(pe[0:pei]))
                 cmt['files_stats'][file] = {
                     'lines_added': l_added,
@@ -263,7 +259,6 @@ def process_commits_desc_output(input, ref_ids, extra_parsers=None):
                 offset))
             logger.debug("\n".join(input[offset:offset+100]))
             logger.exception("Issue was: %s" % e)
-            print "\n".join(input[offset:offset+100])
             break
     return ret
 
@@ -289,20 +284,17 @@ def delete_commits(commits, name, to_delete, ref_id):
         c['sha'] for c in docs if (
             len(c['repos']) == 1 or
             (len(c['repos']) == 2 and
-             filter(lambda x: x.startswith('meta_ref: '),
-                    c['repos'])
+             [x for x in c['repos'] if x.startswith('meta_ref: ')]
              )
         )
     ]
     to_delete_update = [
         c['sha'] for c in docs if (
             (len(c['repos']) > 1 and not
-             filter(lambda x: x.startswith('meta_ref: '),
-                    c['repos'])
+             [x for x in c['repos'] if x.startswith('meta_ref: ')]
              ) or
             (len(c['repos']) > 2 and
-             filter(lambda x: x.startswith('meta_ref: '),
-                    c['repos'])
+             [x for x in c['repos'] if x.startswith('meta_ref: ')]
              )
          )
     ]
@@ -340,7 +332,7 @@ class RefsCleaner():
     def find_refs_to_clean(self):
         projects = self.projects.get_projects(source=['refs'])
         refs_ids = set()
-        for project in projects.values():
+        for project in list(projects.values()):
             for ref in project['refs']:
                 self.current_base_ids.add(ref['shortrid'])
                 refs_ids.add(ref['fullrid'])
@@ -348,7 +340,7 @@ class RefsCleaner():
             self.data = set()
         else:
             try:
-                self.data = cPickle.load(file(self.seen_refs_path))
+                self.data = pickle.load(open(self.seen_refs_path, 'rb'))
             except Exception:
                 # Protect against corrupted file
                 self.data = set()
@@ -400,7 +392,7 @@ class RefsCleaner():
     def remove_from_seen_refs(self, ref_id):
         # Remove from the struct to be dumped
         self.data.remove(ref_id)
-        cPickle.dump(self.data, file(self.seen_refs_path, 'w'))
+        pickle.dump(self.data, open(self.seen_refs_path, 'wb'))
 
 
 class RepoIndexer():
@@ -448,12 +440,12 @@ class RepoIndexer():
             data = set()
         else:
             try:
-                data = cPickle.load(file(self.seen_refs_path))
+                data = pickle.load(open(self.seen_refs_path, 'rb'))
             except Exception:
                 # Protect against corrupted file
                 data = set()
         data.add(self.ref_id)
-        cPickle.dump(data, file(self.seen_refs_path, 'w'))
+        pickle.dump(data, open(self.seen_refs_path, 'wb'))
 
     def set_branch(self, branch):
         self.branch = branch
@@ -484,12 +476,10 @@ class RepoIndexer():
             self.refs.append(r.split('\t'))
 
     def get_heads(self):
-        self.heads = filter(
-            lambda x: x[1].startswith('refs/heads/'), self.refs)
+        self.heads = [x for x in self.refs if x[1].startswith('refs/heads/')]
 
     def get_tags(self):
-        self.tags = filter(
-            lambda x: x[1].startswith('refs/tags/'), self.refs)
+        self.tags = [x for x in self.refs if x[1].startswith('refs/tags/')]
 
     def git_get_commit_obj(self):
         self.commits = get_all_shas(self.local)

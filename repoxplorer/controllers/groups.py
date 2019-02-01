@@ -51,11 +51,12 @@ class GroupsController(object):
             rg = {'members': {},
                   'description': data.get('description', ''),
                   'domains': data.get('domains', [])}
-            emails = data['emails'].keys()
+            emails = list(data['emails'].keys())
             members = contributors_index.get_idents_by_emails(emails)
             for id, member in members.items():
                 member['gravatar'] = hashlib.md5(
-                    member['default-email']).hexdigest()
+                    member['default-email'].encode(
+                        errors='ignore')).hexdigest()
                 # TODO(fbo): bounces should be a list of bounce
                 # Let's deactivate that for now
                 # member['bounces'] = bounces
@@ -76,8 +77,8 @@ class GroupsController(object):
                     projects_index, contributors_index, pid, None, None, group,
                     dfrom, dto, None, inc_merge_commit, None, None, None)
 
-                repos = filter(lambda r: not r.startswith('meta_ref: '),
-                               ci.get_repos(**query_kwargs)[1])
+                repos = [r for r in ci.get_repos(**query_kwargs)[1]
+                         if not r.startswith('meta_ref: ')]
                 projects = utils.get_projects_from_references(
                     projects_index, repos)
                 rg['repos_amount'] = len(repos)
