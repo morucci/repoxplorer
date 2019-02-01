@@ -42,8 +42,8 @@ class TestContributors(TestCase):
     def create_db(self, files):
         db = tempfile.mkdtemp()
         self.dbs.append(db)
-        for filename, content in files.items():
-            file(os.path.join(db, filename), 'w+').write(content)
+        for filename, content in list(files.items()):
+            open(os.path.join(db, filename), 'w+').write(content)
         return db
 
     def test_contributors_schema(self):
@@ -596,14 +596,14 @@ groups:
                 with patch.object(users.Users,
                                   'get_idents_by_emails') as egi:
                     egi.return_value = [
-                        {u'name': u'John Doe',
-                         u'default-email': u'jdoe@domain.com',
-                         u'emails': [
-                            {u'email': u'jdoe@domain.com'},
-                            {u'email': u'john.doe@domain.com',
-                             u'groups': [{u'group': u'barbican-ptl'}]}
+                        {'name': 'John Doe',
+                         'default-email': 'jdoe@domain.com',
+                         'emails': [
+                            {'email': 'jdoe@domain.com'},
+                            {'email': 'john.doe@domain.com',
+                             'groups': [{'group': 'barbican-ptl'}]}
                          ],
-                         u'uid': u'johndoe123'},
+                         'uid': 'johndoe123'},
                     ]
 
                     c = contributors.Contributors(db_path="db_path")
@@ -628,14 +628,14 @@ groups:
                 with patch.object(users.Users,
                                   'get_ident_by_id') as egi:
                     egi.return_value = {
-                        u'name': u'John Doe',
-                        u'default-email': u'jdoe@domain.com',
-                        u'emails': [
-                            {u'email': u'jdoe@domain.com'},
-                            {u'email': u'john.doe@domain.com',
-                             u'groups': [{u'group': u'barbican-ptl'}]}
+                        'name': 'John Doe',
+                        'default-email': 'jdoe@domain.com',
+                        'emails': [
+                            {'email': 'jdoe@domain.com'},
+                            {'email': 'john.doe@domain.com',
+                             'groups': [{'group': 'barbican-ptl'}]}
                          ],
-                        u'uid': u'johndoe123'}
+                        'uid': 'johndoe123'}
 
                     c = contributors.Contributors(db_path="db_path")
 
@@ -649,14 +649,14 @@ groups:
             with patch.object(users.Users,
                               'get_idents_in_group') as egi:
                 egi.return_value = [
-                    {u'name': u'John Doe',
-                     u'default-email': u'jdoe@domain.com',
-                     u'emails': [
-                        {u'email': u'jdoe@domain.com'},
-                        {u'email': u'john.doe@domain.com',
-                         u'groups': [{u'group': u'barbican-ptl'}]}
+                    {'name': 'John Doe',
+                     'default-email': 'jdoe@domain.com',
+                     'emails': [
+                        {'email': 'jdoe@domain.com'},
+                        {'email': 'john.doe@domain.com',
+                         'groups': [{'group': 'barbican-ptl'}]}
                      ],
-                     u'uid': u'johndoe123'},
+                     'uid': 'johndoe123'},
                 ]
 
                 c = contributors.Contributors(db_path="db_path")
@@ -673,7 +673,7 @@ groups:
                 self.assertDictEqual(
                     gdata,
                     {'description': 'The barbican-ptl group',
-                     'emails': {u'john.doe@domain.com': {}}})
+                     'emails': {'john.doe@domain.com': {}}})
                 self.assertEqual(gid, 'barbican-ptl')
 
                 gid, gdata = c.get_group_by_id('barbican-core')

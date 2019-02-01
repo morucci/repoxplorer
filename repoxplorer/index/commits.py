@@ -162,7 +162,7 @@ class Commits(object):
             }
         }
 
-        for mail, date_bounces in mails.items():
+        for mail, date_bounces in list(mails.items()):
             must = {"bool": {"must": []}}
             must["bool"]["must"].append({"term": {"author_email": mail}})
             if date_bounces:
@@ -196,7 +196,7 @@ class Commits(object):
                 "should": []
             }
         }
-        for repo, paths in repos.items():
+        for repo, paths in list(repos.items()):
             repo_clause = {"bool": {"must": []}}
             repo_clause["bool"]["must"].append(
                 {"bool": {
@@ -460,7 +460,7 @@ class Commits(object):
         mails = deque(mails)
         while True:
             _mails = []
-            for _ in xrange(amount):
+            for _ in range(amount):
                 try:
                     _mails.append(mails.pop())
                 except IndexError:
@@ -576,9 +576,9 @@ class Commits(object):
                                mails_neg=mails_neg, domains=domains,
                                blacklisted_mails=blacklisted_mails,
                                limit=10000)
-        keys = [c.keys() for c in ret[2]]
-        map(storekey, [i for i in itertools.chain(*keys) if
-                       i not in PROPERTIES])
+        keys = [list(c.keys()) for c in ret[2]]
+        list(map(storekey, [i for i in itertools.chain(*keys) if
+                       i not in PROPERTIES]))
         return uniq_keys
 
     def get_metadata_key_values(self, key, mails=[], repos=[],
