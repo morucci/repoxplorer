@@ -15,7 +15,7 @@
 
 import os
 import yaml
-import cPickle
+import pickle
 import logging
 
 from Crypto.Hash import SHA
@@ -88,28 +88,28 @@ class YAMLBackend(object):
                 self.db_cache_path, basename + '.hash')
             cached_data_path = os.path.join(
                 self.db_cache_path, basename + '.cached')
-            hash = SHA.new(file(path).read()).hexdigest()
+            hash = SHA.new(open(path).read().encode('utf-8')).hexdigest()
             if (os.path.isfile(cached_hash_path) and
                     os.path.isfile(cached_data_path)):
-                cached_hash = cPickle.load(file(cached_hash_path))
+                cached_hash = pickle.load(open(cached_hash_path, 'rb'))
                 if cached_hash == hash:
                     logger.debug("Reading %s from cache ..." % path)
-                    data = cPickle.load(file(cached_data_path))
+                    data = pickle.load(open(cached_data_path, 'rb'))
                     self.hashes.append(hash)
             if not data:
+                logger.debug("Reading %s from file ..." % path)
                 try:
-                    logger.debug("Reading %s from file ..." % path)
-                    data = yaml.load(file(path), Loader=NoDatesSafeLoader)
-                    cPickle.dump(
-                        data, file(cached_data_path, 'w'),
-                        cPickle.HIGHEST_PROTOCOL)
-                    cPickle.dump(
-                        hash, file(cached_hash_path, 'w'),
-                        cPickle.HIGHEST_PROTOCOL)
-                    self.hashes.append(hash)
+                    data = yaml.load(open(path, 'rb'), Loader=NoDatesSafeLoader)
                 except Exception as e:
                     raise YAMLDBException(
                         "YAML format corrupted in file %s (%s)" % (path, e))
+                pickle.dump(
+                    data, open(cached_data_path, 'wb'),
+                    pickle.HIGHEST_PROTOCOL)
+                pickle.dump(
+                    hash, open(cached_hash_path, 'wb'),
+                    pickle.HIGHEST_PROTOCOL)
+                self.hashes.append(hash)
             return data
 
         if self.db_default_file:
