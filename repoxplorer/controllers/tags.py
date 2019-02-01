@@ -51,6 +51,6 @@ class TagsController(object):
         for ref in project['refs']:
             for release in ref.get('releases', []):
                 ur[release['name']] = release
-        for rel in ur.values():
+        for rel in list(ur.values()):
             ret.append(rel)
         return ret

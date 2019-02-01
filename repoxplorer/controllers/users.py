@@ -92,7 +92,7 @@ class UsersController(RestController):
                         set([k[0] for k in email_keys])):
                     # Found extra keys
                     return False
-                if 'groups' in email.keys():
+                if 'groups' in list(email.keys()):
                     for group in email['groups']:
                         if not mgkeys.issubset(set(group.keys())):
                             # Mandatory keys are missing

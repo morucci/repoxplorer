@@ -1,0 +1,11 @@
+---
+- hosts: test-node
+  tasks:
+    - name: "Install some distro required packages"
+      package:
+        name: "{{ items }}"
+        state: latest
+      with_items:
+        - which
+        - python3-tox
+      become: true
