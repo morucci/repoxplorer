@@ -93,13 +93,13 @@ class TestUsers(TestCase):
         idents_list = self.c.get_idents_in_group('ugroup2')
         self.assertListEqual(
             idents_list,
-            [{u'uid': u'123',
-              u'default-email': u'saboten@domain1',
-              u'name': u'Cactus Saboten Junior',
-              u'emails': [{
-                  u'groups': [{u'group': u'ugroup2'}],
-                  u'email': u'saboten@domain3'}],
-              u'last_cnx': 1410456005}])
+            [{'uid': '123',
+              'default-email': 'saboten@domain1',
+              'name': 'Cactus Saboten Junior',
+              'emails': [{
+                  'groups': [{'group': 'ugroup2'}],
+                  'email': 'saboten@domain3'}],
+              'last_cnx': 1410456005}])
 
         # Delete and get a user
         self.c.delete(self.user['uid'])
