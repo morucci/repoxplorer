@@ -68,7 +68,8 @@ class YAMLDefinition(object):
             db_default_file=db_default_file or conf.get('db_default_file'),
             db_cache_path=db_cache_path)
         self.yback.load_db()
-        self.hashes_str = SHA.new("".join(self.yback.hashes)).hexdigest()
+        self.hashes_str = SHA.new(
+            "".join(self.yback.hashes).encode(errors='ignore')).hexdigest()
         self.default_data, self.data = self.yback.get_data()
         self._merge()
 

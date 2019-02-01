@@ -50,9 +50,9 @@ if __name__ == "__main__":
     anon = github3.GitHub()
     org = anon.organization(args.org)
     if not org:
-        print(
+        print((
             "Org %s not found, try to find single"
-            " user's repos ..." % args.org)
+            " user's repos ..." % args.org))
         repos = anon.repositories_by(args.org)
     else:
         repos = org.repositories()
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         if r.default_branch != 'master':
             data[r.name]['branches'] = [r.default_branch]
         projects[args.org]["repos"].update(data)
-        print "Found %s" % r.name
+        print(("Found %s" % r.name))
 
     struct = {'projects': projects,
               'project-templates': templates}
@@ -105,9 +105,9 @@ if __name__ == "__main__":
     with open(path, 'w') as fd:
         fd.write(yaml.safe_dump(struct,
                                 default_flow_style=False))
-    print
-    print ("%s source repositories details"
-           " has been written to %s" % (args.org, path))
+    print()
+    print(("%s source repositories details"
+           " has been written to %s" % (args.org, path)))
 
     print ("Please edit the yaml file if needed (like adding additional"
            " branches to index, defines custom releases, ...)")

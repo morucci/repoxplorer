@@ -131,7 +131,7 @@ def install_archive(name, path, basepath):
             os.path.join(os.path.dirname(path), "bootstrap-3.3.7-dist"))
         os.unlink(path)
     else:
-        print "Install for %s not supported. skip." % name
+        print("Install for %s not supported. skip." % name)
 
 
 if __name__ == "__main__":
@@ -146,14 +146,14 @@ if __name__ == "__main__":
     static_root = conf.app['static_root']
 
     td = tempfile.mkdtemp()
-    print "Assets will be installed in %s ..." % static_root
+    print("Assets will be installed in %s ..." % static_root)
     if not os.path.isdir(static_root):
         os.makedirs(static_root)
-    print "Fetch/Deflate assets in a temp directory %s ..." % td
+    print("Fetch/Deflate assets in a temp directory %s ..." % td)
     for d in ('css', 'css/images', 'javascript', 'fonts'):
         os.mkdir(os.path.join(td, d))
-    for name, url in archives.items():
-        print "Fetch and Install %s ..." % name
+    for name, url in list(archives.items()):
+        print("Fetch and Install %s ..." % name)
         path = download_file(url, td)
         install_archive(name, path, td)
 
@@ -170,10 +170,10 @@ if __name__ == "__main__":
             ('public/home.html', 'home.html'),
             ('public/projects.html', 'projects.html')):
         data = resource_string('repoxplorer', '../' + path[0])
-        file(os.path.join(td, path[1]), 'w').write(data)
-        print "Copied %s" % os.path.join(td, path[1])
+        open(os.path.join(td, path[1]), 'wb').write(data)
+        print("Copied %s" % os.path.join(td, path[1]))
 
     shutil.rmtree(static_root)
     shutil.move(td, static_root)
-    os.chmod(static_root, 0755)
-    print "Assets moved to %s" % static_root
+    os.chmod(static_root, 0o755)
+    print("Assets moved to %s" % static_root)
