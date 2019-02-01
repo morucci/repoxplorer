@@ -379,88 +379,88 @@ class TestCommits(TestCase):
     def test_line_modifieds_stats(self):
         ret = self.c.get_line_modifieds_stats(
             mails=['n.suke@joker.org'])
-        self.assertDictEqual(ret[1], {u'avg': 10.0, u'min': 10.0,
-                                      u'count': 1, u'max': 10.0,
-                                      u'sum': 10.0})
+        self.assertDictEqual(ret[1], {'avg': 10.0, 'min': 10.0,
+                                      'count': 1, 'max': 10.0,
+                                      'sum': 10.0})
 
         ret = self.c.get_line_modifieds_stats(
             mails=['jean.bon@joker.org'],
             repos=['https://github.com/nakata/monkey.git:monkey:master',
                    'https://github.com/amura/kotatsu.git:kotatsu:master'])
-        self.assertDictEqual(ret[1], {u'avg': 300.0, u'min': 200.0,
-                                      u'max': 400.0, u'count': 3,
-                                      u'sum': 900.0})
+        self.assertDictEqual(ret[1], {'avg': 300.0, 'min': 200.0,
+                                      'max': 400.0, 'count': 3,
+                                      'sum': 900.0})
 
     def test_commit_ttl_stats(self):
         ret = self.c.get_ttl_stats(
             mails=['n.suke@joker.org'])
-        self.assertDictEqual(ret[1], {u'avg': 5.0, u'min': 5.0,
-                                      u'count': 1, u'max': 5.0,
-                                      u'sum': 5.0})
+        self.assertDictEqual(ret[1], {'avg': 5.0, 'min': 5.0,
+                                      'count': 1, 'max': 5.0,
+                                      'sum': 5.0})
 
     def test_get_repos(self):
         ret = self.c.get_repos(
             ['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
-            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 3,
-            u'https://github.com/amura/kotatsu.git:kotatsu:master': 1,
-            u'https://github.com/nakata/monkey.git:monkey:master': 2})
+            'https://github.com/amura/kotatsu.git:kotatsu:devel': 3,
+            'https://github.com/amura/kotatsu.git:kotatsu:master': 1,
+            'https://github.com/nakata/monkey.git:monkey:master': 2})
 
     def test_get_commits_histo(self):
         ret = self.c.get_commits_histo(
             ['jean.bon@joker.org'])
-        self.assertDictEqual(ret[1][0], {u'key': 1410393600000,
-                                         u'doc_count': 4,
-                                         u'key_as_string': u'2014-09-11'})
-        self.assertDictEqual(ret[1][1], {u'key': 1410480000000,
-                                         u'doc_count': 1,
-                                         u'key_as_string': u'2014-09-12'})
+        self.assertDictEqual(ret[1][0], {'key': 1410393600000,
+                                         'doc_count': 4,
+                                         'key_as_string': '2014-09-11'})
+        self.assertDictEqual(ret[1][1], {'key': 1410480000000,
+                                         'doc_count': 1,
+                                         'key_as_string': '2014-09-12'})
         ret = self.c.get_commits_histo(
             ['jean.bon@joker.org'],
             repos=['https://github.com/amura/kotatsu.git:kotatsu:devel'])
-        self.assertDictEqual(ret[1][0], {u'key': 1410393600000,
-                                         u'doc_count': 2,
-                                         u'key_as_string': u'2014-09-11'})
-        self.assertDictEqual(ret[1][1], {u'key': 1410480000000,
-                                         u'doc_count': 1,
-                                         u'key_as_string': u'2014-09-12'})
+        self.assertDictEqual(ret[1][0], {'key': 1410393600000,
+                                         'doc_count': 2,
+                                         'key_as_string': '2014-09-11'})
+        self.assertDictEqual(ret[1][1], {'key': 1410480000000,
+                                         'doc_count': 1,
+                                         'key_as_string': '2014-09-12'})
 
     def test_get_authors_histo(self):
         ret = self.c.get_authors_histo(
             repos=['https://github.com/nakata/monkey.git:monkey:master'])
         self.assertDictEqual(ret[1][0],
-                             {u'authors_email': [
-                                 u'jean.bon@joker.org',
-                                 u'n.suke@joker.org'],
-                              u'key': 1410393600000,
-                              u'doc_count': 2,
-                              u'key_as_string': u'2014-09-11'})
+                             {'authors_email': [
+                                 'jean.bon@joker.org',
+                                 'n.suke@joker.org'],
+                              'key': 1410393600000,
+                              'doc_count': 2,
+                              'key_as_string': '2014-09-11'})
 
     def test_get_top_authors_by_lines(self):
         ret = self.c.get_top_authors_by_lines(
             repos=['https://github.com/nakata/monkey.git:monkey:master'])
-        self.assertDictEqual(ret[1], {u'n.suke@joker.org': 10.0,
-                                      u'jean.bon@joker.org': 500.0})
+        self.assertDictEqual(ret[1], {'n.suke@joker.org': 10.0,
+                                      'jean.bon@joker.org': 500.0})
 
     def test_get_top_repos_by_lines(self):
         ret = self.c.get_top_repos_by_lines(
             mails=['jean.bon@joker.org'])
         self.assertDictEqual(ret[1], {
-            u'https://github.com/amura/kotatsu.git:kotatsu:master': 400.0,
-            u'https://github.com/amura/kotatsu.git:kotatsu:devel': 1200.0,
-            u'https://github.com/nakata/monkey.git:monkey:master': 500.0})
+            'https://github.com/amura/kotatsu.git:kotatsu:master': 400.0,
+            'https://github.com/amura/kotatsu.git:kotatsu:devel': 1200.0,
+            'https://github.com/nakata/monkey.git:monkey:master': 500.0})
 
     def test_get_authors(self):
         ret = self.c.get_authors()
-        self.assertDictEqual(ret[1], {u'keiko.a@hanabi.org': 1,
-                                      u'jean.bon@joker.org': 5,
-                                      u'n.suke@joker.org': 1})
+        self.assertDictEqual(ret[1], {'keiko.a@hanabi.org': 1,
+                                      'jean.bon@joker.org': 5,
+                                      'n.suke@joker.org': 1})
 
     def test_get_commits_author_name_by_emails(self):
         ret = self.c.get_commits_author_name_by_emails(
             ['keiko.a@hanabi.org', 'jean.bon@joker.org'])
-        self.assertDictEqual(ret, {u'jean.bon@joker.org': u'Jean Bon',
-                                   u'keiko.a@hanabi.org': u'Keiko Amura'})
+        self.assertDictEqual(ret, {'jean.bon@joker.org': 'Jean Bon',
+                                   'keiko.a@hanabi.org': 'Keiko Amura'})
 
     def test_get_commits_with_metadata_constraint(self):
         metadata = [('implement-feature', '19')]
@@ -495,7 +495,7 @@ class TestCommits(TestCase):
         self.assertIn('implement-feature', ret)
         self.assertDictEqual(
             ret,
-            {u'implement-feature': 2, u'implement-partial-epic': 2})
+            {'implement-feature': 2, 'implement-partial-epic': 2})
 
     def test_get_metadata_key_values(self):
         ret = self.c.get_metadata_key_values(

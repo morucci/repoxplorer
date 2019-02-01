@@ -9,6 +9,10 @@
     - name: "Set workspace"
       set_fact:
         workspace: "{{ pwd_command.stdout }}"
+    - name: "Install some required packages"
+      yum:
+        name: which
+        state: latest
     - name: Extract ElasticSearch 2.4.0 archive
       unarchive:
         src: https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
@@ -19,6 +23,6 @@
     - name: Get processes list
       command: ps axf
     - name: Run unit tests
-      command: tox
+      command: tox -e{{ tox_target }}
       args:
         chdir: "{{ zuul.project.src_dir }}/"
