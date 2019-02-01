@@ -35,7 +35,7 @@ class TestProjects(TestCase):
         db = tempfile.mkdtemp()
         self.dbs.append(db)
         for filename, content in files.items():
-            file(os.path.join(db, filename), 'w+').write(content)
+            open(os.path.join(db, filename), 'w+').write(content)
         return db
 
     def test_project_templates_schema(self):

@@ -37,7 +37,7 @@ def validate():
         conf.db_path, vonly=True)
     issues.extend(contributors_index.validate())
     for issue in issues:
-        print issue
+        print(issue)
     return len(issues)
 
 
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     conf = imp.load_source('config', args.config)
     errs = validate()
     if errs:
-        print "Corrupted configuration exit !"
+        print("Corrupted configuration exit !")
         sys.exit(errs)
     else:
-        print "Configuration OK."
+        print("Configuration OK.")
