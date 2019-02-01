@@ -272,89 +272,107 @@ class TestGroupsController(FunctionalTest):
                    "jane.doe@server.com": "Jane Doe"}
 
     def test_get_groups(self):
-        patches = [patch.object(root.groups.Contributors,
-                                'get_groups'),
-                   patch.object(root.groups.Contributors,
-                                'get_idents_by_emails'),
-                   patch.object(root.groups.Commits,
-                                'get_commits_author_name_by_emails'),
-                   patch.object(root.groups.Commits, 'get_repos')]
-        with nested(*patches) as (gg, gi_by_emails, gca, gr):
-            gg.return_value = self.groups
-            gi_by_emails.side_effect = self.gi_by_emails
-            gca.return_value = self.gca
-            gr.return_value = (None, [])
-            response = self.app.get('/api/v1/groups/?withstats=true')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': {
-                    u'description': u'The group 2',
-                    u'domains': [],
-                    u'members': {
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}},
-                            },
-                        u'VFVWUVhcRFRV': {
-                            u'name': u'Ampanman',
-                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            # u'bounces': {}}
-                            }
-                    },
-                    u'projects_amount': 0,
-                    u'repos_amount': 0,
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        gg.return_value = self.groups
+                        gi_by_emails.side_effect = self.gi_by_emails
+                        gca.return_value = self.gca
+                        gr.return_value = (None, [])
+                        response = self.app.get(
+                            '/api/v1/groups/?withstats=true')
+        assert response.status_int == 200
+        expected_ret = {
+            u'grp2': {
+                u'description': u'The group 2',
+                u'domains': [],
+                u'members': {
+                    u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        u'name': u'John Doe',
+                        u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}},
+                        },
+                    u'VFVWUVhcRFRV': {
+                        u'name': u'Ampanman',
+                        u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                        # u'bounces': {}}
+                        }
                 },
-                u'grp1': {
-                    u'description': u'The group 1',
-                    u'domains': [],
-                    u'members': {
-                        u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'Jane Doe',
-                            u'gravatar': u'98685715b08980dac8b2379097c332f4',
-                            # u'bounces': {
-                            #    'end-date': '2016-01-01'}},
-                            },
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}}
-                            }
-                    },
-                    u'projects_amount': 0,
-                    u'repos_amount': 0,
-                }
+                u'projects_amount': 0,
+                u'repos_amount': 0,
+            },
+            u'grp1': {
+                u'description': u'The group 1',
+                u'domains': [],
+                u'members': {
+                    u'DgQIBFsIGwElFQQHGhEWSwUOGA--': {
+                        u'name': u'Jane Doe',
+                        u'gravatar': u'98685715b08980dac8b2379097c332f4',
+                        # u'bounces': {
+                        #    'end-date': '2016-01-01'}},
+                        },
+                    u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        u'name': u'John Doe',
+                        u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}}
+                        }
+                },
+                u'projects_amount': 0,
+                u'repos_amount': 0,
             }
-            self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get('/api/v1/groups/?nameonly=true')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': None,
-                u'grp1': None,
+        }
+        self.assertDictEqual(response.json, expected_ret)
+
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        response = self.app.get('/api/v1/groups/?nameonly=true')
+        assert response.status_int == 200
+        expected_ret = {
+            u'grp2': None,
+            u'grp1': None,
+        }
+        self.assertDictEqual(response.json, expected_ret)
+
+        with patch.object(root.groups.Contributors, 'get_groups') as gg:
+            with patch.object(
+                    root.groups.Contributors,
+                    'get_idents_by_emails') as gi_by_emails:
+                with patch.object(
+                        root.groups.Commits,
+                        'get_commits_author_name_by_emails') as gca:
+                    with patch.object(root.groups.Commits, 'get_repos') as gr:
+                        response = self.app.get('/api/v1/groups/?prefix=grp2')
+        assert response.status_int == 200
+        expected_ret = {
+            u'grp2': {
+                u'description': u'The group 2',
+                u'domains': [],
+                u'members': {
+                    u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
+                        u'name': u'John Doe',
+                        u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
+                        # u'bounces': {}},
+                        },
+                    u'VFVWUVhcRFRV': {
+                        u'name': u'Ampanman',
+                        u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
+                        # u'bounces': {}}
+                        }
+                },
             }
-            self.assertDictEqual(response.json, expected_ret)
-            response = self.app.get(
-                '/api/v1/groups/?prefix=grp2')
-            assert response.status_int == 200
-            expected_ret = {
-                u'grp2': {
-                    u'description': u'The group 2',
-                    u'domains': [],
-                    u'members': {
-                        u'DgoOD1sIGwElFQQHGhEWSwUOGA--': {
-                            u'name': u'John Doe',
-                            u'gravatar': u'46d19d53d565a1c3dd2f322f7b76c449',
-                            # u'bounces': {}},
-                            },
-                        u'VFVWUVhcRFRV': {
-                            u'name': u'Ampanman',
-                            u'gravatar': u'ad81b86bba0b59cc9e3d4d2896d67ca1',
-                            # u'bounces': {}}
-                            }
-                    },
-                }
-            }
-            self.assertDictEqual(response.json, expected_ret)
+        }
+        self.assertDictEqual(response.json, expected_ret)
 
 
 class TestUsersController(FunctionalTest):

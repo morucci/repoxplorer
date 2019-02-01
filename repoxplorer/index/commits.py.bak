@@ -109,7 +109,7 @@ class Commits(object):
                               doc_type=self.dbname,
                               id=sha)
             return res['_source']
-        except Exception as e:
+        except Exception, e:
             if silent:
                 return None
             logger.error('Unable to get commit (%s). %s' % (sha, e))
@@ -122,7 +122,7 @@ class Commits(object):
                                _source=True,
                                body=body)
             return res
-        except Exception as e:
+        except Exception, e:
             logger.error('Unable to get mulitple commits. %s' % e)
 
     def del_commits(self, sha_list):
@@ -162,7 +162,7 @@ class Commits(object):
             }
         }
 
-        for mail, date_bounces in list(mails.items()):
+        for mail, date_bounces in mails.items():
             must = {"bool": {"must": []}}
             must["bool"]["must"].append({"term": {"author_email": mail}})
             if date_bounces:
@@ -196,7 +196,7 @@ class Commits(object):
                 "should": []
             }
         }
-        for repo, paths in list(repos.items()):
+        for repo, paths in repos.items():
             repo_clause = {"bool": {"must": []}}
             repo_clause["bool"]["must"].append(
                 {"bool": {
@@ -460,7 +460,7 @@ class Commits(object):
         mails = deque(mails)
         while True:
             _mails = []
-            for _ in range(amount):
+            for _ in xrange(amount):
                 try:
                     _mails.append(mails.pop())
                 except IndexError:
@@ -576,9 +576,9 @@ class Commits(object):
                                mails_neg=mails_neg, domains=domains,
                                blacklisted_mails=blacklisted_mails,
                                limit=10000)
-        keys = [list(c.keys()) for c in ret[2]]
-        list(map(storekey, [i for i in itertools.chain(*keys) if
-                       i not in PROPERTIES]))
+        keys = [c.keys() for c in ret[2]]
+        map(storekey, [i for i in itertools.chain(*keys) if
+                       i not in PROPERTIES])
         return uniq_keys
 
     def get_metadata_key_values(self, key, mails=[], repos=[],

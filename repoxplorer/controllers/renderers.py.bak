@@ -14,7 +14,7 @@
 #  limitations under the License.
 
 import csv
-from io import StringIO
+from StringIO import StringIO
 
 
 class CSVRenderer(object):
@@ -28,22 +28,22 @@ class CSVRenderer(object):
             namespace = [namespace]
         for e in namespace:
             assert isinstance(e, dict)
-        keys = list(namespace[0].keys())
+        keys = namespace[0].keys()
         keys.sort()
         w = csv.DictWriter(buf, fieldnames=keys)
         w.writeheader()
         for e in namespace:
             d = {}
-            for k, v in list(e.items()):
+            for k, v in e.items():
                 if not any([
-                        isinstance(v, str),
+                        isinstance(v, basestring),
                         isinstance(v, list),
                         isinstance(v, int),
                         isinstance(v, float)]):
                     raise ValueError(
                         "'%s' (type: %s) is not supported for CSV output" % (
                             str(v), type(v)))
-                if isinstance(v, str):
+                if isinstance(v, unicode):
                     d[k] = v.encode('utf-8', 'ignore')
                 elif isinstance(v, list):
                     d[k] = ";".join(v)

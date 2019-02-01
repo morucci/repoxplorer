@@ -68,8 +68,7 @@ class YAMLDefinition(object):
             db_default_file=db_default_file or conf.get('db_default_file'),
             db_cache_path=db_cache_path)
         self.yback.load_db()
-        self.hashes_str = SHA.new(
-            "".join(self.yback.hashes).encode('utf-8')).hexdigest()
+        self.hashes_str = SHA.new("".join(self.yback.hashes)).hexdigest()
         self.default_data, self.data = self.yback.get_data()
         self._merge()
 
@@ -83,7 +82,7 @@ class YAMLDefinition(object):
             try:
                 schema_validate({key: data},
                                 yaml.load(schema))
-            except Exception as e:
+            except Exception, e:
                 issues.append(e.message)
             duplicated = set(data.keys()) & ids
             if duplicated:
