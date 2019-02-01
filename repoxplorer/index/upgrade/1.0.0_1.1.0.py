@@ -16,13 +16,13 @@ if __name__ == '__main__':
             if _f.endswith('yaml') or _f.endswith('yml'):
                 p = os.path.join(r, _f)
                 data = yaml.load(file(p))
-                print("Read %s" % p)
+                print(("Read %s" % p))
                 ndata = copy.deepcopy(data)
                 if "projects" not in data:
                     continue
-                for pid, pd in data['projects'].items():
+                for pid, pd in list(data['projects'].items()):
                     if "repos" in pd:
-                        print("Skip %s from file %s. Format OK." % (pid, _f))
+                        print(("Skip %s from file %s. Format OK." % (pid, _f)))
                         continue
                     repos = copy.deepcopy(pd)
                     pd = {
@@ -30,7 +30,7 @@ if __name__ == '__main__':
                         "description": "",
                     }
                     ndata['projects'][pid] = pd
-                print("write %s" % p)
+                print(("write %s" % p))
                 yaml.dump(ndata, file(p, 'w'),
                           default_flow_style=False)
         # We not explore in subdirs

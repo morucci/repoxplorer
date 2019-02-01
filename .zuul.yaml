@@ -1,19 +1,27 @@
 ---
 - job:
-    name: repoxplorer-unittests
+    name: repoxplorer-base
     parent: base
-    description: This is running the unittests for this project
-    run: playbooks/unittests.yaml
+    description: repoXplorer base job
+    pre-run: playbooks/deps-install.yaml
+
+- job:
+    name: repoxplorer-tox-py37
+    parent: repoxplorer-base
+    description: repoXplorer unittests for Python 3.7
+    pre-run: playbooks/elastic-install.yaml
+    run: playbooks/tox.yaml
+    vars:
+      tox_target: py37
     nodeset:
       nodes:
         - name: test-node
-          label: dib-centos-7
+          label: dib-fedora-28-minimal
 
 - project:
-    name: repoxplorer
     check:
       jobs:
-        - repoxplorer-unittests
+        - repoxplorer-tox-py37
     gate:
       jobs:
-        - repoxplorer-unittests
+        - repoxplorer-tox-py37

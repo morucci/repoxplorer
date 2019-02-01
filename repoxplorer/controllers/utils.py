@@ -28,8 +28,9 @@ xorkey = conf.get('xorkey') or 'default'
 
 def encrypt(key, plaintext):
     cipher = XOR.new(key)
-    return base64.b64encode(
-        cipher.encrypt(plaintext.encode('utf-8'))).replace('=', '-')
+    data = cipher.encrypt(plaintext)
+    data = base64.b64encode(data)
+    return data.decode('utf-8').replace('=', '-')
 
 
 def decrypt(key, ciphertext):
@@ -39,8 +40,8 @@ def decrypt(key, ciphertext):
 
 def authors_sanitize(idents, authors):
     sanitized = {}
-    _idents = idents.get_idents_by_emails(authors.keys())
-    for iid, ident in _idents.items():
+    _idents = idents.get_idents_by_emails(list(authors.keys()))
+    for iid, ident in list(_idents.items()):
         sanitized[ident['default-email']] = [0, ident['name'], iid]
         for ident_email in ident['emails']:
             if ident_email in authors:
@@ -79,7 +80,7 @@ def get_mail_filter(idents, cid=None, gid=None, group=None):
         _, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
-            ident = idents.get_idents_by_emails(cid).values()[0]
+            ident = list(idents.get_idents_by_emails(cid).values())[0]
         return ident['emails']
     elif gid:
         if not group:

@@ -325,8 +325,8 @@ class EProjects(object):
 
     def load(self, projects, rid2projects):
         self.delete_all()
-        self.create(projects.iteritems(), self.dbname)
-        self.create(rid2projects.iteritems(), "rid2%s" % self.dbname)
+        self.create(iter(list(projects.items())), self.dbname)
+        self.create(iter(list(rid2projects.items())), "rid2%s" % self.dbname)
 
     def get_all(self, source=True, type=None):
         query = {
@@ -456,7 +456,7 @@ class Projects(YAMLDefinition):
             templates = d.get('project-templates', {})
             projects = d.get('projects', {})
             merged_templates.update(copy.copy(templates))
-            for p, v in projects.items():
+            for p, v in list(projects.items()):
                 merged_projects.setdefault(p, copy.copy(v))
                 merged_projects[p]['repos'].update(copy.copy(v['repos']))
 
@@ -472,10 +472,10 @@ class Projects(YAMLDefinition):
         self.projects.update(merged_projects)
 
     def _enrich_projects(self):
-        for detail in self.projects.values():
+        for detail in list(self.projects.values()):
             if 'meta-ref' not in detail:
                 detail['meta-ref'] = False
-            for rid, repo in detail['repos'].items():
+            for rid, repo in list(detail['repos'].items()):
                 # Save tags mentioned for a repo
                 tags = []
                 if 'tags' in repo and repo['tags']:
@@ -522,7 +522,7 @@ class Projects(YAMLDefinition):
     def _flatten_projects(self):
         flatten = {}
         rid2projects = {}
-        for pid, detail in self.projects.items():
+        for pid, detail in list(self.projects.items()):
             flatten[pid] = {
                 'name': pid,
                 'aname': pid,
@@ -535,7 +535,7 @@ class Projects(YAMLDefinition):
             }
             for release in flatten[pid]['releases']:
                 release['date'] = date2epoch(release['date'])
-            for rid, repo in detail['repos'].items():
+            for rid, repo in list(detail['repos'].items()):
                 for branch in repo['branches']:
                     r = {}
                     r.update(copy.deepcopy(repo))
@@ -563,7 +563,7 @@ class Projects(YAMLDefinition):
         # Check uncovered by the schema validator
         for d in self.data:
             templates = d.get('project-templates', {})
-            for tid, templates in templates.items():
+            for tid, templates in list(templates.items()):
                 if 'releases' in templates:
                     for r in templates['releases']:
                         try:
@@ -584,8 +584,8 @@ class Projects(YAMLDefinition):
         # Check template dependencies
         for d in self.data:
             projects = d.get('projects', {})
-            for pid, detail in projects.items():
-                for rid, repo in detail['repos'].items():
+            for pid, detail in list(projects.items()):
+                for rid, repo in list(detail['repos'].items()):
                     template = repo['template']
                     if template not in tids:
                         issues.append("Project ID '%s' Repo ID '%s' "
@@ -621,7 +621,7 @@ class Projects(YAMLDefinition):
     def get_tags(self):
         projects = self.get_projects(source=['refs'])
         tags = set()
-        for project in projects.values():
+        for project in list(projects.values()):
             for ref in project['refs']:
                 for tag in ref.get('tags', []):
                     tags.add(tag)
