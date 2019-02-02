@@ -157,6 +157,13 @@ mv <orgname>.yaml /etc/repoxplorer/
 Using the *--repo* argument in addition to the *--org* argument
 will create the yaml file for indexing a single repository.
 
+### Private repositories
+The helper won't recognize private repositories by default. For that, you need to add,
+your credentials into `/bin/repoxplorer-git-credentials-helper` (if running in container,
+inside the `/bin/` directory of course). 
+
+Then you need to manually add the private scope repos to the YAML org configuration. 
+
 ## Configuration
 
 This configuration directory will be called `<configuration directory>/`
