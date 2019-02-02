@@ -178,6 +178,12 @@ Token and use the *--token* argument. Tokens can be issued on your
 Github account under "Settings > Developer Settings > Personal Access Tokens".
 You will need to give the *repo* access.
 
+### Private repositories
+
+The git credential helper won't recognize private repositories by default.
+For that, you need to add, your credentials into `repoxplorer-git-credentials-helper`
+(if running in container, inside the `/bin/` directory of course).
+
 ## Configuration
 
 This configuration directory will be called `<configuration directory>/`
