@@ -1,3 +1,2 @@
 include README.md config.py
 recursive-include public *
-recursive-include templates *
