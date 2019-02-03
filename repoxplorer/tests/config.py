@@ -13,7 +13,6 @@ app = {
     'modules': ['repoxplorer'],
     'custom_renderers': {'csv': CSVRenderer},
     'static_root': '%(confdir)s/../../public',
-    'template_path': '%(confdir)s/../../templates',
     'debug': True,
     'errors': {
         '404': '/error/404',

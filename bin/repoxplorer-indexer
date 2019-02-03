@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Copyright 2016, Fabien Boucher
 # Copyright 2016, Red Hat
@@ -27,7 +27,6 @@ from pecan import configuration
 from repoxplorer.indexer.git import indexer
 from repoxplorer.index import projects
 
-config = '%s/local/share/repoxplorer/config.py' % sys.prefix
 logger = logging.getLogger('indexerDaemon')
 
 parser = argparse.ArgumentParser(description='RepoXplorer indexer')
@@ -39,7 +38,7 @@ parser.add_argument(
     help='Specify the amount of worker processes for '
          'extracting commits information (default = auto)')
 parser.add_argument(
-    '--config', default=config,
+    '--config', required=True,
     help='Path to the repoXplorer configuration file')
 parser.add_argument(
     '--project', type=str, default=None,
