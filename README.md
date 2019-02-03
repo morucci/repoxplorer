@@ -113,7 +113,9 @@ virtualenv ~/repoxplorer
 pip install -U pip
 pip install -r requirements.txt
 python setup.py install
-./bin/repoxplorer-fetch-web-assets
+mkdir -p ~/.local/repoxplorer
+cp config.py ~/.local/repoxplorer/
+repoxplorer-fetch-web-assets --config ~/.local/repoxplorer/config.py
 ```
 
 #### Start the web UI
@@ -121,7 +123,7 @@ python setup.py install
 ```Shell
 cat > ~/start-ui.sh << EOF
 gunicorn_pecan --workers 10 --chdir / -b 0.0.0.0:51000 \
- --name repoxplorer ~/repoxplorer/local/share/repoxplorer/config.py
+ --name repoxplorer ~/.local/repoxplorer/config.py
 EOF
 chmod +x ~/start-ui.sh
 ~/start-ui.sh
@@ -132,7 +134,7 @@ Then open a Web browser to access http://localhost:51000/index.html
 #### Start the indexer
 
 ```Shell
-python ~/repoxplorer/bin/repoxplorer-indexer
+repoxplorer-indexer --config ~/.local/repoxplorer/config.py
 ```
 
 In order to run the indexer continuously you can use the command's
@@ -149,9 +151,7 @@ then be moved to the configuration directory of repoXplorer.
 
 ```
 repoxplorer-github-organization --org <orgname>
-mv <orgname>.yaml ~/repoxplorer/local/share/repoxplorer/
-# or
-mv <orgname>.yaml /etc/repoxplorer/
+mv <orgname>.yaml ~/.local/repoxplorer/
 ```
 
 Using the *--repo* argument in addition to the *--org* argument
@@ -159,25 +159,19 @@ will create the yaml file for indexing a single repository.
 
 ## Configuration
 
-This configuration directory will be called `<configuration directory>/`
-in this documentation.
+RepoXplorer will look for the configuration directory *db_path* that is defined
+in config.py. The directory is supposed to contain the content definition.
 
-If RepoXplorer has been installed via the virtualenv method then
-`<configuration directory>/` will be ~/repoxplorer/local/share/repoxplorer.
-Using the RPM installtion method it will be /etc/repoxplorer.
-
-Please note that projects, groups, contributors can be defined in
-any YAML files in the configuration directory. RepoXplorer will
-load YAML files and do a basic data update when definition's keys appears
-in multiple YAML files. The loading is performed by alphabetical
-order.
+The content definition (projects, groups, contributors) must be defined
+in *db_path* as YAML files. Any YAML files in the configuration directory
+will be loaded. RepoXplorer will load YAML files and do a basic data update
+when definition's keys appears in multiple YAML files. The loading is
+performed by alphabetical order.
 
 ### Define projects to index
 
 Below is an example of a yaml file, note that *Barbican* and *Swift*
 projects are composed of two Git repositories each, a server and a client.
-
-By default, the configuration file is `<configuration directory>/projects.yaml`.
 
 ```YAML
 ---
@@ -346,8 +340,7 @@ the [Metadata automatic indexation section](#metadata-automatic-indexation).
 
 An unique author can use multiple emails (identities) when contributing
 to a project. The **identities** configuration permits to define
-emails that belong to a contributor. By default, the configuration file is
-`<configuration directory>/idents.yaml`.
+emails that belong to a contributor.
 
 In the example below, contributions from both author emails 'john.doe@server'
 and 'jdoe@server' will be stacked for John Doe.
@@ -379,8 +372,7 @@ define it again at groups level.
 ### Define groups of authors
 
 You may want to define groups of authors and be able to compute
-stats for those groups. By default, the configuration file is
-`<configuration directory>/groups.yaml`.
+stats for those groups.
 
 ```YAML
 ---
@@ -451,12 +443,10 @@ of the Git repository it apply.
 ### Validate the configuration
 
 The command *repoxplorer-config-validate* can be used to check
-that yaml definition files follow the right format. Please use
-the --config option to target `<configuration directory>/config.py`
-when repoXplorer has been installed via the RPM package.
+that yaml definition files follow the right format.
 
 ```Shell
-repoxplorer-config-validate
+repoxplorer-config-validate --config ~/.local/repoxplorer/config.py
 ```
 
 ## REST API endpoints

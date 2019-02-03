@@ -16,6 +16,7 @@
 
 import os
 import sys
+import imp
 import glob
 import shutil
 import tarfile
@@ -23,6 +24,8 @@ import zipfile
 import tempfile
 import argparse
 import requests
+
+from pkg_resources import resource_string
 
 archives = {
     # No release. Master of 03/05/2017
@@ -133,36 +136,44 @@ def install_archive(name, path, basepath):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Fetch web assets for repoXplorer.')
+        description='Fetch and install web assets for repoXplorer.')
     parser.add_argument(
-        '-p', '--path', type=str,
-        default=os.path.join(sys.prefix, 'local/share/repoxplorer/public/'),
-        help='Install path')
+        '--config', required=True,
+        help='Path to the repoXplorer configuration file')
 
-args = parser.parse_args()
-td = tempfile.mkdtemp()
-print "Assets will be installed in %s ..." % args.path
-print "Fetch/Deflate assets in a temp directory %s ..." % td
-for d in ('css', 'css/images', 'javascript', 'fonts'):
-    os.mkdir(os.path.join(td, d))
-for name, url in archives.items():
-    print "Fetch and Install %s ..." % name
-    path = download_file(url, td)
-    install_archive(name, path, td)
+    args = parser.parse_args()
+    conf = imp.load_source('config', args.config)
+    static_root = conf.app['static_root']
 
-# Copy already installed repoxplorer bundled assets if exists
-for path in (
-        ('javascript', 'repoxplorer.js'),
-        ('css', 'repoxplorer.css'),
-        ('index.html',), ('contributor.html',),
-        ('contributors.html',), ('group.html',),
-        ('groups.html',), ('project.html',),
-        ('home.html',), ('projects.html',)):
-    shutil.copy(os.path.join(args.path, *path),
-                os.path.join(td, *path))
-    print "Copied %s" % str(path)
+    td = tempfile.mkdtemp()
+    print "Assets will be installed in %s ..." % static_root
+    if not os.path.isdir(static_root):
+        os.makedirs(static_root)
+    print "Fetch/Deflate assets in a temp directory %s ..." % td
+    for d in ('css', 'css/images', 'javascript', 'fonts'):
+        os.mkdir(os.path.join(td, d))
+    for name, url in archives.items():
+        print "Fetch and Install %s ..." % name
+        path = download_file(url, td)
+        install_archive(name, path, td)
 
-shutil.rmtree(args.path)
-shutil.move(td, args.path)
-os.chmod(args.path, 0755)
-print "Assets moved to %s" % args.path
+    # Copy repoxplorer assets
+    for path in (
+            ('public/javascript/repoxplorer.js', 'javascript/repoxplorer.js'),
+            ('public/css/repoxplorer.css', 'css/repoxplorer.css'),
+            ('public/index.html', 'index.html'),
+            ('public/contributor.html', 'contributor.html'),
+            ('public/contributors.html', 'contributors.html'),
+            ('public/group.html', 'group.html'),
+            ('public/groups.html', 'groups.html'),
+            ('public/project.html', 'project.html'),
+            ('public/home.html', 'home.html'),
+            ('public/projects.html', 'projects.html')):
+        data = resource_string('repoxplorer', '../' + path[0])
+        file(os.path.join(td, path[1]), 'w').write(data)
+        print "Copied %s" % os.path.join(td, path[1])
+
+    shutil.rmtree(static_root)
+    shutil.move(td, static_root)
+    os.chmod(static_root, 0755)
+    print "Assets moved to %s" % static_root
