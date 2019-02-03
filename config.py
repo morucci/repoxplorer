@@ -1,7 +1,10 @@
-import copy
+import os
 import sys
+import copy
 
 from repoxplorer.controllers.renderers import CSVRenderer
+
+runtimedir = os.path.join(os.path.expanduser('~'), '.local', 'repoxplorer')
 
 # RepoXplorer configuration file
 base_logging = {
@@ -58,8 +61,7 @@ app = {
     'root': 'repoxplorer.controllers.root.RootController',
     'modules': ['repoxplorer'],
     'custom_renderers': {'csv': CSVRenderer},
-    'static_root': '%(confdir)s/public',
-    'template_path': '%(confdir)s/templates',
+    'static_root': '%s/public' % runtimedir,
     'debug': False,
     'errors': {
         404: '/error/e404',
@@ -69,9 +71,9 @@ app = {
 
 # Additional RepoXplorer configurations
 db_default_file = None
-db_path = '%s/local/share/repoxplorer/' % sys.prefix
+db_path = runtimedir
 db_cache_path = db_path
-git_store = '%s/local/share/repoxplorer/git_store' % sys.prefix
+git_store = '%s/git_store' % runtimedir
 xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
@@ -85,9 +87,9 @@ admin_token = 'admin_token'
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
 logging['handlers']['normal']['filename'] = (
-    '%s/local/share/repoxplorer/repoxplorer-webui-debug.log' % sys.prefix)
+    '%s/repoxplorer-api.log' % runtimedir)
 
 # Logging configuration for the indexer
 indexer_logging = copy.deepcopy(base_logging)
 indexer_logging['handlers']['normal']['filename'] = (
-    '%s/local/share/repoxplorer/repoxplorer-indexer-debug.log' % sys.prefix)
+    '%s/repoxplorer-indexer.log' % runtimedir)

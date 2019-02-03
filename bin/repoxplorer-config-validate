@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/bin/env python
 
 # Copyright 2016,2017 Fabien Boucher
 # Copyright 2016,2017 Red Hat
@@ -22,11 +22,9 @@ import argparse
 from repoxplorer.index import projects
 from repoxplorer.index import contributors
 
-config = '%s/local/share/repoxplorer/config.py' % sys.prefix
-
 parser = argparse.ArgumentParser(description='RepoXplorer config validator')
 parser.add_argument(
-    '--config', default=config,
+    '--config', required=True,
     help='Path to the repoXplorer configuration file')
 
 args = parser.parse_args()
