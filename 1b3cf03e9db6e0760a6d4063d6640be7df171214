@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a5f949ab_6627f95e",
+        "filename": "repoxplorer/controllers/renderers.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2019-02-04T11:23:15Z",
+      "side": 1,
+      "message": "I\u0027m not sure this is going to work fine for both Python 2 and Python3, due to the unicode differences. Have you tested it?",
+      "revId": "1b3cf03e9db6e0760a6d4063d6640be7df171214",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
