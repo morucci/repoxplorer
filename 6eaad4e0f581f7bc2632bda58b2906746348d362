@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e9d78230_e8f0e2fa",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2019-02-04T10:05:33Z",
+      "side": 1,
+      "message": "The typo is still here, it should be config.py",
+      "range": {
+        "startLine": 117,
+        "startChar": 3,
+        "endLine": 117,
+        "endChar": 9
+      },
+      "revId": "6eaad4e0f581f7bc2632bda58b2906746348d362",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
