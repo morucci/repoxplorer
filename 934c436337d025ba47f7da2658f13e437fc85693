@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2d011508_038a99ce",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2019-02-04T09:29:39Z",
+      "side": 1,
+      "message": "config.py",
+      "range": {
+        "startLine": 117,
+        "startChar": 3,
+        "endLine": 117,
+        "endChar": 9
+      },
+      "revId": "934c436337d025ba47f7da2658f13e437fc85693",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
