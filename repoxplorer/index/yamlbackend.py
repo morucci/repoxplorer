@@ -107,7 +107,7 @@ class YAMLBackend(object):
                         hash, file(cached_hash_path, 'w'),
                         cPickle.HIGHEST_PROTOCOL)
                     self.hashes.append(hash)
-                except Exception, e:
+                except Exception as e:
                     raise YAMLDBException(
                         "YAML format corrupted in file %s (%s)" % (path, e))
             return data

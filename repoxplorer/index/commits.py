@@ -109,7 +109,7 @@ class Commits(object):
                               doc_type=self.dbname,
                               id=sha)
             return res['_source']
-        except Exception, e:
+        except Exception as e:
             if silent:
                 return None
             logger.error('Unable to get commit (%s). %s' % (sha, e))
@@ -122,7 +122,7 @@ class Commits(object):
                                _source=True,
                                body=body)
             return res
-        except Exception, e:
+        except Exception as e:
             logger.error('Unable to get mulitple commits. %s' % e)
 
     def del_commits(self, sha_list):

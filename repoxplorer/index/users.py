@@ -79,7 +79,7 @@ class Users(object):
                               doc_type=self.dbname,
                               id=uid)
             return res['_source']
-        except Exception, e:
+        except Exception as e:
             if silent:
                 return None
             logger.error('Unable to get user (%s). %s' % (uid, e))

@@ -256,7 +256,7 @@ def process_commits_desc_output(input, ref_ids, extra_parsers=None):
                       "signed", "commit_msg_full"):
                 del cmt[f]
             ret.append(cmt)
-        except Exception, e:
+        except Exception as e:
             logger.warning("A chunk of commits failed to be parsed. Skip.")
             logger.warning("Skip it !")
             logger.debug("Output of the failed chunk at the offset %s" % (

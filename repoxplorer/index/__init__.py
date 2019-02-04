@@ -82,7 +82,7 @@ class YAMLDefinition(object):
             try:
                 schema_validate({key: data},
                                 yaml.load(schema))
-            except Exception, e:
+            except Exception as e:
                 issues.append(e.message)
             duplicated = set(data.keys()) & ids
             if duplicated:

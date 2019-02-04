@@ -95,13 +95,13 @@ def process(conf):
                                     meta_ref=meta_ref)
             try:
                 r.git_init()
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Unable to init the repository %s: %s" % (
                                r.base_id, e))
                 continue
             try:
                 r.get_refs()
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Unable to access the repository %s: %s" % (
                                r.base_id, e))
                 continue
@@ -122,7 +122,7 @@ def process(conf):
             logger.info("Start indexing repository branch %s" % r.ref_id)
             try:
                 r.git_fetch_branch()
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Unable to fetch repository "
                                "branch %s: %s" % (r.ref_id, e))
                 continue
@@ -131,7 +131,7 @@ def process(conf):
                 r.get_current_commit_indexed()
                 r.compute_to_index_to_delete()
                 r.index(args.extract_workers)
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Unable to index repository "
                                "branch %s: %s" % (r.ref_id, e))
                 logger.exception("Exception is:")
@@ -151,7 +151,7 @@ def process(conf):
                             "Found %s tags for %s but index-tags is False. "
                             "Wipe tags ..." % (len(ids), r.base_id))
                         rc.t.del_tags(ids)
-            except Exception, e:
+            except Exception as e:
                 logger.warning("Unable to index repository tags "
                                "%s: %s" % (r.base_id, e))
                 continue

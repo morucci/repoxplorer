@@ -345,7 +345,7 @@ class EProjects(object):
                               _source=source,
                               id=id)
             return res['_source']
-        except Exception, e:
+        except Exception as e:
             logger.error('Unable to get the doc. %s' % e)
 
     def exists(self, id):
@@ -421,7 +421,7 @@ class EProjects(object):
                                _source=True,
                                body=body)
             return res['docs']
-        except Exception, e:
+        except Exception as e:
             logger.error('Unable to get projects by fullrids. %s' % e)
 
 
