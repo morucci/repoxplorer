@@ -26,6 +26,10 @@ parser = argparse.ArgumentParser(
     description='Read a Github organization and create'
                 'the repoXplorer description file')
 parser.add_argument(
+    '--token', type=str,
+    required=False, default=None,
+    help='Specify an authentication token used to fetch private repositories')
+parser.add_argument(
     '--org', type=str,
     required=True,
     help='Specify the Github organization name')
@@ -47,13 +51,18 @@ parser.add_argument(
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    anon = github3.GitHub()
-    org = anon.organization(args.org)
+    gh = github3.GitHub()
+    if args.token:
+        gh.login(token=args.token)
+    org = gh.organization(args.org)
     if not org:
         print(
             "Org %s not found, try to find single"
             " user's repos ..." % args.org)
-        repos = anon.repositories_by(args.org)
+        if not args.token:
+            repos = gh.repositories_by(args.org)
+        else:
+            repos = gh.repositories(type='owner')
     else:
         repos = org.repositories()
     templates = {

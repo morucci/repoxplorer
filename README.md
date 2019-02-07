@@ -57,18 +57,34 @@ docker-compose up -d
 firefox http://localhost:51000/index.html
 ```
 
-Then use the github helper to create the configuration file. Here we index
+Then, locally, use the github helper to create the configuration file. Here we index
 the Github organization of the git project.
 
 ```Shell
 ./bin/repoxplorer-github-organization --org git --skip-fork --output-path docker-data/conf/git
 ```
 
-Indexation will take between 2 and 5 minutes. See docker/README to see how to check indexation logs.
+Alternatively, one can execute this command within the repoxplorer docker image with
+
+```Shell
+docker-compose exec repoxplorer bash
+./bin/repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
+```
+
+
+Indexation will take between 2 and 5 minutes. Indexation in progress can be seen into
+the indexer log file.
+
+```Shell
+docker-compose exec repoxplorer bash
+tail -f /usr/local/share/repoxplorer/repoxplorer-indexer-debug.log
+```
+
 Repoxplorer will check repositories every 60 seconds for news commits and index them if any.
 
 Stop the container. Data are stored in docker volumes so you can safely stop and restart the container.
 *docker-compose down -v* can be used to remove data.
+
 
 ```Shell
 docker-compose down
@@ -156,6 +172,11 @@ mv <orgname>.yaml ~/.local/repoxplorer/
 
 Using the *--repo* argument in addition to the *--org* argument
 will create the yaml file for indexing a single repository.
+
+For private organizations or repositories, you will need to issue a
+Token and use the *--token* argument. Tokens can be issued on your
+Github account under "Settings > Developer Settings > Personal Access Tokens".
+You will need to give the *repo* access.
 
 ## Configuration
 
