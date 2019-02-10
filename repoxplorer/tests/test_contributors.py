@@ -22,7 +22,7 @@ from mock import patch
 from jsonschema import validate
 from unittest import TestCase
 
-from repoxplorer.index import contributors
+from repoxplorer.index import groups
 from repoxplorer.index import yamlbackend
 from repoxplorer.index import users
 from repoxplorer import index
