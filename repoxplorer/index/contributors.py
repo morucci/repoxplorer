@@ -19,6 +19,10 @@ import logging
 
 from pecan import conf
 
+from elasticsearch.helpers import bulk
+from elasticsearch.helpers import BulkIndexError
+from elasticsearch.helpers import scan as scanner
+
 from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import date2epoch
@@ -165,18 +169,111 @@ groups:
 """
 
 
+class EGroups(object):
+
+    PROPERTIES = {
+        "description": {"type": "string"},
+        "domains": {"type": "string"},
+        "emails": {
+            "type": "nested",
+            "properties": {
+                "email": {"type": "string", "index": "not_analyzed"},
+                "begin-date": {"type": "string", "index": "not_analyzed"},
+                "end-date": {"type": "string", "index": "not_analyzed"},
+            }
+        }
+    }
+
+    def __init__(self, connector=None):
+        self.es = connector.es
+        self.ic = connector.ic
+        self.index = connector.index
+        self.dbname = 'groups'
+        self.mapping = {
+            self.dbname: {
+                "properties": self.PROPERTIES,
+            }
+        }
+
+    def manage_bulk_err(self, exc):
+        errs = [e['create']['error'] for e in exc[1]]
+        if not all([True for e in errs if
+                    e['type'] == 'document_already_exists_exception']):
+            raise Exception(
+                "Unable to create one or more doc: %s" % errs)
+
+    def create(self, docs, type):
+        def gen():
+            for pid, doc in docs:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = type
+                d['_op_type'] = 'create'
+                d['_id'] = pid
+                d['_source'] = doc
+                yield d
+        try:
+            bulk(self.es, gen())
+        except BulkIndexError as exc:
+            self.manage_bulk_err(exc)
+        self.es.indices.refresh(index=self.index)
+
+    def delete_all(self):
+        def gen(docs, dbname):
+            for doc in docs:
+                d = {}
+                d['_index'] = self.index
+                d['_type'] = dbname
+                d['_op_type'] = 'delete'
+                d['_id'] = doc['_id']
+                yield d
+        bulk(self.es,
+             gen(self.get_all(source=False), self.dbname))
+        self.es.indices.refresh(index=self.index)
+
+    def load(self, groups):
+        self.delete_all()
+        self.create(groups.items(), self.dbname)
+
+    def get_all(self, source=True, type=None):
+        query = {
+            '_source': source,
+            'query': {
+                'match_all': {}
+            }
+        }
+        return scanner(self.es, query=query, index=self.index,
+                       doc_type=type or self.dbname)
+
+    def get_by_id(self, id, source=True):
+        try:
+            res = self.es.get(index=self.index,
+                              doc_type=self.dbname,
+                              _source=source,
+                              id=id)
+            return res['_source']
+        except Exception as e:
+            logger.error('Unable to get the doc. %s' % e)
+
+    def exists(self, id):
+        return self.es.exists(
+            index=self.index, doc_type=self.dbname, id=id)
+
+
 class Contributors(YAMLDefinition):
     """ This class manages definition of contributors as
     individual and group level
     """
     def __init__(self, db_path=None, db_default_file=None, vonly=False,
-                 db_cache_path=None):
+                 db_cache_path=None, con=None):
         YAMLDefinition.__init__(self, db_path, db_default_file, db_cache_path)
         self.enriched_groups = False
         self.enriched_idents = False
         if not vonly:
             self._users = users.Users(
                 index.Connector(index_suffix='users'))
+        self.egroups = EGroups(
+            connector=(con or index.Connector(index_suffix='groups')))
 
     def _merge(self):
         """ Merge self.data and inherites from default_data
