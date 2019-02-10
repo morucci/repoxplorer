@@ -47,11 +47,15 @@ repositories like for instance your Github organization.
 
 The docker container bundles ElasticSearch + the last repoXplorer version.
 
+This paragraph describes the usage of the container of repoXplorer 1.4.0. Some
+commands/options may have changes on the master version.
+
 Simply run docker-compose to deploy.
 
 ```Shell
 git clone --depth 1 https://github.com/morucci/repoxplorer
 cd repoxplorer
+git checkout 1.4.0
 mkdir -p docker-data/conf
 docker-compose up -d
 firefox http://localhost:51000/index.html
@@ -70,7 +74,6 @@ Alternatively, one can execute this command within the repoxplorer docker image 
 docker-compose exec repoxplorer bash
 ./bin/repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
 ```
-
 
 Indexation will take between 2 and 5 minutes. Indexation in progress can be seen into
 the indexer log file.
@@ -92,7 +95,13 @@ docker-compose down
 
 ## Standard installation
 
-The installation process described here is for **CentOS 7 only**.
+The installation process described here is for the **master version** of
+repoXplorer. If you look for the instalation process of the last stable
+version, then checkout at version 1.4.0.
+
+This process has been validated with **Fedora 29** but as long as
+you have Python 3 and a working ElasicSearch 2.x deployment repoxXplorer should
+work as expected. Fell free to adapt to your Linux distribution.
 
 ### ElasticSearch
 
@@ -1231,11 +1240,8 @@ Only one of:
 
 Feel free to help ! I'll be happy to accept any contributions.
 
-You can have a look to the backlog (Do not hesitate to add some - add the 'repoxplorer' tag please):
-
-- [Feature requests](https://tree.taiga.io/project/morucci-software-factory/backlog?q=&tags=repoxplorer)
-
-If you find an issue please fill a bug report on Github:
+If you want to propose a change, ask for a feature, say you like repoXplorer or
+report an issue please fill Github issue:
 
 - [Report an issue](https://github.com/morucci/repoxplorer/issues/new)
 
