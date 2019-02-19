@@ -141,17 +141,14 @@ python setup.py install
 mkdir -p ~/.local/repoxplorer
 cp config.py ~/.local/repoxplorer/
 repoxplorer-fetch-web-assets --config ~/.local/repoxplorer/config.py
+# Install a demo project definition
+cp etc/projects.yaml ~/.local/repoxplorer/
 ```
 
 #### Start the web UI
 
 ```Shell
-cat > ~/start-ui.sh << EOF
-gunicorn_pecan --workers 10 --chdir / -b 0.0.0.0:51000 \
- --name repoxplorer ~/.local/repoxplorer/config.py
-EOF
-chmod +x ~/start-ui.sh
-~/start-ui.sh
+./bin/start-ui.sh ~/.local/repoxplorer/config.py
 ```
 
 Then open a Web browser to access http://localhost:51000/index.html

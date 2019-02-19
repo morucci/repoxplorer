@@ -169,7 +169,7 @@ if __name__ == "__main__":
             ('public/project.html', 'project.html'),
             ('public/home.html', 'home.html'),
             ('public/projects.html', 'projects.html')):
-        data = resource_string('repoxplorer', '../' + path[0])
+        data = resource_string('repoxplorer', path[0])
         open(os.path.join(td, path[1]), 'wb').write(data)
         print("Copied %s" % os.path.join(td, path[1]))
 
