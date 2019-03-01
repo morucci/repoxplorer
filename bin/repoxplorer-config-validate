@@ -19,6 +19,8 @@ import imp
 import sys
 import argparse
 
+from pecan import configuration
+
 from repoxplorer.index import projects
 from repoxplorer.index import contributors
 
@@ -31,10 +33,9 @@ args = parser.parse_args()
 
 
 def validate():
-    projects_index = projects.Projects(conf.db_path)
+    projects_index = projects.Projects()
     issues = projects_index.validate()
-    contributors_index = contributors.Contributors(
-        conf.db_path, vonly=True)
+    contributors_index = contributors.Contributors(vonly=True)
     issues.extend(contributors_index.validate())
     for issue in issues:
         print(issue)
@@ -42,7 +43,7 @@ def validate():
 
 
 if __name__ == "__main__":
-    conf = imp.load_source('config', args.config)
+    configuration.set_config(args.config)
     errs = validate()
     if errs:
         print("Corrupted configuration exit !")

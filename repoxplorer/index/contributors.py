@@ -171,7 +171,11 @@ class Contributors(YAMLDefinition):
     """
     def __init__(self, db_path=None, db_default_file=None, vonly=False,
                  db_cache_path=None):
-        YAMLDefinition.__init__(self, db_path, db_default_file, db_cache_path)
+        self.db_path = db_path or conf.get('db_path')
+        self.db_default_file = db_default_file or conf.get('db_default_file')
+        self.db_cache_path = db_cache_path or conf.get('db_cache_path')
+        YAMLDefinition.__init__(
+          self, self.db_path, self.db_default_file, self.db_cache_path)
         self.enriched_groups = False
         self.enriched_idents = False
         if not vonly:
