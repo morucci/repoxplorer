@@ -11,18 +11,26 @@
           label: dib-fedora-28-minimal
 
 - job:
-    name: repoxplorer-tox-py37
+    name: repoxplorer-tox-py37-el5
     parent: repoxplorer-base
     description: repoXplorer unittests for Python 3.7
-    pre-run: playbooks/elastic-install.yaml
+    pre-run: playbooks/elastic5-install.yaml
     vars:
       tox_target: py37
 
 - job:
-    name: repoxplorer-tox-py36
+    name: repoxplorer-tox-py37-el2
+    parent: repoxplorer-base
+    description: repoXplorer unittests for Python 3.7
+    pre-run: playbooks/elastic2-install.yaml
+    vars:
+      tox_target: py37
+
+- job:
+    name: repoxplorer-tox-py36-el2
     parent: repoxplorer-base
     description: repoXplorer unittests for Python 3.6
-    pre-run: playbooks/elastic-install.yaml
+    pre-run: playbooks/elastic2-install.yaml
     vars:
       tox_target: py36
 
@@ -37,10 +45,12 @@
     check:
       jobs:
         - repoxplorer-tox-pep8
-        - repoxplorer-tox-py36
-        - repoxplorer-tox-py37
+        - repoxplorer-tox-py36-el2
+        - repoxplorer-tox-py37-el2
+        - repoxplorer-tox-py37-el5
     gate:
       jobs:
         - repoxplorer-tox-pep8
-        - repoxplorer-tox-py36
-        - repoxplorer-tox-py37
+        - repoxplorer-tox-py36-el2
+        - repoxplorer-tox-py37-el2
+        - repoxplorer-tox-py37-el5
