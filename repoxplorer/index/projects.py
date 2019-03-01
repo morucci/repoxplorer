@@ -629,14 +629,14 @@ class Projects(YAMLDefinition):
 
     def get_gitweb_link(self, fullrid):
         source = 'name'
-        inner_source = 'gitweb'
+        inner_source = 'refs.gitweb'
         ret = self.eprojects.get_by_nested_attr_match(
             'fullrid', fullrid, source, inner_source, 1)
         # Get the first inner hit / let's see later if that cause limitations
         if not ret[3]:
             return ''
         ref = ret[3][0]['refs']['hits']['hits'][0]['_source']
-        return ref.get('gitweb', '')
+        return ref.get('refs', {}).get('gitweb', '')
 
     def get_projects_from_references(self, fullrids):
         if not fullrids:
@@ -651,11 +651,12 @@ class Projects(YAMLDefinition):
 
     def get_references_from_tags(self, tags):
         source = 'name'
-        inner_source = ['fullrid', 'paths', 'name', 'branch']
+        inner_source = [
+            'refs.fullrid', 'refs.paths', 'refs.name', 'refs.branch']
         ret = self.eprojects.get_by_nested_attr_match(
             'tags', tags, source, inner_source)
         refs = []
         for hit in ret[3]:
-            refs.extend([r['_source'] for r
+            refs.extend([r['_source']['refs'] for r
                          in hit['refs']['hits']['hits']])
         return refs

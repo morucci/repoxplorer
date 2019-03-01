@@ -92,7 +92,7 @@ class Users(object):
             emails = (emails,)
         params = {'index': self.index, 'doc_type': self.dbname}
         body = {
-            "query": {"filtered": {
+            "query": {"bool": {
                 "filter": {"bool": {"must": {
                     "nested": {
                         "path": "emails",
@@ -118,7 +118,7 @@ class Users(object):
     def get_idents_in_group(self, group):
         params = {'index': self.index, 'doc_type': self.dbname}
         body = {
-            "query": {"filtered": {
+            "query": {"bool": {
                 "filter": {"bool": {"must": {
                     "nested": {
                         "path": "emails",

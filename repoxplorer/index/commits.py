@@ -256,18 +256,18 @@ class Commits(object):
 
         params = {'index': self.index, 'doc_type': self.dbname}
 
-        body = {
-            "filter": self.get_filter(mails, repos, metadata,
-                                      mails_neg, domains, blacklisted_mails),
-        }
+        qfilter = self.get_filter(
+            mails, repos, metadata,
+            mails_neg, domains, blacklisted_mails)
 
         # If None both are returned. If you expect to skip merge commits
         # then set merge_commit to False
         if merge_commit is not None:
-            body["filter"]["bool"]["must"].append(
-                {"term": {"merge_commit": merge_commit}})
+            qfilter["bool"]["must"].append(
+                {"term": {"merge_commit": merge_commit}}
+            )
 
-        body["filter"]["bool"]["must"].append(
+        qfilter["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -277,6 +277,14 @@ class Commits(object):
                 }
             }
         )
+
+        body = {
+            "query": {
+                "bool": {
+                    "filter": qfilter,
+                }
+            }
+        }
 
         if scan:
             return scanner(self.es, query=body,
@@ -304,7 +312,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": self.get_filter(
                         mails, repos, metadata, mails_neg, domains,
                         blacklisted_mails),
@@ -312,7 +320,7 @@ class Commits(object):
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -324,7 +332,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -347,7 +355,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": self.get_filter(
                         mails, repos, metadata, mails_neg, domains,
                         blacklisted_mails),
@@ -362,7 +370,7 @@ class Commits(object):
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -374,7 +382,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -396,7 +404,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": self.get_filter(
                         mails, repos, metadata, mails_neg, domains,
                         blacklisted_mails),
@@ -407,13 +415,13 @@ class Commits(object):
                     "terms": {
                         "field": "author_email",
                         "order": {"_count": "desc"},
-                        "size": 0
+                        "size": 1000000
                     }
                 }
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -425,7 +433,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -497,14 +505,13 @@ class Commits(object):
                                merge_commit=None, metadata=[],
                                mails_neg=False, domains=None,
                                blacklisted_mails=None):
-        """ Return the ranking of author emails by modidified lines
-        of codes
+        """ Return the ranking of field by lines changed
         """
         params = {'index': self.index, 'doc_type': self.dbname}
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": self.get_filter(
                         mails, repos, metadata, mails_neg, domains,
                         blacklisted_mails),
@@ -514,7 +521,7 @@ class Commits(object):
                 "top-field-by-modified": {
                     "terms": {
                         "field": field,
-                        "size": 0,
+                        "size": 1000000,
                     },
                     "aggs": {
                         "modified": {
@@ -527,7 +534,7 @@ class Commits(object):
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -539,7 +546,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -615,7 +622,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": self.get_filter(
                         mails, repos, metadata, mails_neg, domains,
                         blacklisted_mails),
@@ -626,13 +633,13 @@ class Commits(object):
                     "terms": {
                         "field": "repos",
                         "order": {"_count": "desc"},
-                        "size": 0
+                        "size": 1000000
                     }
                 }
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -644,7 +651,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -708,7 +715,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": qfilter,
                 }
             },
@@ -723,7 +730,7 @@ class Commits(object):
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -735,7 +742,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
@@ -765,7 +772,7 @@ class Commits(object):
 
         body = {
             "query": {
-                "filtered": {
+                "bool": {
                     "filter": qfilter,
                 }
             },
@@ -780,7 +787,7 @@ class Commits(object):
                         "authors_email": {
                             "terms": {
                                 "field": "author_email",
-                                "size": 2 ** 16
+                                "size": 1000000
                             },
                         }
                     }
@@ -788,7 +795,7 @@ class Commits(object):
             }
         }
 
-        body["query"]["filtered"]["filter"]["bool"]["must"].append(
+        body["query"]["bool"]["filter"]["bool"]["must"].append(
             {
                 "range": {
                     "committer_date": {
@@ -800,7 +807,7 @@ class Commits(object):
         )
 
         if merge_commit is not None:
-            body["query"]["filtered"]["filter"]["bool"]["must"].append(
+            body["query"]["bool"]["filter"]["bool"]["must"].append(
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
