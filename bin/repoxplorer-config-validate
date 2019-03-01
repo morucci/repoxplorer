@@ -33,7 +33,7 @@ args = parser.parse_args()
 
 
 def validate():
-    projects_index = projects.Projects()
+    projects_index = projects.Projects(vonly=True)
     issues = projects_index.validate()
     contributors_index = contributors.Contributors(vonly=True)
     issues.extend(contributors_index.validate())

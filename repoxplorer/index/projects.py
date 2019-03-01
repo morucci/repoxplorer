@@ -429,10 +429,12 @@ class Projects(YAMLDefinition):
     """ This class manages definition of projects
     """
     def __init__(self, db_path=None, db_default_file=None, db_cache_path=None,
-                 con=None, dump_yaml_in_index=None):
+                 con=None, dump_yaml_in_index=None, vonly=False):
         self.db_path = db_path or conf.get('db_path')
         self.db_default_file = db_default_file or conf.get('db_default_file')
         self.db_cache_path = db_cache_path or conf.get('db_cache_path')
+        if vonly:
+            return
         # Use a separate index for projects (same as for users) as mapping
         # name/type collision will occured as commits have dynamic mapping
         self.eprojects = EProjects(
