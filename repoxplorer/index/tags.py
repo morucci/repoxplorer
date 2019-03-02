@@ -21,10 +21,10 @@ from elasticsearch.helpers import scan as scanner
 logger = logging.getLogger(__name__)
 
 PROPERTIES = {
-    "sha": {"type": "string", "index": "not_analyzed"},
+    "sha": {"type": "keyword"},
     "date": {"type": "date", "format": "epoch_second"},
-    "name": {"type": "string", "index": "not_analyzed"},
-    "repo": {"type": "string", "index": "not_analyzed"},
+    "name": {"type": "keyword"},
+    "repo": {"type": "keyword"},
 }
 
 
