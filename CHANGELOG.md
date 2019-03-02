@@ -8,11 +8,15 @@ Master
 RepoXplorer is now only Python 3 compatible. Version 3.6 and 3.7 are known
 to work and are tested in the CI. Python 2.7 support has been removed.
 
+Support of ElasticSearch 2.X have been removed. Support for ElasticSearch
+5.X and 6.X have been added and are tested in the CI.
+
 New features
 ------------
 
 - Added an account deletion button in the user home page.
 - Allow project's releases definition at project level.
+- Support of ElasticSearch 5.X and 6.X.
 
 Bug Fixes
 ---------
@@ -24,6 +28,7 @@ Other Notes
   and queried from the Elastic index.
 - add *db_cache_path* in config to specify directory where to store
   cache files.
+- Removed support of ElasticSearch 2.X.
 
 
 1.4.0

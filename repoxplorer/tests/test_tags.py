@@ -8,7 +8,9 @@ class TestTags(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con = index.Connector(index='repoxplorertest')
+        cls.con = index.Connector(
+            index='repoxplorertest',
+            index_suffix='tags')
         cls.t = Tags(cls.con)
         cls.tags = [
             {

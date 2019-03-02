@@ -27,7 +27,7 @@ class TagsController(object):
     @expose('json')
     def tags(self, pid=None, tid=None,
              dfrom=None, dto=None, inc_repos=None):
-        t = Tags(index.Connector())
+        t = Tags(index.Connector(index_suffix='tags'))
         projects_index = Projects()
         idents = Contributors()
 
