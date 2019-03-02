@@ -25,20 +25,20 @@ from elasticsearch.helpers import bulk
 logger = logging.getLogger(__name__)
 
 PROPERTIES = {
-    "sha": {"type": "string", "index": "not_analyzed"},
+    "sha": {"type": "keyword"},
     "author_date": {"type": "date", "format": "epoch_second"},
     "committer_date": {"type": "date", "format": "epoch_second"},
-    "ttl": {"type": "integer", "index": "not_analyzed"},
-    "author_name": {"type": "string"},
-    "committer_name": {"type": "string"},
-    "author_email": {"type": "string", "index": "not_analyzed"},
-    "author_email_domain": {"type": "string", "index": "not_analyzed"},
-    "committer_email": {"type": "string", "index": "not_analyzed"},
-    "repos": {"type": "string", "index": "not_analyzed"},
-    "line_modifieds": {"type": "integer", "index": "not_analyzed"},
+    "ttl": {"type": "integer"},
+    "author_name": {"type": "text"},
+    "committer_name": {"type": "text"},
+    "author_email": {"type": "keyword"},
+    "author_email_domain": {"type": "keyword"},
+    "committer_email": {"type": "keyword"},
+    "repos": {"type": "keyword"},
+    "line_modifieds": {"type": "integer"},
     "merge_commit": {"type": "boolean"},
-    "commit_msg": {"type": "string"},
-    "files_list": {"type": "string", "index": "not_analyzed"},
+    "commit_msg": {"type": "text"},
+    "files_list": {"type": "keyword"},
 }
 
 DYNAMIC_TEMPLATES = [
@@ -46,8 +46,7 @@ DYNAMIC_TEMPLATES = [
         "strings": {
             "match": "*",
             "mapping": {
-                "type": "string",
-                "index": "not_analyzed",
+                "type": "keyword",
             }
         }
     }
