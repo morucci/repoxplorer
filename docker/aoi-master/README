@@ -1,0 +1,34 @@
+# Container build
+docker build -t repoxplorer-aoi .
+
+mkdir conf
+chcon -Rt svirt_sandbox_file_t ./conf
+
+# Run the container
+docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer-aoi
+
+# Access the UI
+firefox http://localhost:51000/index.html
+
+# You can set the projects/groups definition in conf/.
+# As an example set conf/projects.yaml with the yaml block below:
+
+project-templates:
+  default:
+    uri: https://github.com/openstack/%(name)s
+    branches:
+    - master
+    gitweb: https://github.com/openstack/%(name)s/commit/%%(sha)s
+
+projects:
+  Barbican:
+    description: The Barbican project
+    repos:
+      barbican:
+        template: default
+      python-barbicanclient:
+        template: default
+
+# Check the indexer logs to see the progress of the indexation
+docker ps # get the <container-id>
+docker exec -ti <container-id> tail -f /root/.local/repoxplorer/repoxplorer-indexer.log
