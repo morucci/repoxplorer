@@ -23,23 +23,23 @@ logger = logging.getLogger(__name__)
 class Users(object):
 
     PROPERTIES = {
-        "uid": {"type": "string", "index": "not_analyzed"},
-        "name": {"type": "string", "index": "not_analyzed"},
-        "default-email": {"type": "string", "index": "not_analyzed"},
+        "uid": {"type": "keyword"},
+        "name": {"type": "keyword"},
+        "default-email": {"type": "keyword"},
         "last_cnx": {"type": "date", "format": "epoch_second"},
         "emails": {
             "type": "nested",
             "properties": {
-                "email": {"type": "string", "index": "not_analyzed"},
+                "email": {"type": "keyword"},
                 "groups": {
                     "type": "nested",
                     "properties": {
                         "group": {
-                            "type": "string", "index": "not_analyzed"},
+                            "type": "keyword"},
                         "begin-date": {
-                            "type": "string", "index": "not_analyzed"},
+                            "type": "keyword"},
                         "end-date": {
-                            "type": "string", "index": "not_analyzed"}
+                            "type": "keyword"}
                         }
                     }
                 }
@@ -92,7 +92,7 @@ class Users(object):
             emails = (emails,)
         params = {'index': self.index, 'doc_type': self.dbname}
         body = {
-            "query": {"filtered": {
+            "query": {"bool": {
                 "filter": {"bool": {"must": {
                     "nested": {
                         "path": "emails",
@@ -118,7 +118,7 @@ class Users(object):
     def get_idents_in_group(self, group):
         params = {'index': self.index, 'doc_type': self.dbname}
         body = {
-            "query": {"filtered": {
+            "query": {"bool": {
                 "filter": {"bool": {"must": {
                     "nested": {
                         "path": "emails",

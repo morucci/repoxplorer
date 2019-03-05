@@ -3,6 +3,10 @@
 - **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
 - **Last release**: [1.4.0](https://github.com/morucci/repoxplorer/releases/tag/1.4.0).
 
+The documentation here is for the **master version** of repoXplorer. If you
+look for information about the last stable version, then checkout at
+version 1.4.0.
+
 RepoXplorer provides a web UI and a REST API to browse git stats such as:
 
 - projects (composed of one or multiple repositories)
@@ -83,10 +87,11 @@ docker-compose exec repoxplorer bash
 tail -f /usr/local/share/repoxplorer/repoxplorer-indexer-debug.log
 ```
 
-Repoxplorer will check repositories every 60 seconds for news commits and index them if any.
+Repoxplorer will check repositories every 60 seconds for news commits and
+index them if any.
 
-Stop the container. Data are stored in docker volumes so you can safely stop and restart the container.
-*docker-compose down -v* can be used to remove data.
+Stop the container. Data are stored in docker volumes so you can safely stop
+and restart the container. *docker-compose down -v* can be used to remove data.
 
 
 ```Shell
@@ -96,30 +101,31 @@ docker-compose down
 ## Standard installation
 
 The installation process described here is for the **master version** of
-repoXplorer. If you look for the instalation process of the last stable
+repoXplorer. If you look for the installation process of the last stable
 version, then checkout at version 1.4.0.
 
 This process has been validated with **Fedora 29** but as long as
-you have Python 3 and a working ElasicSearch 2.x deployment repoxXplorer should
-work as expected. Fell free to adapt to your Linux distribution.
+you have Python 3 and a working ElasicSearch 5.X or 6.X deployment repoXplorer
+should work as expected. Feel free to adapt to your Linux distribution.
 
 ### ElasticSearch
 
-RepoXplorer relies on ElasticSearch. Below are the installation steps for
-ElasticSearch 2.x:
+RepoXplorer relies on ElasticSearch 5.X or 6.X. Below are the installation
+steps for ElasticSearch 6.x for a RPM based system:
 
 ```Shell
 sudo rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
 cat << EOF | sudo tee /etc/yum.repos.d/elasticsearch.repo
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+[elasticsearch-6.x]
+name=Elasticsearch repository for 6.x packages
+baseurl=https://artifacts.elastic.co/packages/6.x/yum
 gpgcheck=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
+autorefresh=1
+type=rpm-md
 EOF
 sudo yum install -y elasticsearch java-1.8.0-openjdk
-sudo sed -i s/.*ES_HEAP_SIZE=.*/ES_HEAP_SIZE=2g/ /etc/sysconfig/elasticsearch
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 ```
@@ -1266,7 +1272,7 @@ git review # propose your changes
 ### Run tests
 
 The unittest suite requires a local ElasticSearch server accessible on the
-default port 9200/tcp. RepoXplorer is tested with ElasticSearch 2.x.
+default port 9200/tcp. RepoXplorer is tested with ElasticSearch 5.X and 6.X.
 No specific configuration is needed. The suite uses specific indexes
 destroyed and re-created at each run.
 

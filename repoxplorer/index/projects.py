@@ -213,48 +213,45 @@ projects:
 class EProjects(object):
 
     PROPERTIES = {
-        "aname": {"type": "string"},
-        "name": {"type": "string", "index": "not_analyzed"},
-        "description": {"type": "string"},
+        "aname": {"type": "text"},
+        "name": {"type": "keyword"},
+        "description": {"type": "text"},
         "logo": {"type": "binary"},
-        "meta-ref": {"type": "boolean", "index": "not_analyzed"},
-        "bots-group": {"type": "string", "index": "not_analyzed"},
-        "index-tags": {"type": "boolean", "index": "not_analyzed"},
+        "meta-ref": {"type": "boolean"},
+        "bots-group": {"type": "keyword"},
+        "index-tags": {"type": "boolean"},
+        "project": {"type": "keyword"},
         "releases": {
             "type": "nested",
             "properties": {
-                "name": {"type": "string", "index": "not_analyzed"},
-                "date": {"type": "string", "index": "not_analyzed"},
+                "name": {"type": "keyword"},
+                "date": {"type": "keyword"},
             }
         },
         "refs": {
             "type": "nested",
             "properties": {
-                "aname": {"type": "string"},
-                "name": {"type": "string", "index": "not_analyzed"},
-                "uri": {"type": "string", "index": "not_analyzed"},
-                "gitweb": {"type": "string", "index": "not_analyzed"},
-                "branch": {"type": "string", "index": "not_analyzed"},
-                "tags": {"type": "string", "index": "not_analyzed"},
-                "fullrid": {"type": "string", "index": "not_analyzed"},
-                "shortrid": {"type": "string", "index": "not_analyzed"},
-                "paths": {"type": "string", "index": "not_analyzed"},
-                "parsers": {"type": "string", "index": "not_analyzed"},
-                "index-tags": {"type": "boolean", "index": "not_analyzed"},
+                "aname": {"type": "text"},
+                "name": {"type": "keyword"},
+                "uri": {"type": "keyword"},
+                "gitweb": {"type": "keyword"},
+                "branch": {"type": "keyword"},
+                "tags": {"type": "keyword"},
+                "fullrid": {"type": "keyword"},
+                "shortrid": {"type": "keyword"},
+                "paths": {"type": "keyword"},
+                "parsers": {"type": "keyword"},
+                "index-tags": {"type": "boolean"},
                 "releases": {
                     "type": "nested",
                     "properties": {
-                        "name": {"type": "string", "index": "not_analyzed"},
-                        "date": {"type": "string", "index": "not_analyzed"},
+                        "name": {"type": "keyword"},
+                        "date": {"type": "keyword"},
                         }
                     }
                 }
             }
         }
-
-    RID2PROJECTS_PROPERTIES = {
-        "project": {"type": "string", "index": "not_analyzed"}
-    }
 
     def __init__(self, connector=None):
         self.es = connector.es
@@ -267,22 +264,10 @@ class EProjects(object):
             }
         }
 
-        self.mapping2 = {
-            "rid2%s" % self.dbname: {
-                "properties": self.RID2PROJECTS_PROPERTIES,
-            }
-        }
-
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
             self.ic.put_mapping(
                 index=self.index, doc_type=self.dbname, body=self.mapping)
-
-        if not self.ic.exists_type(index=self.index,
-                                   doc_type="rid2%s" % self.dbname):
-            self.ic.put_mapping(
-                index=self.index, doc_type="rid2%s" % self.dbname,
-                body=self.mapping2)
 
     def manage_bulk_err(self, exc):
         errs = [e['create']['error'] for e in exc[1]]
@@ -291,12 +276,12 @@ class EProjects(object):
             raise Exception(
                 "Unable to create one or more doc: %s" % errs)
 
-    def create(self, docs, type):
+    def create(self, docs):
         def gen():
             for pid, doc in docs:
                 d = {}
                 d['_index'] = self.index
-                d['_type'] = type
+                d['_type'] = self.dbname
                 d['_op_type'] = 'create'
                 d['_id'] = pid
                 d['_source'] = doc
@@ -308,25 +293,22 @@ class EProjects(object):
         self.es.indices.refresh(index=self.index)
 
     def delete_all(self):
-        def gen(docs, dbname):
+        def gen(docs):
             for doc in docs:
                 d = {}
                 d['_index'] = self.index
-                d['_type'] = dbname
+                d['_type'] = self.dbname
                 d['_op_type'] = 'delete'
                 d['_id'] = doc['_id']
                 yield d
         bulk(self.es,
-             gen(self.get_all(source=False), self.dbname))
-        bulk(self.es,
-             gen(self.get_all(source=False, type="rid2%s" % self.dbname),
-                 "rid2%s" % self.dbname))
+             gen(self.get_all(source=False)))
         self.es.indices.refresh(index=self.index)
 
     def load(self, projects, rid2projects):
         self.delete_all()
-        self.create(projects.items(), self.dbname)
-        self.create(rid2projects.items(), "rid2%s" % self.dbname)
+        self.create(projects.items())
+        self.create(rid2projects.items())
 
     def get_all(self, source=True, type=None):
         query = {
@@ -374,7 +356,7 @@ class EProjects(object):
 
     def get_by_nested_attr_match(
             self, attribute, values, source=True,
-            inner_source=True, inner_hits_max=10000):
+            inner_source=True, inner_hits_max=100):
         if not isinstance(values, list):
             values = (values,)
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -417,7 +399,7 @@ class EProjects(object):
         body = {"ids": fullrids}
         try:
             res = self.es.mget(index=self.index,
-                               doc_type="rid2%s" % self.dbname,
+                               doc_type=self.dbname,
                                _source=True,
                                body=body)
             return res['docs']
@@ -439,6 +421,8 @@ class Projects(YAMLDefinition):
         # name/type collision will occured as commits have dynamic mapping
         self.eprojects = EProjects(
             connector=(con or index.Connector(index_suffix='projects')))
+        self.el_version = self.eprojects.es.info().get(
+            'version', {}).get('number', '')
         if dump_yaml_in_index:
             YAMLDefinition.__init__(
                 self, self.db_path, self.db_default_file, self.db_cache_path)
@@ -611,6 +595,10 @@ class Projects(YAMLDefinition):
             source.append('name')
         projects = {}
         for project in list(self.eprojects.get_all(source)):
+            if 'name' not in list(project['_source'].keys()):
+                # We skip rid2projects objects as they have
+                # only a 'project' key
+                continue
             projects[project['_source']['name']] = project['_source']
         return projects
 
@@ -631,14 +619,17 @@ class Projects(YAMLDefinition):
 
     def get_gitweb_link(self, fullrid):
         source = 'name'
-        inner_source = 'gitweb'
+        inner_source = 'refs.gitweb'
         ret = self.eprojects.get_by_nested_attr_match(
             'fullrid', fullrid, source, inner_source, 1)
         # Get the first inner hit / let's see later if that cause limitations
         if not ret[3]:
             return ''
         ref = ret[3][0]['refs']['hits']['hits'][0]['_source']
-        return ref.get('gitweb', '')
+        if self.el_version.find('5.') == 0:
+            return ref.get('refs', {}).get('gitweb', '')
+        else:
+            return ref.get('gitweb', '')
 
     def get_projects_from_references(self, fullrids):
         if not fullrids:
@@ -653,11 +644,16 @@ class Projects(YAMLDefinition):
 
     def get_references_from_tags(self, tags):
         source = 'name'
-        inner_source = ['fullrid', 'paths', 'name', 'branch']
+        inner_source = [
+            'refs.fullrid', 'refs.paths', 'refs.name', 'refs.branch']
         ret = self.eprojects.get_by_nested_attr_match(
             'tags', tags, source, inner_source)
         refs = []
         for hit in ret[3]:
-            refs.extend([r['_source'] for r
-                         in hit['refs']['hits']['hits']])
+            if self.el_version.find('5.') == 0:
+                refs.extend([r['_source']['refs'] for r
+                             in hit['refs']['hits']['hits']])
+            else:
+                refs.extend([r['_source'] for r
+                             in hit['refs']['hits']['hits']])
         return refs

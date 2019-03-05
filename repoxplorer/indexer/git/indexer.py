@@ -325,7 +325,8 @@ class RefsCleaner():
             self.con = con
         self.projects = projects
         self.c = Commits(self.con)
-        self.t = Tags(self.con)
+        self.t = Tags(index.Connector(
+            index=self.con.index, index_suffix='tags'))
         self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
         self.current_base_ids = set()
 
@@ -403,7 +404,8 @@ class RepoIndexer():
         else:
             self.con = con
         self.c = Commits(self.con)
-        self.t = Tags(self.con)
+        self.t = Tags(index.Connector(
+            index=self.con.index, index_suffix='tags'))
         if not os.path.isdir(conf.git_store):
             os.makedirs(conf.git_store)
         self.name = name

@@ -1094,7 +1094,8 @@ class TestTagsController(FunctionalTest):
         c = Commits(cls.con)
         c.add_commits(COMMITS)
         cls.db = set_projects_definition(cls.conp)
-        t = Tags(cls.con)
+        t = Tags(index.Connector(
+            index='repoxplorertest', index_suffix='tags'))
         tags = [
             {
                 'sha': '3597334f2cb10772950c97ddf2f6cc17b184',

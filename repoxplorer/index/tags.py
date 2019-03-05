@@ -21,10 +21,10 @@ from elasticsearch.helpers import scan as scanner
 logger = logging.getLogger(__name__)
 
 PROPERTIES = {
-    "sha": {"type": "string", "index": "not_analyzed"},
+    "sha": {"type": "keyword"},
     "date": {"type": "date", "format": "epoch_second"},
-    "name": {"type": "string", "index": "not_analyzed"},
-    "repo": {"type": "string", "index": "not_analyzed"},
+    "name": {"type": "keyword"},
+    "repo": {"type": "keyword"},
 }
 
 
@@ -50,7 +50,7 @@ class Tags(object):
                 d = {}
                 d['_index'] = self.index
                 d['_type'] = self.dbname
-                d['_op_type'] = 'create'
+                d['_op_type'] = 'index'
                 d['_source'] = source
                 yield d
         bulk(self.es, gen(source_it))
@@ -70,7 +70,7 @@ class Tags(object):
 
     def get_tags(self, repos, fromdate=None, todate=None):
 
-        filter = {
+        qfilter = {
             "bool": {
                 "must": [],
                 "should": [],
@@ -86,13 +86,9 @@ class Tags(object):
             should_repo_clause["bool"]["must"].append(
                 {"term": {"repo": repo}}
             )
-            filter["bool"]["should"].append(should_repo_clause)
+            qfilter["bool"]["should"].append(should_repo_clause)
 
-        body = {
-            "filter": filter
-        }
-
-        body["filter"]["bool"]["must"].append(
+        qfilter["bool"]["must"].append(
             {
                 "range": {
                     "date": {
@@ -102,6 +98,14 @@ class Tags(object):
                 }
             }
         )
+
+        body = {
+            "query": {
+                "bool": {
+                    "filter": qfilter
+                }
+            }
+        }
 
         return [t for t in scanner(self.es, query=body,
                 index=self.index, doc_type=self.dbname)]
