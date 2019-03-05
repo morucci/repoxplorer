@@ -1278,7 +1278,7 @@ destroyed and re-created at each run.
 
 ```Shell
 # First install required system libraries
-sudo yum install -y python-virtualenv libffi-devel openssl-devel python-devel git gcc python-tox
+sudo yum install -y python-virtualenv libffi-devel openssl-devel python3-devel git gcc python-tox
 # Then run the test suite
 tox
 ```
