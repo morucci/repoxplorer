@@ -28,10 +28,10 @@ from repoxplorer.index.tags import Tags
 from repoxplorer.index.commits import Commits
 from repoxplorer.index.tags import PROPERTIES as T_PROPERTIES
 from repoxplorer.index.commits import PROPERTIES as C_PROPERTIES
+from repoxplorer.indexer.git import metadata_re
 
 logger = logging.getLogger(__name__)
 
-METADATA_RE = re.compile('^([a-zA-Z-0-9_-]+):([^//].+)$')
 AUTHOR_RE = re.compile('author (.*) <(.*)> (.*) (.*)')
 COMMITTER_RE = re.compile('committer (.*) <(.*)> (.*) (.*)')
 STATSL_RE = re.compile('(.*)\t(.*)\t(.*)')
@@ -74,9 +74,12 @@ def run(cmd, path):
     return out.decode()
 
 
-def parse_commit_line(line, re):
+def parse_commit_line(line, re, key=None):
     m = re.match(line)
     if m:
+        if key:
+            value = m.groups()[0]
+            return key, value.strip().replace('#', '')
         key = m.groups()[0]
         if key not in RESERVED_METADATA_KEYS:
             value = m.groups()[1]
@@ -88,14 +91,16 @@ def parse_commit_line(line, re):
 
 def parse_commit_msg(msg, extra_parsers=None):
     metadatas = []
-    parsers = [METADATA_RE, ]
-    if extra_parsers:
-        for p in extra_parsers:
-            parsers.append(p)
     lines = msg.split('\n')
     subject = lines[0]
     for line in lines[1:]:
-        for parser in parsers:
+        for key, parser in metadata_re.METADATA_REs.items():
+            metadata = parse_commit_line(line, parser, key=key)
+            if metadata:
+                metadatas.append(metadata)
+        if not extra_parsers:
+            continue
+        for parser in extra_parsers:
             metadata = parse_commit_line(line, parser)
             if metadata:
                 metadatas.append(metadata)
