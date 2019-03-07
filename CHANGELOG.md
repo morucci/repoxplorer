@@ -17,6 +17,8 @@ New features
 - Added an account deletion button in the user home page.
 - Allow project's releases definition at project level.
 - Support of ElasticSearch 5.X and 6.X.
+- The catch all metadata regexp has been removed in favor of
+  pre-defined regexps matching the most frequent metadatas.
 
 Bug Fixes
 ---------

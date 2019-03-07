@@ -450,14 +450,11 @@ specific domains use the **domains** key to list domains.
 In addition to the standard Git object fields, the indexer detects
 metadata such as:
 
-- close-bug: #123
-- implement-feature: bp-new-scheduler
+- closes-bug: #123
+- Co-Authored-By: John Doe <john.doe@domain.com>
 
-All "key: value" that match this default regex will be indexed:
-
-```
-'^([a-zA-Z-0-9_-]+):([^//].+)$'
-```
+The full list of matching regexps is defined in indexer/git/metadata_re.py.
+Do not hesitate to propose additional regexp if relevant.
 
 Furthermore it is possible to specify custom capturing regexs to
 extract metadata that does not follow to the default regex.

@@ -25,49 +25,33 @@ class TestExtractCmtFunctions(TestCase):
 body line 1
 body line 2
 metakey: metavalue
-"""
-        subject, metadatas = indexer.parse_commit_msg(msg)
-        self.assertEqual(subject, 'cmt subject')
-        self.assertIn(('metakey', 'metavalue'), metadatas)
-        self.assertTrue(len(metadatas) == 1)
-        msg = """cmt subject
-
-body line 1
-body line 2
-metakey: metavalue
-metakey: metavalue2
-"""
-        subject, metadatas = indexer.parse_commit_msg(msg)
-        self.assertEqual(subject, 'cmt subject')
-        self.assertIn(('metakey', 'metavalue'), metadatas)
-        self.assertIn(('metakey', 'metavalue2'), metadatas)
-        self.assertTrue(len(metadatas) == 2)
-        msg = """cmt subject
-
-body line 1
-body line 2
-metakey: metavalue
 author_date: 123
-metakey2: metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn(('metakey', 'metavalue'), metadatas)
-        self.assertIn(('metakey2', 'metavalue2'), metadatas)
+        self.assertTrue(len(metadatas) == 0)
+        msg = """cmt subject
+
+body line 1
+body line 2
+Fix: metavalue
+Co-authored-by: metavalue2
+"""
+        subject, metadatas = indexer.parse_commit_msg(msg)
+        self.assertEqual(subject, 'cmt subject')
+        self.assertIn(('fixes-bug', 'metavalue'), metadatas)
+        self.assertIn(('co-authored-by', 'metavalue2'), metadatas)
         self.assertTrue(len(metadatas) == 2)
         msg = """cmt subject
 
 body line 1. nokey: novalue
+Acked-By: metavalue
 body line 2
-metakey: metavalue
-author_date: 123
-metakey2:#metavalue2
 """
         subject, metadatas = indexer.parse_commit_msg(msg)
         self.assertEqual(subject, 'cmt subject')
-        self.assertIn(('metakey', 'metavalue'), metadatas)
-        self.assertIn(('metakey2', 'metavalue2'), metadatas)
-        self.assertTrue(len(metadatas) == 2)
+        self.assertIn(('acked-by', 'metavalue'), metadatas)
+        self.assertTrue(len(metadatas) == 1)
         msg = """cmt subject
 
 body line 1
@@ -118,8 +102,6 @@ http://metavalue
                  'modules/openstack_project/files',
                  'modules/openstack_project/files/puppetmaster',
                  'modules/openstack_project/files/puppetmaster/mqtt.py'],
-             'Change-Id': [
-                 'I3e6240560ad562e8f41f7e314ef7a4b0b1178e32'],
              'author_name': 'Author A',
              'committer_name': 'Author A',
              'author_email': 'author.a@test',
@@ -162,7 +144,6 @@ http://metavalue
              'committer_date': 1493244209,
              'author_date': 1491593068,
              'committer_email': 'author.b@test',
-             'Change-Id': ['I2157f702c87f32055ba2fad842a05e31539bc857'],
              'files_list': [
                  'doc',
                  'doc/source',
@@ -183,7 +164,6 @@ http://metavalue
              'committer_date': 1493240029,
              'author_date': 1493240029,
              'committer_email': 'author.c@test',
-             'Change-Id': ['I4155bdd80523b73fdc69f45d6120e8eec986dda7'],
              'files_list': [
                  'modules',
                  'modules/openstack_project',
