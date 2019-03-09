@@ -83,6 +83,8 @@ indexer_skip_projects = []
 index_custom_html = ""
 users_endpoint = False
 admin_token = 'admin_token'
+# Absolute path to a helper. If not set or None use the default provided helper
+git_credential_helper_path = None
 
 # Logging configuration for the wsgi app
 logging = copy.deepcopy(base_logging)
