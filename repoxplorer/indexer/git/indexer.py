@@ -16,6 +16,7 @@ import os
 import re
 import sys
 import copy
+import shutil
 import pickle
 import logging
 import subprocess
@@ -432,8 +433,25 @@ class RepoIndexer():
                                   self.uri.replace('/', '_'))
         if not os.path.isdir(self.local):
             os.makedirs(self.local)
-        self.credentials_helper_path = os.path.join(
-            sys.prefix, 'bin', 'repoxplorer-git-credentials-helper')
+
+        self.credentials_helper_path = getattr(
+            conf, 'git_credential_helper_path', None)
+        if not (self.credentials_helper_path and
+                self.credentials_helper_path.startswith('/') and):
+                os.path.isfile(self.credentials_helper_path):
+            logger.warning('Configured git_credential_helper not found')
+            self.credentials_helper_path = None
+        # Look at the default installation pathes
+        if not self.credentials_helper_path:
+            self.credentials_helper_path = os.path.join(
+                sys.prefix, 'bin', 'repoxplorer-git-credentials-helper')
+            if not os.path.isfile(self.credentials_helper_path):
+                self.credentials_helper_path = shutil.which(
+                    'repoxplorer-git-credentials-helper')
+            if not self.credentials_helper_path:
+                logger.warning(
+                    'Default repoxplorer-git-credential-helper command '
+                    'not found')
 
     def __str__(self):
         return 'Git indexer of %s' % self.ref_id
