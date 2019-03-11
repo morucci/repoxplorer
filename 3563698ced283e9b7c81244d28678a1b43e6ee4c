@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4d5d7ce9_28fb93ae",
+        "filename": "config.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 200
+      },
+      "writtenOn": "2019-03-11T12:07:15Z",
+      "side": 1,
+      "message": "Looking at the search code, I would also specify that we need the path to be an absolute one (starting with /).",
+      "revId": "3563698ced283e9b7c81244d28678a1b43e6ee4c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
