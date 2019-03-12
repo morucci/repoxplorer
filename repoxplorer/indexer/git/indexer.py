@@ -482,7 +482,8 @@ class RepoIndexer():
             self.uri, self.name, self.local))
         run(["git", "init", "--bare", "."], self.local)
         remotes = run(["git", "remote", "-v"], self.local)
-        if "origin" not in remotes:
+        remote_names = [line.split()[0] for line in remotes.splitlines()]
+        if "origin" not in remote_names:
             run(["git", "remote", "add", "origin", self.uri], self.local)
 
     def git_fetch_branch(self):
