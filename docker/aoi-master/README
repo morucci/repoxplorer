@@ -1,5 +1,5 @@
 # Container build
-docker build -t repoxplorer-aoi:master .
+docker build -t repoxplorer:master .
 
 mkdir conf
 chcon -Rt svirt_sandbox_file_t ./conf
@@ -29,6 +29,14 @@ projects:
       python-barbicanclient:
         template: default
 
+# You can also use the github helper directly from the container
+docker ps # get the <container-id>
+docker exec -ti <container-id> repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
+
 # Check the indexer logs to see the progress of the indexation
 docker ps # get the <container-id>
 docker exec -ti <container-id> tail -f /root/.local/repoxplorer/repoxplorer-indexer.log
+
+# Using docker-compose-master.yaml
+docker-compose -f docker-compose-master.yaml up -d
+docker-compose -f docker-compose-master.yaml down (-v)

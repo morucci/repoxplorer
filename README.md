@@ -52,7 +52,10 @@ repositories like for instance your Github organization.
 The docker container bundles ElasticSearch + the last repoXplorer version.
 
 This paragraph describes the usage of the container of repoXplorer 1.4.0. Some
-commands/options may have changes on the master version.
+commands/options may have changes on the master version. A container for the
+master version of repoXplorer is published as well and can be deployed using
+`docker-compose -f docker-compose-master.yaml up -d`, please refer to
+`docker/aoi-master/README`.
 
 Simply run docker-compose to deploy.
 

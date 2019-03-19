@@ -1,0 +1,17 @@
+# Deploy last master version of repoXplorer published on docker hub.
+
+version: '3'
+services:
+  repoxplorer-master:
+    image: morucci/repoxplorer:master
+    container_name: repoxplorer-master
+    ports:
+      - 51000:51000
+    volumes:
+      - repoxplorer-master-data:/usr/local/share/repoxplorer
+      - elasticsearch-master-data:/var/lib/elasticsearch
+      - $PWD/docker-data/conf:/etc/repoxplorer/defs:z
+volumes:
+  elasticsearch-master-data:
+  repoxplorer-master-data:
+
