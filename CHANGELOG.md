@@ -5,6 +5,21 @@ Release Notes
 Master
 ======
 
+New features
+------------
+
+
+Bug Fixes
+---------
+
+
+Other Notes
+-----------
+
+
+1.5.0
+=====
+
 RepoXplorer is now only Python 3 compatible. Version 3.6 and 3.7 are known
 to work and are tested in the CI. Python 2.7 support has been removed.
 
