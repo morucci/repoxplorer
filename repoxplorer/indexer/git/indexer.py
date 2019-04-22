@@ -540,12 +540,16 @@ class RepoIndexer():
         branch = [head for head in self.heads if
                   head[1].endswith(self.branch)][0]
         branch_tip_sha = branch[0]
-        cmt = self.c.get_commit(branch_tip_sha, silent=True)
-        if cmt and self.ref_id in cmt['repos']:
-            return True
-        return False
+        _, _, cmts_list = self.c.get_commits(repos=[self.ref_id], limit=1)
+        if not cmts_list:
+            return False
+        cmt = cmts_list[0]
+        if branch_tip_sha != cmt['sha']:
+            return False
+        return True
 
-    def get_current_commit_indexed(self):
+
+    def get_current_commits_indexed(self):
         """ Fetch from the index commits mentionned for this repo
         and branch.
         """

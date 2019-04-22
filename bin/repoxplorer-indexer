@@ -127,7 +127,7 @@ def process(conf):
                 continue
             try:
                 r.git_get_commit_obj()
-                r.get_current_commit_indexed()
+                r.get_current_commits_indexed()
                 r.compute_to_index_to_delete()
                 r.index(args.extract_workers)
             except Exception as e:
