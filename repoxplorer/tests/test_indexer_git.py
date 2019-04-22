@@ -299,7 +299,7 @@ class TestRefsClean(TestCase):
         pi.commits = [rc['sha'] for rc in repo_commits1]
         pi.set_branch('master')
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi, repo_commits1)
         pi.index()
@@ -336,7 +336,7 @@ class TestRefsClean(TestCase):
         pi.commits = [rc['sha'] for rc in repo_commits2]
         pi.set_branch('devel')
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi, repo_commits2)
         pi.index()
@@ -482,7 +482,10 @@ class TestRepoIndexer(TestCase):
         pi.commits = [rc['sha'] for rc in repo_commits]
         pi.set_branch('master')
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.heads = [
+            ('3597334f2cb10772950c97ddf2f6cc17b184', 'refs/head/master')]
+        self.assertFalse(pi.is_branch_fully_indexed())
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
@@ -492,6 +495,7 @@ class TestRepoIndexer(TestCase):
             repo_commits[0])
         self.assertEqual(
             len(self.cmts.get_commits_by_id(pi.commits)['docs']), 1)
+        self.assertTrue(pi.is_branch_fully_indexed())
 
         # The repo evolves with an additional commit
         additional_cmt = {
@@ -510,7 +514,10 @@ class TestRepoIndexer(TestCase):
         repo_commits.append(additional_cmt)
         pi.commits = [rc['sha'] for rc in repo_commits]
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.heads = [
+            ('3597334f2cb10772950c97ddf2f6cc17b185', 'refs/head/master')]
+        self.assertFalse(pi.is_branch_fully_indexed())
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
@@ -520,12 +527,16 @@ class TestRepoIndexer(TestCase):
         self.assertEqual(len(cmts), 2)
         cmts.difference_update(set([c['sha'] for c in repo_commits]))
         self.assertEqual(len(cmts), 0)
+        self.assertTrue(pi.is_branch_fully_indexed())
 
         # The repo history has been rewritten
         repo_commits.pop()
         pi.commits = [rc['sha'] for rc in repo_commits]
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.heads = [
+            ('3597334f2cb10772950c97ddf2f6cc17b184', 'refs/head/master')]
+        self.assertFalse(pi.is_branch_fully_indexed())
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi, repo_commits)
         pi.index()
@@ -535,6 +546,7 @@ class TestRepoIndexer(TestCase):
             repo_commits[0])
         self.assertEqual(
             len(self.cmts.get_commits_by_id(pi.commits)['docs']), 1)
+        self.assertTrue(pi.is_branch_fully_indexed())
 
         # Index p2 a fork of p1
         pi2 = indexer.RepoIndexer('p2', 'file:///tmp/p2',
@@ -558,7 +570,10 @@ class TestRepoIndexer(TestCase):
         pi2.commits = [rc['sha'] for rc in repo2_commits]
         pi2.set_branch('master')
         # Start the indexation
-        pi2.get_current_commit_indexed()
+        pi2.heads = [
+            ('3597334f2cb10772950c97ddf2f6cc17b184', 'refs/head/master')]
+        self.assertFalse(pi2.is_branch_fully_indexed())
+        pi2.get_current_commits_indexed()
         pi2.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi2, repo2_commits)
         pi2.index()
@@ -566,6 +581,7 @@ class TestRepoIndexer(TestCase):
         cmt = self.cmts.get_commit(repo2_commits[0]['sha'])
         self.assertIn('file:///tmp/p2:p2:master', cmt['repos'])
         self.assertIn('file:///tmp/p1:p1:master', cmt['repos'])
+        self.assertTrue(pi2.is_branch_fully_indexed())
 
         # Add another commit with metadata extracted
         cmt = {
@@ -586,7 +602,10 @@ class TestRepoIndexer(TestCase):
         repo2_commits.append(cmt)
         pi2.commits = [rc['sha'] for rc in repo2_commits]
         # Start the indexation
-        pi2.get_current_commit_indexed()
+        pi2.heads = [
+            ('3597334f2cb10772950c97ddf2f6cc17b200', 'refs/head/master')]
+        self.assertFalse(pi2.is_branch_fully_indexed())
+        pi2.get_current_commits_indexed()
         pi2.compute_to_index_to_delete()
         self.init_fake_process_commits_desc_output(pi2, repo2_commits)
         pi2.index()
@@ -596,6 +615,7 @@ class TestRepoIndexer(TestCase):
         self.assertEqual(cmt['close-bug'], '123')
         self.assertIn('related-to-story', cmt)
         self.assertEqual(cmt['related-to-story'], '124')
+        self.assertTrue(pi2.is_branch_fully_indexed())
 
     def test_index_tags(self):
         pi = indexer.RepoIndexer('p1', 'file:///tmp/p1',
@@ -640,7 +660,7 @@ class TestRepoIndexer(TestCase):
         pi.commits = [rc['sha'] for rc in repo_commits]
         pi.set_branch('master')
         # Start the indexation
-        pi.get_current_commit_indexed()
+        pi.get_current_commits_indexed()
         pi.compute_to_index_to_delete()
         to_create, _ = pi.compute_to_create_to_update()
         to_create = [
