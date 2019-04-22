@@ -1,27 +1,18 @@
 # Container build
-docker build -t repoxplorer .
+docker build -t repoxplorer:master .
 
-# Prepare env for configuration and set default repos to index
 mkdir conf
-cat << EOF | tee ./conf/projects.yaml
-project-templates: {}
-projects: {}
-identities: {}
-groups: {}
-EOF
 chcon -Rt svirt_sandbox_file_t ./conf
 
 # Run the container
-docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer
+docker run -dti -p 51000:51000 -v $(pwd)/conf:/etc/repoxplorer/defs:z repoxplorer-aoi:master
 
 # Access the UI
 firefox http://localhost:51000/index.html
 
-# You can set the projects you want to index in conf/projects.yaml.
-# Or as an example replace the default content of conf/projects.yaml with the yaml block below:
+# You can set the projects/groups definition in conf/.
+# As an example set conf/projects.yaml with the yaml block below:
 
-identities: {}
-groups: {}
 project-templates:
   default:
     uri: https://github.com/openstack/%(name)s
@@ -38,7 +29,14 @@ projects:
       python-barbicanclient:
         template: default
 
+# You can also use the github helper directly from the container
+docker ps # get the <container-id>
+docker exec -ti <container-id> repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
 
 # Check the indexer logs to see the progress of the indexation
 docker ps # get the <container-id>
-docker exec -ti <container-id> tail -f /usr/local/share/repoxplorer/repoxplorer-indexer-debug.log
+docker exec -ti <container-id> tail -f /root/.local/repoxplorer/repoxplorer-indexer.log
+
+# Using docker-compose-master.yaml
+docker-compose -f docker-compose-master.yaml up -d
+docker-compose -f docker-compose-master.yaml down (-v)
