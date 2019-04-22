@@ -16,6 +16,13 @@ Bug Fixes
 Other Notes
 -----------
 
+1.5.1
+=====
+
+Bug Fixes
+---------
+
+- Prevent potential unicode decode error by setting the replace policy.
 
 1.5.0
 =====
