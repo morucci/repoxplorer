@@ -23,6 +23,9 @@ New features
 Bug Fixes
 ---------
 
+- A reseted repository branch to a already in db commit is handled
+  as expected and not as a fully indexed repository branch.
+
 Other Notes
 -----------
 
