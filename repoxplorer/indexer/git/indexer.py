@@ -72,7 +72,7 @@ def run(cmd, path):
     if process.returncode != 0:
         logger.debug(err)
         raise Exception('%s exited with code %s' % (cmd, process.returncode))
-    return out.decode()
+    return out.decode(errors='replace')
 
 
 def parse_commit_line(line, re, key=None):
@@ -439,7 +439,10 @@ class RepoIndexer():
         if not (self.credentials_helper_path and
                 self.credentials_helper_path.startswith('/') and
                 os.path.isfile(self.credentials_helper_path)):
-            logger.warning('Configured git_credential_helper not found')
+            if self.credentials_helper_path:
+                logger.warning(
+                    'Configured git_credential_helper %s not found' % (
+                        self.credentials_helper_path))
             self.credentials_helper_path = None
         # Look at the default installation pathes
         if not self.credentials_helper_path:

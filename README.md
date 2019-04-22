@@ -1,11 +1,11 @@
 # RepoXplorer - Stats explorer for Git repositories
 
 - **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
-- **Last release**: [1.5.0](https://github.com/morucci/repoxplorer/releases/tag/1.5.0).
+- **Last release**: [1.5.1](https://github.com/morucci/repoxplorer/releases/tag/1.5.1).
 
 The documentation here is for the **master version** of repoXplorer. If you
 look for information about the last stable version, then checkout at
-version 1.5.0.
+version 1.5.1.
 
 RepoXplorer provides a web UI and a REST API to browse git stats such as:
 
@@ -51,7 +51,7 @@ repositories like for instance your Github organization.
 
 The docker container bundles ElasticSearch + the last repoXplorer version.
 
-This paragraph describes the usage of the container of repoXplorer 1.5.0. Some
+This paragraph describes the usage of the container of repoXplorer 1.5.1. Some
 commands/options may have changes on the master version. A container for the
 master version of repoXplorer is published as well and can be deployed using
 `docker-compose -f docker-compose-master.yaml up -d`, please refer to
@@ -62,7 +62,7 @@ Simply run docker-compose to deploy.
 ```Shell
 git clone --depth 1 https://github.com/morucci/repoxplorer
 cd repoxplorer
-git checkout 1.5.0
+git checkout 1.5.1
 mkdir -p docker-data/conf
 docker-compose up -d
 firefox http://localhost:51000/index.html
@@ -105,7 +105,7 @@ docker-compose down
 
 The installation process described here is for the **master version** of
 repoXplorer. If you look for the installation process of the last stable
-version, then checkout at version 1.5.0.
+version, then checkout at version 1.5.1.
 
 This process has been validated with **Fedora 29** but as long as
 you have Python 3 and a working ElasicSearch 5.X or 6.X deployment repoXplorer
@@ -515,7 +515,7 @@ curl "http://localhost:51000/api/v1/status/status"
     "projects": 2,
     "repos": 4,
     "users_endpoint": False,
-    "version": "1.5.0"
+    "version": "1.5.1"
 }
 ```
 

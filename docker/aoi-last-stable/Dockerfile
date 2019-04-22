@@ -1,7 +1,7 @@
 FROM fedora:29
 LABEL maintainer="fabien.dot.boucher@gmail.com"
 
-ARG version=1.5.0
+ARG version=1.5.1
 
 RUN rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 ADD elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo
