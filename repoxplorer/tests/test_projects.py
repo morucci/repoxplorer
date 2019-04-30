@@ -179,6 +179,10 @@ class TestProjects(TestCase):
                 template: default
               openstack/python-swiftclient:
                 template: default
+                description: The Swift client
+                forks: 10
+                watchers: 20
+                stars: 30
                 branches:
                 - master
                 - 1.0-dev
@@ -195,6 +199,12 @@ class TestProjects(TestCase):
 
         p = projects.Projects(con=self.con)
         self.assertEqual(len(p.get_projects()['Swift']['refs']), 5)
+        ref = [r for r in p.get_projects()['Swift']['refs']
+               if r['name'] == 'openstack/python-swiftclient'][0]
+        self.assertEqual(ref['description'], 'The Swift client')
+        self.assertEqual(ref['forks'], 10)
+        self.assertEqual(ref['watchers'], 20)
+        self.assertEqual(ref['stars'], 30)
 
         # Check we get only the field name
         ret = p.get_projects(source=['name'])

@@ -166,6 +166,8 @@ properties:
                 properties:
                   template:
                     type: string
+                  description:
+                    type: string
                   paths:
                     type: array
                     items:
@@ -174,6 +176,12 @@ properties:
                     type: array
                     items:
                       type: string
+                  forks:
+                    type: integer
+                  stars:
+                    type: integer
+                  watchers:
+                    type: integer
                   branches:
                     type: array
                     items:
@@ -194,6 +202,10 @@ projects:
         template: default
       openstack/python-barbicanclient:
         template: default
+        description: The barbican client
+        forks: 10
+        watchers: 20
+        stars: 30
         tags:
         - client
         - language:python
@@ -233,6 +245,10 @@ class EProjects(object):
             "properties": {
                 "aname": {"type": "text"},
                 "name": {"type": "keyword"},
+                "description": {"type": "text"},
+                "forks": {"type": "integer"},
+                "watchers": {"type": "integer"},
+                "stars": {"type": "integer"},
                 "uri": {"type": "keyword"},
                 "gitweb": {"type": "keyword"},
                 "branch": {"type": "keyword"},
