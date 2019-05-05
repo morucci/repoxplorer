@@ -123,11 +123,13 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
             abort(404,
                   detail="The tag has not been found")
     if cid:
-        try:
-            cid = decrypt(xorkey, cid)
-        except Exception:
-            abort(404,
-                  detail="The cid is incorrectly formated")
+        # A cid can contain a comma separated list of emails
+        if not ',' in cid:
+            try:
+                cid = decrypt(xorkey, cid)
+            except Exception:
+                abort(404,
+                      detail="The cid is incorrectly formated")
 
     if gid:
         _, group = idents.get_group_by_id(gid)
@@ -211,8 +213,11 @@ def resolv_filters(projects_index, idents, pid,
 
     if cid or gid:
         if cid:
-            cid = decrypt(xorkey, cid)
-            mails = get_mail_filter(idents, cid=cid)
+            if ',' in cid:
+                mails = cid.split(',')
+            else:
+                cid = decrypt(xorkey, cid)
+                mails = get_mail_filter(idents, cid=cid)
         if gid:
             _, group = idents.get_group_by_id(gid)
             mails = get_mail_filter(idents, gid=gid, group=group)

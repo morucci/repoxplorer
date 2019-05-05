@@ -700,6 +700,13 @@ class TestInfosController(FunctionalTest):
         self.assertEqual(response.status_int, 200)
         self.assertDictEqual(response.json, expected)
 
+        # Validate we can request with a cid being a comma separated list
+        # of emails
+        cid = 'n.suke@joker.org,'
+        response = self.app.get('/api/v1/infos/infos', {'cid': cid})
+        self.assertEqual(response.status_int, 200)
+        self.assertDictEqual(response.json, expected)
+
     def test_get_infos_contributor(self):
         expected = {
             'name': 'Nakata Daisuke',

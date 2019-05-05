@@ -8,6 +8,8 @@ Master
 New features
 ------------
 
+- The cid paramater, passed to the API, can contain a comma separated list of emails.
+
 
 Bug Fixes
 ---------

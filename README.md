@@ -1183,7 +1183,8 @@ Only one of:
 - **pid**: project ID as in [projects definitions](#define-projects-to-index).
 - **tid**: tag ID as in projects definitions.
 - **cid**: contributor ID as in [contributors definitions](#sanitize-author-identities) or
-  auto computed ID.
+  auto computed ID. Furthermore, the **cid** can be a comma separated list of
+  emails.
 - **gid**: group ID as in [groups definitions](#define-groups-of-authors).
 
 ##### Optionals
