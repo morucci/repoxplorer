@@ -1,0 +1,10 @@
+---
+- hosts: test-node
+  tasks:
+    - set_fact:
+        test_var: "{{ (lookup('file', zuul.executor.work_root + '/results.json') | from_json)['test_var'] }}"
+      delegate_to: localhost
+
+    - name: Post display var test_var
+      debug:
+        msg: '{{ test_var }}'
