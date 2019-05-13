@@ -1,0 +1,7 @@
+---
+- hosts: test-node
+  tasks:
+    - include_vars: "{{ zuul.executor.work_root }}/test.yaml"
+    - name: Post display var test_var
+      debug:
+        var: '{{ test_var }}'
