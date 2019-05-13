@@ -1,0 +1,22 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
+
+    - name: Set test_var
+      set_fact:
+        test_var: "modified"
+
+    - name: Save var on executor
+      lineinfile:
+        path: "{{ ansible_user_dir }}/test.yaml"
+        line: '{{ test_var | to_yaml }}'
+        create: yes
+
+- hosts: localhost
+  tasks:
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
