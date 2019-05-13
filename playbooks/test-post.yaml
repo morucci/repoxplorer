@@ -1,0 +1,10 @@
+---
+- hosts: test-node
+  tasks:
+    - shell: "ls -al {{ ansible_user_dir }}/"
+    - shell: "cat /home/zuul-worker/test.yaml"
+    - include_vars:
+        file: "{{ ansible_user_dir }}/test.yaml"
+    - name: Post display var test_var
+      debug:
+        var: '{{ test_var }}'
