@@ -1,0 +1,22 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
+
+    - name: Set test_var
+      delegate_to: localhost
+      delegate_facts: True
+      set_fact:
+        test_var: "modified"
+
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
+
+- hosts: localhost
+  tasks:
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
