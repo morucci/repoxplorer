@@ -41,16 +41,28 @@
     vars:
       tox_target: pep8
 
+- job:
+    name: test
+    run: playbooks/test.yaml
+    post-run: playbooks/test-post.yaml
+    description: A test job
+    vars:
+      test_var: initial
+
 - project:
     check:
       jobs:
-        - repoxplorer-tox-pep8
-        - repoxplorer-tox-py37-el5
-        - repoxplorer-tox-py36-el6
-        - repoxplorer-tox-py37-el6
-    gate:
-      jobs:
-        - repoxplorer-tox-pep8
-        - repoxplorer-tox-py37-el5
-        - repoxplorer-tox-py36-el6
-        - repoxplorer-tox-py37-el6
+        - test:
+            nodeset:
+              nodes:
+                - name: test-node
+                  label: dib-fedora-28-minimal
+#        - repoxplorer-tox-py37-el5
+#        - repoxplorer-tox-py36-el6
+#        - repoxplorer-tox-py37-el6
+#    gate:
+#      jobs:
+#        - repoxplorer-tox-pep8
+#        - repoxplorer-tox-py37-el5
+#        - repoxplorer-tox-py36-el6
+#        - repoxplorer-tox-py37-el6
