@@ -1,0 +1,7 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Set test_var
+      zuul_return:
+        data:
+          test_var: "modified"
