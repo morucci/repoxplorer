@@ -1,0 +1,6 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Post display var test_var
+      debug:
+        var: '{{ test_var }}'
