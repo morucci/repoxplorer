@@ -1,0 +1,9 @@
+---
+- hosts: test-node
+  tasks:
+    - name: Display passed var test_var
+      debug:
+        msg: "{{ test_var }}"
+    - name: Set test_var
+      set_fact:
+        test_var: "modified"
