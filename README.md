@@ -79,7 +79,7 @@ Alternatively, one can execute this command within the repoxplorer docker image 
 
 ```Shell
 docker-compose exec repoxplorer bash
-./bin/repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
+repoxplorer-github-organization --org git --skip-fork --output-path /etc/repoxplorer/defs/git
 ```
 
 Indexation will take between 2 and 5 minutes. Indexation in progress can be seen into
@@ -87,7 +87,7 @@ the indexer log file.
 
 ```Shell
 docker-compose exec repoxplorer bash
-tail -f /usr/local/share/repoxplorer/repoxplorer-indexer-debug.log
+tail -f /root/.local/repoxplorer/repoxplorer-indexer.log
 ```
 
 Repoxplorer will check repositories every 60 seconds for news commits and
