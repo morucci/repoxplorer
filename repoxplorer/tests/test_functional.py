@@ -29,7 +29,7 @@ from repoxplorer import version
 from repoxplorer.controllers import root
 from repoxplorer.controllers import utils
 
-from mock import patch
+from mock import patch, MagicMock
 
 from io import StringIO
 
@@ -390,8 +390,10 @@ class TestUsersController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-        root.users.endpoint_active = True
-        root.users.admin_token = '12345'
+
+        is_configured = MagicMock()
+        is_configured.return_value = True
+        root.users.AUTH_ENGINE.is_configured = is_configured
 
     def tearDown(self):
         self.con = index.Connector(index_suffix='users')
