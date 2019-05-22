@@ -10,3 +10,5 @@ PyYAML
 pycrypto
 jsonschema
 pytz
+pyjwt
+requests
