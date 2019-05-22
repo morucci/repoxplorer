@@ -7,3 +7,5 @@ pycrypto
 pytz
 requests
 gunicorn
+pyjwt
+cryptography
