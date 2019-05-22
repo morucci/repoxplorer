@@ -28,3 +28,9 @@ xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorertest'
+
+oidc = {
+    'issuer_url': 'https://keycloak.instance/auth/realms/repoxplorer/',
+    'verify_ssl': True,
+    'admin_username': 'ampanman',
+}

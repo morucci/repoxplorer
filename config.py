@@ -95,3 +95,9 @@ logging['handlers']['normal']['filename'] = (
 indexer_logging = copy.deepcopy(base_logging)
 indexer_logging['handlers']['normal']['filename'] = (
     '%s/repoxplorer-indexer.log' % runtimedir)
+
+
+oidc = {
+    'issuer_url': 'https://path/to/idp',
+    'verify_ssl': True,
+}
