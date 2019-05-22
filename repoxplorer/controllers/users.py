@@ -14,8 +14,6 @@
 #  limitations under the License.
 
 
-import base64
-
 from pecan import conf
 from pecan import abort
 from pecan import expose
@@ -24,43 +22,39 @@ from pecan import response
 from pecan.rest import RestController
 
 from repoxplorer import index
+from repoxplorer.exceptions import UnauthorizedException
 from repoxplorer.index import users
 from repoxplorer.controllers import utils
 
-endpoint_active = conf.get('users_endpoint', False)
-admin_token = conf.get('admin_token')
+if conf.get('users_endpoint', False) and conf.get('oidc', False):
+    from repoxplorer.auth import OpenIDConnectEngine as AuthEngine
+else:
+    from repoxplorer.auth import CAuthEngine as AuthEngine
+
+
+AUTH_ENGINE = AuthEngine()
 xorkey = conf.get('xorkey') or 'default'
 
 
 class UsersController(RestController):
 
-    def _authorize(self, uid=None):
-        if not endpoint_active:
+    auth = AUTH_ENGINE
+
+    def abort_if_not_active(self):
+        if not self.auth.is_configured():
             abort(403)
+
+    def _authorize(self, uid=None):
+        self.abort_if_not_active()
         # Shortcircuit the authorization for testing purpose
         # return
-        if not request.remote_user:
-            request.remote_user = request.headers.get('Remote-User')
-        if not request.remote_user:
-            request.remote_user = request.headers.get('X-Remote-User')
-        if request.remote_user == '(null)':
-            if request.headers.get('Authorization'):
-                auth_header = request.headers.get('Authorization').split()[1]
-                request.remote_user = base64.b64decode(
-                    auth_header).split(':')[0]
-        if (request.remote_user == "admin" and
-                request.headers.get('Admin-Token')):
-            sent_admin_token = request.headers.get('Admin-Token')
-            # If remote-user is admin and an admin-token is passed
-            # authorized if the token is correct
-            if sent_admin_token == admin_token:
-                return 'admin'
-        else:
-            # If uid targeted by the request is the same
-            # as the requester then authorize
-            if uid and uid == request.remote_user:
-                return uid
-        abort(401)
+        try:
+            self.auth.authorize(request, uid)
+        except UnauthorizedException as e:
+            abort(401, str(e))
+        except Exception as e:
+            abort(500, "Unexpected error: %s" % e)
+        self.auth.provision_user(request)
 
     def _validate(self, data):
         mandatory_keys = (
