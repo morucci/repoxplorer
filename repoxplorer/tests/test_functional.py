@@ -15,9 +15,12 @@
 
 import csv
 import copy
+import json
 import os
 import shutil
 import tempfile
+from datetime import datetime, timedelta
+import jwt
 
 from repoxplorer import index
 from repoxplorer.tests import FunctionalTest
@@ -29,11 +32,12 @@ from repoxplorer import version
 from repoxplorer.controllers import root
 from repoxplorer.controllers import utils
 
-from mock import patch
+from mock import patch, MagicMock
 
 from io import StringIO
 
 from pecan import conf
+from pecan.testing import load_test_app
 
 xorkey = conf.get('xorkey') or 'default'
 
@@ -390,8 +394,10 @@ class TestUsersController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-        root.users.endpoint_active = True
-        root.users.admin_token = '12345'
+
+        is_configured = MagicMock()
+        is_configured.return_value = True
+        root.users.AUTH_ENGINE.is_configured = is_configured
 
     def tearDown(self):
         self.con = index.Connector(index_suffix='users')
@@ -562,6 +568,76 @@ class TestUsersController(FunctionalTest):
         response = self.app.delete(
             '/api/v1/users/saboten', headers=headers, status="*")
         self.assertEqual(response.status_int, 200)
+
+
+class TestUsersControllerOpenIDConnect(FunctionalTest):
+
+    def setUp(self):
+        self.app = load_test_app(os.path.join(
+            os.path.dirname(__file__),
+            'fixtures/oidc_config.py'
+        ))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = None
+
+        get_issuer_info = MagicMock()
+        with open(os.path.join(os.path.dirname(__file__),
+                               'fixtures/openid-configuration.json'),
+                  'r') as oc:
+            cls.issuer_info = json.load(oc)
+            get_issuer_info.return_value = cls.issuer_info
+        root.users.AUTH_ENGINE._get_issuer_info = get_issuer_info
+        with open(os.path.join(os.path.dirname(__file__),
+                               'fixtures/jwtRS256.key.pub'),
+                  'r') as pubkey:
+            cls.pubkey = pubkey.read()
+        with open(os.path.join(os.path.dirname(__file__),
+                               'fixtures/jwtRS256.key'),
+                  'r') as privkey:
+            cls.privkey = privkey.read()
+
+        get_signing_key = MagicMock()
+        get_signing_key.return_value = cls.pubkey
+        root.users.AUTH_ENGINE._get_signing_key = get_signing_key
+
+    def tearDown(self):
+        self.con = index.Connector(index_suffix='users')
+        self.con.ic.delete(index=self.con.index)
+        FunctionalTest.tearDown(self)
+
+    def create_token(self, claims):
+        if 'iss' not in claims:
+            claims['iss'] = self.issuer_info['issuer']
+        if 'exp' not in claims:
+            claims['exp'] = datetime.utcnow() + timedelta(seconds=3600)
+        if 'aud' not in claims:
+            claims['aud'] = 'repoxplorer'
+        claims['iat'] = datetime.utcnow()
+        token = jwt.encode(claims, self.privkey, algorithm='RS256',
+                           headers={'kid': 'bababababa'})
+        return token
+
+    def test_users_crud_mapped_admin(self):
+        token = self.create_token({'preferred_username': 'ampanman',
+                                   'name': 'hero of justice',
+                                   'sub': '123459876',
+                                   'email': 'am@pan.man'})
+        headers = {'Authorization': 'bearer %s' % token}
+        # User should be created on the fly
+        response = self.app.get(
+            '/api/v1/users/ampanman', headers=headers, status="*")
+        self.assertEqual(response.status_int, 200)
+        root.users.AUTH_ENGINE._get_signing_key.assert_called_with(
+            self.issuer_info['jwks_uri'],
+            'bababababa')
+        rdata = {'uid': 'ampanman',
+                 'name': 'hero of justice',
+                 'default-email': 'am@pan.man',
+                 'emails': [{'email': 'am@pan.man'}]}
+        rdata['cid'] = utils.encrypt(xorkey, 'am@pan.man')
+        self.assertDictEqual(response.json, rdata, response.json)
 
 
 class TestHistoController(FunctionalTest):
