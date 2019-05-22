@@ -390,8 +390,7 @@ class TestUsersController(FunctionalTest):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-        root.users.endpoint_active = True
-        root.users.admin_token = '12345'
+        root.users.AUTH_ENGINE.is_configured = lambda x: True
 
     def tearDown(self):
         self.con = index.Connector(index_suffix='users')
