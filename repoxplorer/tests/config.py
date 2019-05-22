@@ -28,3 +28,5 @@ xorkey = None
 elasticsearch_host = 'localhost'
 elasticsearch_port = 9200
 elasticsearch_index = 'repoxplorertest'
+
+admin_token = '12345'

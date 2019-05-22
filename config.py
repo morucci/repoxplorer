@@ -95,3 +95,15 @@ logging['handlers']['normal']['filename'] = (
 indexer_logging = copy.deepcopy(base_logging)
 indexer_logging['handlers']['normal']['filename'] = (
     '%s/repoxplorer-indexer.log' % runtimedir)
+
+# Add this to activate OpenID Connect as your authentication method.
+oidc = {
+    # issuer_url: used to fetch the issuer's configuration by appending
+    # .well-known/openid-configuration to it
+    'issuer_url': 'https://path/to/idp',
+    # Defaults to True, set to False for development
+    'verify_ssl': True,
+    # This must be equal to the "aud" claim in the tokens sent back by your
+    # OpenID Connect provider.
+    'audience': 'repoxplorer',
+}
