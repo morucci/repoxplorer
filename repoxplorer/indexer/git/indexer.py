@@ -333,7 +333,8 @@ class RefsCleaner():
         self.c = Commits(self.con)
         self.t = Tags(index.Connector(
             index=self.con.index, index_suffix='tags'))
-        self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
+        self.seen_refs_path = os.path.join(
+            conf.db_cache_path, SEEN_REFS_CACHED)
         self.current_base_ids = set()
 
     def find_refs_to_clean(self):
@@ -417,7 +418,8 @@ class RepoIndexer():
         self.name = name
         self.uri = uri
         self.base_id = '%s:%s' % (self.uri, self.name)
-        self.seen_refs_path = os.path.join(conf.db_path, SEEN_REFS_CACHED)
+        self.seen_refs_path = os.path.join(
+            conf.db_cache_path, SEEN_REFS_CACHED)
         if meta_ref:
             self.meta_ref = 'meta_ref: %s' % meta_ref
         else:

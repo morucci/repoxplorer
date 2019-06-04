@@ -23,6 +23,7 @@ app = {
 projects_file_path = None
 git_store = None
 db_path = tempfile.mkdtemp()
+db_cache_path = tempfile.mkdtemp()
 db_default_file = None
 xorkey = None
 elasticsearch_host = 'localhost'

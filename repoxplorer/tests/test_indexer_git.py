@@ -250,6 +250,7 @@ class TestRefsClean(TestCase):
     def setUpClass(cls):
         indexer.conf['git_store'] = tempfile.mkdtemp()
         indexer.conf['db_path'] = tempfile.mkdtemp()
+        indexer.conf['db_cache_path'] = tempfile.mkdtemp()
         indexer.conf['elasticsearch_index'] = 'repoxplorertest'
         indexer.get_commits_desc = lambda path, shas: []
         cls.con = index.Connector()
@@ -259,11 +260,12 @@ class TestRefsClean(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(indexer.conf['git_store'])
         shutil.rmtree(indexer.conf['db_path'])
+        shutil.rmtree(indexer.conf['db_cache_path'])
         cls.con.ic.delete(index=cls.con.index)
 
     def setUp(self):
         self.seen_refs = os.path.join(
-            indexer.conf['db_path'], indexer.SEEN_REFS_CACHED)
+            indexer.conf['db_cache_path'], indexer.SEEN_REFS_CACHED)
         if os.path.isfile(self.seen_refs):
             os.unlink(self.seen_refs)
 
@@ -412,6 +414,7 @@ class TestRepoIndexer(TestCase):
     def setUpClass(cls):
         indexer.conf['git_store'] = tempfile.mkdtemp()
         indexer.conf['db_path'] = tempfile.mkdtemp()
+        indexer.conf['db_cache_path'] = tempfile.mkdtemp()
         indexer.conf['elasticsearch_index'] = 'repoxplorertest'
         indexer.get_commits_desc = lambda path, shas: []
         cls.con = index.Connector()
@@ -421,11 +424,12 @@ class TestRepoIndexer(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(indexer.conf['git_store'])
         shutil.rmtree(indexer.conf['db_path'])
+        shutil.rmtree(indexer.conf['db_cache_path'])
         cls.con.ic.delete(index=cls.con.index)
 
     def setUp(self):
         self.seen_refs = os.path.join(
-            indexer.conf['db_path'], indexer.SEEN_REFS_CACHED)
+            indexer.conf['db_cache_path'], indexer.SEEN_REFS_CACHED)
         if os.path.isfile(self.seen_refs):
             os.unlink(self.seen_refs)
 
