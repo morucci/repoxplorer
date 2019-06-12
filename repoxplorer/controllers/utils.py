@@ -214,7 +214,7 @@ def resolv_filters(projects_index, idents, pid,
     if cid or gid:
         if cid:
             if ',' in cid:
-                mails = cid.split(',')
+                mails = [e for e in cid.split(',') if e]
             else:
                 cid = decrypt(xorkey, cid)
                 mails = get_mail_filter(idents, cid=cid)
