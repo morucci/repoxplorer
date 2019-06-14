@@ -332,7 +332,7 @@ projects:
 A list of paths can be given under the **paths** key. When defined for
 project repository then only commits including a file
 changed under one of the list of paths will match during statistics
-computation. If you want to define a special project *Barbian-Tests*
+computation. If you want to define a special project *Barbican-Tests*
 that is limited to tests directory then:
 
 ```YAML
@@ -343,7 +343,7 @@ project-templates:
       - master
 
 projects:
-  Barbican:
+  Barbican-Tests:
     repos:
       barbican:
         template: default
