@@ -14,6 +14,7 @@
 
 from datetime import timedelta
 
+import re
 import hashlib
 
 from pecan import abort
@@ -92,7 +93,16 @@ class InfosController(object):
                   detail="No contributor specified")
 
         c = Commits(index.Connector())
-        idents = Contributors()
+
+        if cid.endswith(','):
+            mails = [e.lstrip(',') for e in re.findall('[^@]+@[^@,]+', cid)]
+            name = c.get_commits_author_name_by_emails(mails[:1])[mails[0]]
+            return {
+                'name': name,
+                'mails_amount': len(mails),
+                'gravatar': hashlib.md5(
+                    mails[0].encode(errors='ignore')).hexdigest()
+            }
 
         try:
             cid = utils.decrypt(xorkey, cid)
@@ -100,6 +110,7 @@ class InfosController(object):
             abort(404,
                   detail="The cid is incorrectly formated")
 
+        idents = Contributors()
         _, ident = idents.get_ident_by_id(cid)
         if not ident:
             # No ident has been declared for that contributor
