@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+import re
 import base64
 from datetime import datetime
 
@@ -124,7 +124,7 @@ def filters_validation(projects_index, idents, pid=None, tid=None,
                   detail="The tag has not been found")
     if cid:
         # A cid can contain a comma separated list of emails
-        if ',' not in cid:
+        if not cid.endswith(','):
             try:
                 cid = decrypt(xorkey, cid)
             except Exception:
@@ -213,8 +213,9 @@ def resolv_filters(projects_index, idents, pid,
 
     if cid or gid:
         if cid:
-            if ',' in cid:
-                mails = [e for e in cid.split(',') if e]
+            if cid.endswith(','):
+                mails = [e.lstrip(',') for
+                         e in re.findall('[^@]+@[^@,]+', cid)]
             else:
                 cid = decrypt(xorkey, cid)
                 mails = get_mail_filter(idents, cid=cid)
