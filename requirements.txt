@@ -1,5 +1,5 @@
 PyYAML
-elasticsearch<7.0
+elasticsearch
 github3.py==1.0.0a4
 jsonschema
 pecan

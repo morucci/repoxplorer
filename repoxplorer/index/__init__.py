@@ -53,10 +53,6 @@ class Connector(object):
             [{"host": self.host, "port": self.port}],
             timeout=60)
         self.ic = client.IndicesClient(self.es)
-        if not self.ic.exists(index=self.index):
-            self.ic.create(index=self.index)
-            # Give some time to have the index fully created
-            time.sleep(1)
 
 
 class YAMLDefinition(object):

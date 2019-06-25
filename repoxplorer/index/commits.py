@@ -59,23 +59,19 @@ class Commits(object):
         self.ic = connector.ic
         self.index = connector.index
         self.dbname = 'commits'
-        self.mapping = {
-            self.dbname: {
+        settings = {
+            "mappings": {
                 "properties": PROPERTIES,
                 "dynamic_templates": DYNAMIC_TEMPLATES,
             }
         }
-        if not self.ic.exists_type(index=self.index,
-                                   doc_type=self.dbname):
-            self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+        self.ic.create(index=self.index, ignore=400, body=settings)
 
     def add_commits(self, source_it):
         def gen(it):
             for source in it:
                 d = {}
                 d['_index'] = self.index
-                d['_type'] = self.dbname
                 d['_op_type'] = 'create'
                 d['_id'] = source['sha']
                 d['_source'] = source
@@ -94,7 +90,6 @@ class Commits(object):
             for source in it:
                 d = {}
                 d['_index'] = self.index
-                d['_type'] = self.dbname
                 d['_op_type'] = 'update'
                 d['_id'] = source['sha']
                 d['_source'] = {'doc': {field: source[field]}}
@@ -104,9 +99,7 @@ class Commits(object):
 
     def get_commit(self, sha, silent=False):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              id=sha)
+            res = self.es.get(index=self.index, id=sha)
             return res['_source']
         except Exception as e:
             if silent:
@@ -116,10 +109,8 @@ class Commits(object):
     def get_commits_by_id(self, sha_list):
         body = {"ids": sha_list}
         try:
-            res = self.es.mget(index=self.index,
-                               doc_type=self.dbname,
-                               _source=True,
-                               body=body)
+            res = self.es.mget(
+                index=self.index, _source=True, body=body)
             return res
         except Exception as e:
             logger.error('Unable to get mulitple commits. %s' % e)
@@ -129,7 +120,6 @@ class Commits(object):
             for sha in it:
                 d = {}
                 d['_index'] = self.index
-                d['_type'] = self.dbname
                 d['_op_type'] = 'delete'
                 d['_id'] = sha
                 yield d
@@ -253,7 +243,7 @@ class Commits(object):
         """ Return the list of commits for authors and/or repos.
         """
 
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata,
@@ -286,9 +276,7 @@ class Commits(object):
         }
 
         if scan:
-            return scanner(self.es, query=body,
-                           index=self.index,
-                           doc_type=self.dbname)
+            return scanner(self.es, query=body, index=self.index)
 
         params['body'] = body
         params['size'] = limit
@@ -296,7 +284,7 @@ class Commits(object):
         params['sort'] = "committer_date:%s,author_date:%s" % (sort, sort)
         res = self.es.search(**params)
         took = res['took']
-        hits = res['hits']['total']
+        hits = res['hits']['total']['value']
         commits = [r['_source'] for r in res['hits']['hits']]
         return took, hits, commits
 
@@ -307,7 +295,7 @@ class Commits(object):
                            blacklisted_mails=None):
         """ Return the amount of commits for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -350,7 +338,7 @@ class Commits(object):
                         mails_neg=False, domains=None, blacklisted_mails=None):
         """ Return the stats about the specified field for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -399,7 +387,7 @@ class Commits(object):
         author_email. The hits value is the amount of commits
         for a given email.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -452,7 +440,7 @@ class Commits(object):
         def subreq(mails):
             request = []
             for email in mails:
-                req_head = {'index': self.index, 'type': self.dbname}
+                req_head = {'index': self.index}
                 req_body = {'query': {'term': {'author_email': email}},
                             'size': 1,
                             '_source': ["author_email", "author_name"]}
@@ -506,7 +494,7 @@ class Commits(object):
                                blacklisted_mails=None):
         """ Return the ranking of field by lines changed
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -617,7 +605,7 @@ class Commits(object):
         this return the amount of hits. The hits value is
         the amount of commit for an uniq repo.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -700,7 +688,7 @@ class Commits(object):
                           blacklisted_mails=None):
         """ Return the histogram of contrib for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata, mails_neg, domains,
@@ -757,7 +745,7 @@ class Commits(object):
                           blacklisted_mails=None):
         """ Return the histogram of authors for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata, mails_neg, domains,
