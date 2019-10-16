@@ -3,12 +3,18 @@
     name: repoxplorer-base
     parent: base
     description: repoXplorer base job
-    pre-run: playbooks/deps-install.yaml
+    pre-run:
+      - playbooks/start-tracer.yaml
+      - playbooks/deps-install.yaml
+    post-run:
+      - playbooks/stop-tracer.yaml
     run: playbooks/tox.yaml
+    roles:
+      - zuul: software-factory/ci-tracer
     nodeset:
       nodes:
         - name: test-node
-          label: dib-fedora-28-minimal
+          label: cloud-fedora-30
 
 - job:
     name: repoxplorer-tox-py36-el6
@@ -44,9 +50,6 @@
 - project:
     check:
       jobs:
-        - repoxplorer-tox-pep8
-        - repoxplorer-tox-py37-el5
-        - repoxplorer-tox-py36-el6
         - repoxplorer-tox-py37-el6
     gate:
       jobs:
