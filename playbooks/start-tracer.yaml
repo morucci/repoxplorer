@@ -1,0 +1,6 @@
+- hosts: all
+  vars:
+    ci_tracer_args: "--min-cpu 2"
+  roles:
+    - ensure-output-dirs
+    - run-ci-tracer
