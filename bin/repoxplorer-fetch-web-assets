@@ -29,7 +29,7 @@ from pkg_resources import resource_string
 
 archives = {
     # No release. Master of 03/05/2017
-    "simplePagination": "https://github.com/flaviusmatis/simplePagination.js/archive/07c37285fafc7dbabce0392f730037ac012cc3ea.tar.gz",  # noqa
+    "simplePagination": "https://codeload.github.com/flaviusmatis/simplePagination.js/tar.gz/07c37285fafc7dbabce0392f730037ac012cc3ea",  # noqa
     "moment.js": "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js",  # noqa
     "d3.js": "https://cdnjs.cloudflare.com/ajax/libs/d3/3.1.6/d3.min.js",  # noqa
     "jquery-ui": "https://jqueryui.com/resources/download/jquery-ui-1.12.1.zip",  # noqa
