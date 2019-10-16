@@ -1,0 +1,21 @@
+- name: Stop service
+  systemd:
+    name: bpf-ci
+    state: stopped
+  become: yes
+
+- name: Copy generate
+  copy:
+    src: process.py
+    dest: /usr/local/bin/process.py
+    mode: 0755
+  become: yes
+
+- name: Process report
+  command: python3 /usr/local/bin/process.py /tmp/bpf.json
+
+- name: Fetch report
+  synchronize:
+    mode: pull
+    src: /tmp/bpf.json.svg
+    dest: "{{ zuul.executor.log_root }}/bpf.svg"
