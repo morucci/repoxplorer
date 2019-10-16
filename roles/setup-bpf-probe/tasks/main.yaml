@@ -1,0 +1,35 @@
+- name: Install dependencies
+  yum:
+    name: bcc
+  become: yes
+
+- name: Copy agent script
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+  with_items:
+    - agent.c
+    - agent.py
+  become: yes
+
+- name: Setup service
+  copy:
+    content: |
+      [Unit]
+      Description=BPF ci probe
+
+      [Service]
+      ExecStart=bash -c "python3 -u /usr/local/bin/agent.py --json > /tmp/bpf.json"
+
+      [Install]
+      WantedBy=default.target
+    dest: /etc/systemd/system/bpf-ci.service
+  become: yes
+
+- name: Start service
+  systemd:
+    name: bpf-ci
+    state: started
+    daemon_reload: yes
+  become: yes
