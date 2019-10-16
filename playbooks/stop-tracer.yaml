@@ -1,0 +1,4 @@
+- hosts: all
+  roles:
+    - generate-ci-tracer-report
+    - fetch-output

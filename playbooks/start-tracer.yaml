@@ -1,0 +1,4 @@
+- hosts: all
+  roles:
+    - ensure-output-dirs
+    - run-ci-tracer
