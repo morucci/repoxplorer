@@ -1,56 +1,16 @@
 ---
 - job:
-    name: repoxplorer-base
+    name: test-k1s
     parent: base
-    description: repoXplorer base job
-    pre-run: playbooks/deps-install.yaml
-    run: playbooks/tox.yaml
+    description: Test k1s
+    run: playbooks/run.yaml
     nodeset:
       nodes:
-        - name: test-node
-          label: dib-fedora-28-minimal
+        - name: pod-fedora-30
+          label: pod
 
-- job:
-    name: repoxplorer-tox-py36-el6
-    parent: repoxplorer-base
-    description: repoXplorer unittests for Python 3.7
-    pre-run: playbooks/elastic6-install.yaml
-    vars:
-      tox_target: py37
-
-- job:
-    name: repoxplorer-tox-py37-el6
-    parent: repoxplorer-base
-    description: repoXplorer unittests for Python 3.7
-    pre-run: playbooks/elastic6-install.yaml
-    vars:
-      tox_target: py37
-
-- job:
-    name: repoxplorer-tox-py37-el5
-    parent: repoxplorer-base
-    description: repoXplorer unittests for Python 3.7
-    pre-run: playbooks/elastic5-install.yaml
-    vars:
-      tox_target: py37
-
-- job:
-    name: repoxplorer-tox-pep8
-    parent: repoxplorer-base
-    description: repoXplorer flake8 validation
-    vars:
-      tox_target: pep8
 
 - project:
     check:
       jobs:
-        - repoxplorer-tox-pep8
-        - repoxplorer-tox-py37-el5
-        - repoxplorer-tox-py36-el6
-        - repoxplorer-tox-py37-el6
-    gate:
-      jobs:
-        - repoxplorer-tox-pep8
-        - repoxplorer-tox-py37-el5
-        - repoxplorer-tox-py36-el6
-        - repoxplorer-tox-py37-el6
+        - test-k1s

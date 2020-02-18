@@ -1,0 +1,12 @@
+---
+- hosts: pod
+  tasks:
+    - name: Run a command
+      command: ls -al
+      args:
+        chdir: "{{ zuul.project.src_dir }}/"
+    - name: Install a package
+      package:
+        name: tmux
+        state: latest
+      become: true
