@@ -8,7 +8,7 @@
     nodeset:
       nodes:
         - name: test-node
-          label: dib-fedora-28-minimal
+          label: cloud-fedora-31
 
 - job:
     name: repoxplorer-tox-py36-el6
