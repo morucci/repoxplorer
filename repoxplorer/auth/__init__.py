@@ -143,8 +143,8 @@ class OpenIDConnectEngine(BaseAuthEngine):
                                 audience=self.config['audience'])
         except Exception as e:
             raise UnauthorizedException('Invalid access token: %s' % e)
-        if token['preferred_username'] == self.config.get('admin_username',
-                                                          'admin'):
+        if claims['preferred_username'] == self.config.get('admin_username',
+                                                           'admin'):
             return 'admin'
         if uid and uid == claims['preferred_username']:
             return uid
