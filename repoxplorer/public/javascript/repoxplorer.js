@@ -1,3 +1,5 @@
+keycloak = new Keycloak('keycloak.json');
+
 function is_cookies_enabled() {
     var isEnabled = (navigator.cookieEnabled) ? true : false;
     if ( typeof navigator.cookieEnabled == "undefined" && !cookieEnabled ) {
@@ -49,19 +51,36 @@ function get_username() {
     return escapeHtml(username);
 };
 
-function get_user_infos(login) {
-  return $.getJSON("api/v1/users/" + login);
+function set_oidc_header(xhr) {
+    xhr.setRequestHeader('Authorization', 'Bearer ' + keycloak.token);
 }
 
-function delete_user(login) {
+function get_user_infos(login, header_func) {
     return $.ajax({
         url: "api/v1/users/" + login,
-        type: 'DELETE',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: header_func
     });
 }
 
+function delete_user(login, header_func) {
+    return $.ajax({
+        url: "api/v1/users/" + login,
+        type: 'DELETE',
+        beforeSend: header_func
+    });
+}
+
+function keycloak_init() {
+    // TODO better way to check whether keycloak is configured?
+        return keycloak.init({
+            onLoad: 'login-required'
+        })
+}
+
 function init_menu() {
-  $.getJSON("api/v1/status/status")
+return $.getJSON("api/v1/status/status")
     .done(function(status) {
         // Fill menu with status info
         $("#version").append(
@@ -71,11 +90,21 @@ function init_menu() {
         $("#intro-paragraph").append(status.customtext);
         // If user backend activated check if user is logged then init menu
         if (status['users_endpoint']) {
-          if (get_username() != '') {
+          var username = '';
+          if (keycloak.authenticated) {
+              username = keycloak.tokenParsed['preferred_username'];
+          } else {
+              username = get_username();
+          }
+          if (username != '') {
             // Logged in
             $("#ls-switch").empty()
             $("#contrib-page").empty()
-            get_user_infos(get_username())
+            var header_func = function (xhr) {};
+            if (keycloak.authenticated) {
+                header_func = set_oidc_header
+            }
+            get_user_infos(username, header_func)
               .done(
                 function(udata) {
                   $("#ls-switch").append('<a href="home.html">My account</a>')
@@ -83,7 +112,7 @@ function init_menu() {
                 })
               .error(
                 function(err) {
-                  console.log("Unabled to fetch user account: " + err)
+                  console.log("Unable to fetch user account: " + err)
                   // Assume not logged, cookie no longer valid ?
                   $("#ls-switch").empty()
                   $("#contrib-page").empty()
@@ -101,6 +130,7 @@ function init_menu() {
         console.log("Unabled to get server status: " + err);
     });
 }
+
 
 function gen_histo(histo, id) {
     var svg_histo = dimple.newSvg("#"+id, '100%', 250);
@@ -462,74 +492,111 @@ function build_top_projects_table(top, inc_repos_detail, btid_more, limit) {
 }
 
 function index_page_init() {
-    init_menu();
+    keycloak_init()
+      .success(init_menu)
+      .error(init_menu);
 }
 
 function user_page_init() {
-  init_menu();
+  keycloak_init()
+    .success(function () {
+       init_menu();
+       _user_page_init();
+    }).error(function () {
+       init_menu();
+       _user_page_init();
+    });
+}
+
+function _user_page_init() {
+     function submit_prepare_data(event) {
+      // Make sure the browser does not honor the default submit behavior
+      event.preventDefault();
+
+      // Create the data structure from the form
+      var data = {
+        'uid': $("#username").val(),
+        'name': $("#fullname").val(),
+        'default-email': $("#demail").val(),
+        'emails': [],
+      }
+      $.each($("input[id='email']"), function(i, semail) {
+        email_obj = {
+          'email': semail.value,
+          'groups': [],
+        }
+        $.each($("select[id*='group ']"), function(i, sgroup) {
+          if (sgroup.id.split(' ')[1] != semail.value) { return; }
+          if (sgroup.value != '') {
+            group_obj = {'group': sgroup.value}
+            dfrom = sgroup.parentNode.parentNode.parentNode.childNodes[1].childNodes[1].childNodes[0].value
+            if (dfrom != '') {
+              group_obj['begin-date'] = moment(dfrom, "YYYY-MM-DD").valueOf() / 1000
+            }
+            dto = sgroup.parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value
+            if (dto != '') {
+              group_obj['end-date'] = moment(dto, "YYYY-MM-DD").valueOf() / 1000
+            }
+            email_obj.groups.push(group_obj)
+          }
+        });
+        data.emails.push(email_obj);
+      });
+      if (keycloak.authenticated) {
+          keycloak.updateToken(30).success(submit_send_data(data));
+      } else {
+          submit_send_data(data);
+      }
+  }
+
+  function submit_send_data(data) {
+      // Send the data server side
+      // console.log('Sending ' + JSON.stringify(data))
+      $("#settings-progress").show();
+      var header_func = function (xhr) {};
+      if (keycloak.authenticated) {
+          header_func = set_oidc_header
+      }
+      $.ajax({
+        url: "api/v1/users/" + $("#username").val(),
+        type: "POST",
+        data: JSON.stringify(data),
+        contentType:"application/json; charset=utf-8",
+        dataType:"json",
+        beforeSend: header_func,
+        success: function(){
+          $("#submit-msg").empty()
+          $("#submit-msg").addClass("alert-success");
+          $("#submit-msg").append("Your settings have been submitted successfuly");
+          $("#submit-box").show();
+          $("#settings-progress").hide();
+        },
+        error: function() {
+          $("#submit-msg").empty()
+          $("#submit-msg").addClass("alert-warning");
+          $("#submit-msg").append("Sorry, server side error");
+          $("#submit-box").show();
+          $("#settings-progress").hide();
+        }
+      })
+  }
 
   $("#user-settings-form").submit(function(event) {
-    // Make sure the browser does not honor the default submit behavior
-    event.preventDefault();
-
-    // Create the data structure from the form
-    var data = {
-      'uid': $("#username").val(),
-      'name': $("#fullname").val(),
-      'default-email': $("#demail").val(),
-      'emails': [],
-    }
-    $.each($("input[id='email']"), function(i, semail) {
-      email_obj = {
-        'email': semail.value,
-        'groups': [],
-      }
-      $.each($("select[id*='group ']"), function(i, sgroup) {
-        if (sgroup.id.split(' ')[1] != semail.value) { return; }
-        if (sgroup.value != '') {
-          group_obj = {'group': sgroup.value}
-          dfrom = sgroup.parentNode.parentNode.parentNode.childNodes[1].childNodes[1].childNodes[0].value
-          if (dfrom != '') {
-            group_obj['begin-date'] = moment(dfrom, "YYYY-MM-DD").valueOf() / 1000
-          }
-          dto = sgroup.parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value
-          if (dto != '') {
-            group_obj['end-date'] = moment(dto, "YYYY-MM-DD").valueOf() / 1000
-          }
-          email_obj.groups.push(group_obj)
-        }
-      });
-      data.emails.push(email_obj);
-    });
-
-    // Send the data server side
-    // console.log('Sending ' + JSON.stringify(data))
-    $("#settings-progress").show();
-    $.ajax({
-      url: "api/v1/users/" + $("#username").val(),
-      type: "POST",
-      data: JSON.stringify(data),
-      contentType:"application/json; charset=utf-8",
-      dataType:"json",
-      success: function(){
-        $("#submit-msg").empty()
-        $("#submit-msg").addClass("alert-success");
-        $("#submit-msg").append("Your settings have been submitted successfuly");
-        $("#submit-box").show();
-        $("#settings-progress").hide();
-      },
-      error: function() {
-        $("#submit-msg").empty()
-        $("#submit-msg").addClass("alert-warning");
-        $("#submit-msg").append("Sorry, server side error");
-        $("#submit-box").show();
-        $("#settings-progress").hide();
-      }
-    })
+      submit_prepare_data(event);
   });
 
-  $("#delete-user-button").on("click", function(event) {
-    del_deferred = delete_user(get_username())
+  function do_delete (event) {
+    var username = '';
+    if (keycloak.authenticated) {
+        username = keycloak.tokenParsed['preferred_username'];
+    } else {
+        username = get_username();
+    }
+    var header_func = function (xhr) {};
+    if (keycloak.authenticated) {
+        header_func = set_oidc_header
+    }
+    del_deferred = delete_user(username, header_func)
     $("#settings-progress").show();
     $.when(del_deferred)
     .done(
@@ -539,7 +606,11 @@ function user_page_init() {
             $("#submit-msg").append("Your account has been deleted");
             $("#submit-box").show();
             $("#settings-progress").hide();
-            document.cookie = 'auth_pubtkt' + '=; Max-Age=-99999999;';
+            if (keycloak.authenticated) {
+                keycloak.logout();
+            } else {
+                document.cookie = 'auth_pubtkt' + '=; Max-Age=-99999999;';
+            }
         })
     .fail(
         function(err) {
@@ -551,153 +622,188 @@ function user_page_init() {
             $("#submit-box").show();
             $("#settings-progress").hide();
         });
+  }
+
+  $("#delete-user-button").on("click", function(event) {
+      if (keycloak.authenticated) {
+          keycloak.updateToken(30).success(do_delete(event));
+      } else {
+          do_delete(event);
+      }
   });
 
-  // After we have fetched groups info and user info
-  gg_d = get_groups('true')
-  // Username is fetched from the cauth cookie
-  gui_d = get_user_infos(get_username())
-  return $.when(gg_d, gui_d)
-    .done(
-      function(gdata, udata) {
-        gdata = gdata[0]
-        udata = udata[0]
+  function fill_form () {
+    // After we have fetched groups info and user info
+    gg_d = get_groups('true')
+    // Username is fetched from the cauth cookie
+    var username = '';
+    if (keycloak.authenticated) {
+        username = keycloak.tokenParsed['preferred_username'];
+    } else {
+        username = get_username();
+    }
+    var header_func = function (xhr) {};
+    if (keycloak.authenticated) {
+        header_func = set_oidc_header
+    }
+    gui_d = get_user_infos(username, header_func)
+    return $.when(gg_d, gui_d)
+      .done(
+          function(gdata, udata) {
+            gdata = gdata[0]
+            udata = udata[0]
 
-        // Fill the jumbotron
-        $("#jumbotron_block").empty();
-        $("#jumbotron_block").append(
-            '<h2>Welcome ' + escapeHtml(udata["name"]) + '. On this page you can modify your settings.'
-        );
+            // Fill the jumbotron
+            $("#jumbotron_block").empty();
+            $("#jumbotron_block").append(
+                '<h2>Welcome ' + escapeHtml(udata["name"]) + '. On this page you can modify your settings.'
+            );
 
-        $("#username").val(udata["uid"]);
-        $("#fullname").val(escapeHtml(udata["name"]));
-        $("#demail").val(udata["default-email"]);
+            $("#username").val(udata["uid"]);
+            $("#fullname").val(escapeHtml(udata["name"]));
+            $("#demail").val(udata["default-email"]);
 
-        // For each email prepare the form
-        $.each(udata["emails"], function(i, obj) {
-          email_html_form = '<div class="form-group">' +
-          '<label for="email" class="col-md-4 control-label">Email ' + (i + 1) + '</label>' +
-          '<span class="col-md-2">' +
-          '<input class="form-control" id="email" type="text" value="' + obj.email + '" disabled>' +
-          '</span>' +
-          '<span class="col-md-2">' +
-          '<button type="button" class="btn btn-default" id="email-'+i+'" data-email="'+obj.email+'">Add group membership</button>' +
-          '</span>' +
-          '</div>'
+            // For each email prepare the form
+            $.each(udata["emails"], function(i, obj) {
+              email_html_form = '<div class="form-group">' +
+              '<label for="email" class="col-md-4 control-label">Email ' + (i + 1) + '</label>' +
+              '<span class="col-md-2">' +
+              '<input class="form-control" id="email" type="text" value="' + obj.email + '" disabled>' +
+              '</span>' +
+              '<span class="col-md-2">' +
+              '<button type="button" class="btn btn-default" id="email-'+i+'" data-email="'+obj.email+'">Add group membership</button>' +
+              '</span>' +
+              '</div>'
 
-          // For each group add a selector to the form
-          email_html_form += '<div id="groups-list-'+i+'">'
-          $.each(obj.groups, function(j, group) {
-            email_html_form += '<div><div class="form-group">'
-            email_html_form += '<label for="group ' + obj.email + ' ' + j + '" class="col-md-5 control-label">Member of group</label>' +
-            '<div class="col-md-2">' +
-            '<select class="form-control" id="group ' + obj.email + ' ' + j +'">'
-            $.each(gdata, function(gname) {
-              selected = ''
-              if (gname == group.group) {
-                selected = "selected"
-              };
-              email_html_form += '<option value="' + gname + '"' + selected + '>' + gname + '</option>'
+              // For each group add a selector to the form
+              email_html_form += '<div id="groups-list-'+i+'">'
+              $.each(obj.groups, function(j, group) {
+                email_html_form += '<div><div class="form-group">'
+                email_html_form += '<label for="group ' + obj.email + ' ' + j + '" class="col-md-5 control-label">Member of group</label>' +
+                '<div class="col-md-2">' +
+                '<select class="form-control" id="group ' + obj.email + ' ' + j +'">'
+                $.each(gdata, function(gname) {
+                  selected = ''
+                  if (gname == group.group) {
+                    selected = "selected"
+                  };
+                  email_html_form += '<option value="' + gname + '"' + selected + '>' + gname + '</option>'
+                });
+                email_html_form += '</select></div>'
+                email_html_form += '<button id="remove-'+j+'" type="button" class="btn btn-default btn-md">'
+                email_html_form += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
+                email_html_form += '</button>'
+                email_html_form += '</div>'
+                email_html_form += '<div class="form-group">'
+                email_html_form += '<label class="col-md-5 control-label" for="fromdatepicker-' + i + '-' + j + '">From date</label>'
+                email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + i + '-' + j + '"></span>'
+                email_html_form += '</div>'
+                email_html_form += '<div class="form-group">'
+                email_html_form += '<label class="col-md-5 control-label" for="todatepicker-' + i + '-' + j + '">To date</label>'
+                email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + i + '-' + j + '"></span>'
+                email_html_form += '</div>'
+              });
+              email_html_form += '</div>'
+
+              $("#emails").append(email_html_form)
+
+              // do the remove selector bind afterward, to make it works
+              $.each(obj.groups, function(j, group) {
+                $("#remove-"+j).on("click", function(){
+                  $(this).parent().parent().remove();
+                });
+                $("#fromdatepicker-" + i + '-' + j).datepicker(
+                    {dateFormat: "yy-mm-dd",
+                     changeMonth: true,
+                     changeYear: true});
+                if ('begin-date' in group) {
+                  $("#fromdatepicker-" + i + '-' + j).datepicker(
+                    'setDate', moment(group['begin-date'] * 1000).format("YYYY-MM-DD"));
+                }
+                $("#todatepicker-" + i + '-' + j).datepicker(
+                    {dateFormat: "yy-mm-dd",
+                     changeMonth: true,
+                     changeYear: true});
+                if ('end-date' in group) {
+                  $("#todatepicker-" + i + '-' + j).datepicker(
+                    'setDate', moment(group['end-date'] * 1000).format("YYYY-MM-DD"));
+                }
+              });
+
+              // Add the binding to add new group selector
+              $("#email-"+i).on("click", function(e){
+                eindex = e.currentTarget.id.split('-')[1]
+                email = e.currentTarget.getAttribute("data-email")
+                group_selector = '<div><div class="form-group">'
+                mid = Math.floor(Math.random() * (1000 - 100) + 100);
+                group_selector += '<label for="group ' + email + ' ' + mid + '" class="col-md-5 control-label">Member of group</label>' +
+                '<div class="col-md-2">' +
+                '<select class="form-control" id="group ' + email + ' ' + mid +'">'
+                group_selector += '<option disabled selected value> -- select a group -- </option>'
+                $.each(gdata, function(gname) {
+                  group_selector += '<option value="' + gname + '">' + gname + '</option>'
+                });
+                group_selector += '</select></div>'
+                group_selector += '<button id="remove-'+mid+'" type="button" class="btn btn-default btn-md">'
+                group_selector += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
+                group_selector += '</button>'
+                group_selector += '</div>'
+                group_selector += '<div class="form-group">'
+                group_selector += '<label class="col-md-5 control-label" for="fromdatepicker-' + mid + '">From date</label>'
+                group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + mid + '"></span>'
+                group_selector += '</div>'
+                group_selector += '<div class="form-group">'
+                group_selector += '<label class="col-md-5 control-label" for="todatepicker-' + mid + '">To date</label>'
+                group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + mid + '"></span>'
+                group_selector += '</div>'
+
+                group_selector += '</div>'
+                $("#groups-list-"+eindex).append(group_selector)
+                $("#remove-"+mid).on("click", function(){
+                  $(this).parent().parent().remove();
+                });
+                $("#fromdatepicker-" + mid).datepicker(
+                    {dateFormat: "yy-mm-dd",
+                     changeMonth: true,
+                     changeYear: true});
+                $("#todatepicker-" + mid).datepicker(
+                    {dateFormat: "yy-mm-dd",
+                     changeMonth: true,
+                     changeYear: true});
+              });
             });
-            email_html_form += '</select></div>'
-            email_html_form += '<button id="remove-'+j+'" type="button" class="btn btn-default btn-md">'
-            email_html_form += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
-            email_html_form += '</button>'
-            email_html_form += '</div>'
-            email_html_form += '<div class="form-group">'
-            email_html_form += '<label class="col-md-5 control-label" for="fromdatepicker-' + i + '-' + j + '">From date</label>'
-            email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + i + '-' + j + '"></span>'
-            email_html_form += '</div>'
-            email_html_form += '<div class="form-group">'
-            email_html_form += '<label class="col-md-5 control-label" for="todatepicker-' + i + '-' + j + '">To date</label>'
-            email_html_form += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + i + '-' + j + '"></span>'
-            email_html_form += '</div>'
-          });
-          email_html_form += '</div>'
-
-          $("#emails").append(email_html_form)
-
-          // do the remove selector bind afterward, to make it works
-          $.each(obj.groups, function(j, group) {
-            $("#remove-"+j).on("click", function(){
-              $(this).parent().parent().remove();
-            });
-            $("#fromdatepicker-" + i + '-' + j).datepicker(
-                {dateFormat: "yy-mm-dd",
-                 changeMonth: true,
-                 changeYear: true});
-            if ('begin-date' in group) {
-              $("#fromdatepicker-" + i + '-' + j).datepicker(
-                'setDate', moment(group['begin-date'] * 1000).format("YYYY-MM-DD"));
-            }
-            $("#todatepicker-" + i + '-' + j).datepicker(
-                {dateFormat: "yy-mm-dd",
-                 changeMonth: true,
-                 changeYear: true});
-            if ('end-date' in group) {
-              $("#todatepicker-" + i + '-' + j).datepicker(
-                'setDate', moment(group['end-date'] * 1000).format("YYYY-MM-DD"));
-            }
-          });
-
-          // Add the binding to add new group selector
-          $("#email-"+i).on("click", function(e){
-            eindex = e.currentTarget.id.split('-')[1]
-            email = e.currentTarget.getAttribute("data-email")
-            group_selector = '<div><div class="form-group">'
-            mid = Math.floor(Math.random() * (1000 - 100) + 100);
-            group_selector += '<label for="group ' + email + ' ' + mid + '" class="col-md-5 control-label">Member of group</label>' +
-            '<div class="col-md-2">' +
-            '<select class="form-control" id="group ' + email + ' ' + mid +'">'
-            group_selector += '<option disabled selected value> -- select a group -- </option>'
-            $.each(gdata, function(gname) {
-              group_selector += '<option value="' + gname + '">' + gname + '</option>'
-            });
-            group_selector += '</select></div>'
-            group_selector += '<button id="remove-'+mid+'" type="button" class="btn btn-default btn-md">'
-            group_selector += '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>'
-            group_selector += '</button>'
-            group_selector += '</div>'
-            group_selector += '<div class="form-group">'
-            group_selector += '<label class="col-md-5 control-label" for="fromdatepicker-' + mid + '">From date</label>'
-            group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="fromdatepicker-' + mid + '"></span>'
-            group_selector += '</div>'
-            group_selector += '<div class="form-group">'
-            group_selector += '<label class="col-md-5 control-label" for="todatepicker-' + mid + '">To date</label>'
-            group_selector += '<span class="col-md-3"><input type="text" class="form-control" id="todatepicker-' + mid + '"></span>'
-            group_selector += '</div>'
-
-            group_selector += '</div>'
-            $("#groups-list-"+eindex).append(group_selector)
-            $("#remove-"+mid).on("click", function(){
-              $(this).parent().parent().remove();
-            });
-            $("#fromdatepicker-" + mid).datepicker(
-                {dateFormat: "yy-mm-dd",
-                 changeMonth: true,
-                 changeYear: true});
-            $("#todatepicker-" + mid).datepicker(
-                {dateFormat: "yy-mm-dd",
-                 changeMonth: true,
-                 changeYear: true});
-          });
-        });
-        $("#settings-progress").hide();
-      }
-    )
-  .fail(
-      function(err) {
-        $("#submit-msg").empty()
-        $("#submit-msg").addClass("alert-warning");
-        $("#submit-msg").append("Sorry, server side error");
-        $("#submit-box").show();
-        $("#settings-progress").hide();
-      }
-    );
+            $("#settings-progress").hide();
+          }
+      )
+    .fail(
+        function(err) {
+          $("#submit-msg").empty()
+          $("#submit-msg").addClass("alert-warning");
+          $("#submit-msg").append("Sorry, server side error");
+          $("#submit-box").show();
+          $("#settings-progress").hide();
+        }
+      );
+  }
+  if (keycloak.authenticated) {
+      keycloak.updateToken(30).success(fill_form());
+  } else {
+      fill_form();
+  }
 }
 
 function projects_page_init() {
-    init_menu();
+    keycloak_init()
+      .success(function () {
+         init_menu();
+         _projects_page_init();
+      }).error(function () {
+         init_menu();
+         _projects_page_init();
+      });
+}
+
+function _projects_page_init() {
 
     function fill_result(data) {
         $("#project-results").empty();
@@ -828,7 +934,18 @@ function projects_page_init() {
 }
 
 function groups_page_init() {
-    init_menu();
+    keycloak_init()
+       .success(function () {
+           init_menu();
+           _groups_page_init();
+       })
+       .error(function () {
+           init_menu();
+           _groups_page_init();
+       });
+}
+
+function _groups_page_init() {
 
     $("#page-title").append("[RepoXplorer] - Groups listing");
     $("#groups-table-progress").append(
@@ -898,7 +1015,18 @@ function groups_page_init() {
 }
 
 function contributor_page_init() {
-    init_menu();
+    keycloak_init()
+       .success(function () {
+          init_menu();
+          _contributor_page_init();
+       })
+       .error(function () {
+          init_menu();
+          _contributor_page_init();
+       });
+}
+
+function _contributor_page_init() {
 
     install_date_pickers();
 
@@ -1114,7 +1242,19 @@ function contributor_page_init() {
 }
 
 function group_page_init(commits_amount) {
-    init_menu();
+    keycloak_init()
+       .success(function () {
+          init_menu();
+          _group_page_init(commits_amount) 
+       })
+       .error(function () {
+          init_menu();
+          _group_page_init(commits_amount) 
+       });
+
+}
+
+function _group_page_init(commits_amount) {
 
     install_date_pickers();
 
@@ -1405,7 +1545,18 @@ function group_page_init(commits_amount) {
 }
 
 function project_page_init() {
-    init_menu();
+    keycloak_init()
+       .success(function () {
+          init_menu();
+          _project_page_init();
+       })
+       .error(function () {
+          init_menu();
+          _project_page_init();
+       });
+}
+
+function _project_page_init() {
 
     install_date_pickers();
 
@@ -1781,8 +1932,20 @@ function project_page_init() {
     });
 }
 
+
 function contributors_page_init() {
-    init_menu();
+    keycloak_init()
+       .success(function () {
+          init_menu();
+          _contributors_page_init();
+       })
+       .error(function () {
+          init_menu();
+          _contributors_page_init();
+       });
+}
+
+function _contributors_page_init() {
 
     function fill_resultinfos_gen(leaf) {
         $("#resultinfos").empty();
