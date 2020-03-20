@@ -1,3 +1,5 @@
+keycloak = new Keycloak('keycloak.json');
+
 function is_cookies_enabled() {
     var isEnabled = (navigator.cookieEnabled) ? true : false;
     if ( typeof navigator.cookieEnabled == "undefined" && !cookieEnabled ) {
@@ -49,18 +51,45 @@ function get_username() {
     return escapeHtml(username);
 };
 
+function set_oidc_header(xhr) {
+    keycloak.updateToken(30).success(function () {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + keycloak.token);
+    }).error(function () {
+        console.log('Could not set OIDC authorization header');
+    });
+}
+
 function get_user_infos(login) {
-  return $.getJSON("api/v1/users/" + login);
+    return $.ajax({
+        url: "api/v1/users/" + login,
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: set_oidc_header
+    });
 }
 
 function delete_user(login) {
     return $.ajax({
         url: "api/v1/users/" + login,
         type: 'DELETE',
+        beforeSend: set_oidc_header
     });
 }
 
 function init_menu() {
+    // TODO better way to check whether keycloak is configured?
+    if (keycloak.clientId) {
+        keycloak.init({
+            onLoad: 'login-required'
+        }).success(function () {
+            _init_menu();
+        })
+    } else {
+        _init_menu();
+    }
+}
+
+function _init_menu() {
   $.getJSON("api/v1/status/status")
     .done(function(status) {
         // Fill menu with status info
@@ -71,11 +100,17 @@ function init_menu() {
         $("#intro-paragraph").append(status.customtext);
         // If user backend activated check if user is logged then init menu
         if (status['users_endpoint']) {
-          if (get_username() != '') {
+          var username = '';
+          if (keycloak.authorized) {
+              username = keycloak.tokenParsed['preferred_username'];
+          } else {
+              username = get_username();
+          }
+          if (username != '') {
             // Logged in
             $("#ls-switch").empty()
             $("#contrib-page").empty()
-            get_user_infos(get_username())
+            get_user_infos(username)
               .done(
                 function(udata) {
                   $("#ls-switch").append('<a href="home.html">My account</a>')
@@ -511,6 +546,7 @@ function user_page_init() {
       data: JSON.stringify(data),
       contentType:"application/json; charset=utf-8",
       dataType:"json",
+      beforeSend: set_oidc_header,
       success: function(){
         $("#submit-msg").empty()
         $("#submit-msg").addClass("alert-success");

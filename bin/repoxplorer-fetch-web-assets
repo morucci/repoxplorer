@@ -35,7 +35,8 @@ archives = {
     "jquery-ui": "https://jqueryui.com/resources/download/jquery-ui-1.12.1.zip",  # noqa
     "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js",  # noqa
     "dimple.js": "https://cdnjs.cloudflare.com/ajax/libs/dimple/2.2.0/dimple.latest.min.js",  # noqa
-    "bootstrap": "https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip"  # noqa
+    "bootstrap": "https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip",  # noqa
+    "keycloak": "https://downloads.jboss.org/keycloak/9.0.0/adapters/keycloak-oidc/keycloak-js-adapter-dist-9.0.0.zip",  # noqa
 }
 
 
@@ -129,6 +130,19 @@ def install_archive(name, path, basepath):
                                         'fonts', os.path.basename(f)))
         shutil.rmtree(
             os.path.join(os.path.dirname(path), "bootstrap-3.3.7-dist"))
+        os.unlink(path)
+    elif name == "keycloak":
+        zi = zipfile.ZipFile(path)
+        zi.extractall(os.path.dirname(path))
+        zi.close()
+        shutil.move(
+            os.path.join(os.path.dirname(path),
+                         "keycloak-js-adapter-dist-9.0.0",
+                         "keycloak.min.js"),
+            os.path.join(basepath, 'javascript', 'keycloak.min.js')
+            )
+        shutil.rmtree(os.path.join(os.path.dirname(path),
+                                   "keycloak-js-adapter-dist-9.0.0"))
         os.unlink(path)
     else:
         print("Install for %s not supported. skip." % name)
