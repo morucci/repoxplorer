@@ -75,7 +75,7 @@ function delete_user(login, header_func) {
 function keycloak_init() {
     // TODO better way to check whether keycloak is configured?
         return keycloak.init({
-            onLoad: 'login-required'
+            onLoad: 'check-sso'
         })
 }
 
