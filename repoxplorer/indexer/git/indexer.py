@@ -496,7 +496,7 @@ class RepoIndexer():
                                          self.branch))
         run(["git", "-c",
              "credential.helper=%s" % self.credentials_helper_path,
-             "fetch", "-nk", "origin", "+%s:%s" % (self.branch, self.branch)],
+             "fetch", "-nk", "--force", "origin", "refs/heads/%s*:refs/heads/%s*" % (self.branch, self.branch)],
             self.local)
 
     def get_refs(self):
@@ -543,7 +543,7 @@ class RepoIndexer():
 
     def is_branch_fully_indexed(self):
         branch = [head for head in self.heads if
-                  head[1].endswith(self.branch)][0]
+                  head[1].startswith("refs/heads/%s" % self.branch)][0]
         branch_tip_sha = branch[0]
         _, _, cmts_list = self.c.get_commits(repos=[self.ref_id], limit=1)
         if not cmts_list:
