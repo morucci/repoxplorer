@@ -37,7 +37,7 @@ class SearchController(object):
             index=c.index, doc_type=c.dbname,
             q=query, df="author_name", size=10000,
             default_operator="AND",
-            _source_include=["author_name", "author_email"])
+            _source_includes=["author_name", "author_email"])
         ret = ret['hits']['hits']
         if not len(ret):
             return {}
