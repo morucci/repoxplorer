@@ -18,6 +18,9 @@ import logging
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import scan as scanner
 
+from repoxplorer.index import add_params
+from repoxplorer.index import clean_empty
+
 logger = logging.getLogger(__name__)
 
 PROPERTIES = {
@@ -41,8 +44,9 @@ class Tags(object):
         }
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
+            kwargs = add_params(self.es)
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, **kwargs)
 
     def add_tags(self, source_it):
         def gen(it):
@@ -106,6 +110,8 @@ class Tags(object):
                 }
             }
         }
+
+        body = clean_empty(body)
 
         return [t for t in scanner(self.es, query=body,
                 index=self.index, doc_type=self.dbname)]
