@@ -21,6 +21,8 @@ from datetime import timedelta
 
 from elasticsearch.helpers import scan as scanner
 from elasticsearch.helpers import bulk
+from repoxplorer.index import add_params
+from repoxplorer.index import clean_empty
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +69,9 @@ class Commits(object):
         }
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
+            kwargs = add_params(self.es)
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, **kwargs)
 
     def add_commits(self, source_it):
         def gen(it):
@@ -201,12 +204,16 @@ class Commits(object):
                 {"bool": {
                     "must": [{"term": {"repos": repo}}],
                     "should": [],
+                    "filter": [],
                 }}
             )
             if paths:
+                repo_clause["bool"]["must"][0]["bool"]["filter"].append(
+                        {"terms": {"files_list": []}}
+                )
                 for path in paths:
-                    repo_clause["bool"]["must"][0]["bool"]["should"].append(
-                        {"term": {"files_list": path}})
+                    repo_clause["bool"]["must"][0]["bool"]["filter"][0][
+                        "terms"]["files_list"].append(path)
 
             must_project_clause["bool"]["should"].append(repo_clause)
 
@@ -243,7 +250,7 @@ class Commits(object):
                 filter["bool"]["must_not"].append(
                     {"term": {"author_email": mail}})
 
-        return filter
+        return clean_empty(filter)
 
     def get_commits(self, mails=[], repos=[],
                     fromdate=None, todate=None, start=0, limit=100,
@@ -294,9 +301,12 @@ class Commits(object):
         params['size'] = limit
         params['from_'] = start
         params['sort'] = "committer_date:%s,author_date:%s" % (sort, sort)
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
+        if isinstance(hits, dict) and 'value' in hits:
+            hits = hits.get('value')
         commits = [r['_source'] for r in res['hits']['hits']]
         return took, hits, commits
 
@@ -335,6 +345,7 @@ class Commits(object):
                 {"term": {"merge_commit": merge_commit}})
 
         params['body'] = body
+        params = clean_empty(params)
         res = self.es.count(**params)
         return res['count']
 
@@ -386,6 +397,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["%s_stats" % field]
@@ -437,6 +449,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         res = [(b['key'], b['doc_count'])
@@ -457,6 +470,7 @@ class Commits(object):
                             'size': 1,
                             '_source': ["author_email", "author_name"]}
                 request.extend([req_head, req_body])
+            request = clean_empty(request)
             resp = self.es.msearch(body=request)
             return resp
 
@@ -550,6 +564,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['modified']['value'])
@@ -655,6 +670,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['doc_count'])
@@ -746,6 +762,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["commits"]["buckets"]
@@ -811,6 +828,7 @@ class Commits(object):
 
         params['body'] = body
         params['size'] = 0
+        params = clean_empty(params)
         res = self.es.search(**params)
         took = res['took']
         res = res["aggregations"]["commits"]["buckets"]

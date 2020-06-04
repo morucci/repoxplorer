@@ -41,6 +41,14 @@
     vars:
       tox_target: pep8
 
+- job:
+    name: repoxplorer-tox-py37-el7
+    parent: repoxplorer-base
+    description: repoXplorer unittests for Python 3.7 and Elasticsearch 7
+    pre-run: playbooks/elastic7-install.yaml
+    vars:
+      tox_target: py37
+
 - project:
     check:
       jobs:
@@ -48,9 +56,11 @@
         - repoxplorer-tox-py37-el5
         - repoxplorer-tox-py36-el6
         - repoxplorer-tox-py37-el6
+        - repoxplorer-tox-py37-el7
     gate:
       jobs:
         - repoxplorer-tox-pep8
         - repoxplorer-tox-py37-el5
         - repoxplorer-tox-py36-el6
         - repoxplorer-tox-py37-el6
+        - repoxplorer-tox-py37-el7

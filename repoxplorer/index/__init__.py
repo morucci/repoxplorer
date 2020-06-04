@@ -36,6 +36,27 @@ def date2epoch(date):
     return int(epoch)
 
 
+def _get_elasticsearch_version(es):
+    return es.info()['version']['number']
+
+
+def add_params(es):
+    if int(_get_elasticsearch_version(es).split('.')[0]) >= 7:
+        return {'include_type_name': 'true'}
+    else:
+        return {}
+
+
+# From https://stackoverflow.com/a/27974027/1966658
+def clean_empty(d):
+    if not isinstance(d, (dict, list)):
+        return d
+    if isinstance(d, list):
+        return [v for v in (clean_empty(v) for v in d) if v]
+    return {k: v for k, v in ((k, clean_empty(v)) for k, v in d.items()) if (
+        v or v == False)}  # noqa: E712
+
+
 class Connector(object):
     def __init__(self, host=None, port=None, index=None, index_suffix=None):
         self.host = (host or
