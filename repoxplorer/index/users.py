@@ -17,6 +17,8 @@ import logging
 
 from elasticsearch.exceptions import NotFoundError
 
+from repoxplorer.index import add_params
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,8 +60,9 @@ class Users(object):
         }
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
+            kwargs = add_params(self.es)
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, **kwargs)
 
     def create(self, user):
         self.es.create(self.index, self.dbname,

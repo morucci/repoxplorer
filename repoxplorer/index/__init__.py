@@ -36,6 +36,15 @@ def date2epoch(date):
     return int(epoch)
 
 
+def _get_elasticsearch_version(es):
+    return es.info()['version']['number']
+
+
+def add_params(es):
+    if int(_get_elasticsearch_version(es).split('.')[0]) >= 7:
+        return {'include_type_name': 'true'}
+
+
 class Connector(object):
     def __init__(self, host=None, port=None, index=None, index_suffix=None):
         self.host = (host or

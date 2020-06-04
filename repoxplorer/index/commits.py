@@ -21,6 +21,7 @@ from datetime import timedelta
 
 from elasticsearch.helpers import scan as scanner
 from elasticsearch.helpers import bulk
+from repoxplorer.index import add_params
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,9 @@ class Commits(object):
         }
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
+            kwargs = add_params(self.es)
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, **kwargs)
 
     def add_commits(self, source_it):
         def gen(it):
@@ -297,6 +299,8 @@ class Commits(object):
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
+        if isinstance(hits, dict) and 'value' in hits:
+            hits = hits.get('value')
         commits = [r['_source'] for r in res['hits']['hits']]
         return took, hits, commits
 
