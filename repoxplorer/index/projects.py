@@ -26,6 +26,7 @@ from pecan import conf
 
 from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
+from repoxplorer.index import add_params
 from repoxplorer.index import date2epoch
 
 
@@ -282,8 +283,10 @@ class EProjects(object):
 
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
+            kwargs = add_params(self.es)
             self.ic.put_mapping(
-                index=self.index, doc_type=self.dbname, body=self.mapping)
+                index=self.index, doc_type=self.dbname, body=self.mapping,
+                **kwargs)
 
     def manage_bulk_err(self, exc):
         errs = [e['create']['error'] for e in exc[1]]
