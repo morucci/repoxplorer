@@ -568,7 +568,7 @@ class TestRepoIndexer(TestCase):
                 'repos': [
                     'file:///tmp/p2:p2:master', ],
                 'line_modifieds': 10,
-                'commit_msg': 'Add init method',
+                'commit_msg': 'Init commit in repo2',
             },
         ]
         pi2.commits = [rc['sha'] for rc in repo2_commits]
@@ -590,8 +590,8 @@ class TestRepoIndexer(TestCase):
         # Add another commit with metadata extracted
         cmt = {
             'sha': '3597334f2cb10772950c97ddf2f6cc17b200',
-            'author_date': 1410456005,
-            'committer_date': 1410456005,
+            'author_date': 1410456006,
+            'committer_date': 1410456006,
             'author_name': 'Nakata Daisuke',
             'committer_name': 'Nakata Daisuke',
             'author_email': 'n.suke@joker.org',
@@ -599,7 +599,7 @@ class TestRepoIndexer(TestCase):
             'repos': [
                 'file:///tmp/p2:p2:master', ],
             'line_modifieds': 10,
-            'commit_msg': 'Add init method',
+            'commit_msg': 'Some commit',
             'close-bug': '123',
             'related-to-story': '124',
         }
