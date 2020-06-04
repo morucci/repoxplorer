@@ -283,7 +283,8 @@ class EProjects(object):
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
             self.ic.put_mapping(
-                index=self.index, doc_type=self.dbname, body=self.mapping)
+                index=self.index, doc_type=self.dbname, body=self.mapping,
+                include_type_name=True)
 
     def manage_bulk_err(self, exc):
         errs = [e['create']['error'] for e in exc[1]]

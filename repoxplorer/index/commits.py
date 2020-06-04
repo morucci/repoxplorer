@@ -68,7 +68,7 @@ class Commits(object):
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, include_type_name=True)
 
     def add_commits(self, source_it):
         def gen(it):
@@ -297,6 +297,8 @@ class Commits(object):
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
+        if isinstance(hits, dict) and 'value' in hits:
+            hits = hits.get('value')
         commits = [r['_source'] for r in res['hits']['hits']]
         return took, hits, commits
 
