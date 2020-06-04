@@ -42,7 +42,7 @@ class Tags(object):
         if not self.ic.exists_type(index=self.index,
                                    doc_type=self.dbname):
             self.ic.put_mapping(index=self.index, doc_type=self.dbname,
-                                body=self.mapping)
+                                body=self.mapping, include_type_name=True)
 
     def add_tags(self, source_it):
         def gen(it):

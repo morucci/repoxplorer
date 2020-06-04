@@ -198,7 +198,7 @@ def parse_commit(input, offset, extra_parsers=None):
                 break
         i += 1
     cmt['commit_msg_full'] = "\n".join(
-        [l.strip() for l in input[offset:offset+i]])
+        [line.strip() for line in input[offset:offset+i]])
     subject, metadatas = parse_commit_msg(
         cmt['commit_msg_full'], extra_parsers)
     cmt['commit_msg'] = subject
