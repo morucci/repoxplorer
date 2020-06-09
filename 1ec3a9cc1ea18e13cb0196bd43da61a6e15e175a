@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "95d250f1_4cf0f742",
+        "filename": ".zuul.yaml",
+        "patchSetId": 10
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2020-06-09T12:49:24Z",
+      "side": 1,
+      "message": "Let\u0027s remove el5 test.",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3e819821_f3939301",
+        "filename": ".zuul.yaml",
+        "patchSetId": 10
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2020-06-09T12:49:24Z",
+      "side": 1,
+      "message": "Could you also add the py36/el7 test as on SF we run with python 3.6.",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3228377c_6e84e2d3",
+        "filename": "requirements.txt",
+        "patchSetId": 10
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2020-06-09T12:49:24Z",
+      "side": 1,
+      "message": "So it means this one is compatible with el7 right ? I see https://elasticsearch-py.readthedocs.io/en/master/#compatibility but if the tests pass that\u0027s fine then.",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
