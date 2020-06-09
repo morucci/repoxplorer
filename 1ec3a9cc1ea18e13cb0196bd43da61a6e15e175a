@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "47facdfd_836b2985",
+        "filename": ".zuul.yaml",
+        "patchSetId": 10
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 385
+      },
+      "writtenOn": "2020-06-09T13:21:51Z",
+      "side": 1,
+      "message": "maybe we can wait with that until prod is not updated to new release?",
+      "parentUuid": "95d250f1_4cf0f742",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3e819821_f3939301",
         "filename": ".zuul.yaml",
         "patchSetId": 10
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "7f757d8a_220f8767",
+        "filename": ".zuul.yaml",
+        "patchSetId": 10
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 385
+      },
+      "writtenOn": "2020-06-09T13:21:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3e819821_f3939301",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3228377c_6e84e2d3",
         "filename": "requirements.txt",
         "patchSetId": 10
@@ -47,6 +83,24 @@
       "writtenOn": "2020-06-09T12:49:24Z",
       "side": 1,
       "message": "So it means this one is compatible with el7 right ? I see https://elasticsearch-py.readthedocs.io/en/master/#compatibility but if the tests pass that\u0027s fine then.",
+      "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f4ea02db_64d4a6e3",
+        "filename": "requirements.txt",
+        "patchSetId": 10
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 385
+      },
+      "writtenOn": "2020-06-09T13:21:51Z",
+      "side": 1,
+      "message": "They should say that it recommended version for es release. For now, it was not raising any errors.\nMoreover it should raise any problems on current \"stack\" because it uses es 5, not 6.",
+      "parentUuid": "3228377c_6e84e2d3",
       "revId": "1ec3a9cc1ea18e13cb0196bd43da61a6e15e175a",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
