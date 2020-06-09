@@ -7,16 +7,26 @@ Master
 
 New features
 ------------
-
-- The cid paramater, passed to the API, can contain a comma separated list of emails.
-
-
 Bug Fixes
 ---------
+Other Notes
+-----------
 
+1.6.0
+=====
+
+New features
+------------
+
+- Added support for ElasticSearch 7.X.
+- The cid paramater, passed to the API, can contain a comma separated list of emails.
+- Add OpenID Connect support
+- Allow repoxplorer web UI to use keycloak for user authentication
 
 Other Notes
 -----------
+
+Support for ElasticSearch 5.X is now deprecated.
 
 1.5.1
 =====
