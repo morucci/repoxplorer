@@ -1,11 +1,11 @@
 # RepoXplorer - Stats explorer for Git repositories
 
 - **Demo instance**: [demo](https://repoxplorer-demo.okombu.com).
-- **Last release**: [1.5.1](https://github.com/morucci/repoxplorer/releases/tag/1.5.1).
+- **Last release**: [1.6.0](https://github.com/morucci/repoxplorer/releases/tag/1.6.0).
 
 The documentation here is for the **master version** of repoXplorer. If you
 look for information about the last stable version, then checkout at
-version 1.5.1.
+version 1.6.0.
 
 RepoXplorer provides a web UI and a REST API to browse git stats such as:
 
@@ -51,7 +51,7 @@ repositories like for instance your Github organization.
 
 The docker container bundles ElasticSearch + the last repoXplorer version.
 
-This paragraph describes the usage of the container of repoXplorer 1.5.1. Some
+This paragraph describes the usage of the container of repoXplorer 1.6.0. Some
 commands/options may have changes on the master version. A container for the
 master version of repoXplorer is published as well and can be deployed using
 `docker-compose -f docker-compose-master.yaml up -d`, please refer to
@@ -62,7 +62,7 @@ Simply run docker-compose to deploy.
 ```Shell
 git clone --depth 1 https://github.com/morucci/repoxplorer
 cd repoxplorer
-git checkout 1.5.1
+git checkout 1.6.0
 mkdir -p docker-data/conf
 docker-compose up -d
 firefox http://localhost:51000/index.html
@@ -105,15 +105,15 @@ docker-compose down
 
 The installation process described here is for the **master version** of
 repoXplorer. If you look for the installation process of the last stable
-version, then checkout at version 1.5.1.
+version, then checkout at version 1.6.0.
 
 This process has been validated with **Fedora 29** but as long as
-you have Python 3 and a working ElasicSearch 5.X or 6.X deployment repoXplorer
+you have Python 3 and a working ElasicSearch 6.X or 7.X deployment repoXplorer
 should work as expected. Feel free to adapt to your Linux distribution.
 
 ### ElasticSearch
 
-RepoXplorer relies on ElasticSearch 5.X or 6.X. Below are the installation
+RepoXplorer relies on ElasticSearch 6.X or 7.X. Below are the installation
 steps for ElasticSearch 6.x for a RPM based system:
 
 ```Shell
@@ -515,7 +515,7 @@ curl "http://localhost:51000/api/v1/status/status"
     "projects": 2,
     "repos": 4,
     "users_endpoint": False,
-    "version": "1.5.1"
+    "version": "1.6.0"
 }
 ```
 
@@ -1273,7 +1273,7 @@ git review # propose your changes
 ### Run tests
 
 The unittest suite requires a local ElasticSearch server accessible on the
-default port 9200/tcp. RepoXplorer is tested with ElasticSearch 5.X and 6.X.
+default port 9200/tcp. RepoXplorer is tested with ElasticSearch 6.X and 7.X.
 No specific configuration is needed. The suite uses specific indexes
 destroyed and re-created at each run.
 
