@@ -260,7 +260,7 @@ class Commits(object):
         """ Return the list of commits for authors and/or repos.
         """
 
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata,
@@ -293,9 +293,7 @@ class Commits(object):
         }
 
         if scan:
-            return scanner(self.es, query=body,
-                           index=self.index,
-                           doc_type=self.dbname)
+            return scanner(self.es, query=body, index=self.index)
 
         params['body'] = body
         params['size'] = limit
@@ -361,7 +359,7 @@ class Commits(object):
                         mails_neg=False, domains=None, blacklisted_mails=None):
         """ Return the stats about the specified field for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -411,7 +409,7 @@ class Commits(object):
         author_email. The hits value is the amount of commits
         for a given email.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -520,7 +518,7 @@ class Commits(object):
                                blacklisted_mails=None):
         """ Return the ranking of field by lines changed
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -632,7 +630,7 @@ class Commits(object):
         this return the amount of hits. The hits value is
         the amount of commit for an uniq repo.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -716,7 +714,7 @@ class Commits(object):
                           blacklisted_mails=None):
         """ Return the histogram of contrib for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata, mails_neg, domains,
@@ -774,7 +772,7 @@ class Commits(object):
                           blacklisted_mails=None):
         """ Return the histogram of authors for authors and/or repos.
         """
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         qfilter = self.get_filter(
             mails, repos, metadata, mails_neg, domains,

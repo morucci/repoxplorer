@@ -65,15 +65,16 @@ class Users(object):
                                 body=self.mapping, **kwargs)
 
     def create(self, user):
-        self.es.create(self.index, self.dbname,
+        self.es.create(self.index, doc_type=self.dbname,
                        id=user['uid'],
                        body=user)
         self.es.indices.refresh(index=self.index)
 
     def update(self, user):
-        self.es.update(self.index, self.dbname,
+        self.es.update(self.index,
+                       doc_type=self.dbname,
                        id=user['uid'],
-                       body={'doc': user})
+                       body={"doc": user})
         self.es.indices.refresh(index=self.index)
 
     def get(self, uid, silent=True):
@@ -93,7 +94,7 @@ class Users(object):
     def get_idents_by_emails(self, emails):
         if not isinstance(emails, list):
             emails = (emails,)
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
         body = {
             "query": {"bool": {
                 "filter": {"bool": {"must": {
@@ -119,7 +120,7 @@ class Users(object):
         return ret
 
     def get_idents_in_group(self, group):
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
         body = {
             "query": {"bool": {
                 "filter": {"bool": {"must": {
@@ -152,7 +153,7 @@ class Users(object):
 
     def delete(self, uid):
         try:
-            self.es.delete(self.index, self.dbname, uid)
+            self.es.delete(self.index, doc_type=self.dbname, id=uid)
             self.es.indices.refresh(index=self.index)
         except NotFoundError:
             pass

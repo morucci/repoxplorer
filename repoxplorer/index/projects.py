@@ -29,7 +29,6 @@ from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import add_params
 from repoxplorer.index import date2epoch
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -336,8 +335,7 @@ class EProjects(object):
                 'match_all': {}
             }
         }
-        return scanner(self.es, query=query, index=self.index,
-                       doc_type=type or self.dbname)
+        return scanner(self.es, query=query, index=self.index)
 
     def get_by_id(self, id, source=True):
         try:
@@ -354,7 +352,7 @@ class EProjects(object):
             index=self.index, doc_type=self.dbname, id=id)
 
     def get_by_attr_match(self, attribute, value, source=True):
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
 
         body = {
             "query": {
@@ -378,7 +376,7 @@ class EProjects(object):
             inner_source=True, inner_hits_max=100):
         if not isinstance(values, list):
             values = (values,)
-        params = {'index': self.index, 'doc_type': self.dbname}
+        params = {'index': self.index}
         body = {
             "query": {
                 "bool": {
