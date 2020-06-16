@@ -107,9 +107,7 @@ class Commits(object):
 
     def get_commit(self, sha, silent=False):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              id=sha)
+            res = self.es.get(index=self.index, id=sha)
             return res['_source']
         except Exception as e:
             if silent:
@@ -119,10 +117,7 @@ class Commits(object):
     def get_commits_by_id(self, sha_list):
         body = {"ids": sha_list}
         try:
-            res = self.es.mget(index=self.index,
-                               doc_type=self.dbname,
-                               _source=True,
-                               body=body)
+            res = self.es.mget(index=self.index, _source=True, body=body)
             return res
         except Exception as e:
             logger.error('Unable to get mulitple commits. %s' % e)
@@ -293,15 +288,15 @@ class Commits(object):
         }
 
         if scan:
-            return scanner(self.es, query=body,
-                           index=self.index,
-                           doc_type=self.dbname)
+            return scanner(self.es, query=body, index=self.index)
 
         params['body'] = body
         params['size'] = limit
         params['from_'] = start
         params['sort'] = "committer_date:%s,author_date:%s" % (sort, sort)
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
@@ -346,6 +341,8 @@ class Commits(object):
 
         params['body'] = body
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.count(**params)
         return res['count']
 
@@ -398,6 +395,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["%s_stats" % field]
@@ -450,6 +449,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         res = [(b['key'], b['doc_count'])
@@ -565,6 +566,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['modified']['value'])
@@ -671,6 +674,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['doc_count'])
@@ -763,6 +768,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["commits"]["buckets"]
@@ -829,6 +836,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         res = res["aggregations"]["commits"]["buckets"]
