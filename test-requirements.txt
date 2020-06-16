@@ -5,7 +5,7 @@ mock
 coverage
 pecan
 WebOb>=1.7.0,<1.8.0
-elasticsearch<7.0
+elasticsearch<=7.8
 PyYAML
 pycrypto
 jsonschema
