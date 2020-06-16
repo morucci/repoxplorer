@@ -23,6 +23,7 @@ from elasticsearch.helpers import scan as scanner
 from elasticsearch.helpers import bulk
 from repoxplorer.index import add_params
 from repoxplorer.index import clean_empty
+from repoxplorer.index import get_elasticsearch_version
 
 logger = logging.getLogger(__name__)
 
@@ -107,9 +108,13 @@ class Commits(object):
 
     def get_commit(self, sha, silent=False):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              id=sha)
+            if get_elasticsearch_version(self.es) >= 7:
+                res = self.es.get(index=self.index,
+                                  id=sha)
+            else:
+                res = self.es.get(index=self.index,
+                                  doc_type=self.dbname,
+                                  id=sha)
             return res['_source']
         except Exception as e:
             if silent:
@@ -119,10 +124,15 @@ class Commits(object):
     def get_commits_by_id(self, sha_list):
         body = {"ids": sha_list}
         try:
-            res = self.es.mget(index=self.index,
-                               doc_type=self.dbname,
-                               _source=True,
-                               body=body)
+            if get_elasticsearch_version(self.es) >= 7:
+                res = self.es.mget(index=self.index,
+                                   _source=True,
+                                   body=body)
+            else:
+                res = self.es.mget(index=self.index,
+                                   doc_type=self.dbname,
+                                   _source=True,
+                                   body=body)
             return res
         except Exception as e:
             logger.error('Unable to get mulitple commits. %s' % e)
@@ -293,15 +303,21 @@ class Commits(object):
         }
 
         if scan:
-            return scanner(self.es, query=body,
-                           index=self.index,
-                           doc_type=self.dbname)
+            if get_elasticsearch_version(self.es) >= 7:
+                return scanner(self.es, query=body,
+                               index=self.index)
+            else:
+                return scanner(self.es, query=body,
+                               index=self.index,
+                               doc_type=self.dbname)
 
         params['body'] = body
         params['size'] = limit
         params['from_'] = start
         params['sort'] = "committer_date:%s,author_date:%s" % (sort, sort)
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
@@ -346,6 +362,8 @@ class Commits(object):
 
         params['body'] = body
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.count(**params)
         return res['count']
 
@@ -398,6 +416,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["%s_stats" % field]
@@ -450,6 +470,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         res = [(b['key'], b['doc_count'])
@@ -565,6 +587,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['modified']['value'])
@@ -671,6 +695,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         top = [(b['key'], b['doc_count'])
@@ -763,6 +789,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         return took, res["aggregations"]["commits"]["buckets"]
@@ -829,6 +857,8 @@ class Commits(object):
         params['body'] = body
         params['size'] = 0
         params = clean_empty(params)
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         res = res["aggregations"]["commits"]["buckets"]

@@ -20,6 +20,7 @@ from elasticsearch.helpers import scan as scanner
 
 from repoxplorer.index import add_params
 from repoxplorer.index import clean_empty
+from repoxplorer.index import get_elasticsearch_version
 
 logger = logging.getLogger(__name__)
 
@@ -113,5 +114,9 @@ class Tags(object):
 
         body = clean_empty(body)
 
-        return [t for t in scanner(self.es, query=body,
-                index=self.index, doc_type=self.dbname)]
+        if get_elasticsearch_version(self.es) >= 7:
+            return [t for t in scanner(self.es, query=body,
+                    index=self.index)]
+        else:
+            return [t for t in scanner(self.es, query=body,
+                    index=self.index, doc_type=self.dbname)]

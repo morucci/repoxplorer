@@ -36,12 +36,13 @@ def date2epoch(date):
     return int(epoch)
 
 
-def _get_elasticsearch_version(es):
-    return es.info()['version']['number']
+def get_elasticsearch_version(es):
+    version = es.info()['version']['number']
+    return int(version.split('.')[0])
 
 
 def add_params(es):
-    if int(_get_elasticsearch_version(es).split('.')[0]) >= 7:
+    if get_elasticsearch_version(es) >= 7:
         return {'include_type_name': 'true'}
     else:
         return {}

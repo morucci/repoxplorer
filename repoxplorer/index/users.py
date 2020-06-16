@@ -18,6 +18,7 @@ import logging
 from elasticsearch.exceptions import NotFoundError
 
 from repoxplorer.index import add_params
+from repoxplorer.index import get_elasticsearch_version
 
 logger = logging.getLogger(__name__)
 
@@ -65,22 +66,35 @@ class Users(object):
                                 body=self.mapping, **kwargs)
 
     def create(self, user):
-        self.es.create(self.index, self.dbname,
-                       id=user['uid'],
-                       body=user)
+        if get_elasticsearch_version(self.es) >= 7:
+            self.es.create(self.index, user['uid'], user)
+        else:
+            self.es.create(self.index, self.dbname, id=user['uid'],
+                           body=user)
         self.es.indices.refresh(index=self.index)
 
     def update(self, user):
-        self.es.update(self.index, self.dbname,
-                       id=user['uid'],
-                       body={'doc': user})
+        if get_elasticsearch_version(self.es) >= 7:
+            self.es.update(self.index, user['uid'],
+                           body={'doc': user})
+        else:
+            self.es.update(self.index, self.dbname,
+                           id=user['uid'],
+                           body={'doc': user})
+
         self.es.indices.refresh(index=self.index)
 
     def get(self, uid, silent=True):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              id=uid)
+            if get_elasticsearch_version(self.es) >= 7:
+                res = self.es.get(index=self.index,
+                                  doc_type=self.dbname,
+                                  id=uid)
+            else:
+                res = self.es.get(index=self.index,
+                                  doc_type=self.dbname,
+                                  id=uid)
+
             return res['_source']
         except Exception as e:
             if silent:
@@ -152,7 +166,10 @@ class Users(object):
 
     def delete(self, uid):
         try:
-            self.es.delete(self.index, self.dbname, uid)
+            if get_elasticsearch_version(self.es) >= 7:
+                self.es.delete(self.index, uid)
+            else:
+                self.es.delete(self.index, self.dbname, uid)
             self.es.indices.refresh(index=self.index)
         except NotFoundError:
             pass

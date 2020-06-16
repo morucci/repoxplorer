@@ -28,6 +28,7 @@ from repoxplorer import index
 from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import add_params
 from repoxplorer.index import date2epoch
+from repoxplorer.index import get_elasticsearch_version
 
 
 logger = logging.getLogger(__name__)
@@ -336,22 +337,33 @@ class EProjects(object):
                 'match_all': {}
             }
         }
-        return scanner(self.es, query=query, index=self.index,
-                       doc_type=type or self.dbname)
+        if get_elasticsearch_version(self.es) >= 7:
+            return scanner(self.es, query=query, index=self.index)
+        else:
+            return scanner(self.es, query=query, index=self.index,
+                           doc_type=type or self.dbname)
 
     def get_by_id(self, id, source=True):
         try:
-            res = self.es.get(index=self.index,
-                              doc_type=self.dbname,
-                              _source=source,
-                              id=id)
+            if get_elasticsearch_version(self.es) >= 7:
+                res = self.es.get(index=self.index,
+                                  _source=source,
+                                  id=id)
+            else:
+                res = self.es.get(index=self.index,
+                                  doc_type=self.dbname,
+                                  _source=source,
+                                  id=id)
             return res['_source']
         except Exception as e:
             logger.error('Unable to get the doc. %s' % e)
 
     def exists(self, id):
-        return self.es.exists(
-            index=self.index, doc_type=self.dbname, id=id)
+        if get_elasticsearch_version(self.es) >= 7:
+            return self.es.exists(index=self.index, id=id)
+        else:
+            return self.es.exists(
+                index=self.index, doc_type=self.dbname, id=id)
 
     def get_by_attr_match(self, attribute, value, source=True):
         params = {'index': self.index, 'doc_type': self.dbname}
@@ -367,6 +379,8 @@ class EProjects(object):
         params['_source'] = source
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
@@ -407,6 +421,8 @@ class EProjects(object):
         params['_source'] = source
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        if get_elasticsearch_version(self.es) >= 7:
+            params.pop('doc_type')
         res = self.es.search(**params)
         inner_hits = [r['inner_hits'] for r in res['hits']['hits']]
         took = res['took']
@@ -417,10 +433,15 @@ class EProjects(object):
     def get_projects_by_fullrids(self, fullrids):
         body = {"ids": fullrids}
         try:
-            res = self.es.mget(index=self.index,
-                               doc_type=self.dbname,
-                               _source=True,
-                               body=body)
+            if get_elasticsearch_version(self.es) >= 7:
+                res = self.es.mget(index=self.index,
+                                   _source=True,
+                                   body=body)
+            else:
+                res = self.es.mget(index=self.index,
+                                   doc_type=self.dbname,
+                                   _source=True,
+                                   body=body)
             return res['docs']
         except Exception as e:
             logger.error('Unable to get projects by fullrids. %s' % e)
