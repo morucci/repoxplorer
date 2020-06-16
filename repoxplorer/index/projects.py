@@ -29,7 +29,6 @@ from repoxplorer.index import YAMLDefinition
 from repoxplorer.index import add_params
 from repoxplorer.index import date2epoch
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -336,8 +335,7 @@ class EProjects(object):
                 'match_all': {}
             }
         }
-        return scanner(self.es, query=query, index=self.index,
-                       doc_type=type or self.dbname)
+        return scanner(self.es, query=query, index=self.index)
 
     def get_by_id(self, id, source=True):
         try:
@@ -367,6 +365,8 @@ class EProjects(object):
         params['_source'] = source
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         took = res['took']
         hits = res['hits']['total']
@@ -407,6 +407,8 @@ class EProjects(object):
         params['_source'] = source
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        # FIXME
+        params.pop('doc_type')
         res = self.es.search(**params)
         inner_hits = [r['inner_hits'] for r in res['hits']['hits']]
         took = res['took']

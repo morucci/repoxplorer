@@ -34,7 +34,7 @@ class SearchController(object):
         ret_limit = 100
         c = Commits(index.Connector())
         ret = c.es.search(
-            index=c.index, doc_type=c.dbname,
+            index=c.index,
             q=query, df="author_name", size=10000,
             default_operator="AND",
             _source_includes=["author_name", "author_email"])

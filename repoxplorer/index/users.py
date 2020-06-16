@@ -65,15 +65,16 @@ class Users(object):
                                 body=self.mapping, **kwargs)
 
     def create(self, user):
-        self.es.create(self.index, self.dbname,
+        self.es.create(self.index, doc_type=self.dbname,
                        id=user['uid'],
                        body=user)
         self.es.indices.refresh(index=self.index)
 
     def update(self, user):
-        self.es.update(self.index, self.dbname,
+        self.es.update(self.index,
+                       doc_type=self.dbname,
                        id=user['uid'],
-                       body={'doc': user})
+                       body={"doc": user})
         self.es.indices.refresh(index=self.index)
 
     def get(self, uid, silent=True):
@@ -114,6 +115,7 @@ class Users(object):
         params['body'] = body
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        params.pop('doc_type')
         ret = self.es.search(**params)['hits']['hits']
         ret = [r['_source'] for r in ret]
         return ret
@@ -147,12 +149,13 @@ class Users(object):
         params['body'] = body
         # TODO(fbo): Improve by doing it by bulk instead
         params['size'] = 10000
+        params.pop('doc_type')
         ret = self.es.search(**params)['hits']['hits']
         return [r['_source'] for r in ret]
 
     def delete(self, uid):
         try:
-            self.es.delete(self.index, self.dbname, uid)
+            self.es.delete(self.index, doc_type=self.dbname, id=uid)
             self.es.indices.refresh(index=self.index)
         except NotFoundError:
             pass

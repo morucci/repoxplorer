@@ -114,4 +114,4 @@ class Tags(object):
         body = clean_empty(body)
 
         return [t for t in scanner(self.es, query=body,
-                index=self.index, doc_type=self.dbname)]
+                index=self.index)]
