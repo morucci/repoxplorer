@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "859d6603_696a7561",
+        "filename": "repoxplorer/index/__init__.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2020-06-17T14:45:18Z",
+      "side": 1,
+      "message": "Could be \u003d\u003d 7 because in EL8 this params will be removed. \n\nhttps://www.elastic.co/guide/en/elasticsearch/reference/7.x/removal-of-types.html#_schedule_for_removal_of_mapping_types",
+      "revId": "f41ec845a525c2ddcbe1f60a4d05b202c0efc7fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba7b6606_64bf1b7b",
+        "filename": "repoxplorer/index/commits.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 6
+      },
+      "writtenOn": "2020-06-17T14:45:18Z",
+      "side": 1,
+      "message": "Why is it removed at some place but not at other ?",
+      "range": {
+        "startLine": 318,
+        "startChar": 40,
+        "endLine": 318,
+        "endChar": 63
+      },
+      "revId": "f41ec845a525c2ddcbe1f60a4d05b202c0efc7fe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
