@@ -1,4 +1,11 @@
-keycloak = new Keycloak('keycloak.json');
+
+try {
+  keycloak = new Keycloak('keycloak.json');
+} catch (error) {
+  var keycloak;
+  console.log("Unable to init keycloak: " + error)
+}
+
 
 function is_cookies_enabled() {
     var isEnabled = (navigator.cookieEnabled) ? true : false;
@@ -74,9 +81,15 @@ function delete_user(login, header_func) {
 
 function keycloak_init() {
     // TODO better way to check whether keycloak is configured?
-        return keycloak.init({
-            onLoad: 'check-sso'
-        })
+        if (keycloak === undefined) {
+            var dummy_d = $.Deferred();
+            dummy_d.reject("Keycloak not initialized");
+            return dummy_d
+        } else {
+            return keycloak.init({
+                onLoad: 'check-sso'
+            })
+        }
 }
 
 function init_menu() {
@@ -91,7 +104,7 @@ return $.getJSON("api/v1/status/status")
         // If user backend activated check if user is logged then init menu
         if (status['users_endpoint']) {
           var username = '';
-          if (keycloak.authenticated) {
+          if (keycloak !== undefined && keycloak.authenticated) {
               username = keycloak.tokenParsed['preferred_username'];
           } else {
               username = get_username();
@@ -101,7 +114,7 @@ return $.getJSON("api/v1/status/status")
             $("#ls-switch").empty()
             $("#contrib-page").empty()
             var header_func = function (xhr) {};
-            if (keycloak.authenticated) {
+            if (keycloak !== undefined  && keycloak.authenticated) {
                 header_func = set_oidc_header
             }
             get_user_infos(username, header_func)
@@ -493,16 +506,16 @@ function build_top_projects_table(top, inc_repos_detail, btid_more, limit) {
 
 function index_page_init() {
     keycloak_init()
-      .success(init_menu)
-      .error(init_menu);
+      .done(init_menu)
+      .fail(init_menu);
 }
 
 function user_page_init() {
   keycloak_init()
-    .success(function () {
+    .done(function () {
        init_menu();
        _user_page_init();
-    }).error(function () {
+    }).fail(function () {
        init_menu();
        _user_page_init();
     });
@@ -542,8 +555,8 @@ function _user_page_init() {
         });
         data.emails.push(email_obj);
       });
-      if (keycloak.authenticated) {
-          keycloak.updateToken(30).success(submit_send_data(data));
+      if (keycloak !== undefined && keycloak.authenticated) {
+          keycloak.updateToken(30).done(submit_send_data(data));
       } else {
           submit_send_data(data);
       }
@@ -554,7 +567,7 @@ function _user_page_init() {
       // console.log('Sending ' + JSON.stringify(data))
       $("#settings-progress").show();
       var header_func = function (xhr) {};
-      if (keycloak.authenticated) {
+      if (keycloak !== undefined && keycloak.authenticated) {
           header_func = set_oidc_header
       }
       $.ajax({
@@ -587,13 +600,13 @@ function _user_page_init() {
 
   function do_delete (event) {
     var username = '';
-    if (keycloak.authenticated) {
+    if (keycloak !== undefined && keycloak.authenticated) {
         username = keycloak.tokenParsed['preferred_username'];
     } else {
         username = get_username();
     }
     var header_func = function (xhr) {};
-    if (keycloak.authenticated) {
+    if (keycloak !== undefined && keycloak.authenticated) {
         header_func = set_oidc_header
     }
     del_deferred = delete_user(username, header_func)
@@ -606,7 +619,7 @@ function _user_page_init() {
             $("#submit-msg").append("Your account has been deleted");
             $("#submit-box").show();
             $("#settings-progress").hide();
-            if (keycloak.authenticated) {
+            if (keycloak !== undefined && keycloak.authenticated) {
                 keycloak.logout();
             } else {
                 document.cookie = 'auth_pubtkt' + '=; Max-Age=-99999999;';
@@ -625,7 +638,7 @@ function _user_page_init() {
   }
 
   $("#delete-user-button").on("click", function(event) {
-      if (keycloak.authenticated) {
+      if (keycloak !== undefined && keycloak.authenticated) {
           keycloak.updateToken(30).success(do_delete(event));
       } else {
           do_delete(event);
@@ -637,13 +650,13 @@ function _user_page_init() {
     gg_d = get_groups('true')
     // Username is fetched from the cauth cookie
     var username = '';
-    if (keycloak.authenticated) {
+    if (keycloak !== undefined && keycloak.authenticated) {
         username = keycloak.tokenParsed['preferred_username'];
     } else {
         username = get_username();
     }
     var header_func = function (xhr) {};
-    if (keycloak.authenticated) {
+    if (keycloak !== undefined && keycloak.authenticated) {
         header_func = set_oidc_header
     }
     gui_d = get_user_infos(username, header_func)
@@ -785,7 +798,7 @@ function _user_page_init() {
         }
       );
   }
-  if (keycloak.authenticated) {
+  if (keycloak !== undefined && keycloak.authenticated) {
       keycloak.updateToken(30).success(fill_form());
   } else {
       fill_form();
@@ -794,10 +807,10 @@ function _user_page_init() {
 
 function projects_page_init() {
     keycloak_init()
-      .success(function () {
+      .done(function () {
          init_menu();
          _projects_page_init();
-      }).error(function () {
+      }).fail(function () {
          init_menu();
          _projects_page_init();
       });
@@ -935,11 +948,11 @@ function _projects_page_init() {
 
 function groups_page_init() {
     keycloak_init()
-       .success(function () {
+       .done(function () {
            init_menu();
            _groups_page_init();
        })
-       .error(function () {
+       .fail(function () {
            init_menu();
            _groups_page_init();
        });
@@ -1016,11 +1029,11 @@ function _groups_page_init() {
 
 function contributor_page_init() {
     keycloak_init()
-       .success(function () {
+       .done(function () {
           init_menu();
           _contributor_page_init();
        })
-       .error(function () {
+       .fail(function () {
           init_menu();
           _contributor_page_init();
        });
@@ -1243,11 +1256,11 @@ function _contributor_page_init() {
 
 function group_page_init(commits_amount) {
     keycloak_init()
-       .success(function () {
+       .done(function () {
           init_menu();
           _group_page_init(commits_amount) 
        })
-       .error(function () {
+       .fail(function () {
           init_menu();
           _group_page_init(commits_amount) 
        });
@@ -1546,11 +1559,11 @@ function _group_page_init(commits_amount) {
 
 function project_page_init() {
     keycloak_init()
-       .success(function () {
+       .done(function () {
           init_menu();
           _project_page_init();
        })
-       .error(function () {
+       .fail(function () {
           init_menu();
           _project_page_init();
        });
@@ -1935,11 +1948,11 @@ function _project_page_init() {
 
 function contributors_page_init() {
     keycloak_init()
-       .success(function () {
+       .done(function () {
           init_menu();
           _contributors_page_init();
        })
-       .error(function () {
+       .fail(function () {
           init_menu();
           _contributors_page_init();
        });
