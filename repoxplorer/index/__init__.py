@@ -71,9 +71,18 @@ class Connector(object):
                       'repoxplorer')
         if index_suffix:
             self.index += "-%s" % index_suffix
-        self.es = client.Elasticsearch(
-            [{"host": self.host, "port": self.port}],
-            timeout=60)
+        if (getattr(conf, 'elasticsearch_user', None) and
+                getattr(conf, 'elasticsearch_password', None)):
+            self.http_auth = "%s:%s" % (
+                    getattr(conf, 'elasticsearch_user', None),
+                    getattr(conf, 'elasticsearch_password', None))
+            self.es = client.Elasticsearch(
+                [{"host": self.host, "port": self.port,
+                  "http_auth": self.http_auth}], timeout=60)
+        else:
+            self.es = client.Elasticsearch(
+                [{"host": self.host, "port": self.port}],
+                timeout=60)
         self.ic = client.IndicesClient(self.es)
         if not self.ic.exists(index=self.index):
             self.ic.create(index=self.index)
