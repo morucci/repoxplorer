@@ -423,6 +423,8 @@ Upgrade Notes
 
 - project.yaml structure has changed. The key 'branch' has been renamed 'branches' and is now a list of branches to index. Please update your projects.yaml file.
 
+- test
+
 
 Bug Fixes
 ---------
