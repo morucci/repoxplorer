@@ -12,6 +12,11 @@ Bug Fixes
 Other Notes
 -----------
 
+1.6.1
+=====
+
+- Some minor fixes
+
 1.6.0
 =====
 

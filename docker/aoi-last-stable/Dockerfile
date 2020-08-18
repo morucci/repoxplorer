@@ -1,7 +1,7 @@
-FROM fedora:29
+FROM fedora:32
 LABEL maintainer="fabien.dot.boucher@gmail.com"
 
-ARG version=1.5.1
+ARG version=1.6.1
 
 RUN rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 ADD elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo
@@ -19,6 +19,8 @@ RUN cd repoxplorer && git checkout FETCH_HEAD
 RUN cd repoxplorer && python3 -m pip install -r requirements.txt && python3 -m pip install .
 RUN cd repoxplorer && cp config.py /etc/repoxplorer/
 RUN cd repoxplorer && python3 ./bin/repoxplorer-fetch-web-assets --config /etc/repoxplorer/config.py
+# Remove keycloak until the support is fully fixed
+RUN rm /root/.local/repoxplorer/public/javascript/keycloak.min.js
 
 RUN mkdir /etc/repoxplorer/defs
 RUN sed -i "s|^db_path =.*|db_path = '/etc/repoxplorer/defs'|" /etc/repoxplorer/config.py

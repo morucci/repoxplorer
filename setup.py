@@ -22,7 +22,7 @@ def read(fname):
 
 setup(
     name = "repoxplorer",
-    version = "1.5.1",
+    version = "1.6.1",
     author = "Fabien Boucher",
     author_email = "fabien?dot.boucher@gmail.com",
     description = ("Git repositories metrics"),
