@@ -47,6 +47,9 @@ parser.add_argument(
 parser.add_argument(
     '--skip-fork', action='store_true',
     help='Do not consider forked repositories')
+parser.add_argument(
+    '--all-branches', action='store_true',
+    help='Include all branches in indexed repositories')
 
 args = parser.parse_args()
 
@@ -97,8 +100,21 @@ if __name__ == "__main__":
             if r.name not in top:
                 continue
         data = {r.name: {"template": args.org}}
-        if r.default_branch != 'master':
+
+        # Modified for addition of `--all-branches` option.
+        if r.default_branch != 'master' and not args.all_branches:
             data[r.name]['branches'] = [r.default_branch]
+        elif args.all_branches:
+           for branch in r.branches():
+               try:
+                   data[r.name]['branches']
+               except KeyError:
+                   data[r.name]['branches'] = [branch.name]
+               else:
+                   data[r.name]['branches'].append(branch.name)
+        else:
+            data[r.name]['branches'] = [r.default_branch]
+        
         projects[args.org]["repos"].update(data)
         print("Found %s" % r.name)
 
