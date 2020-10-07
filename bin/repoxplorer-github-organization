@@ -102,19 +102,15 @@ if __name__ == "__main__":
         data = {r.name: {"template": args.org}}
 
         # Modified for addition of `--all-branches` option.
-        if r.default_branch != 'master' and not args.all_branches:
-            data[r.name]['branches'] = [r.default_branch]
-        elif args.all_branches:
-           for branch in r.branches():
-               try:
-                   data[r.name]['branches']
-               except KeyError:
-                   data[r.name]['branches'] = [branch.name]
-               else:
-                   data[r.name]['branches'].append(branch.name)
-        else:
-            data[r.name]['branches'] = [r.default_branch]
+        # Revised to follow morruci's advice (set converted).
+        branches = set([r.default_branch])
         
+        if args.all_branches:
+           for branch in r.branches():
+               branches.add(branch.name)
+
+        data[r.name]['branches'] = list(branches)
+
         projects[args.org]["repos"].update(data)
         print("Found %s" % r.name)
 
