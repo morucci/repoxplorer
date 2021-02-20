@@ -108,7 +108,7 @@ def process(conf):
             if ref.get('index-tags') is True:
                 r.get_tags()
             if not [head for head in r.heads if
-                    head[1].endswith(ref['branch'])]:
+                    head[1].startswith("refs/heads/%s" % ref['branch'])]:
                 logger.warning(
                     "Repository %s does not have the "
                     "requested branch %s" % (r.base_id, ref['branch']))
