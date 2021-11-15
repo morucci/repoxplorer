@@ -1,0 +1,8 @@
+- hosts: all
+  tasks:
+    - name: "Display ansible_user_dir"
+      shell: pwd {{ ansible_user_dir }}
+    - name: "Display current directory"
+      shell: pwd .
+    - name: "Display zuul.project.src_dir"
+      shell: ls {{ zuul.project.src_dir }}
