@@ -1,8 +1,13 @@
 ---
+- job:
+    name: atestjob
+    run: playbooks/test.yaml
+    nodeset:
+      nodes:
+        - name: container
+          label: zuul-worker-f34
+
 - project:
     check:
       jobs:
-        - noop
-    gate:
-      jobs:
-        - noop
+        - atestjob
