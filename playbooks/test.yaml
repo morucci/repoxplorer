@@ -1,0 +1,8 @@
+- hosts: all
+  tasks:
+    - name: "Display ansible_user_dir"
+      shell: echo {{ ansible_user_dir }}
+    - name: "Display current directory"
+      shell: pwd .
+    - name: "Display HOME"
+      shell: "echo $HOME"
