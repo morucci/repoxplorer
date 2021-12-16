@@ -1,0 +1,4 @@
+- hosts: all
+  tasks:
+    - name: test ls
+      command: ls -al

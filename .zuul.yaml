@@ -1,8 +1,16 @@
 ---
+- job:
+    name: test-zuul-worker-f35
+    run: playbooks/main.yml
+    nodeset:
+      nodes:
+        - name: test-node
+          label: zuul-worker-f35
+
 - project:
     check:
       jobs:
-        - noop
+        - test-zuul-worker-f35
     gate:
       jobs:
         - noop
